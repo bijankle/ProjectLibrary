@@ -70,5 +70,16 @@ const GLOSSARY = [
   ["MoL","Milk of lime"],["PSA","Pressure swing adsorption oxygen plant"],["LPG","Fuel for CIL4 elution heater"],
   ["NSR","Northern Star Resources (owner)"],["PDC","Process design criteria"],["PFD","Process flow diagram"],
   ["P&ID","Piping and instrumentation diagram"],["TQ","Technical query"],["SysCAD","Mass balance model software"],
-  ["WBS","Work breakdown structure"]
+  ["WBS","Work breakdown structure"],
+  ["DCS","Distributed control system (Yokogawa Centum VP)"],["OIS","Operator interface system, the control room screens"],
+  ["CRO","Control room operator"],["CrCR","Crusher control room"],["FCS","Field control station"],["PI","Plant data historian (trends)"],
+  ["Auto / Manual / Local","Drive modes: DCS controlled / operator from OIS / field LCS only, process interlocks bypassed"],
+  ["Critical interlock","Safety trip (E-stop, pull wire, protection relay), active in every mode"],
+  ["Process interlock","Trips a drive in Auto and Manual to prevent spills or poor performance"],
+  ["Start permissive","Must be healthy to start, does not trip a running drive"],
+  ["First out","The trip that happened first"],["PV / SV / CV","Process variable / setpoint / controller output"],
+  ["Cascade","Master loop sets the setpoint of a slave loop"],["DOL","Direct on line starter"],["EOL","Electronic overload relay"],
+  ["STO","Safe Torque Off, VSD E-stop input"],["Maric valve","Constant flow valve on gland water"],
+  ["Dart valve","Flotation cell discharge valve for level control"],["Manta sub / SmartDiver","Thickener bed level sensors"],
+  ["Single stage","SAG running without the ball mill (e.g. during ball mill reline)"],
 ];

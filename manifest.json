@@ -1,7 +1,7 @@
 {
-  "name": "KCGM Plant Quiz",
-  "short_name": "KCGM Quiz",
-  "description": "Multiple choice quiz on the KCGM Fimiston processing plant.",
+  "name": "KCGM Flashcards",
+  "short_name": "KCGM Cards",
+  "description": "Swipe flashcards on the KCGM Fimiston processing plant.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

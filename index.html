@@ -7,42 +7,40 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>KCGM Plant Quiz</title>
+<title>KCGM Flashcards</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{
   --bg:#14110d; --card:#1f1a14; --card2:#2a241c; --ink:#f3ece1; --mute:#b3a794;
-  --gold:#e8b44a; --gold2:#b8862a; --ok:#4cc28a; --bad:#e2604f; --line:#3a3226;
+  --gold:#e8b44a; --ok:#4cc28a; --bad:#e2604f; --line:#3a3226; --face:#221c15; --back:#1a2420;
 }
 @media (prefers-color-scheme: light){
   :root:not([data-theme="dark"]){
     --bg:#f6f1e7; --card:#ffffff; --card2:#f0e8da; --ink:#241d14; --mute:#6b5f4e;
-    --gold:#b8801c; --gold2:#8a5f12; --ok:#1f8a58; --bad:#c2412f; --line:#e1d6c4;
+    --gold:#b8801c; --ok:#1f8a58; --bad:#c2412f; --line:#e1d6c4; --face:#ffffff; --back:#f3faf6;
   }
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:17px;line-height:1.45}
 body{overscroll-behavior:none}
-#app{min-height:100%;max-width:640px;margin:0 auto;
-  padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 20px)}
-.screen{display:none;animation:fade .2s ease}
+.screen{display:none}
 .screen.on{display:block}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-h1{font-size:26px;margin:4px 0 2px;letter-spacing:.3px}
+
+/* HOME / END / GLOSSARY */
+.page{max-width:640px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 24px)}
+h1{font-size:26px;margin:4px 0 2px}
 h1 span{color:var(--gold)}
-h2{font-size:15px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute);margin:22px 0 10px}
+h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute);margin:22px 0 10px}
 .sub{color:var(--mute);margin:0 0 6px;font-size:15px}
-.row{display:flex;gap:10px;flex-wrap:wrap}
+.row{display:flex;gap:10px}
 .btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink);
-  border-radius:14px;padding:14px 16px;font-size:16px;font-weight:600;cursor:pointer;
-  transition:transform .08s ease,background .15s}
+  border-radius:14px;padding:14px 16px;font-size:16px;font-weight:700;cursor:pointer;flex:1}
 .btn:active{transform:scale(.98)}
 .btn.primary{background:var(--gold);color:#1a1307;border-color:var(--gold)}
-.btn.wide{width:100%}
-.btn.ghost{background:transparent}
 .topics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .topic{border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:12px;
   cursor:pointer;user-select:none;position:relative;min-height:84px}
@@ -56,127 +54,121 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
 .seg button{flex:1;border:0;background:transparent;color:var(--mute);font-weight:700;font-size:15px;
   padding:10px 4px;border-radius:10px}
 .seg button.on{background:var(--gold);color:#1a1307}
-.stickybar{position:sticky;bottom:0;padding:14px 0 calc(env(safe-area-inset-bottom) + 4px);
+.sticky{position:sticky;bottom:0;padding:14px 0 calc(env(safe-area-inset-bottom) + 4px);
   background:linear-gradient(transparent,var(--bg) 30%)}
-.topbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.x{border:0;background:var(--card);color:var(--ink);width:42px;height:42px;border-radius:12px;font-size:20px}
-.prog{flex:1;height:8px;background:var(--card2);border-radius:99px;overflow:hidden}
-.prog i{display:block;height:100%;background:var(--gold);width:0;transition:width .3s}
-.count{font-variant-numeric:tabular-nums;color:var(--mute);font-size:14px;min-width:48px;text-align:right}
-.tag{display:inline-block;font-size:12.5px;font-weight:700;color:var(--gold);background:var(--card2);
-  padding:4px 10px;border-radius:99px;margin-bottom:10px}
-.q{font-size:21px;font-weight:700;line-height:1.35;margin:4px 0 18px}
-.opts{display:flex;flex-direction:column;gap:10px}
-.opt{text-align:left;border:1.5px solid var(--line);background:var(--card);color:var(--ink);
-  border-radius:14px;padding:15px 14px 15px 50px;font-size:16.5px;position:relative;cursor:pointer;line-height:1.35}
-.opt b{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;
-  background:var(--card2);display:grid;place-items:center;font-size:14px;color:var(--mute)}
-.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 16%,var(--card))}
-.opt.ok b{background:var(--ok);color:#fff}
-.opt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--card))}
-.opt.bad b{background:var(--bad);color:#fff}
-.opt.dim{opacity:.5}
-.explain{margin-top:16px;background:var(--card);border-left:4px solid var(--gold);border-radius:12px;
-  padding:14px 14px;font-size:15.5px;display:none}
-.explain.on{display:block;animation:fade .2s}
-.explain .v{font-weight:800;margin-bottom:6px;font-size:16px}
-.big{font-size:56px;font-weight:800;color:var(--gold);line-height:1;margin:18px 0 4px}
-.bars{display:flex;flex-direction:column;gap:8px}
-.bar{background:var(--card);border-radius:12px;padding:10px 12px}
-.bar .h{display:flex;justify-content:space-between;font-size:14.5px;font-weight:600}
-.bar .t{height:6px;background:var(--card2);border-radius:99px;margin-top:6px;overflow:hidden}
-.bar .t i{display:block;height:100%}
-.miss{background:var(--card);border-radius:12px;padding:12px;margin-bottom:8px;font-size:14.5px}
-.miss .mq{font-weight:700;margin-bottom:4px}
-.miss .ma{color:var(--ok)}
-.search{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);
-  color:var(--ink);font-size:16px;margin-bottom:12px}
-.gl{display:grid;grid-template-columns:auto 1fr;gap:0;background:var(--card);border-radius:14px;overflow:hidden}
-.gl div{padding:10px 12px;border-bottom:1px solid var(--line);font-size:15px}
-.gl .k{font-weight:800;color:var(--gold);white-space:nowrap}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
 .stat{background:var(--card);border-radius:12px;padding:10px;text-align:center}
 .stat b{display:block;font-size:22px;color:var(--gold)}
 .stat span{font-size:12px;color:var(--mute)}
-.small{font-size:13px;color:var(--mute)}
 .linkish{background:none;border:0;color:var(--mute);text-decoration:underline;font-size:13px;padding:6px}
+.big{font-size:56px;font-weight:800;color:var(--gold);line-height:1;margin:18px 0 4px}
+.search{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);
+  color:var(--ink);font-size:16px;margin-bottom:12px}
+.gl{display:grid;grid-template-columns:auto 1fr;background:var(--card);border-radius:14px;overflow:hidden}
+.gl div{padding:10px 12px;border-bottom:1px solid var(--line);font-size:15px}
+.gl .k{font-weight:800;color:var(--gold);white-space:nowrap}
+.topbar{display:flex;align-items:center;gap:12px}
+.x{border:0;background:var(--card);color:var(--ink);width:42px;height:42px;border-radius:12px;font-size:20px;flex:none}
+
+/* DECK */
+#deck{position:fixed;inset:0;display:none;flex-direction:column;
+  padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 12px);overflow:hidden}
+#deck.on{display:flex}
+.prog{flex:1;height:6px;background:var(--card2);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--gold);width:0;transition:width .3s}
+.count{font-variant-numeric:tabular-nums;color:var(--mute);font-size:14px;min-width:56px;text-align:right}
+.stage{position:relative;flex:1;margin:14px 0 10px;perspective:1400px}
+.card{position:absolute;inset:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;will-change:transform}
+.flip{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.card.shown .flip{transform:rotateY(180deg)}
+.side{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:24px;
+  border:1px solid var(--line);display:flex;flex-direction:column;padding:22px 20px;overflow:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.front{background:var(--face)}
+.back{background:var(--back);transform:rotateY(180deg)}
+.chip{align-self:flex-start;font-size:13px;font-weight:700;color:var(--gold);background:var(--card2);
+  padding:5px 11px;border-radius:99px}
+.qwrap{flex:1;display:flex;align-items:center}
+.qtext{font-size:clamp(24px,6.6vw,32px);font-weight:800;line-height:1.28;letter-spacing:-.2px}
+.hint{text-align:center;color:var(--mute);font-size:14px}
+.qmini{font-size:14px;color:var(--mute);margin:12px 0 10px;line-height:1.35}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-right:2px}
+.atext{font-size:clamp(20px,5.4vw,25px);font-weight:800;line-height:1.3;color:var(--ok);margin-bottom:14px}
+.etext{font-size:16.5px;line-height:1.55}
+.stamp{position:absolute;top:26px;padding:6px 12px;border:3px solid;border-radius:10px;font-weight:900;
+  font-size:22px;letter-spacing:1px;opacity:0;transform:rotate(-12deg);pointer-events:none;z-index:3}
+.stamp.got{left:22px;color:var(--ok);border-color:var(--ok)}
+.stamp.again{right:22px;color:var(--bad);border-color:var(--bad);transform:rotate(12deg)}
+.legend{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:0 6px}
+.legend .l{color:var(--bad)} .legend .r{color:var(--ok)}
+.tally{display:flex;gap:14px;font-size:13px;color:var(--mute);justify-content:center;margin-top:6px}
 </style>
 </head>
 <body>
-<div id="app">
 
 <!-- HOME -->
-<section id="home" class="screen on">
-  <h1>KCGM <span>Plant Quiz</span></h1>
-  <p class="sub">Learn the language of the Fimiston plant: area codes, tags, circuits and handover talk.</p>
+<section id="home" class="screen on"><div class="page">
+  <h1>KCGM <span>Flashcards</span></h1>
+  <p class="sub">A question fills the screen. Swipe to see the answer. Swipe again: right if you knew it, left to see it again.</p>
   <div class="stats" id="stats"></div>
 
-  <h2>Mode</h2>
+  <h2>Deck</h2>
   <div class="seg" id="modeSeg">
-    <button data-m="mix" class="on">Mixed</button>
-    <button data-m="weak">Weak spots</button>
+    <button data-m="mix" class="on">Shuffle</button>
+    <button data-m="weak">Revisit</button>
     <button data-m="new">Unseen</button>
   </div>
-
-  <h2>Questions</h2>
+  <div style="height:10px"></div>
   <div class="seg" id="lenSeg">
-    <button data-n="10" class="on">10</button>
-    <button data-n="20">20</button>
+    <button data-n="10">10</button>
+    <button data-n="20" class="on">20</button>
     <button data-n="40">40</button>
-    <button data-n="999">All</button>
+    <button data-n="9999">All</button>
   </div>
 
   <h2>Topics <button class="linkish" id="allBtn">select all</button></h2>
   <div class="topics" id="topics"></div>
 
   <div class="row" style="margin-top:18px">
-    <button class="btn ghost" id="glossBtn" style="flex:1">📖 Glossary</button>
-    <button class="btn ghost" id="fsBtn" style="flex:1">⛶ Full screen</button>
+    <button class="btn" id="glossBtn">📖 Glossary</button>
+    <button class="btn" id="fsBtn">⛶ Full screen</button>
   </div>
-  <div class="stickybar"><button class="btn primary wide" id="startBtn">Start quiz</button></div>
-</section>
+  <div class="sticky"><button class="btn primary" style="width:100%" id="startBtn">Start</button></div>
+</div></section>
 
-<!-- QUIZ -->
-<section id="quiz" class="screen">
+<!-- DECK -->
+<section id="deck">
   <div class="topbar">
-    <button class="x" id="quitBtn" aria-label="Quit">✕</button>
+    <button class="x" id="quitBtn" aria-label="Finish">✕</button>
     <div class="prog"><i id="progBar"></i></div>
     <div class="count" id="count"></div>
   </div>
-  <div class="tag" id="qTag"></div>
-  <div class="q" id="qText"></div>
-  <div class="opts" id="opts"></div>
-  <div class="explain" id="explain"><div class="v" id="verdict"></div><div id="expText"></div></div>
-  <div class="stickybar" id="nextWrap" style="display:none"><button class="btn primary wide" id="nextBtn">Next</button></div>
+  <div class="stage" id="stage"></div>
+  <div class="legend" id="legend"><span class="l">← again</span><span class="r">got it →</span></div>
 </section>
 
-<!-- RESULTS -->
-<section id="results" class="screen">
+<!-- END -->
+<section id="end" class="screen"><div class="page">
   <h1>Shift <span>debrief</span></h1>
   <div class="big" id="score"></div>
   <p class="sub" id="scoreSub"></p>
-  <h2>By topic</h2>
-  <div class="bars" id="bars"></div>
-  <h2 id="missHead">Review what you missed</h2>
-  <div id="missList"></div>
-  <div class="stickybar row">
-    <button class="btn" id="retryMiss" style="flex:1">Retry missed</button>
-    <button class="btn primary" id="homeBtn" style="flex:1">Home</button>
+  <div class="row" style="margin-top:20px;flex-direction:column">
+    <button class="btn primary" id="againBtn">Go through the 'again' pile</button>
+    <button class="btn" id="homeBtn">Home</button>
   </div>
-</section>
+</div></section>
 
 <!-- GLOSSARY -->
-<section id="gloss" class="screen">
-  <div class="topbar">
+<section id="gloss" class="screen"><div class="page">
+  <div class="topbar" style="margin-bottom:12px">
     <button class="x" id="glossBack" aria-label="Back">←</button>
     <h1 style="margin:0;font-size:22px">Glossary</h1>
   </div>
   <input class="search" id="gSearch" placeholder="Search e.g. F21, PAX, roping" autocomplete="off">
   <div class="gl" id="gList"></div>
-</section>
+</div></section>
 
-</div>
-<script src="questions.js"></script>
+<script src="cards.js"></script>
 <script src="glossary.js"></script>
 <script>
 (() => {
@@ -185,128 +177,177 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
     get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
     set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
   };
-  // History keyed by question text: {s: seen count, c: correct count, last: 1/0}
-  let hist = store.get("kcgm_hist", {});
-  let sel = new Set(store.get("kcgm_topics", Object.keys(TOPICS)));
-  let mode = "mix", len = 10, run = null;
+  // History keyed by question text: s = times answered, k = times known, last = 1 known / 0 again
+  let hist = store.get("kcgm_cards", {});
+  let sel = new Set(store.get("kcgm_topics", Object.keys(TOPICS)).filter(t => TOPICS[t]));
+  if (!sel.size) sel = new Set(Object.keys(TOPICS));
+  let mode = "mix", len = 20, run = null;
 
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  const key = q => q.q;
-  const show = id => { document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); window.scrollTo(0,0); };
+  const show = id => {
+    document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+    $("deck").classList.toggle("on", id === "deck"); window.scrollTo(0, 0);
+  };
 
-  function topicPct(t){
-    const qs = QUESTIONS.filter(q => q.t === t); let s = 0, c = 0;
-    qs.forEach(q => { const h = hist[key(q)]; if (h && h.s){ s++; c += h.last; } });
-    return s ? Math.round(100 * c / s) + "%" : qs.length + " Qs";
+  // ---------- HOME ----------
+  function topicInfo(t){
+    const cs = CARDS.filter(c => c.t === t); const seen = cs.filter(c => hist[c.q]);
+    if (!seen.length) return cs.length + " cards";
+    return Math.round(100 * seen.filter(c => hist[c.q].last).length / cs.length) + "% known";
   }
   function renderHome(){
     const tp = $("topics"); tp.innerHTML = "";
     Object.entries(TOPICS).forEach(([k, t]) => {
       const d = document.createElement("div");
       d.className = "topic" + (sel.has(k) ? " sel" : "");
-      d.innerHTML = `<div class="ic">${t.icon}</div><div class="nm">${t.name}</div><div class="bl">${t.blurb}</div><div class="pc">${topicPct(k)}</div>`;
+      d.innerHTML = `<div class="ic">${t.icon}</div><div class="nm">${t.name}</div><div class="bl">${t.blurb}</div><div class="pc">${topicInfo(k)}</div>`;
       d.onclick = () => { sel.has(k) ? sel.delete(k) : sel.add(k); store.set("kcgm_topics", [...sel]); renderHome(); };
       tp.appendChild(d);
     });
-    const seen = QUESTIONS.filter(q => hist[key(q)]).length;
-    const mastered = QUESTIONS.filter(q => { const h = hist[key(q)]; return h && h.last && h.c >= 2; }).length;
-    const weak = QUESTIONS.filter(q => { const h = hist[key(q)]; return h && !h.last; }).length;
-    $("stats").innerHTML = `<div class="stat"><b>${seen}/${QUESTIONS.length}</b><span>seen</span></div>
-      <div class="stat"><b>${mastered}</b><span>mastered</span></div><div class="stat"><b>${weak}</b><span>to revisit</span></div>`;
+    const seen = CARDS.filter(c => hist[c.q]).length;
+    const known = CARDS.filter(c => hist[c.q] && hist[c.q].last).length;
+    const again = CARDS.filter(c => hist[c.q] && !hist[c.q].last).length;
+    $("stats").innerHTML = `<div class="stat"><b>${seen}/${CARDS.length}</b><span>seen</span></div>
+      <div class="stat"><b>${known}</b><span>known</span></div><div class="stat"><b>${again}</b><span>to revisit</span></div>`;
     $("allBtn").textContent = sel.size === Object.keys(TOPICS).length ? "clear" : "select all";
   }
   $("allBtn").onclick = () => {
     sel = sel.size === Object.keys(TOPICS).length ? new Set() : new Set(Object.keys(TOPICS));
     store.set("kcgm_topics", [...sel]); renderHome();
   };
-  document.querySelectorAll("#modeSeg button").forEach(b => b.onclick = () => {
-    document.querySelectorAll("#modeSeg button").forEach(x => x.classList.remove("on")); b.classList.add("on"); mode = b.dataset.m; });
-  document.querySelectorAll("#lenSeg button").forEach(b => b.onclick = () => {
-    document.querySelectorAll("#lenSeg button").forEach(x => x.classList.remove("on")); b.classList.add("on"); len = +b.dataset.n; });
+  const segs = (id, fn) => document.querySelectorAll(`#${id} button`).forEach(b => b.onclick = () => {
+    document.querySelectorAll(`#${id} button`).forEach(x => x.classList.remove("on")); b.classList.add("on"); fn(b.dataset); });
+  segs("modeSeg", d => mode = d.m);
+  segs("lenSeg", d => len = +d.n);
 
-  function pickQuestions(){
-    let pool = QUESTIONS.filter(q => sel.has(q.t));
+  function pick(){
+    let pool = CARDS.filter(c => sel.has(c.t));
     if (mode === "weak") {
-      // Wrong last time first, then least accurate, then unseen
-      const score = q => { const h = hist[key(q)]; if (!h) return 0.5; return (h.last ? 1 : 0) + h.c / (h.s + 1) * 0.5; };
+      // 'Again' cards first, then least often known, then unseen
+      const score = c => { const h = hist[c.q]; if (!h) return 1; return (h.last ? 2 : 0) + h.k / (h.s + 1); };
       pool = shuffle(pool).sort((a, b) => score(a) - score(b));
     } else if (mode === "new") {
-      const unseen = pool.filter(q => !hist[key(q)]);
+      const unseen = pool.filter(c => !hist[c.q]);
       pool = shuffle(unseen.length ? unseen : pool);
     } else pool = shuffle(pool);
     return pool.slice(0, len);
   }
   function start(list){
     if (!list.length){ alert("Pick at least one topic."); return; }
-    run = { list, i: 0, right: 0, missed: [], byTopic: {} };
-    show("quiz"); renderQ();
+    run = { list, i: 0, got: 0, again: [] };
+    show("deck"); renderCard();
   }
-  $("startBtn").onclick = () => start(pickQuestions());
+  $("startBtn").onclick = () => start(pick());
 
-  function renderQ(){
-    const q = run.list[run.i];
-    $("qTag").textContent = TOPICS[q.t].icon + "  " + TOPICS[q.t].name;
-    $("qText").textContent = q.q;
-    $("count").textContent = (run.i + 1) + "/" + run.list.length;
+  // ---------- DECK ----------
+  let card = null, shown = false;
+  function renderCard(){
+    const c = run.list[run.i];
+    $("count").textContent = (run.i + 1) + " / " + run.list.length;
     $("progBar").style.width = (100 * run.i / run.list.length) + "%";
-    $("explain").classList.remove("on"); $("nextWrap").style.display = "none";
-    const opts = $("opts"); opts.innerHTML = "";
-    shuffle(q.a.map((txt, idx) => ({ txt, ok: idx === 0 }))).forEach((o, n) => {
-      const b = document.createElement("button");
-      b.className = "opt"; b.innerHTML = `<b>${"ABCD"[n]}</b>`;
-      b.appendChild(document.createTextNode(o.txt)); b.dataset.ok = o.ok ? 1 : 0;
-      b.onclick = () => answer(b, q);
-      opts.appendChild(b);
-    });
+    $("legend").style.visibility = "hidden";
+    shown = false;
+    const el = document.createElement("div");
+    el.className = "card";
+    const tp = TOPICS[c.t];
+    el.innerHTML = `
+      <div class="stamp got">GOT IT</div><div class="stamp again">AGAIN</div>
+      <div class="flip">
+        <div class="side front">
+          <div class="chip"></div>
+          <div class="qwrap"><div class="qtext"></div></div>
+          <div class="hint">Swipe or tap to reveal</div>
+        </div>
+        <div class="side back">
+          <div class="chip"></div>
+          <div class="qmini"></div>
+          <div class="scroll"><div class="atext"></div><div class="etext"></div></div>
+        </div>
+      </div>`;
+    el.querySelectorAll(".chip").forEach(x => x.textContent = tp.icon + "  " + tp.name);
+    el.querySelector(".qtext").textContent = c.q;
+    el.querySelector(".qmini").textContent = c.q;
+    el.querySelector(".atext").textContent = c.a;
+    el.querySelector(".etext").textContent = c.e;
+    el.style.transform = "translateY(24px) scale(.96)"; el.style.opacity = "0";
+    $("stage").innerHTML = ""; $("stage").appendChild(el);
+    requestAnimationFrame(() => { el.style.transition = "transform .25s ease, opacity .25s ease"; el.style.transform = ""; el.style.opacity = "1"; });
+    card = el; bindSwipe(el);
   }
-  function answer(btn, q){
-    if (run.answered === run.i) return; run.answered = run.i;
-    const ok = btn.dataset.ok === "1";
-    document.querySelectorAll(".opt").forEach(o => {
-      if (o.dataset.ok === "1") o.classList.add("ok"); else if (o === btn) o.classList.add("bad"); else o.classList.add("dim");
-    });
-    const h = hist[key(q)] || { s: 0, c: 0, last: 0 };
-    h.s++; if (ok) h.c++; h.last = ok ? 1 : 0; hist[key(q)] = h; store.set("kcgm_hist", hist);
-    const bt = run.byTopic[q.t] || (run.byTopic[q.t] = { r: 0, n: 0 }); bt.n++;
-    if (ok){ run.right++; bt.r++; } else run.missed.push(q);
-    if (navigator.vibrate) navigator.vibrate(ok ? 15 : [30, 40, 30]);
-    $("verdict").textContent = ok ? "✅ Correct" : "❌ Not quite. Answer: " + q.a[0];
-    $("verdict").style.color = ok ? "var(--ok)" : "var(--bad)";
-    $("expText").textContent = q.e;
-    $("explain").classList.add("on");
-    $("nextBtn").textContent = run.i === run.list.length - 1 ? "See results" : "Next";
-    $("nextWrap").style.display = "block";
-    setTimeout(() => $("explain").scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
+  function reveal(){
+    if (shown) return; shown = true;
+    card.classList.add("shown");
+    $("legend").style.visibility = "visible";
   }
-  $("nextBtn").onclick = () => { run.i++; run.i < run.list.length ? renderQ() : results(); };
-  $("quitBtn").onclick = () => { if (!run || run.i === 0 || confirm("End this quiz?")) { run && run.i > 0 ? results() : (renderHome(), show("home")); } };
+  function decide(known){
+    const c = run.list[run.i];
+    const h = hist[c.q] || { s: 0, k: 0, last: 0 };
+    h.s++; if (known) h.k++; h.last = known ? 1 : 0; hist[c.q] = h; store.set("kcgm_cards", hist);
+    if (known) run.got++; else run.again.push(c);
+    if (navigator.vibrate) navigator.vibrate(known ? 12 : [20, 30, 20]);
+    const el = card; card = null;
+    el.style.transition = "transform .3s ease-in, opacity .3s ease-in";
+    el.style.transform = `translateX(${known ? 130 : -130}vw) rotate(${known ? 24 : -24}deg)`;
+    el.style.opacity = "0";
+    setTimeout(() => { run.i++; run.i < run.list.length ? renderCard() : finish(); }, 220);
+  }
 
-  function results(){
-    const total = Math.max(1, Object.values(run.byTopic).reduce((s, t) => s + t.n, 0));
-    const pct = Math.round(100 * run.right / total);
-    $("score").textContent = pct + "%";
-    $("scoreSub").textContent = `${run.right} of ${total} correct. ` +
-      (pct >= 90 ? "You could run the handover yourself." : pct >= 70 ? "Solid. You'd follow most of the radio chatter." : pct >= 50 ? "Getting there. Review the misses below." : "Early days. Try one topic at a time.");
-    $("bars").innerHTML = Object.entries(run.byTopic).map(([t, v]) => {
-      const p = Math.round(100 * v.r / v.n), col = p >= 70 ? "var(--ok)" : p >= 50 ? "var(--gold)" : "var(--bad)";
-      return `<div class="bar"><div class="h"><span>${TOPICS[t].icon} ${TOPICS[t].name}</span><span>${v.r}/${v.n}</span></div><div class="t"><i style="width:${p}%;background:${col}"></i></div></div>`;
-    }).join("");
-    $("missHead").style.display = run.missed.length ? "block" : "none";
-    $("retryMiss").style.display = run.missed.length ? "block" : "none";
-    const ml = $("missList"); ml.innerHTML = "";
-    run.missed.forEach(q => {
-      const d = document.createElement("div"); d.className = "miss";
-      const a = document.createElement("div"); a.className = "mq"; a.textContent = q.q;
-      const b = document.createElement("div"); b.className = "ma"; b.textContent = "✔ " + q.a[0];
-      const c = document.createElement("div"); c.className = "small"; c.style.marginTop = "6px"; c.textContent = q.e;
-      d.append(a, b, c); ml.appendChild(d);
+  function bindSwipe(el){
+    let x0 = 0, y0 = 0, dx = 0, t0 = 0, drag = false, id = null;
+    const got = el.querySelector(".stamp.got"), ag = el.querySelector(".stamp.again");
+    el.addEventListener("pointerdown", e => {
+      if (card !== el) return;
+      id = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0; t0 = Date.now(); drag = false;
+      el.style.transition = "none";
     });
-    show("results");
+    el.addEventListener("pointermove", e => {
+      if (e.pointerId !== id) return;
+      const mx = e.clientX - x0, my = e.clientY - y0;
+      if (!drag && Math.abs(mx) > 10 && Math.abs(mx) > Math.abs(my)) { drag = true; try{ el.setPointerCapture(id); }catch(_){} }
+      if (!drag) return;
+      dx = mx;
+      el.style.transform = `translateX(${dx}px) rotate(${dx / 22}deg)`;
+      if (shown){ got.style.opacity = Math.max(0, Math.min(1, dx / 110)); ag.style.opacity = Math.max(0, Math.min(1, -dx / 110)); }
+    });
+    const end = e => {
+      if (e.pointerId !== id) return; id = null;
+      const fast = Math.abs(dx) / Math.max(1, Date.now() - t0) > 0.5;
+      if (drag && (Math.abs(dx) > 90 || (fast && Math.abs(dx) > 30))) {
+        if (!shown){ snapBack(); reveal(); }
+        else decide(dx > 0);
+      } else if (!drag && e.type === "pointerup") {
+        if (!shown) reveal();   // tap reveals; after that only a swipe moves on
+        snapBack();
+      } else snapBack();
+      drag = false;
+    };
+    const snapBack = () => { el.style.transition = "transform .25s ease"; el.style.transform = ""; got.style.opacity = 0; ag.style.opacity = 0; };
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointercancel", end);
   }
-  $("retryMiss").onclick = () => start(shuffle(run.missed));
+  document.addEventListener("keydown", e => {
+    if (!$("deck").classList.contains("on") || !card) return;
+    if (!shown && ["ArrowLeft", "ArrowRight", " ", "Enter"].includes(e.key)) { reveal(); e.preventDefault(); }
+    else if (shown && e.key === "ArrowRight") decide(true);
+    else if (shown && e.key === "ArrowLeft") decide(false);
+  });
+  $("quitBtn").onclick = () => { run && run.i > 0 ? finish() : (renderHome(), show("home")); };
+
+  function finish(){
+    const n = run.got + run.again.length;
+    const pct = n ? Math.round(100 * run.got / n) : 0;
+    $("score").textContent = n ? pct + "%" : "–";
+    $("scoreSub").textContent = n ? `Knew ${run.got} of ${n}. ` +
+      (pct >= 90 ? "You could run the handover yourself." : pct >= 70 ? "Solid. You'd follow most of the radio chatter." : pct >= 50 ? "Getting there. Run the again pile." : "Early days. Try one topic at a time.")
+      : "No cards answered.";
+    $("againBtn").style.display = run.again.length ? "block" : "none";
+    $("againBtn").textContent = `Go through the 'again' pile (${run.again.length})`;
+    show("end");
+  }
+  $("againBtn").onclick = () => start(shuffle(run.again));
   $("homeBtn").onclick = () => { renderHome(); show("home"); };
 
-  // Glossary
+  // ---------- GLOSSARY ----------
   function renderGloss(f){
     f = (f || "").toLowerCase();
     $("gList").innerHTML = GLOSSARY.filter(([k, v]) => !f || k.toLowerCase().includes(f) || v.toLowerCase().includes(f))
@@ -316,13 +357,13 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
   $("glossBack").onclick = () => show("home");
   $("gSearch").oninput = e => renderGloss(e.target.value);
 
-  // Full screen
+  // ---------- FULL SCREEN ----------
   $("fsBtn").onclick = () => {
     const el = document.documentElement;
     if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
     else if (document.exitFullscreen) document.exitFullscreen();
   };
-  if (window.matchMedia("(display-mode: fullscreen)").matches || window.matchMedia("(display-mode: standalone)").matches) $("fsBtn").style.display = "none";
+  if (matchMedia("(display-mode: fullscreen)").matches || matchMedia("(display-mode: standalone)").matches) $("fsBtn").style.display = "none";
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   renderHome();
