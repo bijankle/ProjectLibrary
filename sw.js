@@ -1,6 +1,6 @@
 // Offline cache. Bump VERSION when questions change so phones pick up the new bank.
-const VERSION = "kcgm-v2";
-const FILES = ["./", "index.html", "cards.js", "glossary.js", "manifest.json", "icon.svg", "icon-192.png", "icon-512.png"];
+const VERSION = "kcgm-v3";
+const FILES = ["./", "index.html", "cards.js", "facts.js", "ai.js", "glossary.js", "manifest.json", "icon.svg", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k)))));
@@ -8,7 +8,8 @@ self.addEventListener("activate", e => {
 });
 // Network first so updates show when online, cache fallback underground or out of range.
 self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
+  // Only cache this site's own files; never touch calls to Google (they carry the API key).
+  if (e.request.method !== "GET" || new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(fetch(e.request).then(r => {
     const copy = r.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); return r;
   }).catch(() => caches.match(e.request, { ignoreSearch: true })));

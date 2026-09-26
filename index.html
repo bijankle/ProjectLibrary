@@ -101,6 +101,31 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
 .stamp.again{right:22px;color:var(--bad);border-color:var(--bad);transform:rotate(12deg)}
 .legend{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:0 6px}
 .legend .l{color:var(--bad)} .legend .r{color:var(--ok)}
+.qa{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+.qa h3{margin:0 0 10px;font-size:13px;letter-spacing:1.1px;text-transform:uppercase;color:var(--mute)}
+.bub{border-radius:14px;padding:11px 13px;margin:8px 0;font-size:15.5px;line-height:1.5;white-space:pre-wrap}
+.bub.me{background:var(--card2);font-weight:700;margin-left:28px}
+.bub.ai{background:var(--card);border:1px solid var(--line);margin-right:10px}
+.bub.err{background:transparent;border:1px dashed var(--bad);color:var(--bad)}
+.src{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.4px;padding:3px 8px;border-radius:99px;margin-bottom:6px}
+.src.docs{background:color-mix(in srgb,var(--ok) 20%,transparent);color:var(--ok)}
+.src.mixed{background:color-mix(in srgb,var(--gold) 22%,transparent);color:var(--gold)}
+.src.gen{background:var(--card2);color:var(--mute)}
+.src.none{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+.chips{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.chipq{text-align:left;border:1.5px solid var(--gold);background:transparent;color:var(--ink);border-radius:12px;
+  padding:10px 12px;font-size:15px;line-height:1.35;cursor:pointer}
+.chipq:active{background:var(--card2)}
+.ask{display:flex;gap:8px;margin:6px 0 18px}
+.ask input{flex:1;min-width:0;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px}
+.ask button{border:0;border-radius:12px;background:var(--gold);color:#1a1307;font-weight:800;padding:0 16px;font-size:16px}
+.dots::after{content:"Thinking";animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:"Thinking"}25%{content:"Thinking."}50%{content:"Thinking.."}75%{content:"Thinking..."}}
+.field{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px}
+.note{background:var(--card);border-radius:12px;padding:12px 14px;font-size:14.5px;line-height:1.5;margin-top:10px}
+.note ol{margin:6px 0 0;padding-left:20px}
+.hist{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.hist .hq{font-weight:800;margin-bottom:6px}
 .tally{display:flex;gap:14px;font-size:13px;color:var(--mute);justify-content:center;margin-top:6px}
 </style>
 </head>
@@ -131,6 +156,10 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
 
   <div class="row" style="margin-top:18px">
     <button class="btn" id="glossBtn">📖 Glossary</button>
+    <button class="btn" id="histBtn">💬 Q&amp;A history</button>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn" id="setBtn">⚙️ Settings</button>
     <button class="btn" id="fsBtn">⛶ Full screen</button>
   </div>
   <div class="sticky"><button class="btn primary" style="width:100%" id="startBtn">Start</button></div>
@@ -168,7 +197,43 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
   <div class="gl" id="gList"></div>
 </div></section>
 
+<!-- SETTINGS -->
+<section id="settings" class="screen"><div class="page">
+  <div class="topbar" style="margin-bottom:12px">
+    <button class="x" id="setBack" aria-label="Back">←</button>
+    <h1 style="margin:0;font-size:22px">Settings</h1>
+  </div>
+  <h2>Free Google AI key</h2>
+  <input class="field" id="keyIn" type="password" placeholder="Paste key (starts with AIza)" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <div class="row" style="margin-top:10px">
+    <button class="btn primary" id="keyTest">Test &amp; save</button>
+    <button class="btn" id="keyClear">Remove key</button>
+  </div>
+  <p class="sub" id="keyStatus" style="margin-top:10px"></p>
+  <div id="modelWrap" style="display:none">
+    <h2>AI model</h2>
+    <select class="field" id="modelSel"></select>
+    <p class="sub" style="margin-top:6px">Picked automatically. Change only if answers fail.</p>
+  </div>
+  <div class="note">How to get the key:
+    <ol><li>Go to aistudio.google.com and sign in with a Google account.</li>
+    <li>Tap Get API key, then Create API key.</li>
+    <li>Copy it, paste it above and tap Test &amp; save.</li></ol>
+    The key is stored only on this phone. On Google's free tier, what you type may be used by Google to improve its products, so don't type names or anything sensitive.</div>
+</div></section>
+
+<!-- HISTORY -->
+<section id="history" class="screen"><div class="page">
+  <div class="topbar" style="margin-bottom:12px">
+    <button class="x" id="histBack" aria-label="Back">←</button>
+    <h1 style="margin:0;font-size:22px">Q&amp;A history</h1>
+  </div>
+  <div id="histList"></div>
+</div></section>
+
 <script src="cards.js"></script>
+<script src="facts.js"></script>
+<script src="ai.js"></script>
 <script src="glossary.js"></script>
 <script>
 (() => {
@@ -261,7 +326,7 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
         <div class="side back">
           <div class="chip"></div>
           <div class="qmini"></div>
-          <div class="scroll"><div class="atext"></div><div class="etext"></div></div>
+          <div class="scroll"><div class="atext"></div><div class="etext"></div><div class="qa"></div></div>
         </div>
       </div>`;
     el.querySelectorAll(".chip").forEach(x => x.textContent = tp.icon + "  " + tp.name);
@@ -273,6 +338,7 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
     $("stage").innerHTML = ""; $("stage").appendChild(el);
     requestAnimationFrame(() => { el.style.transition = "transform .25s ease, opacity .25s ease"; el.style.transform = ""; el.style.opacity = "1"; });
     card = el; bindSwipe(el);
+    renderQA(el, c, []);
   }
   function reveal(){
     if (shown) return; shown = true;
@@ -292,11 +358,78 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
     setTimeout(() => { run.i++; run.i < run.list.length ? renderCard() : finish(); }, 220);
   }
 
+  // ---------- FOLLOW UP Q&A ----------
+  const SRC = { "plant docs": ["docs", "FROM PLANT DOCS"], "docs + general": ["mixed", "DOCS + GENERAL"],
+                "general knowledge": ["gen", "GENERAL KNOWLEDGE"], "not covered": ["none", "NOT IN YOUR DOCS"] };
+  let busy = false;
+  function saveThread(c, thread){
+    let all = store.get("kcgm_threads", []);
+    all = all.filter(x => x.q !== c.q);
+    all.unshift({ q: c.q, t: c.t, turns: thread.map(x => ({ q: x.q, a: x.a, s: x.s })), when: Date.now() });
+    store.set("kcgm_threads", all.slice(0, 40));
+  }
+  function renderQA(el, c, thread, pending, err){
+    const box = el.querySelector(".qa"); box.innerHTML = "";
+    const h = document.createElement("h3"); h.textContent = "Dig deeper"; box.appendChild(h);
+    thread.forEach(t => {
+      const me = document.createElement("div"); me.className = "bub me"; me.textContent = t.q; box.appendChild(me);
+      const ai = document.createElement("div"); ai.className = "bub ai";
+      const [cls, label] = SRC[t.s] || SRC["general knowledge"];
+      const tag = document.createElement("div"); tag.className = "src " + cls; tag.textContent = label;
+      ai.appendChild(tag); ai.appendChild(document.createElement("br")); ai.appendChild(document.createTextNode(t.a));
+      box.appendChild(ai);
+    });
+    if (pending){
+      const me = document.createElement("div"); me.className = "bub me"; me.textContent = pending; box.appendChild(me);
+      const ai = document.createElement("div"); ai.className = "bub ai"; ai.innerHTML = '<span class="dots"></span>'; box.appendChild(ai);
+      return box;
+    }
+    if (err){
+      const e = document.createElement("div"); e.className = "bub err"; e.textContent = err; box.appendChild(e);
+    }
+    const sugg = thread.length ? thread[thread.length - 1].f : (c.f || []);
+    const chips = document.createElement("div"); chips.className = "chips";
+    (sugg || []).forEach(s => {
+      const b = document.createElement("button"); b.className = "chipq"; b.textContent = s;
+      b.onclick = () => submit(el, c, thread, s); chips.appendChild(b);
+    });
+    box.appendChild(chips);
+    const row = document.createElement("form"); row.className = "ask";
+    row.innerHTML = '<input type="text" enterkeyhint="send" placeholder="Ask your own question"><button type="submit">Ask</button>';
+    const inp = row.querySelector("input");
+    row.onsubmit = e => { e.preventDefault(); const v = inp.value.trim(); if (v) submit(el, c, thread, v); };
+    box.appendChild(row);
+    return box;
+  }
+  async function submit(el, c, thread, question){
+    if (busy) return;
+    if (document.activeElement) document.activeElement.blur();
+    if (!AI.ready()){
+      renderQA(el, c, thread, null, "Add your free Google AI key in Settings (home screen) to ask follow up questions.");
+      return;
+    }
+    busy = true;
+    const box = renderQA(el, c, thread, question);
+    box.lastChild.scrollIntoView({ behavior: "smooth", block: "end" });
+    try {
+      const r = await AI.ask(c, thread, question);
+      const next = thread.concat([{ q: question, a: r.answer, s: r.source, f: r.followups }]);
+      saveThread(c, next);
+      if (card === el) {
+        const b2 = renderQA(el, c, next);
+        const bubbles = b2.querySelectorAll(".bub.me"); bubbles[bubbles.length - 1].scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } catch (e) {
+      if (card === el) renderQA(el, c, thread, null, e.message === "NO_KEY" ? "Add your free Google AI key in Settings." : e.message);
+    } finally { busy = false; }
+  }
+
   function bindSwipe(el){
     let x0 = 0, y0 = 0, dx = 0, t0 = 0, drag = false, id = null;
     const got = el.querySelector(".stamp.got"), ag = el.querySelector(".stamp.again");
     el.addEventListener("pointerdown", e => {
       if (card !== el) return;
+      if (e.target.closest("input, button, form, select") || document.activeElement?.tagName === "INPUT") return;
       id = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0; t0 = Date.now(); drag = false;
       el.style.transition = "none";
     });
@@ -326,7 +459,7 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
     el.addEventListener("pointercancel", end);
   }
   document.addEventListener("keydown", e => {
-    if (!$("deck").classList.contains("on") || !card) return;
+    if (!$("deck").classList.contains("on") || !card || e.target.tagName === "INPUT") return;
     if (!shown && ["ArrowLeft", "ArrowRight", " ", "Enter"].includes(e.key)) { reveal(); e.preventDefault(); }
     else if (shown && e.key === "ArrowRight") decide(true);
     else if (shown && e.key === "ArrowLeft") decide(false);
@@ -356,6 +489,46 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
   $("glossBtn").onclick = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
   $("glossBack").onclick = () => show("home");
   $("gSearch").oninput = e => renderGloss(e.target.value);
+
+  // ---------- SETTINGS ----------
+  function renderSettings(){
+    $("keyIn").value = AI.key();
+    $("keyStatus").textContent = AI.ready() ? "Key saved. Using " + (AI.model() || "auto") + "." : "No key yet. Follow up questions need one.";
+    $("modelWrap").style.display = AI.ready() && AI.model() ? "block" : "none";
+    if (AI.model()) $("modelSel").innerHTML = `<option>${AI.model()}</option>`;
+  }
+  $("setBtn").onclick = () => { renderSettings(); show("settings"); };
+  $("setBack").onclick = () => { renderHome(); show("home"); };
+  $("keyTest").onclick = async () => {
+    const k = $("keyIn").value.trim();
+    if (!k){ $("keyStatus").textContent = "Paste a key first."; return; }
+    $("keyStatus").textContent = "Testing...";
+    try {
+      const { best, names } = await AI.test(k);
+      $("keyStatus").textContent = "Working. Saved on this phone. Using " + best + ".";
+      $("modelSel").innerHTML = names.map(n => `<option ${n === best ? "selected" : ""}>${n}</option>`).join("");
+      $("modelWrap").style.display = "block";
+    } catch (e) { $("keyStatus").textContent = "Didn't work: " + e.message; }
+  };
+  $("modelSel").onchange = e => AI.setModel(e.target.value);
+  $("keyClear").onclick = () => { AI.clear(); renderSettings(); };
+
+  // ---------- HISTORY ----------
+  $("histBtn").onclick = () => {
+    const all = store.get("kcgm_threads", []);
+    const list = $("histList"); list.innerHTML = all.length ? "" : '<p class="sub">No follow up questions yet. Ask one on the answer side of any card.</p>';
+    all.forEach(th => {
+      const d = document.createElement("div"); d.className = "hist";
+      const q = document.createElement("div"); q.className = "hq"; q.textContent = (TOPICS[th.t] ? TOPICS[th.t].icon + " " : "") + th.q; d.appendChild(q);
+      th.turns.forEach(t => {
+        const me = document.createElement("div"); me.className = "bub me"; me.textContent = t.q; d.appendChild(me);
+        const ai = document.createElement("div"); ai.className = "bub ai"; ai.textContent = t.a; d.appendChild(ai);
+      });
+      list.appendChild(d);
+    });
+    show("history");
+  };
+  $("histBack").onclick = () => show("home");
 
   // ---------- FULL SCREEN ----------
   $("fsBtn").onclick = () => {
