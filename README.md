@@ -14,3 +14,10 @@ On the answer side of each card there is a "Dig deeper" section with three sugge
 Answers come from Google Gemini using your own free key from aistudio.google.com (Settings on the home screen). The key is stored only on your phone.
 Every question is sent with `facts.js` (a condensed plant reference from the design criteria and control philosophies), the glossary and the cards in the same topic,
 and each answer is tagged as coming from the plant docs, docs plus general knowledge, general knowledge only, or not covered.
+
+## Interactive PFD (desktop)
+
+On a computer the site opens `pfd.html`, a one page interactive PFD of the plant at major equipment level (use `index.html?cards` for the flashcards; phones get the flashcards with a View PFD button).
+Scroll to zoom, drag to pan, click equipment or streams for design data, control notes and connections. Flow buttons animate and step through the main line,
+grinding loops, flotation, concentrate and gold path, carbon loop, water and reagents. Toggles show control loop badges, service lines, Stage 1 vs Stage 2 routing
+and mill reline scenarios. All data lives in `pfd-data.js`.

@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KCGM Interactive PFD</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#0f1216; --panel:#171b21; --panel2:#1f252d; --ink:#e9edf2; --mute:#95a1ae; --line:#2c343e;
+  --accent:#e8b44a; --node:#1c222a; --nodeln:#566373; --grid:#161a20; --frame:#222932; --framet:#6f7c8a;
+}
+:root[data-theme="light"]{
+  --bg:#f3f4f6; --panel:#ffffff; --panel2:#f0f2f5; --ink:#1d2430; --mute:#5d6875; --line:#d9dee5;
+  --accent:#b67d12; --node:#ffffff; --nodeln:#6d7a89; --grid:#e9ebef; --frame:#e3e7ec; --framet:#7a8594;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+header{position:fixed;left:0;right:0;top:0;height:54px;display:flex;align-items:center;gap:14px;padding:0 14px;
+  background:var(--panel);border-bottom:1px solid var(--line);z-index:5}
+header h1{font-size:17px;margin:0;white-space:nowrap}
+header h1 span{color:var(--accent)}
+.seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--mute);font-weight:700;font-size:13px;padding:5px 11px;border-radius:6px;cursor:pointer}
+.seg button.on{background:var(--accent);color:#1a1307}
+.hbtn{border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:6px 11px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.hbtn.on{border-color:var(--accent);color:var(--accent)}
+select.hbtn{padding:6px 8px}
+.grow{flex:1}
+#search{width:220px;border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:7px 10px;font-size:13px}
+a.hbtn{text-decoration:none;color:var(--ink)}
+#side{position:fixed;left:0;top:54px;bottom:0;width:270px;background:var(--panel);border-right:1px solid var(--line);
+  overflow-y:auto;padding:14px;z-index:4}
+#side h2{font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mute);margin:16px 0 8px}
+#side h2:first-child{margin-top:0}
+.flow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--panel2);
+  border-radius:10px;padding:9px 10px;margin-bottom:7px;cursor:pointer;font-size:14px;font-weight:600}
+.flow i{width:14px;height:14px;border-radius:4px;flex:none}
+.flow.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+#steps{margin-top:10px;display:none}
+#steps.on{display:block}
+.fdesc{font-size:13px;color:var(--mute);margin:4px 0 10px;line-height:1.4}
+.step{font-size:13.5px;line-height:1.45;padding:9px 10px;border-radius:9px;border:1px solid transparent;cursor:pointer;margin-bottom:5px;display:flex;gap:8px}
+.step b{flex:none;width:20px;height:20px;border-radius:6px;background:var(--panel2);display:grid;place-items:center;font-size:11px;color:var(--mute)}
+.step.on{border-color:var(--accent);background:var(--panel2)}
+.step.on b{background:var(--accent);color:#1a1307}
+.ctrls{display:flex;gap:6px;margin-bottom:8px}
+.ctrls button{flex:1}
+.legend{display:grid;grid-template-columns:18px 1fr;gap:6px 8px;font-size:12.5px;color:var(--mute);align-items:center}
+.legend i{height:4px;border-radius:2px}
+.note{font-size:12.5px;color:var(--mute);line-height:1.45;background:var(--panel2);border-radius:9px;padding:9px 10px}
+#stage{position:fixed;left:270px;right:0;top:54px;bottom:0}
+svg{width:100%;height:100%;display:block;cursor:grab;user-select:none}
+svg.dragging{cursor:grabbing}
+#info{position:fixed;right:14px;top:68px;bottom:14px;width:380px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 12px 40px rgba(0,0,0,.35);z-index:6;display:none;flex-direction:column;overflow:hidden}
+#info.on{display:flex}
+#info .top{padding:16px 16px 10px;border-bottom:1px solid var(--line);position:relative}
+#info .x{position:absolute;right:10px;top:10px;border:0;background:var(--panel2);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px}
+#info .kind{font-size:11.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--accent)}
+#info h3{margin:4px 30px 2px 0;font-size:19px;line-height:1.25}
+#info .tag{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--mute)}
+#info .body{padding:12px 16px 18px;overflow-y:auto;font-size:14px;line-height:1.5}
+#info table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:13.5px}
+#info td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+#info td:first-child{color:var(--mute);width:42%}
+#info h4{margin:14px 0 4px;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
+#info .conn a{display:block;color:var(--ink);text-decoration:none;padding:5px 8px;border-radius:7px;background:var(--panel2);margin:4px 0;font-size:13px;cursor:pointer}
+#info .conn a:hover{outline:1px solid var(--accent)}
+#info .pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
+#zoom{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:5}
+#info.on ~ #zoom{right:408px}
+#zoom button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:18px;cursor:pointer}
+#toast{position:fixed;left:50%;top:66px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--accent);border-radius:10px;
+  padding:8px 14px;font-size:13.5px;z-index:7;display:none;max-width:620px;text-align:center}
+/* SVG styling */
+.frame rect{fill:var(--frame);opacity:.45;stroke:var(--line);stroke-dasharray:6 6}
+.frame text{fill:var(--framet);font-size:17px;font-weight:800;letter-spacing:1.5px}
+.node{cursor:pointer}
+.node .body{fill:var(--node);stroke:var(--nodeln);stroke-width:2}
+.node .det{fill:none;stroke:var(--nodeln);stroke-width:1.6}
+.node .detf{fill:var(--nodeln);opacity:.55}
+.node text.nm{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;pointer-events:none}
+.node text.tg{fill:var(--mute);font-size:11.5px;text-anchor:middle;font-family:ui-monospace,Consolas,monospace;pointer-events:none}
+.node:hover .body{stroke:var(--accent)}
+.node.sel .body{stroke:var(--accent);stroke-width:3.5}
+.node.ghost{opacity:.16;pointer-events:none}
+.node.off{opacity:.25}
+.node.off .body{stroke-dasharray:6 5}
+.stream{cursor:pointer}
+.stream .ln{fill:none;stroke-width:3.2;stroke-linejoin:round;stroke-linecap:round}
+.stream .hit{fill:none;stroke:transparent;stroke-width:16}
+.stream:hover .ln{stroke-width:5}
+.stream.sel .ln{stroke-width:5.5}
+.stream.ghost{opacity:.12;pointer-events:none}
+.stream.svc{display:none}
+svg.showsvc .stream.svc{display:inline}
+.stream .lab rect{fill:var(--bg);opacity:.85}
+.stream .lab text{font-size:11.5px;fill:var(--mute);font-weight:600}
+svg.far .lab, svg.far text.tg{display:none}
+svg.focus .node:not(.hl):not(.ghost), svg.focus .stream:not(.hl):not(.ghost){opacity:.1}
+svg.focus .stream.hl{display:inline}
+svg.focus .frame{opacity:.4}
+.anim .ln, .stream.hl .ln{stroke-dasharray:11 8;animation:dash .9s linear infinite}
+.stream.hl .ln{stroke-width:5}
+@keyframes dash{to{stroke-dashoffset:-19}}
+.loop{cursor:pointer;display:none}
+svg.showloops .loop{display:inline}
+.loop circle{fill:var(--accent);stroke:var(--bg);stroke-width:2}
+.loop text{font-size:12px;font-weight:900;fill:#1a1307;text-anchor:middle;pointer-events:none}
+.loop:hover circle{r:13}
+</style>
+</head>
+<body>
+<header>
+  <h1>KCGM <span>Interactive PFD</span></h1>
+  <div class="seg" id="stageSeg"><button data-s="1">Stage 1</button><button data-s="2" class="on">Stage 2</button></div>
+  <select class="hbtn" id="scen" title="Operating scenario"></select>
+  <button class="hbtn" id="tLoops" title="Show control loop badges">🎛 Control loops</button>
+  <button class="hbtn" id="tSvc" title="Show water, reagent and air lines">💧 Service lines</button>
+  <button class="hbtn" id="tAnim" title="Animate every stream">➤ Animate all</button>
+  <div class="grow"></div>
+  <input id="search" list="names" placeholder="Find equipment or tag…">
+  <datalist id="names"></datalist>
+  <button class="hbtn" id="tTheme" title="Light / dark">◐</button>
+  <a class="hbtn" href="index.html?cards" title="Open the flashcards">🃏 Flashcards</a>
+</header>
+
+<aside id="side">
+  <h2>Process flows</h2>
+  <div id="flows"></div>
+  <div id="steps">
+    <div class="fdesc" id="fdesc"></div>
+    <div class="ctrls">
+      <button class="hbtn" id="prev">◀ Prev</button>
+      <button class="hbtn" id="play">▶ Play</button>
+      <button class="hbtn" id="next">Next ▶</button>
+    </div>
+    <div id="stepList"></div>
+  </div>
+  <h2>Legend</h2>
+  <div class="legend" id="legend"></div>
+  <h2>How to use</h2>
+  <div class="note">Scroll to zoom, drag to pan. Click any equipment or stream for key data, control notes and connections. Pick a flow to animate it and step through it. The control loops badges (C) show what each key controller measures and moves.<br><br>Design values from the Stage 2 PDC and control philosophies, not live plant data.</div>
+</aside>
+
+<div id="stage"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+
+<div id="info"><div class="top"><button class="x" id="infoX">✕</button><div class="kind" id="iKind"></div><h3 id="iName"></h3><div class="tag" id="iTag"></div></div><div class="body" id="iBody"></div></div>
+<div id="zoom"><button id="zIn" title="Zoom in">+</button><button id="zOut" title="Zoom out">−</button><button id="zFit" title="Fit" style="font-size:14px">⤢</button></div>
+<div id="toast"></div>
+
+<script src="pfd-data.js"></script>
+<script>
+(() => {
+  const NS = "http://www.w3.org/2000/svg";
+  const $ = id => document.getElementById(id);
+  const svg = $("svg");
+  const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const byId = {}; NODES.forEach(n => byId[n.id] = n);
+  const pref = { get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } }, set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} } };
+
+  let stage = 2, focusFlow = null, stepIx = -1, playing = null, selected = null, scenario = "normal";
+  if (pref.get("pfd_theme", "dark") === "light") document.documentElement.dataset.theme = "light";
+
+  // ---------- geometry ----------
+  function port(n, side, f = 0){
+    switch (side){
+      case "r": return [n.x + n.w, n.y + n.h / 2 + f * n.h];
+      case "l": return [n.x, n.y + n.h / 2 + f * n.h];
+      case "t": return [n.x + n.w / 2 + f * n.w, n.y];
+      default:  return [n.x + n.w / 2 + f * n.w, n.y + n.h];
+    }
+  }
+  const out = (p, side, d) => side === "r" ? [p[0] + d, p[1]] : side === "l" ? [p[0] - d, p[1]] : side === "t" ? [p[0], p[1] - d] : [p[0], p[1] + d];
+  function route(s){
+    const a = byId[s.f], b = byId[s.to], [ps, pe] = s.p || ["r", "l"];
+    const start = port(a, ps, s.fo || 0), end = port(b, pe, s.too || 0);
+    const exit = out(start, ps, 22), appr = out(end, pe, 22);
+    let mids = s.via ? s.via.slice() : [];
+    if (!s.via && s.mx != null) mids = [[s.mx, exit[1]], [s.mx, appr[1]]];
+    if (!s.via && s.my != null) mids = [[exit[0], s.my], [appr[0], s.my]];
+    const raw = [start, exit, ...mids, appr, end];
+    const pts = [raw[0]];
+    let dir = (ps === "r" || ps === "l") ? "h" : "v";
+    for (let i = 1; i < raw.length; i++){
+      const p = pts[pts.length - 1], q = raw[i];
+      if (p[0] !== q[0] && p[1] !== q[1]){
+        const lastLeg = i === raw.length - 1;
+        // Final leg must arrive along the end port's axis
+        if (lastLeg) { const want = (pe === "r" || pe === "l") ? "h" : "v"; pts.push(want === "h" ? [p[0], q[1]] : [q[0], p[1]]); }
+        else pts.push(dir === "h" ? [q[0], p[1]] : [p[0], q[1]]);
+      }
+      const p2 = pts[pts.length - 1];
+      dir = p2[0] === q[0] ? "v" : "h";
+      pts.push(q);
+    }
+    // drop duplicates and collinear points
+    const clean = pts.filter((p, i) => i === 0 || p[0] !== pts[i - 1][0] || p[1] !== pts[i - 1][1]);
+    const res = [clean[0]];
+    for (let i = 1; i < clean.length - 1; i++){
+      const a1 = res[res.length - 1], b1 = clean[i], c1 = clean[i + 1];
+      if ((a1[0] === b1[0] && b1[0] === c1[0]) || (a1[1] === b1[1] && b1[1] === c1[1])) continue;
+      res.push(b1);
+    }
+    res.push(clean[clean.length - 1]);
+    return res;
+  }
+
+  // ---------- icons ----------
+  function icon(g, n){
+    const { x, y, w, h } = n, cx = x + w / 2;
+    const B = (tag, a) => el(tag, Object.assign({ class: "body" }, a), g);
+    const D = (tag, a, cls = "det") => el(tag, Object.assign({ class: cls }, a), g);
+    switch (n.t){
+      case "crusher":
+        B("path", { d: `M${x} ${y} L${x + w} ${y} L${x + w * .68} ${y + h * .72} L${x + w * .32} ${y + h * .72} Z` });
+        D("path", { d: `M${cx} ${y + h * .12} L${x + w * .6} ${y + h * .62} L${x + w * .4} ${y + h * .62} Z` }, "detf");
+        D("line", { x1: x + w * .44, y1: y + h * .72, x2: x + w * .44, y2: y + h });
+        D("line", { x1: x + w * .56, y1: y + h * .72, x2: x + w * .56, y2: y + h }); break;
+      case "cone":
+        B("path", { d: `M${x + w * .1} ${y + h * .15} L${x + w * .9} ${y + h * .15} L${x + w * .7} ${y + h * .85} L${x + w * .3} ${y + h * .85} Z` });
+        D("path", { d: `M${cx} ${y + h * .25} L${x + w * .62} ${y + h * .75} L${x + w * .38} ${y + h * .75} Z` }, "detf"); break;
+      case "stockpile":
+        B("path", { d: `M${x} ${y + h} L${cx} ${y + 6} L${x + w} ${y + h} Z` });
+        D("line", { x1: x + w * .25, y1: y + h * .75, x2: x + w * .75, y2: y + h * .75 }); break;
+      case "mill": {
+        const r = h / 2;
+        B("rect", { x: x + 12, y, width: w - 24, height: h, rx: 10 });
+        B("ellipse", { cx: x + 12, cy: y + r, rx: 12, ry: r * .55 }); B("ellipse", { cx: x + w - 12, cy: y + r, rx: 12, ry: r * .55 });
+        for (let i = 1; i < 6; i++) D("line", { x1: x + 12 + (w - 24) * i / 6, y1: y + 6, x2: x + 12 + (w - 24) * i / 6, y2: y + h - 6 });
+        D("circle", { cx: x + w * .38, cy: y + h * .66, r: 5 }, "detf"); D("circle", { cx: x + w * .5, cy: y + h * .74, r: 5 }, "detf"); D("circle", { cx: x + w * .6, cy: y + h * .64, r: 5 }, "detf"); break; }
+      case "screen":
+        B("path", { d: `M${x} ${y + h * .2} L${x + w} ${y + h * .55} L${x + w} ${y + h * .8} L${x} ${y + h * .45} Z` });
+        for (let i = 1; i < 7; i++) D("line", { x1: x + w * i / 7, y1: y + h * (.2 + .35 * i / 7), x2: x + w * i / 7, y2: y + h * (.45 + .35 * i / 7) }); break;
+      case "cyclone":
+        B("path", { d: `M${x + w * .2} ${y + h * .12} L${x + w * .8} ${y + h * .12} L${x + w * .8} ${y + h * .35} L${x + w * .56} ${y + h} L${x + w * .44} ${y + h} L${x + w * .2} ${y + h * .35} Z` });
+        D("line", { x1: cx, y1: y, x2: cx, y2: y + h * .3 });
+        D("line", { x1: x + w * .05, y1: y + h * .22, x2: x + w * .2, y2: y + h * .22 }); break;
+      case "hopper":
+        B("path", { d: `M${x} ${y} L${x + w} ${y} L${x + w} ${y + h * .45} L${x + w * .6} ${y + h} L${x + w * .4} ${y + h} L${x} ${y + h * .45} Z` });
+        D("circle", { cx: x + w * .85, cy: y + h * .82, r: 9 }); break;
+      case "cell":
+        B("rect", { x, y, width: w, height: h, rx: 6 });
+        D("line", { x1: cx, y1: y - 8, x2: cx, y2: y + h * .72 });
+        D("rect", { x: cx - 14, y: y + h * .7, width: 28, height: 10, rx: 3 }, "detf");
+        [[.2, .25], [.32, .15], [.72, .22], [.82, .12], [.62, .1]].forEach(([a, b]) => D("circle", { cx: x + w * a, cy: y + h * b + 6, r: 4 }));
+        break;
+      case "jameson":
+        B("path", { d: `M${x} ${y + h * .25} L${x + w} ${y + h * .25} L${x + w} ${y + h * .8} L${x + w * .6} ${y + h} L${x + w * .4} ${y + h} L${x} ${y + h * .8} Z` });
+        for (let i = 1; i < 5; i++) D("line", { x1: x + w * i / 5, y1: y, x2: x + w * i / 5, y2: y + h * .72 });
+        D("rect", { x: x + w * .12, y: y + 2, width: w * .76, height: 10, rx: 3 }, "detf"); break;
+      case "thickener":
+        B("path", { d: `M${x} ${y + h * .2} L${x + w} ${y + h * .2} L${x + w} ${y + h * .45} L${cx + 10} ${y + h} L${cx - 10} ${y + h} L${x} ${y + h * .45} Z` });
+        D("line", { x1: cx, y1: y, x2: cx, y2: y + h * .9 }); D("line", { x1: x + 14, y1: y + h * .5, x2: x + w - 14, y2: y + h * .5 });
+        D("rect", { x: x + 4, y: y + h * .12, width: w - 8, height: 8, rx: 3 }, "detf"); break;
+      case "tank":
+        B("rect", { x, y: y + 8, width: w, height: h - 8, rx: 6 });
+        D("line", { x1: cx, y1: y - 6, x2: cx, y2: y + h * .75 });
+        D("path", { d: `M${cx - 18} ${y + h * .72} L${cx + 18} ${y + h * .8} M${cx - 18} ${y + h * .8} L${cx + 18} ${y + h * .72}` });
+        D("rect", { x: cx - 8, y: y - 14, width: 16, height: 10, rx: 2 }, "detf"); break;
+      case "train": {
+        B("rect", { x, y, width: w, height: h, rx: 8 });
+        const k = n.k || 6, tw = (w - 16) / k;
+        for (let i = 0; i < k; i++){ D("rect", { x: x + 8 + i * tw + 3, y: y + 22, width: tw - 6, height: h - 32, rx: 4 }); D("line", { x1: x + 8 + i * tw + tw / 2, y1: y + 14, x2: x + 8 + i * tw + tw / 2, y2: y + h - 20 }); }
+        break; }
+      case "knelson":
+        B("path", { d: `M${x + w * .1} ${y + h * .1} L${x + w * .9} ${y + h * .1} L${x + w * .65} ${y + h * .9} L${x + w * .35} ${y + h * .9} Z` });
+        for (let i = 1; i < 4; i++) D("line", { x1: x + w * (.1 + .06 * i), y1: y + h * (.1 + .2 * i), x2: x + w * (.9 - .06 * i), y2: y + h * (.1 + .2 * i) }); break;
+      case "drum":
+        B("rect", { x, y, width: w, height: h, rx: h / 2.4 });
+        D("line", { x1: x + w * .2, y1: y + h / 2, x2: x + w * .8, y2: y + h / 2 }); break;
+      case "ew":
+        B("rect", { x, y, width: w, height: h, rx: 6 });
+        for (let i = 1; i < 8; i++) D("line", { x1: x + w * i / 8, y1: y + 10, x2: x + w * i / 8, y2: y + h - 10 }); break;
+      case "column":
+        B("rect", { x: x + w * .2, y, width: w * .6, height: h, rx: w * .3 });
+        D("path", { d: `M${x + w * .2} ${y + h * .55} L${x + w * .8} ${y + h * .55}` });
+        D("circle", { cx: x + w * .5, cy: y + h * .78, r: 7 }, "detf"); break;
+      case "kiln":
+        B("path", { d: `M${x + 8} ${y + h * .25} L${x + w - 8} ${y + h * .05} L${x + w - 8} ${y + h * .55} L${x + 8} ${y + h * .75} Z` });
+        D("path", { d: `M${x + w * .3} ${y + h * .95} q 8 -12 0 -22 q -8 -10 0 -18` }); break;
+      case "isamill":
+        B("rect", { x, y: y + 10, width: w, height: h - 20, rx: 10 });
+        for (let i = 1; i < 8; i++) D("line", { x1: x + w * i / 8, y1: y + 14, x2: x + w * i / 8, y2: y + h - 14 });
+        D("line", { x1: x - 8, y1: y + h / 2, x2: x + w + 8, y2: y + h / 2 }); break;
+      case "filter":
+        B("rect", { x, y: y + h * .25, width: w, height: h * .5, rx: h * .25 });
+        D("circle", { cx: x + h * .25, cy: y + h / 2, r: h * .18 }); D("circle", { cx: x + w - h * .25, cy: y + h / 2, r: h * .18 }); break;
+      case "dam":
+        B("path", { d: `M${x} ${y + 10} L${x + w} ${y + 10} L${x + w - 22} ${y + h} L${x + 22} ${y + h} Z` });
+        D("path", { d: `M${x + 30} ${y + h * .45} q 15 -8 30 0 t 30 0 t 30 0 t 30 0` }); break;
+      case "gold":
+        B("rect", { x, y, width: w, height: h, rx: 10 });
+        D("path", { d: `M${cx - 34} ${y + h * .62} L${cx - 24} ${y + h * .38} L${cx + 24} ${y + h * .38} L${cx + 34} ${y + h * .62} Z` }, "detf"); break;
+      case "offpage":
+        B("path", { d: `M${x} ${y} L${x + w - 22} ${y} L${x + w} ${y + h / 2} L${x + w - 22} ${y + h} L${x} ${y + h} Z` }); break;
+      case "rom":
+        B("rect", { x, y: y + h * .2, width: w * .7, height: h * .45, rx: 4 });
+        B("path", { d: `M${x + w * .7} ${y + h * .35} L${x + w * .92} ${y + h * .35} L${x + w} ${y + h * .5} L${x + w} ${y + h * .65} L${x + w * .7} ${y + h * .65} Z` });
+        D("circle", { cx: x + w * .2, cy: y + h * .75, r: 9 }); D("circle", { cx: x + w * .55, cy: y + h * .75, r: 9 }); D("circle", { cx: x + w * .88, cy: y + h * .75, r: 9 }); break;
+      default:
+        B("rect", { x, y, width: w, height: h, rx: n.t === "reag" ? 14 : 8 });
+    }
+  }
+
+  // ---------- build scene ----------
+  const defs = el("defs", {}, svg);
+  Object.entries(STREAM_TYPES).forEach(([k, v]) => {
+    const m = el("marker", { id: "ah_" + k, viewBox: "0 0 10 10", refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: "auto-start-reverse" }, defs);
+    el("path", { d: "M0 0 L10 5 L0 10 z", fill: v.color }, m);
+  });
+  const world = el("g", { id: "world" }, svg);
+  el("rect", { x: -2000, y: -2000, width: PFD_W + 4000, height: PFD_H + 4000, fill: "transparent", id: "bgHit" }, world);
+  const gFrames = el("g", {}, world), gStreams = el("g", {}, world), gNodes = el("g", {}, world), gLoops = el("g", {}, world);
+
+  FRAMES.forEach(f => {
+    const g = el("g", { class: "frame" }, gFrames); g.dataset.st = f.st || "b";
+    el("rect", { x: f.x, y: f.y, width: f.w, height: f.h, rx: 14 }, g);
+    const t = el("text", { x: f.x + 14, y: f.y + 24 }, g); t.textContent = f.label; f.g = g;
+  });
+
+  const sEls = {};
+  STREAMS.forEach(s => {
+    const pts = route(s);
+    const g = el("g", { class: "stream" + ((s.rg || s.hide || ["water", "cnw", "air"].includes(s.ty)) ? " svc" : "") }, gStreams);
+    const d = "M" + pts.map(p => p.join(" ")).join(" L");
+    el("path", { class: "hit", d }, g);
+    el("path", { class: "ln", d, stroke: STREAM_TYPES[s.ty].color, "marker-end": `url(#ah_${s.ty})` }, g);
+    if (s.lab){
+      let best = 0, bi = 0;
+      for (let i = 0; i < pts.length - 1; i++){ const L = Math.abs(pts[i + 1][0] - pts[i][0]) + Math.abs(pts[i + 1][1] - pts[i][1]); if (L > best){ best = L; bi = i; } }
+      const mx = (pts[bi][0] + pts[bi + 1][0]) / 2, my = (pts[bi][1] + pts[bi + 1][1]) / 2;
+      const lg = el("g", { class: "lab" }, g);
+      const tx = el("text", { x: mx, y: my - 7, "text-anchor": "middle" }, lg); tx.textContent = s.lab;
+      requestAnimationFrame(() => { try { const bb = tx.getBBox(); const r = el("rect", { x: bb.x - 4, y: bb.y - 1, width: bb.width + 8, height: bb.height + 2, rx: 4 }); lg.insertBefore(r, tx); } catch (e) {} });
+    }
+    g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); select("s", s.id); });
+    sEls[s.id] = g; s.g = g;
+  });
+
+  const nEls = {};
+  NODES.forEach(n => {
+    const g = el("g", { class: "node" }, gNodes);
+    icon(g, n);
+    const nm = el("text", { class: "nm", x: n.x + n.w / 2, y: n.y + n.h + 18 }, g);
+    const label = n.sn || n.n; const words = label.length > 22 ? wrap(label, 22) : [label];
+    words.forEach((wd, i) => { const ts = el("tspan", { x: n.x + n.w / 2, dy: i ? 16 : 0 }, nm); ts.textContent = wd; });
+    const tg = el("text", { class: "tg", x: n.x + n.w / 2, y: n.y + n.h + 20 + words.length * 16 }, g); tg.textContent = n.tag || "";
+    el("title", {}, g).textContent = n.n + (n.tag ? " (" + n.tag + ")" : "");
+    g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); select("n", n.id); });
+    nEls[n.id] = g; n.g = g;
+  });
+  function wrap(s, max){ const w = s.split(" "); const out = [""]; w.forEach(x => { if ((out[out.length - 1] + " " + x).trim().length > max) out.push(x); else out[out.length - 1] = (out[out.length - 1] + " " + x).trim(); }); return out; }
+
+  LOOPS.forEach((L, i) => {
+    const n = byId[L.n]; const cx = n.x + L.dx, cy = n.y + L.dy;
+    const g = el("g", { class: "loop" }, gLoops);
+    el("circle", { cx, cy, r: 11 }, g); const t = el("text", { x: cx, y: cy + 4 }, g); t.textContent = "C";
+    el("title", {}, g).textContent = "Control loop: " + L.name;
+    g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); showLoop(L); });
+    L.g = g;
+  });
+
+  // ---------- stage / scenario ----------
+  const vis = st => st == null || st === "b" || st === stage;
+  function applyStage(){
+    NODES.forEach(n => {
+      const s = n.st == null ? "b" : n.st;
+      n.g.style.display = (s === 1 && stage === 2) ? "none" : "";
+      n.g.classList.toggle("ghost", s === 2 && stage === 1);
+    });
+    STREAMS.forEach(s => {
+      const st = s.st == null ? "b" : s.st;
+      const endsOk = [s.f, s.to].every(id => { const nd = byId[id]; return nd.st == null || nd.st === stage; });
+      s.g.style.display = (st !== "b" && st !== stage) ? "none" : "";
+      s.g.classList.toggle("ghost", st === "b" && !endsOk && stage === 1);
+      if (st === "b" && !endsOk && stage === 2) s.g.style.display = "none";
+    });
+    FRAMES.forEach(f => f.g.style.opacity = (f.st && f.st !== stage) ? .25 : "");
+    LOOPS.forEach(L => { const n = byId[L.n]; L.g.style.visibility = (n.st && n.st !== stage) ? "hidden" : ""; });
+    LOOPS.forEach(L => { if (L.g.style.visibility === "hidden") L.g.style.display = "none"; else L.g.style.display = ""; });
+    if (focusFlow) showStep(stepIx);
+  }
+  document.querySelectorAll("#stageSeg button").forEach(b => b.onclick = () => {
+    document.querySelectorAll("#stageSeg button").forEach(x => x.classList.toggle("on", x === b));
+    stage = +b.dataset.s; applyStage();
+    toast(stage === 1 ? "Stage 1 as built: tails to old CIL2/3 and the dam, concentrate to CIL1 and Gidji. Stage 2 items shown faded." : "Stage 2: all tails to CIL4, UFG 3 added, CIL2 leach and CIL3 adsorption, Gidji shut.");
+  });
+  SCENARIOS.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; $("scen").appendChild(o); });
+  $("scen").onchange = e => {
+    scenario = e.target.value; const sc = SCENARIOS.find(s => s.id === scenario);
+    NODES.forEach(n => n.g.classList.toggle("off", sc.off.includes(n.id)));
+    toast(sc.txt);
+  };
+
+  // ---------- toggles ----------
+  const tog = (id, cls, key) => { const b = $(id); const on = pref.get(key, "0") === "1"; b.classList.toggle("on", on); svg.classList.toggle(cls, on);
+    b.onclick = () => { const v = !b.classList.contains("on"); b.classList.toggle("on", v); svg.classList.toggle(cls, v); pref.set(key, v ? "1" : "0"); }; };
+  tog("tLoops", "showloops", "pfd_loops"); tog("tSvc", "showsvc", "pfd_svc"); tog("tAnim", "anim", "pfd_anim");
+  $("tTheme").onclick = () => { const l = document.documentElement.dataset.theme !== "light"; document.documentElement.dataset.theme = l ? "light" : ""; pref.set("pfd_theme", l ? "light" : "dark"); };
+
+  // ---------- legend ----------
+  $("legend").innerHTML = Object.values(STREAM_TYPES).map(t => `<i style="background:${t.color}"></i><span>${t.name}</span>`).join("") +
+    `<span style="grid-column:1/3;margin-top:6px"><b style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#1a1307;font-size:11px">C</b> Control loop (turn on at the top)</span>`;
+
+  // ---------- flows ----------
+  FLOWS.forEach(f => {
+    const b = document.createElement("button"); b.className = "flow"; b.innerHTML = `<i style="background:${f.color}"></i>${f.name}`;
+    b.onclick = () => setFlow(focusFlow && focusFlow.id === f.id ? null : f); f.btn = b; $("flows").appendChild(b);
+  });
+  function setFlow(f){
+    stopPlay(); focusFlow = f; FLOWS.forEach(x => x.btn.classList.toggle("on", x === f));
+    $("steps").classList.toggle("on", !!f);
+    if (!f){ svg.classList.remove("focus"); clearHl(); return; }
+    $("fdesc").textContent = f.desc;
+    $("stepList").innerHTML = "";
+    f.steps.forEach((s, i) => { const d = document.createElement("div"); d.className = "step"; d.innerHTML = `<b>${i + 1}</b><span></span>`; d.querySelector("span").textContent = s.t; d.onclick = () => { stopPlay(); showStep(i); }; $("stepList").appendChild(d); });
+    showStep(-1);
+    closeInfo();
+  }
+  function clearHl(){ document.querySelectorAll(".hl").forEach(x => x.classList.remove("hl")); }
+  function showStep(i){
+    stepIx = i; clearHl(); svg.classList.add("focus");
+    const ids = i < 0 ? focusFlow.steps.flatMap(s => s.ids) : focusFlow.steps[i].ids;
+    ids.forEach(id => { const x = nEls[id] || sEls[id]; if (x) x.classList.add("hl"); });
+    [...$("stepList").children].forEach((d, k) => d.classList.toggle("on", k === i));
+    if (i >= 0) $("stepList").children[i].scrollIntoView({ block: "nearest", behavior: "smooth" });
+    // zoom to what this step highlights
+    let bx = null;
+    document.querySelectorAll(".node.hl, .stream.hl").forEach(g => { if (g.style.display === "none") return; const b = g.getBBox(); if (!b.width && !b.height) return;
+      bx = bx ? { x1: Math.min(bx.x1, b.x), y1: Math.min(bx.y1, b.y), x2: Math.max(bx.x2, b.x + b.width), y2: Math.max(bx.y2, b.y + b.height) } : { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height }; });
+    if (bx) flyTo({ x: bx.x1, y: bx.y1, w: bx.x2 - bx.x1, h: bx.y2 - bx.y1 }, 1.25);
+  }
+  $("next").onclick = () => { stopPlay(); if (focusFlow) showStep(Math.min(stepIx + 1, focusFlow.steps.length - 1)); };
+  $("prev").onclick = () => { stopPlay(); if (focusFlow) showStep(Math.max(stepIx - 1, -1)); };
+  $("play").onclick = () => {
+    if (playing){ stopPlay(); return; }
+    if (!focusFlow) return;
+    $("play").textContent = "❚❚ Pause";
+    if (stepIx >= focusFlow.steps.length - 1) showStep(0); else showStep(stepIx + 1);
+    playing = setInterval(() => { if (stepIx >= focusFlow.steps.length - 1){ stopPlay(); return; } showStep(stepIx + 1); }, 5500);
+  };
+  function stopPlay(){ if (playing) clearInterval(playing); playing = null; $("play").textContent = "▶ Play"; }
+
+  // ---------- info panel ----------
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  function select(kind, id){
+    document.querySelectorAll(".sel").forEach(x => x.classList.remove("sel"));
+    selected = { kind, id };
+    if (kind === "n") showNode(byId[id]); else showStream(STREAMS.find(s => s.id === id));
+  }
+  function table(rows){ return rows && rows.length ? "<table>" + rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("") + "</table>" : ""; }
+  function stageNote(st){ return st === 1 ? '<span class="pill" style="background:#5a4a2a;color:#ffd58a">STAGE 1 ONLY</span>' : st === 2 ? '<span class="pill" style="background:#23463a;color:#8fe3c0">STAGE 2</span>' : ""; }
+  function showNode(n){
+    n.g.classList.add("sel");
+    $("iKind").innerHTML = (n.area ? "Area " + esc(n.area) : "Equipment") + stageNote(n.st);
+    $("iName").textContent = n.n; $("iTag").textContent = n.tag || "";
+    const ins = STREAMS.filter(s => s.to === n.id && s.f !== n.id && s.g.style.display !== "none");
+    const outs = STREAMS.filter(s => s.f === n.id && s.g.style.display !== "none");
+    const link = s => `<a data-s="${s.id}"><span style="color:${STREAM_TYPES[s.ty].color}">■</span> ${esc(s.n)}</a>`;
+    const loops = LOOPS.filter(L => L.n === n.id);
+    $("iBody").innerHTML = `<div>${esc(n.s)}</div>` + table(n.d) +
+      (n.c ? `<h4>Control</h4><div>${esc(n.c)}</div>` : "") +
+      (loops.length ? loops.map(L => `<h4>Control loop: ${esc(L.name)}</h4><table><tr><td>Measures</td><td>${esc(L.pv)}</td></tr><tr><td>Moves</td><td>${esc(L.mv)}</td></tr></table><div>${esc(L.txt)}</div>`).join("") : "") +
+      (n.hear ? `<h4>What you'll hear</h4><div>${esc(n.hear)}</div>` : "") +
+      (ins.length ? `<h4>In</h4><div class="conn">${ins.map(link).join("")}</div>` : "") +
+      (outs.length ? `<h4>Out</h4><div class="conn">${outs.map(link).join("")}</div>` : "");
+    bindLinks(); openInfo();
+  }
+  function showStream(s){
+    s.g.classList.add("sel");
+    const a = byId[s.f], b = byId[s.to];
+    $("iKind").innerHTML = `<span style="color:${STREAM_TYPES[s.ty].color}">■</span> Stream · ${esc(STREAM_TYPES[s.ty].name)}` + stageNote(s.st);
+    $("iName").textContent = s.n; $("iTag").textContent = "";
+    $("iBody").innerHTML = `<div class="conn"><a data-n="${a.id}">From: ${esc(a.n)}</a><a data-n="${b.id}">To: ${esc(b.n)}</a></div>` + table(s.i) +
+      ((!s.i || !s.i.length) ? `<div style="color:var(--mute);margin-top:8px">No specific design data in the documents for this line.</div>` : "");
+    bindLinks(); openInfo();
+  }
+  function showLoop(L){
+    const n = byId[L.n];
+    document.querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); n.g.classList.add("sel");
+    $("iKind").textContent = "Control loop"; $("iName").textContent = L.name; $("iTag").textContent = n.n;
+    $("iBody").innerHTML = `<table><tr><td>Measures (PV)</td><td>${esc(L.pv)}</td></tr><tr><td>Moves (output)</td><td>${esc(L.mv)}</td></tr></table><div>${esc(L.txt)}</div><div class="conn" style="margin-top:12px"><a data-n="${n.id}">Open ${esc(n.n)}</a></div>`;
+    bindLinks(); openInfo();
+  }
+  function bindLinks(){
+    $("iBody").querySelectorAll("a[data-s]").forEach(a => a.onclick = () => { const s = STREAMS.find(x => x.id === a.dataset.s); select("s", s.id); flyTo(bboxOf(s.g)); });
+    $("iBody").querySelectorAll("a[data-n]").forEach(a => a.onclick = () => { select("n", a.dataset.n); const n = byId[a.dataset.n]; flyTo({ x: n.x, y: n.y, w: n.w, h: n.h }); });
+  }
+  function openInfo(){ $("info").classList.add("on"); }
+  function closeInfo(){ $("info").classList.remove("on"); document.querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); selected = null; }
+  $("infoX").onclick = closeInfo;
+
+  // ---------- pan / zoom ----------
+  let vb = { x: 0, y: 0, w: PFD_W, h: PFD_H };
+  function setVB(){ svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); const scale = svg.clientWidth / vb.w; svg.classList.toggle("far", scale < 0.42); }
+  function fit(){ const W = svg.clientWidth, H = svg.clientHeight, ar = W / H; const pad = 40;
+    let w = PFD_W + pad * 2, h = PFD_H + pad * 2; if (w / h > ar) h = w / ar; else w = h * ar;
+    vb = { x: (PFD_W - w) / 2, y: (PFD_H - h) / 2, w, h }; setVB(); }
+  function zoomAt(f, px, py){
+    const minW = 500, maxW = PFD_W * 2.2; const nw = Math.min(maxW, Math.max(minW, vb.w * f)); const k = nw / vb.w;
+    vb.x = px - (px - vb.x) * k; vb.y = py - (py - vb.y) * k; vb.w = nw; vb.h *= k; setVB();
+  }
+  const toWorld = (cx, cy) => { const r = svg.getBoundingClientRect(); return [vb.x + (cx - r.left) / r.width * vb.w, vb.y + (cy - r.top) / r.height * vb.h]; };
+  svg.addEventListener("wheel", e => { e.preventDefault(); const [px, py] = toWorld(e.clientX, e.clientY); zoomAt(Math.exp(e.deltaY * 0.0012), px, py); }, { passive: false });
+  let drag = null, moved = false;
+  svg.addEventListener("pointerdown", e => { if (e.button !== 0) return; drag = { x: e.clientX, y: e.clientY, vx: vb.x, vy: vb.y }; moved = false; });
+  window.addEventListener("pointermove", e => {
+    if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!moved && Math.hypot(dx, dy) > 4){ moved = true; svg.classList.add("dragging"); }
+    if (moved){ const r = svg.getBoundingClientRect(); vb.x = drag.vx - dx / r.width * vb.w; vb.y = drag.vy - dy / r.height * vb.h; setVB(); }
+  });
+  window.addEventListener("pointerup", () => { drag = null; svg.classList.remove("dragging"); setTimeout(() => moved = false, 0); });
+  $("bgHit").addEventListener("click", () => { if (!moved) closeInfo(); });
+  const center = () => [vb.x + vb.w / 2, vb.y + vb.h / 2];
+  $("zIn").onclick = () => zoomAt(0.7, ...center()); $("zOut").onclick = () => zoomAt(1.4, ...center()); $("zFit").onclick = fit;
+  window.addEventListener("resize", () => { const c = center(); const ar = svg.clientWidth / svg.clientHeight; vb.h = vb.w / ar; vb.x = c[0] - vb.w / 2; vb.y = c[1] - vb.h / 2; setVB(); });
+  function bboxOf(g){ const b = g.getBBox(); return { x: b.x, y: b.y, w: b.width, h: b.height }; }
+  function flyTo(b, pad = 2.5){
+    const ar = svg.clientWidth / svg.clientHeight; let w = Math.max(900, b.w * pad), h = w / ar; if (h < b.h * pad){ h = b.h * pad; w = h * ar; }
+    const tgt = { x: b.x + b.w / 2 - w / 2 + (($("info").classList.contains("on")) ? w * 0.12 : 0), y: b.y + b.h / 2 - h / 2, w, h };
+    const from = Object.assign({}, vb); const t0 = performance.now();
+    const step = t => { const k = Math.min(1, (t - t0) / 450), e = 1 - Math.pow(1 - k, 3);
+      vb = { x: from.x + (tgt.x - from.x) * e, y: from.y + (tgt.y - from.y) * e, w: from.w + (tgt.w - from.w) * e, h: from.h + (tgt.h - from.h) * e }; setVB(); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+
+  // ---------- search ----------
+  $("names").innerHTML = NODES.map(n => `<option value="${esc(n.n)}">${esc(n.tag || "")}</option>`).join("");
+  $("search").addEventListener("change", e => {
+    const q = e.target.value.toLowerCase().trim(); if (!q) return;
+    const n = NODES.find(n => n.n.toLowerCase() === q) || NODES.find(n => (n.n + " " + (n.tag || "") + " " + (n.area || "")).toLowerCase().includes(q));
+    if (!n){ toast("No match for “" + e.target.value + "”"); return; }
+    if (n.st && n.st !== stage) document.querySelector(`#stageSeg button[data-s="${n.st}"]`).click();
+    select("n", n.id); flyTo({ x: n.x, y: n.y, w: n.w, h: n.h }); e.target.value = ""; e.target.blur();
+  });
+  window.addEventListener("keydown", e => { if (e.key === "Escape"){ closeInfo(); if (focusFlow) setFlow(null); } });
+
+  let tt; function toast(m){ const t = $("toast"); t.textContent = m; t.style.display = "block"; clearTimeout(tt); tt = setTimeout(() => t.style.display = "none", 4200); }
+
+  applyStage(); fit();
+})();
+</script>
+</body>
+</html>

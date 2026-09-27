@@ -8,6 +8,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>KCGM Flashcards</title>
+<script>
+// Desktop (mouse + wide screen) opens the interactive PFD; ?cards forces the flashcards.
+try {
+  if (!/[?&]cards/.test(location.search) && matchMedia("(pointer: fine) and (min-width: 1024px)").matches &&
+      !matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches) location.replace("pfd.html");
+} catch (e) {}
+</script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -161,6 +168,9 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
   <div class="row" style="margin-top:10px">
     <button class="btn" id="setBtn">⚙️ Settings</button>
     <button class="btn" id="fsBtn">⛶ Full screen</button>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <a class="btn" href="pfd.html" style="text-align:center;text-decoration:none;color:var(--ink)">🗺️ View interactive PFD (best on a computer)</a>
   </div>
   <div class="sticky"><button class="btn primary" style="width:100%" id="startBtn">Start</button></div>
 </div></section>
