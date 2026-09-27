@@ -1,0 +1,1 @@
+[["","INTERLOCK","","DESCRIPTION"],["Open Permissive","","Condition must be true for valve to be permitted to open.",""],["Close Permissive","","Condition must be true for valve to be permitted to close.",""],["Open Trip","","Valve will interlock open on given condition(s).",""],["Close Trip","","Valve will interlock close on given condition(s).",""]]
