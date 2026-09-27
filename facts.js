@@ -18,7 +18,7 @@ Crushing rate new circuit 2,634 t/h nominal, design 3,135 t/h, crusher max 3,436
 Mill feed: existing Fimiston SAG 1,313 t/h plus new SAG 1,833 t/h = 3,146 t/h nominal to cyclones/flotation (3,494 t/h high case).
 Nominal head grade 1.58 g/t Au, 1.02 percent S. Design grade 1.81 g/t Au, 1.49 percent S. Achievable grade case 1.70 g/t Au, 1.40 percent S.
 Recovery nominal: total Au 84 percent; gravity 14 percent of feed (max 20); flotation Au 71.8 percent (max 75); flotation S 85.1 percent (max 90); concentrate leach 84 percent (range 80 to 88, later agreed 90 percent for CIL2/3 design); flotation tails leach 34 percent (CIL4 design extraction 38 percent, adsorption efficiency 88 percent).
-Gold production nominal about 1.19 to 1.23 Moz/a. Flotation concentrate about 876 kt/a (707 kt/a in high throughput case).
+Gold production 1.11 Moz/a nominal grade case, 1.19 Moz/a design grade, 1.20 Moz/a achievable grade, 1.23 Moz/a high throughput. Flotation concentrate 637 kt/a nominal (about 75 to 78 t/h), 876 kt/a design grade and achievable grade (about 104 to 107 t/h), 707 kt/a high throughput.
 Process water SG 1.07 (saline). Scheme water SG 1.00.
 
 CRUSHING (F10 existing PC1, F12 new PC2)
@@ -48,7 +48,7 @@ Gravity EW: clean in place split cell 1000x1000-22D, 2 compartments of 11 cathod
 
 FLOTATION (F16 rougher/scavenger, F18 cleaner/cleaner-scavenger)
 Feed 3,146 t/h at 34.4 percent solids, 6,719 m3/h, from trash screen underflow.
-Roughers: 3 FLS forced air tank cells (F16-CF-411 to 413), total 1,890 m3 (630 m3 each), residence 15.1 min (existing plant was 10 to 12 min). Rougher 1 mass pull 4.4 percent at about 15.3 percent S, reports to final concentrate (can go to cleaner). Rougher 2 and 3 mass pull 2.4 percent at about 7.1 percent S, to cleaner. Rougher tail 2,946 t/h.
+Roughers: 3 FLS forced air tank cells (F16-CF-411 to 413), total 1,890 m3 (630 m3 each), residence 15.1 min (existing plant was 10 to 12 min). Rougher 1 mass pull 4.4 percent at about 15.3 percent S, reports to the Jameson cleaner per the PDC mass balance (older PFDs showed it going to final concentrate). Only cleaner concentrate feeds the final concentrate hopper. Rougher 2 and 3 mass pull 2.4 percent at about 7.1 percent S, to cleaner. Rougher tail 2,946 t/h.
 Scavengers: 4 cells (F16-CF-414 to 417), total 2,520 m3, residence 21.4 min (existing plant 29 to 32 min). Mass pull 1.1 percent at about 5.1 percent S, to cleaner. Scavenger tail 2,914 t/h to flotation tails thickener. Combined rougher plus scavenger residence 36.5 min.
 Design lip loading and froth carry rate 1.5 t/m/h and 1.5 t/m2/h. Froth factors: rougher con 2.0, scavenger con 1.6, cleaner con 2.5, cleaner-scavenger con 2.0.
 Cleaner: Glencore Jameson B6500/24, natural aspiration via downcomers, froth area 22.2 m2, feed 1,998 m3/h total incl. recycle at 17.5 to 19.5 percent solids, mass pull 31 to 44 percent, stage S recovery about 93 percent, concentrate SG 3.93. Cleaner tails about 50 percent recycled to cleaner feed hopper (external recycle keeps downcomer flow constant), rest to cleaner-scavenger. Feed = rougher 2/3 con, scavenger con, cleaner-scavenger con.
