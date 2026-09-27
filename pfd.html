@@ -1142,7 +1142,8 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     if (phoneFit()){ vb = { x: -pad, y: -pad, w, h }; setVB(); return; }   // phone portrait: full height, start at the left (crushing)
     vb = { x: (PFD_W - w) / 2, y: (PFD_H - h) / 2, w, h }; setVB(); }
   function zoomAt(f, px, py){
-    const minW = 12, maxW = PFD_W * 6;   // effectively unlimited zoom const nw = Math.min(maxW, Math.max(minW, vb.w * f)); const k = nw / vb.w;
+    const minW = 12, maxW = PFD_W * 6;   // effectively unlimited zoom
+    const nw = Math.min(maxW, Math.max(minW, vb.w * f)), k = nw / vb.w;
     vb.x = px - (px - vb.x) * k; vb.y = py - (py - vb.y) * k; vb.w = nw; vb.h *= k; setVB();
   }
   const toWorld = (cx, cy) => { const r = svg.getBoundingClientRect(); return [vb.x + (cx - r.left) / r.width * vb.w, vb.y + (cy - r.top) / r.height * vb.h]; };
