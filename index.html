@@ -95,6 +95,7 @@ body.searching #homeMain{display:none}
 #lkResults .lk-status:empty{display:none}
 .pill{flex:1;height:46px;border-radius:14px;background:var(--gold);color:#1a1307;border:1px solid var(--gold);display:flex;align-items:center;
   justify-content:center;gap:8px;font-weight:800;font-size:16px;text-decoration:none}
+.btn.upd-new{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold) inset}
 .secret{-webkit-text-security:disc;text-security:disc}
 .x{border:0;background:var(--card);color:var(--ink);width:42px;height:42px;border-radius:12px;font-size:20px;flex:none}
 
@@ -231,6 +232,11 @@ body.searching #homeMain{display:none}
     <button class="x" id="setBack" aria-label="Back">←</button>
     <h1 style="margin:0;font-size:22px">Settings</h1>
   </div>
+  <div class="row" style="margin-bottom:6px">
+    <button class="btn" id="updBtn" style="flex:1">⟳ Update app</button>
+    <a class="btn" href="issues.html" style="flex:1;text-align:center;text-decoration:none;color:var(--ink)">🐞 Checks</a>
+  </div>
+  <p class="sub" id="ver" style="font-size:13px;margin:0 0 10px"></p>
   <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">⛶ Full screen</button>
   <h2>Free Google AI key</h2>
   <input class="field secret" id="keyIn" type="text" name="kcgm-ai-key" placeholder="Paste key (starts with AIza)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
@@ -265,6 +271,7 @@ body.searching #homeMain{display:none}
 <script src="ai.js"></script>
 <script src="glossary.js"></script>
 <script src="lookup.js"></script>
+<script src="app-update.js"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
@@ -540,6 +547,7 @@ body.searching #homeMain{display:none}
     if (AI.model()) $("modelSel").innerHTML = `<option>${AI.model()}</option>`;
   }
   $("setBtn").onclick = () => { renderSettings(); show("settings"); };
+  AppUpdate.mount($("updBtn"), $("ver"));
   $("setBack").onclick = () => { renderHome(); show("home"); };
   $("keyTest").onclick = async () => {
     const k = $("keyIn").value.trim();

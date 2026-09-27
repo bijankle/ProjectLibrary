@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KCGM Checks</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{--bg:#14110d;--card:#1f1a14;--card2:#2a241c;--ink:#f3ece1;--mute:#b3a794;--gold:#e8b44a;--line:#3a3226;
+  --s-decision:#60a5fa;--s-clash:#f87171;--s-missing:#fbbf24;--s-placeholder:#a78bfa;--s-check:#94a3b8;--s-diagram:#34d399}
+@media (prefers-color-scheme: light){:root{--bg:#f6f1e7;--card:#fff;--card2:#f0e8da;--ink:#241d14;--mute:#6b5f4e;--gold:#b8801c;--line:#e1d6c4;
+  --s-decision:#1d4ed8;--s-clash:#b91c1c;--s-missing:#a16207;--s-placeholder:#6d28d9;--s-check:#475569;--s-diagram:#047857}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.page{max-width:1500px;margin:0 auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:6px}
+h1{font-size:24px;margin:0;flex:1;min-width:180px}
+h1 span{color:var(--gold)}
+.btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;font-size:14px;text-decoration:none;cursor:pointer}
+.btn.primary{background:var(--gold);color:#1a1307;border-color:var(--gold)}
+.btn.upd-new{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold) inset}
+.sub{color:var(--mute);font-size:14px;line-height:1.45;margin:4px 0 12px}
+.ver{font-size:12.5px;color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;gap:6px;align-items:center}
+.chip i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.chip.off{opacity:.4}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 12px}
+.bar input,.bar select{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px}
+.bar input{flex:1;min-width:200px}
+.count{font-size:13px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);border-radius:12px;overflow:hidden}
+th{text-align:left;font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--mute);background:var(--card2);padding:9px 8px;position:sticky;top:0}
+td{padding:8px;border-top:1px solid var(--line);vertical-align:top;line-height:1.4}
+td.doc{color:var(--mute);font-size:12.5px}
+td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13px;word-break:break-word}
+.sev{font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;color:#fff;white-space:nowrap}
+.note{font-size:13px}
+.more{text-align:center;margin:12px}
+@media (max-width: 760px){
+  table,thead,tbody,tr,td{display:block;width:100%}
+  thead{display:none}
+  tr{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:var(--card);padding:6px 4px}
+  td{border:0;padding:4px 8px}
+  td[data-l]::before{content:attr(data-l);display:block;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--mute)}
+  table{background:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>KCGM <span>Checks</span></h1>
+    <a class="btn" href="index.html?cards">Flashcards</a>
+    <a class="btn" href="pfd.html">Smart PFD</a>
+    <button class="btn" id="updBtn">⟳ Update app</button>
+  </header>
+  <div class="ver" id="ver"></div>
+  <p class="sub">Contradictions and gaps between the project documents, and checks on the Smart PFD itself. Each row says what one document states, what the other states, and which one the app takes as true and why. Built from the lists by <code>tools/build_issues.py</code>; the diagram checks run live.</p>
+  <div class="chips" id="sevChips"></div>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Filter by tag, document or words" autocomplete="off" data-lpignore="true" data-1p-ignore="true">
+    <select id="cat"><option value="">All categories</option></select>
+    <button class="btn primary" id="xls">⬇ Export to Excel</button>
+    <span class="count" id="count"></span>
+  </div>
+  <table>
+    <thead><tr><th>Type</th><th>Category</th><th>Item</th><th>What document 1 says</th><th>Document 1</th><th>What document 2 says</th><th>Document 2</th><th>Comment (which is taken as true and why)</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="more" id="more"></div>
+</div>
+<iframe id="pfdFrame" title="Diagram checks" style="position:absolute;left:-9999px;top:0;width:1600px;height:900px;border:0" aria-hidden="true"></iframe>
+<script src="app-update.js"></script>
+<script src="xlsx-lite.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const SEV = ["Decision", "Clash", "Missing", "Placeholder", "Check", "Diagram"];
+  const SEVC = { Decision: "var(--s-decision)", Clash: "var(--s-clash)", Missing: "var(--s-missing)", Placeholder: "var(--s-placeholder)", Check: "var(--s-check)", Diagram: "var(--s-diagram)" };
+  const SEVTIP = { Decision: "Documents disagree; the app made a choice", Clash: "Same item, different value in two lists", Missing: "In one list, not the other",
+    Placeholder: "Deleted or unnumbered tag", Check: "Possibly fine, worth checking", Diagram: "Smart PFD layout and data checks" };
+  let all = [], off = new Set(), shown = 200;
+  AppUpdate.mount($("updBtn"), $("ver"));
+
+  function chips(){
+    $("sevChips").innerHTML = SEV.map(s => { const n = all.filter(r => r.sev === s).length;
+      return `<button class="chip${off.has(s) ? " off" : ""}" data-s="${s}" title="${SEVTIP[s]}"><i style="background:${SEVC[s]}"></i>${s} <span>${n}</span></button>`; }).join("");
+    $("sevChips").querySelectorAll(".chip").forEach(b => b.onclick = () => { off.has(b.dataset.s) ? off.delete(b.dataset.s) : off.add(b.dataset.s); shown = 200; chips(); draw(); });
+    const cats = [...new Set(all.map(r => r.cat))].sort(), cur = $("cat").value;
+    $("cat").innerHTML = '<option value="">All categories</option>' + cats.map(c => `<option${c === cur ? " selected" : ""}>${esc(c)}</option>`).join("");
+  }
+  const filtered = () => { const q = $("q").value.toLowerCase().trim(), c = $("cat").value, words = q.split(/\s+/).filter(Boolean);
+    return all.filter(r => !off.has(r.sev) && (!c || r.cat === c) && (!words.length || words.every(w => (r.item + " " + r.v1 + " " + r.d1 + " " + r.v2 + " " + r.d2 + " " + r.note + " " + r.cat).toLowerCase().includes(w)))); };
+  function draw(){
+    const f = filtered();
+    $("count").textContent = `${f.length} of ${all.length} shown`;
+    $("rows").innerHTML = f.slice(0, shown).map(r => `<tr><td data-l="Type"><span class="sev" style="background:${SEVC[r.sev]}">${esc(r.sev)}</span></td><td data-l="Category">${esc(r.cat)}</td>
+      <td class="item" data-l="Item">${esc(r.item)}</td><td data-l="Document 1 says">${esc(r.v1)}</td><td class="doc" data-l="Document 1">${esc(r.d1)}</td>
+      <td data-l="Document 2 says">${esc(r.v2) || "–"}</td><td class="doc" data-l="Document 2">${esc(r.d2) || "–"}</td><td class="note" data-l="Comment">${esc(r.note)}</td></tr>`).join("");
+    $("more").innerHTML = f.length > shown ? `<button class="btn" id="moreBtn">Show ${Math.min(500, f.length - shown)} more</button>` : "";
+    if ($("moreBtn")) $("moreBtn").onclick = () => { shown += 500; draw(); };
+  }
+  $("q").oninput = () => { shown = 200; draw(); }; $("cat").onchange = () => { shown = 200; draw(); };
+  $("xls").onclick = () => {
+    const f = filtered(), head = ["Type", "Category", "Item", "What document 1 says", "Document 1", "What document 2 says", "Document 2", "Comment (which is taken as true and why)"];
+    XLSX.download(`KCGM checks ${new Date().toISOString().slice(0, 10)}.xlsx`, [
+      { name: "Checks", widths: [12, 16, 26, 45, 34, 45, 34, 60], rows: [head, ...f.map(r => [r.sev, r.cat, r.item, r.v1, r.d1, r.v2, r.d2, r.note])] },
+      { name: "Types", widths: [14, 60, 10], rows: [["Type", "Meaning", "Count"], ...SEV.map(s => [s, SEVTIP[s], all.filter(r => r.sev === s).length])] }]);
+  };
+
+  // list checks (built offline)
+  fetch("issues.json").then(r => r.json()).then(d => { all = all.concat(d.rows); chips(); draw(); diagram(); }).catch(e => { $("count").textContent = "Couldn't load issues.json: " + e.message; diagram(); });
+
+  // diagram checks: load the Smart PFD invisibly and run its self check
+  function diagram(){
+    const fr = $("pfdFrame"); $("count").textContent += " · running diagram checks…";
+    fr.onload = () => setTimeout(() => { try {
+      const w = fr.contentWindow, g = n => w.eval(n), r = w.pfdCheck(), add = (cat, item, v1, note) => all.push({ sev: "Diagram", cat, item, v1, d1: "Smart PFD", v2: "", d2: "", note });
+      const STREAMS = g("STREAMS"), NODES = g("NODES"), LOOPS = g("LOOPS"), SD = g("STREAM_DATA"), EQ = g("EQUIP_DATA"), INS = g("INSTR_DATA"), CV = g("CV_DATA"), exp = w.expandTag;
+      r.short.forEach(x => add("Layout", x.split(":")[0], "Line " + x.split(":")[1].replace(">", " to ") + " is shorter than its tph box", "Spread the equipment (tools/relayout.js)."));
+      r.labelHits.forEach(x => add("Layout", x, "Name box overlaps " + x.split("/")[1], "Move one of the symbols."));
+      r.headers.forEach(x => add("Layout", x.replace(/ cost \d+$/, ""), "Area title is crossed by a line", "No clear spot on the area edge; accepted."));
+      r.jogs.forEach(x => add("Layout", x.split(" ")[0], "Line has a small step of " + x.split(" ")[1] + " units", "Straighten the route."));
+      r.boxHits.forEach(x => add("Layout", x.split(" ")[0], "tph box touches another line or symbol", "Minor; box placed on the clearest run available."));
+      const slurry = ["ore", "flot", "conc", "tails", "leach"];
+      STREAMS.filter(s => slurry.includes(s.ty) && !(SD[s.id] && SD[s.id].sol != null)).forEach(s => all.push({ sev: "Diagram", cat: "Stream data", item: s.id, v1: s.n + ": no solids tonnage", d1: "Smart PFD (pfd-streams.js)", v2: "Not given for this line", d2: "PDC 2000-F00-DCR-PR-10002 Rev 4", note: "Shown as not specified; no tph box on the line." }));
+      NODES.filter(n => !EQ[n.id] && !["rom", "tsf", "gold", "gidji", "dams"].includes(n.id)).forEach(n => add("Equipment data", n.id, n.n + ": no MEL item mapped", "Equipment panel shows no MEL data."));
+      LOOPS.forEach(L => [...(L.m || []), ...(L.f || [])].forEach(t => exp(t).forEach(x => { if (/^F\d\d-/.test(x) || INS[x] || CV[x]) return;
+        all.push({ sev: "Diagram", cat: "Loop device", item: x, v1: `Used in the ${L.tag} loop "${L.name}"`, d1: "Smart PFD (pfd-data.js)", v2: "Not found", d2: "Instrument List 2000-F00-LST-IC-11011 / Control Valve List", note: "Tag taken from the loop drawing; check numbering." }); })));
+      chips(); draw();
+    } catch (e) { $("count").textContent = `${all.length} list checks; diagram checks failed (${e.message})`; } }, 1500);
+    fr.src = "pfd.html";
+  }
+})();
+</script>
+</body>
+</html>

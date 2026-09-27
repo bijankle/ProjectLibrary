@@ -98,6 +98,50 @@ svg.dragging{cursor:grabbing}
 body.flowing #toast{top:190px}
 #toast{position:fixed;left:50%;top:66px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--accent);border-radius:10px;
   padding:8px 14px;font-size:13.5px;z-index:7;display:none;max-width:620px;text-align:center}
+.appbox{display:flex;flex-wrap:wrap;gap:6px}
+.appbox .hbtn{text-decoration:none;color:var(--ink)}
+.hbtn.upd-new{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.ver{font-size:12px;color:var(--mute);margin:6px 2px 0}
+.m-only{display:none !important}
+svg{touch-action:none}
+@media (max-width: 900px){
+  .m-only{display:revert !important}
+  header{height:50px;gap:6px;padding:0 8px}
+  header h1{display:none}
+  #tLoops,#tIlk,#tSvc,#tAnim,#tTheme,#camBtn,header a.hbtn{display:none}
+  #case{max-width:128px;font-size:12px;padding:6px 4px}
+  .seg button{padding:5px 8px;font-size:0}
+  .seg button::after{content:"S" attr(data-s);font-size:12.5px}
+  #search{width:auto;flex:1;min-width:60px;font-size:13px;padding:7px 8px}
+  header .grow{display:none}
+  #side{top:50px;width:min(86vw,330px);transform:translateX(-102%);transition:transform .2s;z-index:9;box-shadow:0 0 30px rgba(0,0,0,.4)}
+  body.menu #side{transform:none}
+  #scrim{position:fixed;inset:50px 0 0 0;background:rgba(0,0,0,.35);z-index:8;display:none !important}
+  body.menu #scrim{display:block !important}
+  #stage{left:0;top:50px;bottom:52px}
+  #info{left:0;right:0;top:auto;bottom:52px;width:auto;height:min(58vh,560px);border-radius:16px 16px 0 0;border-bottom:0}
+  #info.on ~ #zoom{right:10px}
+  #zoom{bottom:62px;right:10px}
+  #zoom #zIn,#zoom #zOut{display:none}
+  #info.on ~ #zoom{display:none}
+  #stepbar{left:8px;right:8px;top:56px;gap:6px}
+  #info.on ~ #stepbar{right:8px}
+  .sb-card{font-size:11.5px;padding:6px 8px}
+  .sb-card span{-webkit-line-clamp:3}
+  .sb-prev,.sb-next{flex:0 1 22%}
+  .sb-cur{flex:1 1 56%;font-size:12.5px}
+  #toast{top:56px;max-width:92vw;font-size:12.5px}
+  body.flowing #toast{top:150px}
+  #mleg{position:fixed;left:0;right:0;bottom:0;height:52px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--panel);
+    border-top:1px solid var(--line);z-index:7;display:flex !important;gap:6px;overflow-x:auto;scrollbar-width:none;align-items:center}
+  #mleg::-webkit-scrollbar{display:none}
+  .mc{flex:none;display:flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:99px;
+    padding:5px 10px 5px 6px;font:inherit;font-size:12px;font-weight:700;white-space:nowrap}
+  .mc svg{width:26px;height:12px;flex:none}
+  .mc.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .mc.tg{padding-left:10px}
+  .msep{flex:none;width:1px;height:26px;background:var(--line);margin:0 2px}
+}
 /* SVG styling */
 .frame{pointer-events:none}
 .frame rect{fill:var(--frame);opacity:.45;stroke:var(--line);stroke-dasharray:6 6}
@@ -210,6 +254,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 </head>
 <body>
 <header>
+  <button class="hbtn m-only" id="menuBtn" aria-label="Menu" title="Menu">☰</button>
   <h1>KCGM <span>Interactive PFD</span></h1>
   <div class="seg" id="stageSeg"><button data-s="1">Stage 1</button><button data-s="2" class="on">Stage 2</button></div>
   <select class="hbtn" id="case" title="PDC design case: changes the flow figures on the lines and highlights that column in stream panels"></select>
@@ -238,6 +283,14 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   </div>
   <h2>Legend</h2>
   <div class="legend" id="legend"></div>
+  <h2>App</h2>
+  <div class="appbox">
+    <button class="hbtn" id="updBtn">⟳ Update app</button>
+    <a class="hbtn" href="issues.html">🐞 Checks</a>
+    <a class="hbtn m-only" href="index.html?cards">🃏 Flashcards</a>
+    <button class="hbtn m-only" id="mTheme">◐ Theme</button>
+  </div>
+  <div class="ver" id="ver"></div>
   <h2>How to use</h2>
   <div class="note">Scroll to zoom, drag to pan. Click anything (equipment, stream, loop, interlock, symbol or legend item) to select it: everything else fades and the view zooms to fit. Ctrl+click (⌘+click on Mac) adds or removes items so several can be selected at once. Click empty space or press Esc to clear and zoom back out. Pick a flow to animate it and step through it. Control loops shows ISA tag bubbles with dashed signal lines from measurement to final element; Interlocks shows red cause → effect lines (I interlock, P permissive).<br><br>Design values from the Stage 2 PDC and control philosophies, not live plant data.</div>
 </aside>
@@ -248,12 +301,15 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <div id="zoom"><button id="zInfo" title="Show the properties panel again" style="font-size:15px">ⓘ</button><button id="zIn" title="Zoom in">+</button><button id="zOut" title="Zoom out">−</button><button id="zFit" title="Fit" style="font-size:14px">⤢</button></div>
 <div id="stepbar"><button class="sb-card sb-prev" id="sbPrev"></button><div class="sb-card sb-cur" id="sbCur"></div><button class="sb-card sb-next" id="sbNext"></button></div>
 <div id="toast"></div>
+<div id="mleg" class="m-only" aria-label="Legend and filters"></div>
+<div id="scrim" class="m-only"></div>
 
 <script src="pfd-data.js"></script>
 <script src="pfd-streams.js"></script>
 <script src="pfd-equip.js"></script>
 <script src="tools/tagutil.js"></script>
 <script src="lookup.js"></script>
+<script src="app-update.js"></script>
 <script>
 (() => {
   const NS = "http://www.w3.org/2000/svg";
@@ -711,6 +767,25 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   mkList("Control loops", LOOPS, "loop", L => `<b>${esc(L.tag)}</b><span>${esc(L.name)}</span>`);
   mkList("Interlocks & permissives", INTERLOCKS, "ilk", I => `<b style="color:#ff3b30">${I.k}</b><span>${esc(I.name)}</span>`);
 
+  // Phone: compact legend and filter strip fixed along the bottom (outside the drawing, so zoom never hides it)
+  { const bar = $("mleg"), SHORT = { ore: "Ore", flot: "Flotation", conc: "Concentrate", tails: "Tails", leach: "Leach", carbon: "Carbon", gold: "Gold", water: "Water", cnw: "CN water", reag: "Reagent", air: "Air / O₂" };
+    [["tLoops", "🎛 Loops"], ["tIlk", "⛔ Interlocks"], ["tSvc", "💧 Services"]].forEach(([id, label]) => {
+      const c = document.createElement("button"); c.className = "mc tg"; c.textContent = label; const src = $(id);
+      const sync = () => c.classList.toggle("on", src.classList.contains("on")); c.onclick = () => { src.click(); sync(); }; sync(); bar.appendChild(c); });
+    bar.insertAdjacentHTML("beforeend", '<span class="msep"></span>');
+    Object.entries(STREAM_TYPES).forEach(([k, t]) => {
+      const c = document.createElement("button"); c.className = "mc"; c.title = t.name;
+      const sv = document.createElementNS(NS, "svg"); sv.setAttribute("viewBox", "0 0 26 12"); el("line", { x1: 1, y1: 6, x2: 25, y2: 6, style: `stroke:${t.color};stroke-width:3` }, sv); drawSym(sv, t, 13, 6, 4.2);
+      c.appendChild(sv); c.appendChild(document.createTextNode(SHORT[k] || t.name));
+      c.onclick = e => pick(e, { k: "type", id: k }, null, true); t.chip = c; bar.appendChild(c); });
+  }
+  // Phone: sidebar becomes a drawer
+  $("menuBtn").onclick = () => document.body.classList.toggle("menu");
+  $("scrim").onclick = () => document.body.classList.remove("menu");
+  $("side").addEventListener("click", e => { if (matchMedia("(max-width: 900px)").matches && e.target.closest(".flow, .lg-item, .lg-li, .step")) setTimeout(() => document.body.classList.remove("menu"), 150); });
+  $("mTheme").onclick = () => $("tTheme").click();
+  AppUpdate.mount($("updBtn"), $("ver"));
+
   // ---------- selection ----------
   // sel = [{k, id}] with k: type | loop | ilk | n | s. A plain click replaces the selection, Ctrl/Cmd click toggles.
   const findItem = it => it.k === "loop" ? LOOPS.find(L => L.id === it.id) : it.k === "ilk" ? INTERLOCKS.find(I => I.id === it.id) :
@@ -753,7 +828,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   }
   function applySel(zoom){
     clearHl(); document.querySelectorAll(".sel, .sel2, .feg.on, .sp.on").forEach(x => x.classList.remove("sel", "sel2", "on"));
-    Object.entries(STREAM_TYPES).forEach(([k, t]) => t.item.classList.toggle("on", sel.some(x => x.k === "type" && x.id === k)));
+    Object.entries(STREAM_TYPES).forEach(([k, t]) => { const on = sel.some(x => x.k === "type" && x.id === k); t.item.classList.toggle("on", on); if (t.chip) t.chip.classList.toggle("on", on); });
     LOOPS.forEach(L => L.li.classList.toggle("on", sel.some(x => x.k === "loop" && x.id === L.id)));
     INTERLOCKS.forEach(I => I.li.classList.toggle("on", sel.some(x => x.k === "ilk" && x.id === I.id)));
     if (!sel.length){ svg.classList.remove("focus"); return; }
@@ -1060,23 +1135,41 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   // ---------- pan / zoom ----------
   let vb = { x: 0, y: 0, w: PFD_W, h: PFD_H };
   function setVB(){ svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); const scale = svg.clientWidth / vb.w; svg.classList.toggle("far", scale < 0.42); }
+  const phoneFit = () => matchMedia("(max-width: 900px)").matches && svg.clientHeight > svg.clientWidth;
   function fit(){ const W = svg.clientWidth, H = svg.clientHeight, ar = W / H; const pad = 40;
-    let w = PFD_W + pad * 2, h = PFD_H + pad * 2; if (w / h > ar) h = w / ar; else w = h * ar;
+    let w = PFD_W + pad * 2, h = PFD_H + pad * 2; if (w / h > ar && !phoneFit()) h = w / ar; else w = h * ar;
+    if (phoneFit()){ vb = { x: -pad, y: -pad, w, h }; setVB(); return; }   // phone portrait: full height, start at the left (crushing)
     vb = { x: (PFD_W - w) / 2, y: (PFD_H - h) / 2, w, h }; setVB(); }
   function zoomAt(f, px, py){
-    const minW = 500, maxW = PFD_W * 2.2; const nw = Math.min(maxW, Math.max(minW, vb.w * f)); const k = nw / vb.w;
+    const minW = 12, maxW = PFD_W * 6;   // effectively unlimited zoom const nw = Math.min(maxW, Math.max(minW, vb.w * f)); const k = nw / vb.w;
     vb.x = px - (px - vb.x) * k; vb.y = py - (py - vb.y) * k; vb.w = nw; vb.h *= k; setVB();
   }
   const toWorld = (cx, cy) => { const r = svg.getBoundingClientRect(); return [vb.x + (cx - r.left) / r.width * vb.w, vb.y + (cy - r.top) / r.height * vb.h]; };
   svg.addEventListener("wheel", e => { e.preventDefault(); const [px, py] = toWorld(e.clientX, e.clientY); zoomAt(Math.exp(e.deltaY * 0.0012), px, py); }, { passive: false });
-  let drag = null, moved = false;
-  svg.addEventListener("pointerdown", e => { if (e.button !== 0) return; drag = { x: e.clientX, y: e.clientY, vx: vb.x, vy: vb.y }; moved = false; });
+  // one finger / mouse: pan. Two fingers: pinch zoom about their midpoint (and pan with it)
+  let drag = null, moved = false, pinch = null; const ptrs = new Map();
+  const two = () => { const [a, b] = [...ptrs.values()]; return { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] }; };
+  svg.addEventListener("pointerdown", e => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptrs.size === 2){ const t = two(); pinch = { d: t.d, vb: Object.assign({}, vb), w: toWorld(...t.m) }; drag = null; moved = true; }
+    else if (ptrs.size === 1){ drag = { x: e.clientX, y: e.clientY, vx: vb.x, vy: vb.y }; moved = false; }
+  });
   window.addEventListener("pointermove", e => {
+    if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pinch && ptrs.size >= 2){
+      const t = two(), r = svg.getBoundingClientRect(), nw = Math.min(PFD_W * 6, Math.max(12, pinch.vb.w * pinch.d / t.d)), nh = nw * pinch.vb.h / pinch.vb.w;
+      vb = { x: pinch.w[0] - (t.m[0] - r.left) / r.width * nw, y: pinch.w[1] - (t.m[1] - r.top) / r.height * nh, w: nw, h: nh }; setVB(); return;
+    }
     if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (!moved && Math.hypot(dx, dy) > 7){ moved = true; svg.classList.add("dragging"); }
     if (moved){ const r = svg.getBoundingClientRect(); vb.x = drag.vx - dx / r.width * vb.w; vb.y = drag.vy - dy / r.height * vb.h; setVB(); }
   });
-  window.addEventListener("pointerup", () => { drag = null; svg.classList.remove("dragging"); setTimeout(() => moved = false, 0); });
+  const up = e => { ptrs.delete(e.pointerId);
+    if (ptrs.size < 2) pinch = null;
+    if (ptrs.size === 1){ const [p] = [...ptrs.values()]; drag = { x: p[0], y: p[1], vx: vb.x, vy: vb.y }; }   // continue as a pan without jumping
+    if (!ptrs.size){ drag = null; svg.classList.remove("dragging"); setTimeout(() => moved = false, 0); } };
+  window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
   $("bgHit").addEventListener("click", e => { if (moved || e.ctrlKey || e.metaKey) return; closeInfo(); clearSel(); });
   const center = () => [vb.x + vb.w / 2, vb.y + vb.h / 2];
   $("zIn").onclick = () => zoomAt(0.7, ...center()); $("zOut").onclick = () => zoomAt(1.4, ...center()); $("zFit").onclick = fitAnim; $("zInfo").onclick = () => { if (lastPanel) lastPanel(); else toast("Click any equipment, stream, loop, interlock or symbol to see its properties."); };
@@ -1084,9 +1177,11 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   function bboxOf(g){ const b = g.getBBox(); return { x: b.x, y: b.y, w: b.width, h: b.height }; }
   function flyTo(b, pad = 2.5, minW = 900){
     const W = svg.clientWidth, H = svg.clientHeight;
-    const right = $("info").classList.contains("on") ? Math.min(W * .5, $("info").offsetWidth + 28) : 0;
+    const phone = matchMedia("(max-width: 900px)").matches, infoOn = $("info").classList.contains("on");
+    const right = infoOn && !phone ? Math.min(W * .5, $("info").offsetWidth + 28) : 0;
+    const bottom = infoOn && phone ? $("info").offsetHeight : 0;
     const top = $("stepbar").classList.contains("on") ? $("stepbar").offsetHeight + 20 : 0;
-    const uw = W - right, uh = H - top;                          // usable screen area (px)
+    const uw = W - right, uh = Math.max(80, H - top - bottom);                          // usable screen area (px)
     let w = Math.max(minW, b.w * pad), h = w * uh / uw; if (h < b.h * pad){ h = b.h * pad; w = h * uw / uh; }
     const k = w / uw;                                             // world units per pixel
     animVB({ x: b.x + b.w / 2 - (uw / 2) * k, y: b.y + b.h / 2 - (top + uh / 2) * k, w: W * k, h: H * k });
@@ -1098,7 +1193,9 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     requestAnimationFrame(step);
   }
   function fitAnim(){ const W = svg.clientWidth, H = svg.clientHeight, ar = W / H, pad = 40;
-    let w = PFD_W + pad * 2, h = PFD_H + pad * 2; if (w / h > ar) h = w / ar; else w = h * ar;
+    let w = PFD_W + pad * 2, h = PFD_H + pad * 2;
+    if (phoneFit()){ w = h * ar; const cx = vb.x + vb.w / 2; animVB({ x: Math.max(-pad, Math.min(PFD_W + pad - w, cx - w / 2)), y: -pad, w, h }); return; }
+    if (w / h > ar) h = w / ar; else w = h * ar;
     animVB({ x: (PFD_W - w) / 2, y: (PFD_H - h) / 2, w, h }); }
 
   // ---------- search ----------
