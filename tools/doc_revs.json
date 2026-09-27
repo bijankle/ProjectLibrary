@@ -1,86 +1,441 @@
 {
  "mel": {
   "title": "MEL",
+  "full": "Mechanical Equipment List",
   "number": "2000-F00-LST-ME-10001",
+  "kind": "List",
   "rev": "0",
   "date": "2025-12-26",
-  "status": "Issued for Use"
+  "status": "Issued for Use",
+  "used": "Equipment search, equipment tags and data on the Smart PFD",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-12-26",
+    "status": "Issued for Use"
+   }
+  ],
+  "note": "No cover page; revision and date from the header line of the MEL sheet."
  },
  "ins": {
   "title": "Instrument List",
+  "full": "Instrument List",
   "number": "2000-F00-LST-IC-11011",
+  "kind": "List",
   "rev": "1",
   "date": "2026-07-08",
-  "status": "Re-Issued for Use"
+  "status": "Re-Issued for Use",
+  "used": "Instrument search, control loop tags on the Smart PFD",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-11-25",
+    "status": "Issued for Use"
+   },
+   {
+    "rev": "1",
+    "date": "2026-07-08",
+    "status": "Re-Issued for Use"
+   }
+  ],
+  "note": ""
  },
  "cv": {
   "title": "Control Valve List",
+  "full": "Control Valve List",
   "number": "2000-F00-LST-PP-10003",
+  "kind": "List",
   "rev": "0",
   "date": "2025-08-25",
-  "status": "Issued for Use"
+  "status": "Issued for Use",
+  "used": "Control valve search, final elements of the control loops",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-08-25",
+    "status": "Issued for Use"
+   }
+  ],
+  "note": ""
  },
  "line": {
   "title": "Line List",
+  "full": "Line List",
   "number": "2000-F00-LST-PP-10001",
+  "kind": "List",
   "rev": "1",
   "date": "2025-10-24",
-  "status": "General and Testing Requirements Updates"
+  "status": "General and Testing Requirements Updates",
+  "used": "Pipe line search (size, spec, from and to)",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-03-25",
+    "status": "SP1 Issued for Use"
+   },
+   {
+    "rev": "1",
+    "date": "2025-10-24",
+    "status": "General and Testing Requirements Updates"
+   }
+  ],
+  "note": "The Line List data sheet header reads Revision 2 but is undated; the cover page's latest dated revision is Rev 1."
  },
  "mv": {
   "title": "Manual Valve List",
+  "full": "Manual Valve List",
   "number": "2000-F00-LST-PP-10002",
+  "kind": "List",
   "rev": "8",
   "date": "2025-10-08",
-  "status": "Issued for SP1 & SP2 Top Up Purchase"
+  "status": "Issued for SP1 & SP2 Top Up Purchase",
+  "used": "Manual valve search",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2024-06-10",
+    "status": "Issued for SP1 Purchase"
+   },
+   {
+    "rev": "1",
+    "date": "2024-10-25",
+    "status": "Issued for SP1 Quotation"
+   },
+   {
+    "rev": "2",
+    "date": "2025-01-17",
+    "status": "Issued for SP1 Top Up Purchase"
+   },
+   {
+    "rev": "3",
+    "date": "2025-02-07",
+    "status": "Re-Issued for SP1 Top Up Purchase"
+   },
+   {
+    "rev": "4",
+    "date": "2025-02-10",
+    "status": "Issued for SP2 Quotation"
+   },
+   {
+    "rev": "5",
+    "date": "2025-05-19",
+    "status": "Issued for SP2 Purchase"
+   },
+   {
+    "rev": "6",
+    "date": "2025-06-06",
+    "status": "Issued for HCL Valves Purchase"
+   },
+   {
+    "rev": "7",
+    "date": "2025-10-08",
+    "status": "Issued for SP1 & SP2 Top Up Quotation"
+   },
+   {
+    "rev": "8",
+    "date": "2025-10-08",
+    "status": "Issued for SP1 & SP2 Top Up Purchase"
+   }
+  ],
+  "note": ""
  },
  "spi": {
   "title": "SPI List",
+  "full": "Special Piping Items (SPI) List",
   "number": "2000-F00-LST-PP-10005",
+  "kind": "List",
   "rev": "0",
   "date": "2025-09-24",
-  "status": "Issued for Use"
+  "status": "Issued for Use",
+  "used": "Pipe special (SPI) search",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-09-24",
+    "status": "Issued for Use"
+   }
+  ],
+  "note": ""
  },
  "hose1": {
   "title": "Slurry Hose List Stage 1",
+  "full": "Slurry Hose List Stage 1",
   "number": "2000-F00-LST-PP-10032",
+  "kind": "List",
   "rev": "4",
   "date": "2025-09-04",
-  "status": "Cons Thickener U/F Elbows Added"
+  "status": "Cons Thickener U/F Elbows Added",
+  "used": "Slurry hose search (Stage 1)",
+  "history": [
+   {
+    "rev": "1",
+    "date": "2025-01-10",
+    "status": "Re-Issued for Purchase"
+   },
+   {
+    "rev": "2",
+    "date": "2025-02-27",
+    "status": "Re-Issued for Purchase"
+   },
+   {
+    "rev": "3",
+    "date": "2025-05-23",
+    "status": "Area F19 Hoses Added into Scope"
+   },
+   {
+    "rev": "4",
+    "date": "2025-09-04",
+    "status": "Cons Thickener U/F Elbows Added"
+   }
+  ],
+  "note": ""
  },
  "hose2": {
   "title": "Slurry Hose List Stage 2",
+  "full": "Slurry Hose List Stage 2",
   "number": "2000-F00-LST-PP-12032",
+  "kind": "List",
   "rev": "B",
   "date": "2025-07-11",
-  "status": "Issued for Purchase"
+  "status": "Issued for Purchase",
+  "used": "Slurry hose search (Stage 2)",
+  "history": [
+   {
+    "rev": "A",
+    "date": "2025-05-29",
+    "status": "Issued for Tender"
+   },
+   {
+    "rev": "B",
+    "date": "2025-07-11",
+    "status": "Issued for Purchase"
+   }
+  ],
+  "note": ""
  },
  "pdc": {
   "title": "PDC",
+  "full": "Process Design Criteria Stage 2",
   "number": "2000-F00-DCR-PR-10002",
+  "kind": "Report",
   "rev": "4",
   "date": "2025-07-22",
-  "status": ""
+  "status": "Updates to BF Loaded Carbon Circuit and Cyanide Concentration",
+  "used": "Design figures, flow cases and stream tonnages on the Smart PFD, flashcards",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2024-06-07",
+    "status": "Issued for Design"
+   },
+   {
+    "rev": "1",
+    "date": "2024-10-18",
+    "status": "Reissued for Design"
+   },
+   {
+    "rev": "2",
+    "date": "2024-12-10",
+    "status": "Reissued for Design"
+   },
+   {
+    "rev": "3",
+    "date": "2025-02-14",
+    "status": "Reissued for Design"
+   },
+   {
+    "rev": "4",
+    "date": "2025-07-22",
+    "status": "Updates to BF Loaded Carbon Circuit and Cyanide Concentration"
+   }
+  ],
+  "note": "",
+  "review_date": "2025-08-11",
+  "review": "Approved as noted"
  },
  "cp1": {
   "title": "Control Philosophy Stage 1",
+  "full": "Plant General Process Control Philosophy Stage 1",
   "number": "2000-F00-REP-PR-10001",
+  "kind": "Report",
   "rev": "4",
   "date": "2024-09-10",
-  "status": ""
+  "status": "General Updates",
+  "used": "Stage 1 control loops and interlocks, flashcards",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2023-12-06",
+    "status": "Issued for Design"
+   },
+   {
+    "rev": "1",
+    "date": "2024-01-23",
+    "status": "Document Renamed"
+   },
+   {
+    "rev": "2",
+    "date": "2024-04-22",
+    "status": "General Updates"
+   },
+   {
+    "rev": "3",
+    "date": "2024-06-17",
+    "status": "General Updates"
+   },
+   {
+    "rev": "4",
+    "date": "2024-09-10",
+    "status": "General Updates"
+   }
+  ],
+  "note": "",
+  "review_date": "2024-09-30",
+  "review": "Approved as noted"
  },
  "cp2": {
   "title": "Control Philosophy Stage 2",
+  "full": "Plant General Process Control Philosophy Stage 2",
   "number": "2000-F00-REP-PR-10002",
+  "kind": "Report",
   "rev": "0",
   "date": "2025-07-16",
-  "status": ""
+  "status": "Issued for Design",
+  "used": "Stage 2 control loops and interlocks, flashcards",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-07-16",
+    "status": "Issued for Design"
+   }
+  ],
+  "note": "",
+  "review_date": "2025-08-01",
+  "review": "Approved as noted"
  },
  "pfd": {
   "title": "Stage 1 PFDs",
+  "full": "Process Flow Diagrams Stage 1",
   "number": "2000-F00-PFD-PR series",
+  "kind": "Drawing",
   "rev": "1",
   "date": "2026-09-04",
-  "status": "SP1 AS BUILT"
+  "status": "SP1 AS BUILT",
+  "used": "Process routing and equipment layout of the Smart PFD",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-04-10",
+    "status": "ISSUED FOR DESIGN"
+   },
+   {
+    "rev": "1",
+    "date": "2026-09-04",
+    "status": "SP1 AS BUILT"
+   }
+  ],
+  "note": "One sheet (10019) has 04SEP24 in its title block, taken as a typing error for 04SEP26 like every other sheet.",
+  "sheets": [
+   "2000-F00-PFD-PR-10001",
+   "2000-F00-PFD-PR-10002",
+   "2000-F00-PFD-PR-10003",
+   "2000-F00-PFD-PR-10004",
+   "2000-F00-PFD-PR-10005",
+   "2000-F00-PFD-PR-10006",
+   "2000-F00-PFD-PR-10007",
+   "2000-F00-PFD-PR-10008",
+   "2000-F00-PFD-PR-10009",
+   "2000-F00-PFD-PR-10010",
+   "2000-F00-PFD-PR-10012",
+   "2000-F00-PFD-PR-10013",
+   "2000-F00-PFD-PR-10014",
+   "2000-F00-PFD-PR-10015",
+   "2000-F00-PFD-PR-10016",
+   "2000-F00-PFD-PR-10017",
+   "2000-F00-PFD-PR-10018",
+   "2000-F00-PFD-PR-10019",
+   "2000-F00-PFD-PR-10020",
+   "2000-F00-PFD-PR-10021",
+   "2000-F00-PFD-PR-10022",
+   "2000-F00-PFD-PR-10024",
+   "2000-F00-PFD-PR-10026",
+   "2000-F00-PFD-PR-10027",
+   "2000-F00-PFD-PR-10028",
+   "2000-F00-PFD-PR-10029",
+   "2000-F00-PFD-PR-10030",
+   "2000-F00-PFD-PR-10034",
+   "2000-F00-PFD-PR-10036",
+   "2000-F00-PFD-PR-10037",
+   "2000-F00-PFD-PR-10038",
+   "2000-F00-PFD-PR-10040",
+   "2000-F00-PFD-PR-10041",
+   "2000-F00-PFD-PR-10043",
+   "2000-F00-PFD-PR-10044",
+   "2000-F00-PFD-PR-10045",
+   "2000-F00-PFD-PR-10046",
+   "2000-F00-PFD-PR-10047",
+   "2000-F00-PFD-PR-10048",
+   "2000-F00-PFD-PR-10049",
+   "2000-F00-PFD-PR-10050"
+  ]
+ },
+ "num": {
+  "title": "Plant Numbering Specification",
+  "full": "Plant Numbering Specification",
+  "number": "2000-F00-STS-GE-10003",
+  "kind": "Specification",
+  "rev": "3",
+  "date": "2024-05-02",
+  "status": "Appendix A and B updated",
+  "used": "How tags are built (area, equipment code, number), search and glossary",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2022-04-13",
+    "status": "Issued for Use"
+   },
+   {
+    "rev": "1",
+    "date": "2023-04-19",
+    "status": "Re-Issued for Use"
+   },
+   {
+    "rev": "2",
+    "date": "2023-09-22",
+    "status": "Re-Issued for Use"
+   },
+   {
+    "rev": "3",
+    "date": "2024-05-02",
+    "status": "Appendix A and B updated"
+   }
+  ],
+  "note": "",
+  "review_date": "2024-05-13",
+  "review": "Approved"
+ },
+ "layout": {
+  "title": "Overall Plant Layout",
+  "full": "Overall Plant Layout Plan",
+  "number": "2000-F00-DRG-GE-20001",
+  "kind": "Drawing",
+  "rev": "2",
+  "date": "",
+  "status": "Revision from the file name; no readable revision date",
+  "used": "Area numbers and names (F10 to F75), frame titles on the Smart PFD",
+  "history": [],
+  "note": "The title block revision rows are not readable as text; the drawing is dated Oct 2023 as drawn."
+ },
+ "wbs": {
+  "title": "WBS",
+  "full": "KCGM Growth Work Breakdown Structure",
+  "number": "(no number)",
+  "kind": "Reference",
+  "rev": "",
+  "date": "",
+  "status": "No revision block",
+  "used": "Area and facility codes (WBS), glossary",
+  "history": [],
+  "note": "A reference chart with no revision block."
  }
 }

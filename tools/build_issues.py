@@ -109,7 +109,8 @@ for r in ins:
             "Often legitimate (Stage 2 instrument added to Stage 1 equipment). Check. " + newer(INS, MEL))
 
 meta = {"rule": "Where two documents clash, the one with the more recent revision date is taken as true unless the comment says why not.",
-        "sources": {v["title"]: {"doc": doc(k), "date": v["date"], "status": v["status"]} for k, v in REV.items()}}
+        "sources": {v["title"]: {"doc": doc(k), "date": v["date"], "status": v["status"]} for k, v in REV.items()},
+        "docs": REV}
 json.dump({"meta": meta, "rows": out}, open(os.path.join(HERE, "..", "issues.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 from collections import Counter
 print(len(out), Counter(r["sev"] for r in out))
