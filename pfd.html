@@ -122,7 +122,7 @@ body.flowing #toast{top:190px}
 .stream.svc{display:none}
 svg.showsvc .stream.svc{display:inline}
 /* label boxes are solid but take the colour of what is behind them: page background, or the area panel */
-.lab{cursor:pointer}.lab rect,.node .nlbg{fill:var(--bg);stroke:none}
+.lab{cursor:pointer}.node .nlbg{fill:var(--bg);stroke:none}.lab rect{fill:var(--bg);stroke-width:3.2}
 .lab.inf rect,.node .nlbg.inf{fill:color-mix(in srgb,var(--frame) 45%,var(--bg))}
 .fbx.svc{display:none}svg.showsvc .fbx.svc{display:inline}
 .fbx.ghost{opacity:.12;pointer-events:none}
@@ -272,14 +272,24 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     switch (side){
       case "r": return [n.x + n.w, n.y + n.h / 2 + f * n.h];
       case "l": return [n.x, n.y + n.h / 2 + f * n.h];
-      case "t": return [n.x + n.w / 2 + f * n.w, n.y];
+      case "t": { const x = n.x + n.w / 2 + f * n.w;   // lines into/out of the top stop at the name box above the symbol
+        return [x, n.lb && x > n.lb.x1 + 3 && x < n.lb.x2 - 3 ? n.lb.y1 : n.y]; }
       default:  return [n.x + n.w / 2 + f * n.w, n.y + n.h];
     }
   }
   const out = (p, side, d) => side === "r" ? [p[0] + d, p[1]] : side === "l" ? [p[0] - d, p[1]] : side === "t" ? [p[0], p[1] - d] : [p[0], p[1] + d];
   function route(s){
     const a = byId[s.f], b = byId[s.to], [ps, pe] = s.p || ["r", "l"];
-    const start = port(a, ps, s.fo || 0), end = port(b, pe, s.too || 0);
+    let start = port(a, ps, s.fo || 0), end = port(b, pe, s.too || 0);
+    // straight line instead of a small jog when the two symbols overlap (no hand routing given)
+    if (!s.via && s.mx == null && s.my == null && s.fo == null && s.too == null){
+      const H = ["r", "l"].includes(ps) && ["r", "l"].includes(pe), V = ["t", "b"].includes(ps) && ["t", "b"].includes(pe);
+      if (H && start[1] !== end[1]){ const lo = Math.max(a.y, b.y) + 8, hi = Math.min(a.y + a.h, b.y + b.h) - 8;
+        if (hi >= lo){ const y = Math.min(hi, Math.max(lo, (start[1] + end[1]) / 2)); start = [start[0], y]; end = [end[0], y]; } }
+      if (V && start[0] !== end[0]){ const lo = Math.max(a.x, b.x) + 8, hi = Math.min(a.x + a.w, b.x + b.w) - 8;
+        if (hi >= lo){ const x = Math.min(hi, Math.max(lo, (start[0] + end[0]) / 2)); start = [x, start[1]]; end = [x, end[1]];
+          if (ps === "t" && a.lb && x > a.lb.x1 && x < a.lb.x2) start[1] = a.lb.y1; if (pe === "t" && b.lb && x > b.lb.x1 && x < b.lb.x2) end[1] = b.lb.y1; } }
+    }
     const exit = out(start, ps, 22), appr = out(end, pe, 22);
     let mids = s.via ? s.via.slice() : [];
     if (!s.via && s.mx != null) mids = [[s.mx, exit[1]], [s.mx, appr[1]]];
@@ -308,7 +318,28 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       res.push(b1);
     }
     res.push(clean[clean.length - 1]);
-    return res;
+    return unjog(res, a, b);
+  }
+  // Remove a small step (< 45) next to either end when that end's symbol is big enough to take the line straight
+  function unjog(P, a, b){
+    const n = P.length, H = (p, q) => p[1] === q[1], seg = (p, q) => Math.abs(q[0] - p[0]) + Math.abs(q[1] - p[1]);
+    const inY = (nd, y) => y >= nd.y + 6 && y <= nd.y + nd.h - 6, inX = (nd, x) => x >= nd.x + 6 && x <= nd.x + nd.w - 6;
+    if (n >= 4){
+      // end: ... p[n-4] -(along)- p[n-3] -(short step)- p[n-2] -(along)- p[n-1]=end
+      const [p4, p3, p2, p1] = [P[n - 4], P[n - 3], P[n - 2], P[n - 1]];
+      if (H(p2, p1) && H(p4, p3) && !H(p3, p2) && seg(p3, p2) < 45 && inY(b, p3[1])){ P[n - 2] = [p2[0], p3[1]]; P[n - 1] = [p1[0], p3[1]]; }
+      else if (!H(p2, p1) && !H(p4, p3) && H(p3, p2) && seg(p3, p2) < 45 && inX(b, p3[0])){ P[n - 2] = [p3[0], p2[1]]; P[n - 1] = [p3[0], p1[1]]; }
+    }
+    if (P.length >= 4){
+      const [q0, q1, q2, q3] = [P[0], P[1], P[2], P[3]];
+      if (H(q0, q1) && H(q2, q3) && !H(q1, q2) && seg(q1, q2) < 45 && inY(a, q2[1])){ P[0] = [q0[0], q2[1]]; P[1] = [q1[0], q2[1]]; }
+      else if (!H(q0, q1) && !H(q2, q3) && H(q1, q2) && seg(q1, q2) < 45 && inX(a, q2[0])){ P[0] = [q2[0], q0[1]]; P[1] = [q2[0], q1[1]]; }
+    }
+    // drop the now collinear points
+    const out = [P[0]];
+    for (let i = 1; i < P.length - 1; i++){ const u = out[out.length - 1], v = P[i], w = P[i + 1];
+      if ((u[0] === v[0] && v[0] === w[0]) || (u[1] === v[1] && v[1] === w[1]) || (u[0] === v[0] && u[1] === v[1])) continue; out.push(v); }
+    out.push(P[P.length - 1]); return out;
   }
 
   // ---------- icons ----------
@@ -439,21 +470,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   FRAMES.forEach(f => {
     const g = el("g", { class: "frame" }, gFrames); g.dataset.st = f.st || "b";
     el("rect", { x: f.x, y: f.y, width: f.w, height: f.h, rx: 14 }, g);
-    const t = el("text", { x: f.x + 14, y: f.y + 24 }, g); t.textContent = f.label; f.g = g;
-  });
-
-  const sEls = {};
-  STREAMS.forEach(s => {
-    const pts = route(s);
-    const g = el("g", { class: "stream" + ((s.rg || s.hide || ["water", "cnw", "air"].includes(s.ty)) ? " svc" : "") }, gStreams);
-    const d = "M" + pts.map(p => p.join(" ")).join(" L");
-    el("path", { class: "hit", d }, g);
-    const ln = el("path", { class: "ln", d, style: `stroke:${STREAM_TYPES[s.ty].color}`, "marker-end": `url(#ah_${s.ty})` }, g);
-    try { const L = ln.getTotalLength(); const gs = el("g", { class: "sym" }, g);
-      for (let at = Math.min(70, L / 2); at < L - 35; at += 170){ const q = ln.getPointAtLength(at); drawSym(gs, STREAM_TYPES[s.ty], q.x, q.y, 6); } } catch (e) {}
-    s.pts = pts;
-    g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); pick(e, { k: "s", id: s.id }, () => showStream(s, e.target.closest(".sym"))); });
-    sEls[s.id] = g; s.g = g;
+    const t = el("text", { x: f.x + 14, y: f.y + 24 }, g); t.textContent = f.label; f.g = g; f.t = t;
   });
 
   const nEls = {};
@@ -470,6 +487,33 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); pick(e, { k: "n", id: n.id }, () => showNode(n)); });
     nEls[n.id] = g; n.g = g;
   });
+  // names always sit above the symbol; boxes in the same row of an area share one top edge
+  (function placeNodeLabels(){
+    const frameOf = n => FRAMES.findIndex(f => n.x + n.w / 2 > f.x && n.x + n.w / 2 < f.x + f.w && n.y + n.h / 2 > f.y && n.y + n.h / 2 < f.y + f.h);
+    NODES.forEach(n => { n._bb = n.nl.getBBox(); n._bw = n._bb.width + 14; n._bh = n._bb.height + 8; n._bot = n.y - ({ tank: 18, cell: 12 }[n.t] || 6); n._fr = frameOf(n); });
+    const groups = [];
+    NODES.slice().sort((p, q) => p._bot - q._bot).forEach(n => { let g = groups.find(g => g.fr === n._fr && Math.abs(g.bot - n._bot) <= 30); if (!g) groups.push(g = { fr: n._fr, bot: n._bot, ns: [] }); g.ns.push(n); });
+    groups.forEach(g => { const top = Math.min(...g.ns.map(n => n._bot - n._bh));
+      g.ns.forEach(n => { const cx = n.x + n.w / 2; n.lb = { x1: cx - n._bw / 2, y1: top, x2: cx + n._bw / 2, y2: n._bot };
+        n.nl.setAttribute("transform", `translate(${cx - n._bb.x - n._bb.width / 2} ${top + 4 - n._bb.y})`);
+        n.nlr = el("rect", { class: "nlbg", x: n._bb.x - 7, y: n._bb.y - 4, width: n._bw, height: n._bot - top, rx: 6 }); n.nl.insertBefore(n.nlr, n.nl.firstChild);
+        if (n._fr >= 0) n.nlr.classList.add("inf"); }); });
+  })();
+
+  const sEls = {};
+  STREAMS.forEach(s => {
+    const pts = route(s);
+    const g = el("g", { class: "stream" + ((s.rg || s.hide || ["water", "cnw", "air"].includes(s.ty)) ? " svc" : "") }, gStreams);
+    const d = "M" + pts.map(p => p.join(" ")).join(" L");
+    el("path", { class: "hit", d }, g);
+    const ln = el("path", { class: "ln", d, style: `stroke:${STREAM_TYPES[s.ty].color}`, "marker-end": `url(#ah_${s.ty})` }, g);
+    try { const L = ln.getTotalLength(); const gs = el("g", { class: "sym" }, g);
+      for (let at = Math.min(70, L / 2); at < L - 35; at += 170){ const q = ln.getPointAtLength(at); drawSym(gs, STREAM_TYPES[s.ty], q.x, q.y, 6); } } catch (e) {}
+    s.pts = pts;
+    g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); pick(e, { k: "s", id: s.id }, () => showStream(s, e.target.closest(".sym"))); });
+    sEls[s.id] = g; s.g = g;
+  });
+
   function wrap(s, max){ const w = s.split(" "); const out = [""]; w.forEach(x => { if ((out[out.length - 1] + " " + x).trim().length > max) out.push(x); else out[out.length - 1] = (out[out.length - 1] + " " + x).trim(); }); return out; }
 
   // ISA control loops: measurement dot → DCS tag bubble → final element, dashed signal lines
@@ -487,7 +531,26 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     else if (a.k === "burner"){ el("path", { class: "fe", d: `M${x} ${y - 11} C ${x + 10} ${y - 2}, ${x + 6} ${y + 8}, ${x} ${y + 8} C ${x - 6} ${y + 8}, ${x - 10} ${y - 2}, ${x} ${y - 11} Z` }, g); }
     const lt = el("text", { class: "fel", x: x + 13, y: y - 9 }, g); lt.textContent = a.l || "";
   }
+  // Loop and interlock points are pinned to equipment: [node, side t/b/l/r/in, fraction along side, distance out]
+  const ovr = (a, b) => Math.max(0, Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1)) * Math.max(0, Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1));
+  function pin(a){
+    if (typeof a[0] === "number") return a;
+    const [id, side, f, d] = a, n = byId[id];
+    if (side === "in") return [n.x + f * n.w, n.y + d * n.h];
+    if (side === "b") return [n.x + f * n.w, n.y + n.h + d];
+    if (side === "l") return [n.x - d, n.y + f * n.h];
+    if (side === "r") return [n.x + n.w + d, n.y + f * n.h];
+    const x = n.x + f * n.w; let y = n.y - d;                        // above: keep clear of the name box
+    if (n.lb && x > n.lb.x1 - 24 && x < n.lb.x2 + 24 && y > n.lb.y1 - 20) y = n.lb.y1 - 20 - Math.min(d, 20);
+    return [x, y];
+  }
+  const busy = NODES.map(n => n.lb).concat(NODES.map(n => ({ x1: n.x, y1: n.y, x2: n.x + n.w, y2: n.y + n.h })));
   LOOPS.forEach(L => {
+    L.se = pin(L.se); L.a.forEach(a => a.p = pin(a.p));
+    // tag bubble: pinned spot, else the nearest free spot around it
+    const b0 = pin(L.b), free = ([x, y]) => { const r = { x1: x - 24, y1: y - 18, x2: x + 24, y2: y + 18 }; return busy.every(q => ovr(r, q) < 4); };
+    L.b = b0; for (const [dx, dy] of [[0, 0], [0, -40], [45, 0], [-45, 0], [0, 40], [0, -80], [90, 0], [-90, 0], [45, -40], [-45, -40], [0, 80], [0, -120]]) { const c = [b0[0] + dx, b0[1] + dy]; if (free(c)) { L.b = c; break; } }
+    busy.push({ x1: L.b[0] - 24, y1: L.b[1] - 18, x2: L.b[0] + 24, y2: L.b[1] + 18 });
     const g = el("g", { class: "ctl" }, gLoops);
     const segs = [elbow(L.se, L.b, true)].concat(L.a.map(a => elbow(L.b, a.p, false)));
     segs.forEach((pts, i) => { const d = pathD(pts); el("path", { class: "hitl", d }, g); el("path", { class: "sig", d, "marker-end": i ? "url(#ah_sig)" : "" }, g); });
@@ -505,6 +568,11 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   });
   // Interlocks (I) and permissives (P): red dash-dot cause → effect
   INTERLOCKS.forEach(I => {
+    // cause → effect as one right angle, taking the corner that crosses fewer name boxes
+    if (typeof I.pts[0][0] !== "number"){ const p0 = pin(I.pts[0]), p1 = pin(I.pts[I.pts.length - 1]);
+      if (p0[0] === p1[0] || p0[1] === p1[1]) I.pts = [p0, p1];
+      else { const hit = c => [[p0, c], [c, p1]].reduce((t, [u, v]) => t + NODES.filter(n => ovr({ x1: Math.min(u[0], v[0]) - 2, y1: Math.min(u[1], v[1]) - 2, x2: Math.max(u[0], v[0]) + 2, y2: Math.max(u[1], v[1]) + 2 }, n.lb) > 0).length, 0);
+        const c1 = [p1[0], p0[1]], c2 = [p0[0], p1[1]]; I.pts = [p0, hit(c1) <= hit(c2) ? c1 : c2, p1]; } }
     const g = el("g", { class: "ilk" }, gLoops); const d = pathD(I.pts);
     el("path", { class: "hitl", d }, g); el("path", { class: "sig", d, "marker-end": "url(#ah_ilk)" }, g);
     let best = 0, bi = 0; for (let i = 0; i < I.pts.length - 1; i++){ const Ln = Math.abs(I.pts[i + 1][0] - I.pts[i][0]) + Math.abs(I.pts[i + 1][1] - I.pts[i][1]); if (Ln > best){ best = Ln; bi = i; } }
@@ -1040,41 +1108,46 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       if (w >= 0 && h >= 0) t += Math.max(w, h, 1); } return t; };
     const ov = (a, b) => Math.max(0, Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1)) * Math.max(0, Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1));
     const bodies = NODES.map(n => ({ n, x1: n.x - 3, y1: n.y - (["tank", "cell"].includes(n.t) ? 16 : 3), x2: n.x + n.w + 3, y2: n.y + n.h + 3 }));
-    const placed = FRAMES.map(f => ({ x1: f.x + 8, y1: f.y + 4, x2: f.x + 20 + f.label.length * 11.5, y2: f.y + 32 }));
+    const placed = [];
     const cost = (r, own, skipS) => { let c = lineIn({ x1: r.x1 - 4, y1: r.y1 - 4, x2: r.x2 + 4, y2: r.y2 + 4 }, skipS) * 10;
       bodies.forEach(b => { if (b.n !== own) c += ov(r, b) * (own ? 0.6 : 4); }); placed.forEach(p => c += ov(r, p) * 8); return c; };
     const inFrame = r => FRAMES.some(f => (r.x1 + r.x2) / 2 > f.x && (r.x1 + r.x2) / 2 < f.x + f.w && (r.y1 + r.y2) / 2 > f.y && (r.y1 + r.y2) / 2 < f.y + f.h);
-    // equipment labels: below, above, right, left, then centred on the symbol
-    NODES.forEach(n => {
-      const bb = n.nl.getBBox(), bw = bb.width + 12, bh = bb.height + 8, cx = n.x + n.w / 2, cy = n.y + n.h / 2;
-      const C = [[cx - bw / 2, n.y + n.h + 6, 0], [cx - bw / 2, n.y - (["tank", "cell"].includes(n.t) ? 18 : 6) - bh, 8], [n.x + n.w + 10, cy - bh / 2, 12], [n.x - 10 - bw, cy - bh / 2, 12], [cx - bw / 2, cy - bh / 2, 60]];
+    // node name boxes are fixed above each symbol; they are obstacles for everything else
+    NODES.forEach(n => placed.push(n.lb));
+    // area titles: top left, top right, bottom left or bottom right, wherever no line runs through the text
+    FRAMES.forEach(f => {
+      let fs = 17; f.t.style.fontSize = fs + "px"; let bb = f.t.getBBox();
+      while (bb.width > f.w - 30 && fs > 11){ fs--; f.t.style.fontSize = fs + "px"; bb = f.t.getBBox(); }
+      const w = bb.width, h = bb.height, C = [];
+      [0, 0.5, 1].forEach((k, i) => { const x = f.x + 14 + (f.w - 28 - w) * k; C.push([x, f.y + 8, i * 2], [x, f.y + f.h - 8 - h, 3 + i * 2]); });
       let best = null;
-      C.forEach(([x, y, pen]) => { const r = { x1: x, y1: y, x2: x + bw, y2: y + bh }; const c = cost(r, n) + pen + (pen === 60 ? 0 : ov(r, bodies.find(b => b.n === n)) * 0.6);
-        if (!best || c < best.c) best = { r, c }; });
-      const r = best.r; placed.push(r);
-      n.nl.setAttribute("transform", `translate(${r.x1 + 6 - bb.x} ${r.y1 + 4 - bb.y})`);
-      n.nl.insertBefore(el("rect", { class: "nlbg" + (inFrame(r) ? " inf" : ""), x: bb.x - 6, y: bb.y - 4, width: bw, height: bh, rx: 6 }), n.nl.firstChild);
+      C.forEach(([x, y, pen]) => { const r = { x1: x - 4, y1: y - 2, x2: x + w + 4, y2: y + h + 2 };
+        let c = lineIn(r) * 10 + pen; NODES.forEach(n => { c += ov(r, n.lb) * 4 + ov(r, { x1: n.x, y1: n.y, x2: n.x + n.w, y2: n.y + n.h }) * 4; });
+        if (!best || c < best.c) best = { r, c, x, y }; });
+      const base = +f.t.getAttribute("y") - bb.y; f.t.setAttribute("x", best.x); f.t.setAttribute("y", best.y + base);
+      f.hr = best.r; f.hcost = best.c; placed.push(best.r);
     });
     // flow boxes: every line with PDC data, on a long straight run away from arrow heads and clutter
     const order = STREAMS.filter(s => flowText(s, 0)).map(s => ({ s, L: s.pts.reduce((t, p, i) => i ? t + Math.abs(p[0] - s.pts[i - 1][0]) + Math.abs(p[1] - s.pts[i - 1][1]) : 0, 0) })).sort((a, b) => a.L - b.L);
     order.forEach(({ s }) => {
       // box lives above the equipment layer and mirrors its line's visibility, fading and highlight
       const g = el("g", { class: "lab fbx" }, gFlow), t = el("text", { x: 0, y: 0, "text-anchor": "middle" }, g), txt = flowText(s, 0);
-      t.textContent = txt; const bw = t.getComputedTextLength() + 14, bh = 19;
+      t.textContent = txt; const bw = t.getComputedTextLength() + 16, bh = 21, need = bw + 2 * 22;   // the line must stay visible either side of the box
       let best = null;
       for (let i = 0; i < s.pts.length - 1; i++){
         const a = s.pts[i], b = s.pts[i + 1], hz = a[1] === b[1], L = Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1]), half = bw / 2 + 24, vw = hz ? bw : bh, vh = hz ? bh : bw;   // boxes turn to run along vertical lines
         [0.5, 0.35, 0.65, 0.22, 0.78].forEach(f => {
           const cx = a[0] + (b[0] - a[0]) * f, cy = a[1] + (b[1] - a[1]) * f, dEnd = Math.min(f, 1 - f) * L;
           const r = { x1: cx - vw / 2, y1: cy - vh / 2, x2: cx + vw / 2, y2: cy + vh / 2 };
-          const c = cost(r, null, s) + (dEnd < half ? 400 + (half - dEnd) * 5 : 0) - Math.min(L, 700) * 0.04 + Math.abs(f - 0.5) * 12 + (hz ? 0 : 3);
-          if (!best || c < best.c) best = { c, cx, cy, r, hz };
+          const c = cost(r, null, s) + (dEnd < half ? 400 + (half - dEnd) * 5 : 0) + (L < need ? 5000 : 0) - Math.min(L, 700) * 0.04 + Math.abs(f - 0.5) * 12 + (hz ? 0 : 3);
+          if (!best || c < best.c) best = { c, cx, cy, r, hz, L };
         });
       }
       placed.push(best.r);
       s.fb = { g, t, cx: best.cx, t0: txt };
       t.setAttribute("x", best.cx); t.setAttribute("y", best.cy + 4);
-      s.fb.r = el("rect", { x: best.cx - bw / 2, y: best.cy - bh / 2, width: bw, height: bh, rx: 5 }); g.insertBefore(s.fb.r, t); if (inFrame(best.r)) g.classList.add("inf");
+      s.fb.short = best.L < need; s.fb.cost = best.c;
+      s.fb.r = el("rect", { x: best.cx - bw / 2, y: best.cy - bh / 2, width: bw, height: bh, rx: 5, style: `stroke:${STREAM_TYPES[s.ty].color}` }); g.insertBefore(s.fb.r, t); if (inFrame(best.r)) g.classList.add("inf");
       if (!best.hz) g.setAttribute("transform", `rotate(-90 ${best.cx} ${best.cy})`);
       s.fb.tip = el("title", {}, g); s.fb.tip.textContent = s.n + ": " + txt;
       const sync = () => { ["hl", "ghost", "svc", "sel"].forEach(c => g.classList.toggle(c, s.g.classList.contains(c))); g.style.display = s.g.style.display; };
@@ -1083,6 +1156,28 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     });
   }
   layoutLabels();
+  // Layout self check (used when editing coordinates): window.pfdCheck() lists clashes
+  window.pfdCheck = () => {
+    const ov = (a, b) => Math.max(0, Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1)) * Math.max(0, Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1));
+    const body = n => ({ x1: n.x, y1: n.y - ({ tank: 14, cell: 8 }[n.t] || 0), x2: n.x + n.w, y2: n.y + n.h });
+    const out = { short: STREAMS.filter(s => s.fb && s.fb.short).map(s => s.id + ":" + s.f + ">" + s.to), labelHits: [], headers: FRAMES.filter(f => f.hcost > 20).map(f => f.label + " cost " + Math.round(f.hcost)), jogs: [], boxHits: [] };
+    NODES.forEach(n => { NODES.forEach(m => { if (m !== n && (ov(n.lb, body(m)) > 30 || (m.id > n.id && ov(n.lb, m.lb) > 30))) out.labelHits.push(n.id + "/" + m.id); });
+      FRAMES.forEach(f => { if (ov(n.lb, f.hr) > 20) out.labelHits.push(n.id + "/header " + f.label.slice(0, 12)); }); });
+    STREAMS.forEach(s => { for (let i = 1; i < s.pts.length - 2; i++){ const L = Math.abs(s.pts[i + 1][0] - s.pts[i][0]) + Math.abs(s.pts[i + 1][1] - s.pts[i][1]); if (L > 0 && L < 18) out.jogs.push(s.id + " " + L); } });
+    STREAMS.forEach(s => { if (s.fb && s.fb.cost > 200) out.boxHits.push(s.id + " " + Math.round(s.fb.cost)); });
+    // where extra space is needed: [axis, position, amount] (used by tools/relayout.js)
+    out.needs = [];
+    STREAMS.forEach(s => { if (!s.fb || !s.fb.short) return; let bi = 0, bl = 0;
+      for (let i = 0; i < s.pts.length - 1; i++){ const L = Math.abs(s.pts[i + 1][0] - s.pts[i][0]) + Math.abs(s.pts[i + 1][1] - s.pts[i][1]); if (L > bl){ bl = L; bi = i; } }
+      const a = s.pts[bi], b = s.pts[bi + 1], need = s.fb.r.getBBox().width + 50;
+      if (a[1] === b[1]) out.needs.push(["x", (a[0] + b[0]) / 2, need - bl]); else out.needs.push(["y", (a[1] + b[1]) / 2, need - bl]); });
+    const rects = NODES.map(n => [n, body(n)]).concat(NODES.map(n => [n, n.lb]));
+    for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++){ const [n, A] = rects[i], [m, B] = rects[j]; if (n === m) continue;
+      const w = Math.min(A.x2, B.x2) - Math.max(A.x1, B.x1), h = Math.min(A.y2, B.y2) - Math.max(A.y1, B.y1); if (w <= 2 || h <= 2) continue;
+      const ca = [(A.x1 + A.x2) / 2, (A.y1 + A.y2) / 2], cb = [(B.x1 + B.x2) / 2, (B.y1 + B.y2) / 2];
+      if (Math.abs(ca[0] - cb[0]) > Math.abs(ca[1] - cb[1])) out.needs.push(["x", (ca[0] + cb[0]) / 2, w + 16]); else out.needs.push(["y", (ca[1] + cb[1]) / 2, h + 16]); }
+    return out;
+  };
   applyStage(); fit();
 })();
 </script>
