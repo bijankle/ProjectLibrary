@@ -157,15 +157,17 @@ svg.showilk .ilk{display:inline}
 .ilk:hover .sig,.ilk.sel2 .sig{stroke-width:3.5}
 svg.focus .ctl, svg.focus .ilk{opacity:.12}
 .sym{cursor:pointer}
-.lab.chg text{fill:var(--accent);font-style:italic;font-family:Georgia,"Times New Roman",serif;font-weight:800;font-size:13.5px}
-.lab.chg rect{stroke:var(--accent);stroke-width:1.4}
-.lab.flash{animation:labflash .45s ease-in-out 7 alternate}
-@keyframes labflash{from{opacity:1}to{opacity:.2}}
-svg.far .lab.chg{display:inline}
-#case.on{border-color:var(--accent);color:var(--accent);font-style:italic}
-#info .sc .cur{background:rgba(232,180,74,.16)}
-#info .sc th.cur{color:var(--accent)}
-.casenote{font-size:12.5px;background:rgba(232,180,74,.14);border:1px solid var(--accent);border-radius:8px;padding:7px 9px;margin:8px 0;font-style:italic}
+/* PDC case colours: a changed tph box fills with its case colour; the dropdown is the legend */
+:root{--case1:#9cc8ff;--case2:#9fe0a8;--case3:#e3b3ff}
+.lab.chg rect{fill:var(--cc)}
+.lab.chg text{fill:#111}
+.lab.chg.inf rect{fill:var(--cc)}
+#case{font-weight:700}
+#case.on{background:var(--cc);color:#111;border-color:var(--cc)}
+#case option{color:#111;font-weight:700}
+#info .sc .cur{background:color-mix(in srgb,var(--cc) 35%,transparent)}
+#info .sc th.cur{color:var(--ink)}
+.casenote{font-size:12.5px;background:color-mix(in srgb,var(--cc) 35%,transparent);border:1px solid var(--cc);border-radius:8px;padding:7px 9px;margin:8px 0}
 #lkPanel .lk-in{font-size:14px;padding:9px 11px}
 
 .ctl.hl,.ilk.hl{display:inline}
@@ -609,19 +611,19 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     toast(stage === 1 ? "Stage 1 as built: tails to old CIL2/3 and the dam, concentrate to CIL1 and Gidji. Stage 2 items shown faded." : "Stage 2: all tails to CIL4, UFG 3 added, CIL2 leach and CIL3 adsorption, Gidji shut.");
   });
   // ---------- PDC case ----------
-  PDC_CASES.forEach((c, i) => { const o = document.createElement("option"); o.value = i; o.textContent = "PDC: " + c; $("case").appendChild(o); });
+  const CASE_COL = ["", "var(--case1)", "var(--case2)", "var(--case3)"];
+  PDC_CASES.forEach((c, i) => { const o = document.createElement("option"); o.value = i; o.textContent = "PDC: " + c; o.style.background = i ? CASE_COL[i] : "#ffffff"; $("case").appendChild(o); });
   $("case").onchange = e => setCase(+e.target.value);
   function setCase(ci){
-    pdcCase = ci; $("case").classList.toggle("on", ci !== 0);
+    pdcCase = ci; $("case").classList.toggle("on", ci !== 0); document.documentElement.style.setProperty("--cc", CASE_COL[ci] || "transparent");
     const changed = [];
     STREAMS.forEach(s => { if (!s.fb) return;
       const txt = flowText(s, ci) || s.fb.t0, diff = txt !== s.fb.t0;
       setBox(s, txt); s.fb.g.classList.toggle("chg", diff);
       s.fb.tip.textContent = diff ? `${PDC_CASES[ci]}: ${txt}  (nominal ${s.fb.t0})` : s.n + ": " + txt;
-      s.fb.g.classList.remove("flash"); if (diff){ void s.fb.g.getBBox(); s.fb.g.classList.add("flash"); changed.push(s.id); }
+      if (diff) changed.push(s.id);
     });
-    clearTimeout(setCase.t); setCase.t = setTimeout(() => document.querySelectorAll(".lab.flash").forEach(g => g.classList.remove("flash")), 3200);
-    toast(ci === 0 ? "Nominal case (25.5 Mtpa, nominal grade, P80 180 µm)." : `${PDC_CASES[ci]}: ${changed.length} line figures changed (shown in italic ${ci ? "accent" : ""} text). Stream panels highlight this case's column.`);
+    toast(ci === 0 ? "Nominal case (25.5 Mtpa, nominal grade, P80 180 µm)." : `${PDC_CASES[ci]}: ${changed.length} line figures differ from nominal; their boxes are coloured to match the dropdown. Stream panels highlight this case's column.`);
     if (lastPanel && $("info").classList.contains("on")) lastPanel();
   }
 
