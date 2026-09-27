@@ -17,18 +17,18 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
 button,select,input{font:inherit;color:inherit}
-header{position:fixed;left:0;right:0;top:0;height:54px;display:flex;align-items:center;gap:14px;padding:0 14px;
+header{position:fixed;left:0;right:0;top:0;height:54px;display:flex;align-items:center;gap:10px;padding:0 14px;
   background:var(--panel);border-bottom:1px solid var(--line);z-index:5}
 header h1{font-size:17px;margin:0;white-space:nowrap}
 header h1 span{color:var(--accent)}
 .seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px}
-.seg button{border:0;background:transparent;color:var(--mute);font-weight:700;font-size:13px;padding:5px 11px;border-radius:6px;cursor:pointer}
+.seg button{white-space:nowrap;border:0;background:transparent;color:var(--mute);font-weight:700;font-size:13px;padding:5px 11px;border-radius:6px;cursor:pointer}
 .seg button.on{background:var(--accent);color:#1a1307}
 .hbtn{border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:6px 11px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
 .hbtn.on{border-color:var(--accent);color:var(--accent)}
 select.hbtn{padding:6px 8px}
 .grow{flex:1}
-#search{width:220px;border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:7px 10px;font-size:13px}
+#search{width:210px;min-width:120px;border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:7px 10px;font-size:13px}
 a.hbtn{text-decoration:none;color:var(--ink)}
 #side{position:fixed;left:0;top:54px;bottom:0;width:270px;background:var(--panel);border-right:1px solid var(--line);
   overflow-y:auto;padding:14px;z-index:4}
@@ -132,6 +132,17 @@ svg.showilk .ilk{display:inline}
 .ilk:hover .sig,.ilk.sel2 .sig{stroke-width:3.5}
 svg.focus .ctl, svg.focus .ilk{opacity:.12}
 .sym{cursor:pointer}
+.stream .lab.chg text{fill:var(--accent);font-style:italic;font-family:Georgia,"Times New Roman",serif;font-weight:800;font-size:13.5px}
+.stream .lab.chg rect{stroke:var(--accent);stroke-width:1.4;opacity:1}
+.stream .lab.flash{animation:labflash .45s ease-in-out 7 alternate}
+@keyframes labflash{from{opacity:1}to{opacity:.2}}
+svg.far .lab.chg{display:inline}
+#case.on{border-color:var(--accent);color:var(--accent);font-style:italic}
+#info .sc .cur{background:rgba(232,180,74,.16)}
+#info .sc th.cur{color:var(--accent)}
+.casenote{font-size:12.5px;background:rgba(232,180,74,.14);border:1px solid var(--accent);border-radius:8px;padding:7px 9px;margin:8px 0;font-style:italic}
+#lkPanel .lk-in{font-size:14px;padding:9px 11px}
+
 .ctl.hl,.ilk.hl{display:inline}
 svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 .ctl .feg{cursor:pointer}
@@ -177,14 +188,14 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <header>
   <h1>KCGM <span>Interactive PFD</span></h1>
   <div class="seg" id="stageSeg"><button data-s="1">Stage 1</button><button data-s="2" class="on">Stage 2</button></div>
-  <select class="hbtn" id="scen" title="Operating scenario"></select>
+  <select class="hbtn" id="case" title="PDC design case: changes the flow figures on the lines and highlights that column in stream panels"></select>
   <button class="hbtn" id="tLoops" title="Show ISA control loops (tag bubbles and signal lines)">🎛 Control loops</button>
   <button class="hbtn" id="tIlk" title="Show interlocks and start permissives">⛔ Interlocks</button>
   <button class="hbtn" id="tSvc" title="Show water, reagent and air lines">💧 Service lines</button>
   <button class="hbtn" id="tAnim" title="Animate every stream">➤ Animate all</button>
   <div class="grow"></div>
-  <input id="search" list="names" placeholder="Find equipment or tag…">
-  <datalist id="names"></datalist>
+  <input id="search" placeholder="🔎 Search any tag, line, valve…  ( / )" autocomplete="off" spellcheck="false">
+  <button class="hbtn" id="camBtn" title="Read a tag from a photo">📷</button>
   <button class="hbtn" id="tTheme" title="Light / dark">◐</button>
   <a class="hbtn" href="index.html?cards" title="Open the flashcards">🃏 Flashcards</a>
 </header>
@@ -217,6 +228,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <script src="pfd-streams.js"></script>
 <script src="pfd-equip.js"></script>
 <script src="tools/tagutil.js"></script>
+<script src="lookup.js"></script>
 <script>
 (() => {
   const NS = "http://www.w3.org/2000/svg";
@@ -224,9 +236,15 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   const svg = $("svg");
   const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
   const byId = {}; NODES.forEach(n => byId[n.id] = n);
+  // Line labels that show a PDC figure: [property, format]. They follow the selected PDC case.
+  const LABELS = { s_pc2: ["sol", "{} t/h"], s_cos1: ["sol", "{} t/h"], s_cos2: ["sol", "{} t/h"], s_cf: ["vol", "{} m³/h"], s_cuf: ["cw", "UF {}%"],
+    s_cof: ["p80", "P80 {} µm"], s_gsu: ["sol", "{} t/h"], s_tf: ["sol", "{} t/h"], s_f4: ["sol", "{} t/h"], s_st: ["sol", "{} t/h"], s_fc: ["sol", "{} t/h"],
+    s_p2: ["p80", "P80 {} µm"], s_plu: ["sol", "{} t/h"], s_ttu: ["cw", "{}% solids"], s_c40: ["vol", "{} m³/h"] };
+  function caseLabel(s, ci){ const [k, f] = LABELS[s.id], D = STREAM_DATA[s.id] || {}, v = Array.isArray(D[k]) ? D[k][ci] : D[k];
+    return v == null ? (s.lab || "") : f.replace("{}", typeof v === "number" ? v.toLocaleString("en-AU", { maximumFractionDigits: v < 100 ? 1 : 0 }) : v); }
   const pref = { get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } }, set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} } };
 
-  let stage = 2, focusFlow = null, stepIx = -1, playing = null, scenario = "normal", sel = [], lastPanel = null;
+  let stage = 2, focusFlow = null, stepIx = -1, playing = null, pdcCase = 0, sel = [], lastPanel = null;
   if (pref.get("pfd_theme", "dark") === "light") document.documentElement.dataset.theme = "light";
 
   // ---------- geometry ----------
@@ -413,13 +431,15 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     const ln = el("path", { class: "ln", d, style: `stroke:${STREAM_TYPES[s.ty].color}`, "marker-end": `url(#ah_${s.ty})` }, g);
     try { const L = ln.getTotalLength(); const gs = el("g", { class: "sym" }, g);
       for (let at = Math.min(70, L / 2); at < L - 35; at += 170){ const q = ln.getPointAtLength(at); drawSym(gs, STREAM_TYPES[s.ty], q.x, q.y, 6); } } catch (e) {}
+    if (LABELS[s.id]) s.lab = caseLabel(s, 0);
     if (s.lab){
       let best = 0, bi = 0;
       for (let i = 0; i < pts.length - 1; i++){ const L = Math.abs(pts[i + 1][0] - pts[i][0]) + Math.abs(pts[i + 1][1] - pts[i][1]); if (L > best){ best = L; bi = i; } }
       const mx = (pts[bi][0] + pts[bi + 1][0]) / 2, my = (pts[bi][1] + pts[bi + 1][1]) / 2;
       const lg = el("g", { class: "lab" }, g);
       const tx = el("text", { x: mx, y: my - 7, "text-anchor": "middle" }, lg); tx.textContent = s.lab;
-      requestAnimationFrame(() => { try { const bb = tx.getBBox(); const r = el("rect", { x: bb.x - 4, y: bb.y - 1, width: bb.width + 8, height: bb.height + 2, rx: 4 }); lg.insertBefore(r, tx); } catch (e) {} });
+      s.labG = lg; s.labT = tx; s.lab0 = s.lab; s.labTip = el("title", {}, lg);
+      requestAnimationFrame(() => { try { const bb = tx.getBBox(); s.labR = el("rect", { x: bb.x - 4, y: bb.y - 1, width: bb.width + 8, height: bb.height + 2, rx: 4 }); lg.insertBefore(s.labR, tx); } catch (e) {} });
     }
     g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); pick(e, { k: "s", id: s.id }, () => showStream(s, e.target.closest(".sym"))); });
     sEls[s.id] = g; s.g = g;
@@ -507,12 +527,23 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     stage = +b.dataset.s; applyStage();
     toast(stage === 1 ? "Stage 1 as built: tails to old CIL2/3 and the dam, concentrate to CIL1 and Gidji. Stage 2 items shown faded." : "Stage 2: all tails to CIL4, UFG 3 added, CIL2 leach and CIL3 adsorption, Gidji shut.");
   });
-  SCENARIOS.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; $("scen").appendChild(o); });
-  $("scen").onchange = e => {
-    scenario = e.target.value; const sc = SCENARIOS.find(s => s.id === scenario);
-    NODES.forEach(n => n.g.classList.toggle("off", sc.off.includes(n.id)));
-    toast(sc.txt);
-  };
+  // ---------- PDC case ----------
+  PDC_CASES.forEach((c, i) => { const o = document.createElement("option"); o.value = i; o.textContent = "PDC: " + c; $("case").appendChild(o); });
+  $("case").onchange = e => setCase(+e.target.value);
+  function setCase(ci){
+    pdcCase = ci; $("case").classList.toggle("on", ci !== 0);
+    const changed = [];
+    STREAMS.forEach(s => { if (!LABELS[s.id] || !s.labT) return;
+      const txt = caseLabel(s, ci), diff = txt !== s.lab0;
+      s.labT.textContent = txt; s.labG.classList.toggle("chg", diff);
+      s.labTip.textContent = diff ? `${PDC_CASES[ci]}: ${txt}  (nominal ${s.lab0})` : "";
+      s.labG.classList.remove("flash"); if (diff){ void s.labG.getBBox(); s.labG.classList.add("flash"); changed.push(`${s.n}: ${s.lab0} → ${txt}`); }
+      try { const bb = s.labT.getBBox(); if (s.labR) { s.labR.setAttribute("x", bb.x - 4); s.labR.setAttribute("width", bb.width + 8); } } catch (e) {}
+    });
+    clearTimeout(setCase.t); setCase.t = setTimeout(() => document.querySelectorAll(".lab.flash").forEach(g => g.classList.remove("flash")), 3200);
+    toast(ci === 0 ? "Nominal case (25.5 Mtpa, nominal grade, P80 180 µm)." : `${PDC_CASES[ci]}: ${changed.length} line figures changed (shown in italic ${ci ? "accent" : ""} text). Stream panels highlight this case's column.`);
+    if (lastPanel && $("info").classList.contains("on")) lastPanel();
+  }
 
   // ---------- toggles ----------
   const tog = (id, cls, key) => { const b = $(id); const on = pref.get(key, "0") === "1"; b.classList.toggle("on", on); svg.classList.toggle(cls, on);
@@ -679,7 +710,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     const ins = STREAMS.filter(s => s.to === n.id && s.f !== n.id && shown(s.g));
     const outs = STREAMS.filter(s => s.f === n.id && shown(s.g));
     const loops = loopsOn(n.id), ilks = ilksOn(n.id), E = EQUIP_DATA[n.id];
-    let h = `<div>${esc(n.s)}</div>` + table(n.d) + (n.c ? `<h4>Control</h4><div>${esc(n.c)}</div>` : "");
+    let h = (pdcCase ? `<div class="casenote">Case selected: ${esc(PDC_CASES[pdcCase])}. The summary rows below are nominal figures; open a stream for this case's values.</div>` : "") + `<div>${esc(n.s)}</div>` + table(n.d) + (n.c ? `<h4>Control</h4><div>${esc(n.c)}</div>` : "");
     if (loops.length) h += `<h4>Control loops acting on it</h4><div class="conn">${loops.map(loopLink).join("")}</div>`;
     if (ilks.length) h += `<h4>Interlocks & permissives</h4><div class="conn">${ilks.map(ilkLink).join("")}</div>`;
     if (n.hear) h += `<h4>What you'll hear</h4><div>${esc(n.hear)}</div>`;
@@ -687,7 +718,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     if (outs.length) h += `<h4>Out</h4><div class="conn">${outs.map(link).join("")}</div>`;
     if (E){
       h += `<h4>Mechanical equipment list (${E.eq.length} item${E.eq.length > 1 ? "s" : ""})</h4>` +
-        E.eq.map((r, i) => `<details${i ? "" : " open"}><summary>${esc(r.n || r.tag)}<span>${esc(r.tag)}</span></summary>${melTable(r)}</details>`).join("");
+        E.eq.map((r, i) => `<details${i ? "" : " open"}><summary>${esc(r.n || r.tag)}<span>${esc(r.tag)}</span></summary>${melTable(r)}<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div></details>`).join("");
       if (E.ins.length){
         h += `<h4>Instruments on this equipment (${E.insN}${E.insN > E.ins.length ? ", first " + E.ins.length + " shown" : ""})</h4><table class="it">` +
           E.ins.map(i => `<tr><td>${i.cv ? `<a data-cv="${esc(i.tag)}" style="color:var(--accent);cursor:pointer">${esc(i.tag)}</a>` : esc(i.tag)}</td><td>${esc(i.ty)}${i.loc ? ` <span class="m">· ${esc(i.loc)}</span>` : ""}${i.u ? ` <span class="m">· ${esc(i.u)}</span>` : ""}</td></tr>`).join("") + "</table>" +
@@ -734,8 +765,8 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     if (f.every(v => v == null)) return `<tr><td>${esc(label)}${unit ? " (" + esc(unit) + ")" : ""}</td><td class="ns" colspan="4">not specified</td></tr>`;
     if (f.every(v => v === f[0]) && (!calcs || calcs.every(c => c === calcs[0])))
       return `<tr><td>${esc(label)}${unit ? " (" + esc(unit) + ")" : ""}</td><td colspan="4" style="text-align:center"${calcs && calcs[0] ? ' class="c"' : ""}>${esc(f[0])}${calcs && calcs[0] ? `<sup>${calcs[0] === 2 ? "a" : "c"}</sup>` : ""} <span style="color:var(--mute);font-size:11px">all cases</span></td></tr>`;
-    return `<tr><td>${esc(label)}${unit ? " (" + esc(unit) + ")" : ""}</td>` + f.map((v, i) => v == null ? '<td class="ns">n/s</td>' :
-      `<td${calcs && calcs[i] ? ' class="c"' : ""}>${esc(v)}${calcs && calcs[i] ? `<sup>${calcs[i] === 2 ? "a" : "c"}</sup>` : ""}</td>`).join("") + "</tr>";
+    return `<tr><td>${esc(label)}${unit ? " (" + esc(unit) + ")" : ""}</td>` + f.map((v, i) => v == null ? `<td class="ns${i === pdcCase ? " cur" : ""}">n/s</td>` :
+      `<td class="${calcs && calcs[i] ? "c" : ""}${i === pdcCase ? " cur" : ""}">${esc(v)}${calcs && calcs[i] ? `<sup>${calcs[i] === 2 ? "a" : "c"}</sup>` : ""}</td>`).join("") + "</tr>";
   }
   function showStream(s, symClicked){
     const a = byId[s.f], b = byId[s.to], T = STREAM_TYPES[s.ty], D = (typeof STREAM_DATA !== "undefined" && STREAM_DATA[s.id]) || {};
@@ -746,12 +777,13 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     h += `<div class="conn"><a data-n="${a.id}">From: ${esc(a.n)}${a.tag ? " (" + esc(a.tag) + ")" : ""}</a><a data-n="${b.id}">To: ${esc(b.n)}${b.tag ? " (" + esc(b.tag) + ")" : ""}</a></div>`;
     const { C, calc } = streamCalc(D);
     const rows = SROWS.filter(([k]) => !(k === "p80mm" && C.p80mm.every(v => v == null)) && !(k === "p80" && C.p80.every(v => v == null) && C.p80mm.some(v => v != null)));
-    h += `<h4>Stream properties by PDC case</h4><table class="sc"><tr><th>Property (unit)</th>${CASE_SHORT.map(c => `<th>${c}</th>`).join("")}</tr>` +
+    if (pdcCase) h += `<div class="casenote">Highlighted column: ${esc(PDC_CASES[pdcCase])}.</div>`;
+    h += `<h4>Stream properties by PDC case</h4><table class="sc"><tr><th>Property (unit)</th>${CASE_SHORT.map((c, i) => `<th${i === pdcCase ? ' class="cur"' : ""}>${c}</th>`).join("")}</tr>` +
       rows.map(([k, l, u]) => caseRow(l, u, C[k], calc[k])).join("") + "</table>";
     const anyCalc = Object.values(calc).some(c => c.some(Boolean));
     if (anyCalc) h += `<div style="font-size:11.5px;color:var(--mute);line-height:1.45"><span style="color:#8fb8ff;font-style:italic">Blue italic</span> = calculated here from PDC values. <sup>c</sup> water = solids × (100 ÷ %solids − 1); slurry = solids ÷ %solids; slurry SG from 1/SG = x/SG<sub>s</sub> + (1 − x)/SG<sub>l</sub>; m³/h = slurry t/h ÷ slurry SG. <sup>a</sup> liquid assumed to be process water SG 1.07 (PDC 2.9).</div>`;
     if (D.x && D.x.length){
-      h += `<h4>Other PDC data for this stream</h4><table class="sc"><tr><th>Item (unit)</th>${CASE_SHORT.map(c => `<th>${c}</th>`).join("")}</tr>` +
+      h += `<h4>Other PDC data for this stream</h4><table class="sc"><tr><th>Item (unit)</th>${CASE_SHORT.map((c, i) => `<th${i === pdcCase ? ' class="cur"' : ""}>${c}</th>`).join("")}</tr>` +
         D.x.map(([l, u, v]) => Array.isArray(v) ? caseRow(l, u, v) : `<tr><td>${esc(l)}${u ? " (" + esc(u) + ")" : ""}</td><td colspan="4" style="text-align:center">${esc(typeof v === "number" ? fmt(v) : v)}</td></tr>`).join("") + "</table>";
     }
     if (D.n) h += `<div style="margin-top:8px">${esc(D.n)}</div>`;
@@ -864,6 +896,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     $("iBody").querySelectorAll("a[data-n]").forEach(a => a.onclick = e => { const n = byId[a.dataset.n]; if (n.st && n.st !== stage) document.querySelector(`#stageSeg button[data-s="${n.st}"]`).click(); go(e, { k: "n", id: n.id }, () => showNode(n)); });
     $("iBody").querySelectorAll("a[data-l]").forEach(a => a.onclick = e => { const L = LOOPS.find(x => x.id === a.dataset.l); go(e, { k: "loop", id: L.id }, () => showLoop(L)); });
     $("iBody").querySelectorAll("a[data-i]").forEach(a => a.onclick = e => { const I = INTERLOCKS.find(x => x.id === a.dataset.i); go(e, { k: "ilk", id: I.id }, () => showIlk(I)); });
+    $("iBody").querySelectorAll("a[data-find]").forEach(a => a.onclick = e => { e.preventDefault(); openSearch(a.dataset.find, true); });
     $("iBody").querySelectorAll("a[data-cv]").forEach(a => a.onclick = e => { e.preventDefault(); const c = CV_DATA[a.dataset.cv]; if (!c) return;
       const back = lastPanel; $("iKind").textContent = "Control valve"; $("iName").textContent = c.loc || c.tag; $("iTag").textContent = c.tag;
       $("iBody").innerHTML = `<div class="symm">${feSvg("valve")}<div><b>Control valve list entry</b></div></div>` + cvTable(c) + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;
@@ -916,14 +949,43 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     animVB({ x: (PFD_W - w) / 2, y: (PFD_H - h) / 2, w, h }); }
 
   // ---------- search ----------
-  $("names").innerHTML = NODES.map(n => `<option value="${esc(n.n)}">${esc(n.tag || "")}</option>`).join("");
-  $("search").addEventListener("change", e => {
-    const q = e.target.value.toLowerCase().trim(); if (!q) return;
-    const n = NODES.find(n => n.n.toLowerCase() === q) || NODES.find(n => (n.n + " " + (n.tag || "") + " " + (n.area || "")).toLowerCase().includes(q));
-    if (!n){ toast("No match for “" + e.target.value + "”"); return; }
-    if (n.st && n.st !== stage) document.querySelector(`#stageSeg button[data-s="${n.st}"]`).click();
-    pick({}, { k: "n", id: n.id }, () => showNode(n)); e.target.value = ""; e.target.blur();
-  });
+  // ---------- search (all plant lists + the PFD itself) ----------
+  // PFD items become search results that jump straight to the diagram
+  const goNode = n => () => { if (n.st && n.st !== stage) document.querySelector(`#stageSeg button[data-s="${n.st}"]`).click(); pick({}, { k: "n", id: n.id }, () => showNode(n)); };
+  const goStream = s => () => pick({}, { k: "s", id: s.id }, () => showStream(s));
+  const goLoop = L => () => { if (L.st && L.st !== stage) document.querySelector(`#stageSeg button[data-s="${L.st}"]`).click(); pick({}, { k: "loop", id: L.id }, () => showLoop(L)); };
+  Lookup.addExtra([
+    ...NODES.map(n => ({ t: "pfd", key: n.tag || n.n, name: "Equipment: " + n.n, words: n.n + " " + (n.sn || "") + " " + (EQUIP_DATA[n.id] ? EQUIP_DATA[n.id].eq.map(r => r.tag + " " + (r.n || "")).join(" ") : ""), go: goNode(n) })),
+    ...STREAMS.map(s => ({ t: "pfd", key: s.n, name: "Stream: " + byId[s.f].n + " → " + byId[s.to].n, words: STREAM_TYPES[s.ty].name, go: goStream(s) })),
+    ...LOOPS.map(L => ({ t: "pfd", key: L.tag + " " + L.name, name: "Control loop · " + [...(L.m || []), ...(L.f || [])].join(", "), words: [...(L.m || []), ...(L.f || []), L.c || ""].join(" "), go: goLoop(L) })),
+    ...INTERLOCKS.map(I => ({ t: "pfd", key: (I.k === "P" ? "Permissive: " : "Interlock: ") + I.name, name: I.cause + " → " + I.eff, words: I.tags || "", go: () => pick({}, { k: "ilk", id: I.id }, () => showIlk(I)) }))
+  ]);
+  // list item → place on the PFD (MEL tag, instrument on mapped equipment, or a loop device)
+  const onPfd = new Map();
+  Object.entries(EQUIP_DATA).forEach(([id, d]) => { d.eq.forEach(r => onPfd.set(Lookup.norm(r.tag), { label: "Show " + byId[id].n + " on the PFD", go: goNode(byId[id]) }));
+    d.ins.forEach(i => onPfd.has(Lookup.norm(i.tag)) || onPfd.set(Lookup.norm(i.tag), { label: "Show " + byId[id].n + " on the PFD", go: goNode(byId[id]) })); });
+  LOOPS.forEach(L => [...(L.m || []), ...(L.f || [])].forEach(t => expandTag(t).forEach(x => { const k = Lookup.norm(x); if (!onPfd.has(k) || !/^F\d\d[A-Z]/.test(k)) onPfd.set(k, { label: "Show the " + L.tag + " loop on the PFD", go: goLoop(L) }); })));
+  const pfdFor = it => { const f = onPfd.get(it.k); if (f) return f;
+    if (it.t === "ins" && it.r[3]) { const e = onPfd.get(Lookup.norm(it.r[3])); if (e) return e; } return null; };
+  let lkUI = null;
+  function openSearch(q, enter){
+    const draw = () => {
+      $("iKind").textContent = "Search · plant lists"; $("iName").textContent = "Look up any code"; $("iTag").textContent = "MEL, instruments, valves, lines, SPI, hoses, PFD";
+      $("iBody").innerHTML = '<div id="lkPanel"></div>';
+      lkUI = Lookup.mount($("lkPanel"), { pfd: pfdFor, initial: q || "", intro: `<div class="lk-empty">Type any part of a code (e.g. <b>13-PP-401</b>, <b>FCV16011</b>, <b>0716</b>, a P&amp;ID number) or words (e.g. <b>cyclone feed pump</b>). Spaces and hyphens don't matter. 📷 reads a tag from a photo.</div>` });
+      openInfo();
+    };
+    lastPanel = () => draw(); draw();
+    if (enter && q) Lookup.load().then(() => { const h = Lookup.search(q, 2); if (h[0] && h[0].k === Lookup.norm(q) && !h[0].go) lkUI.openKey(q); });
+    setTimeout(() => { if (!lkUI) return; const i = lkUI.input; i.focus(); i.setSelectionRange(i.value.length, i.value.length); }, 30);
+  }
+  $("search").addEventListener("focus", () => { Lookup.load().catch(() => {}); });
+  $("search").addEventListener("keydown", e => { if (e.key === "Enter"){ const q = e.target.value.trim(); if (q){ openSearch(q, true); e.target.value = ""; } } });
+  $("search").addEventListener("input", e => { const q = e.target.value; if (q.trim().length >= 2){ openSearch(q); e.target.value = ""; } });
+  $("camBtn").onclick = () => { openSearch(""); setTimeout(() => $("lkPanel").querySelector(".lk-cam").click(), 40); };
+  window.addEventListener("keydown", e => { if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); openSearch(""); } });
+  { const f = new URLSearchParams(location.search).get("find"); if (f) setTimeout(() => { Lookup.load().then(() => { const k = Lookup.norm(f), hit = onPfd.get(k); if (hit) hit.go(); else openSearch(f, true); }); }, 300); }
+
   window.addEventListener("keydown", e => { if (e.key === "Escape"){ closeInfo(); if (focusFlow) setFlow(null); clearSel(); } });
 
   let tt; function toast(m){ const t = $("toast"); t.textContent = m; t.style.display = "block"; clearTimeout(tt); tt = setTimeout(() => t.style.display = "none", 4200); }

@@ -609,10 +609,6 @@ const FLOWS = [
   ] }
 ];
 
-// Operating scenarios from the control philosophy (mill relines).
-const SCENARIOS = [
-  { id:"normal", name:"Normal operation", off:[], txt:"Both SAG mills and the ball mill running, sharing the primary cyclone cluster." },
-  { id:"bm", name:"Ball mill reline", off:["bm"], txt:"New SAG runs single stage while the ball mill is relined. Reduced throughput." },
-  { id:"fsag", name:"Fimiston SAG reline", off:["fimsag","fimpeb","cos1","pc1"], txt:"The new SABC circuit (new SAG, pebble crushers, ball mill) runs on its own. Reduced throughput." },
-  { id:"nsag", name:"New SAG reline", off:["sag","dscr","peb","cos2","pc2"], txt:"The Fimiston SAG and new ball mill run together. Reduced throughput." }
-];
+// Operating cases: the four PDC cases are selected in pfd.html (PDC_CASES in pfd-streams.js).
+// Mill reline modes were removed: the PDC gives no flows for them.
+
