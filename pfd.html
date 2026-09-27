@@ -8,11 +8,11 @@
 <style>
 :root{
   --bg:#0f1216; --panel:#171b21; --panel2:#1f252d; --ink:#e9edf2; --mute:#95a1ae; --line:#2c343e;
-  --accent:#e8b44a; --node:#1c222a; --nodeln:#566373; --grid:#161a20; --frame:#222932; --framet:#6f7c8a;
+  --accent:#e8b44a; --carbon:#f2f2f2; --node:#1c222a; --nodeln:#566373; --grid:#161a20; --frame:#222932; --framet:#6f7c8a;
 }
 :root[data-theme="light"]{
   --bg:#f3f4f6; --panel:#ffffff; --panel2:#f0f2f5; --ink:#1d2430; --mute:#5d6875; --line:#d9dee5;
-  --accent:#b67d12; --node:#ffffff; --nodeln:#6d7a89; --grid:#e9ebef; --frame:#e3e7ec; --framet:#7a8594;
+  --accent:#b67d12; --carbon:#111111; --node:#ffffff; --nodeln:#6d7a89; --grid:#e9ebef; --frame:#e3e7ec; --framet:#7a8594;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
@@ -47,8 +47,14 @@ a.hbtn{text-decoration:none;color:var(--ink)}
 .step.on b{background:var(--accent);color:#1a1307}
 .ctrls{display:flex;gap:6px;margin-bottom:8px}
 .ctrls button{flex:1}
-.legend{display:grid;grid-template-columns:18px 1fr;gap:6px 8px;font-size:12.5px;color:var(--mute);align-items:center}
-.legend i{height:4px;border-radius:2px}
+.legend{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.lg-item{display:flex;gap:9px;align-items:center;cursor:pointer;padding:4px 6px;border-radius:7px;border:1px solid transparent;color:var(--ink)}
+.lg-item:hover{background:var(--panel2)}
+.lg-item.on{border-color:var(--accent);background:var(--panel2)}
+.lg-item svg{width:46px;height:14px;flex:none;cursor:pointer}
+.lg-hint{font-size:12px;color:var(--mute);margin:2px 0 6px}
+.lg-sig{display:flex;gap:9px;align-items:center;font-size:12.5px;color:var(--mute);padding:3px 6px}
+.lg-sig svg{width:46px;height:22px;flex:none}
 .note{font-size:12.5px;color:var(--mute);line-height:1.45;background:var(--panel2);border-radius:9px;padding:9px 10px}
 #stage{position:fixed;left:270px;right:0;top:54px;bottom:0}
 svg{width:100%;height:100%;display:block;cursor:grab;user-select:none}
@@ -105,11 +111,26 @@ svg.focus .frame{opacity:.4}
 .anim .ln, .stream.hl .ln{stroke-dasharray:11 8;animation:dash .9s linear infinite}
 .stream.hl .ln{stroke-width:5}
 @keyframes dash{to{stroke-dashoffset:-19}}
-.loop{cursor:pointer;display:none}
-svg.showloops .loop{display:inline}
-.loop circle{fill:var(--accent);stroke:var(--bg);stroke-width:2}
-.loop text{font-size:12px;font-weight:900;fill:#1a1307;text-anchor:middle;pointer-events:none}
-.loop:hover circle{r:13}
+.ctl,.ilk{display:none;cursor:pointer}
+svg.showloops .ctl{display:inline}
+svg.showilk .ilk{display:inline}
+.ctl .sig{fill:none;stroke:var(--ink);stroke-width:1.7;stroke-dasharray:7 4;opacity:.9}
+.ctl .hitl,.ilk .hitl{fill:none;stroke:transparent;stroke-width:12}
+.ctl .bub rect{fill:var(--panel);stroke:var(--ink);stroke-width:1.6}
+.ctl .bub circle{fill:none;stroke:var(--ink);stroke-width:1.4}
+.ctl .bub text{font-size:12px;font-weight:800;fill:var(--ink);text-anchor:middle;pointer-events:none}
+.ctl .fe{fill:var(--panel);stroke:var(--ink);stroke-width:1.6}
+.ctl .fel{font-size:10.5px;fill:var(--mute);pointer-events:none}
+.ctl .sp{fill:var(--ink)}
+.ctl:hover .bub rect,.ctl.sel2 .bub rect{stroke:var(--accent);stroke-width:3}
+.ilk .sig{fill:none;stroke:#ff3b30;stroke-width:2.2;stroke-dasharray:12 4 2 4}
+.ilk .dia{fill:#ff3b30;stroke:var(--bg);stroke-width:1.5}
+.ilk .dia.p{fill:var(--bg);stroke:#ff3b30;stroke-width:2.5}
+.ilk text{font-size:12px;font-weight:900;fill:#fff;text-anchor:middle;pointer-events:none}
+.ilk text.p{fill:#ff3b30}
+.ilk:hover .sig,.ilk.sel2 .sig{stroke-width:3.5}
+svg.focus .ctl, svg.focus .ilk{opacity:.12}
+.sym{pointer-events:none}
 </style>
 </head>
 <body>
@@ -117,7 +138,8 @@ svg.showloops .loop{display:inline}
   <h1>KCGM <span>Interactive PFD</span></h1>
   <div class="seg" id="stageSeg"><button data-s="1">Stage 1</button><button data-s="2" class="on">Stage 2</button></div>
   <select class="hbtn" id="scen" title="Operating scenario"></select>
-  <button class="hbtn" id="tLoops" title="Show control loop badges">🎛 Control loops</button>
+  <button class="hbtn" id="tLoops" title="Show ISA control loops (tag bubbles and signal lines)">🎛 Control loops</button>
+  <button class="hbtn" id="tIlk" title="Show interlocks and start permissives">⛔ Interlocks</button>
   <button class="hbtn" id="tSvc" title="Show water, reagent and air lines">💧 Service lines</button>
   <button class="hbtn" id="tAnim" title="Animate every stream">➤ Animate all</button>
   <div class="grow"></div>
@@ -142,7 +164,7 @@ svg.showloops .loop{display:inline}
   <h2>Legend</h2>
   <div class="legend" id="legend"></div>
   <h2>How to use</h2>
-  <div class="note">Scroll to zoom, drag to pan. Click any equipment or stream for key data, control notes and connections. Pick a flow to animate it and step through it. The control loops badges (C) show what each key controller measures and moves.<br><br>Design values from the Stage 2 PDC and control philosophies, not live plant data.</div>
+  <div class="note">Scroll to zoom, drag to pan. Click any equipment or stream for key data, control notes and connections. Pick a flow to animate it and step through it, or click a legend item to isolate one fluid. Control loops shows ISA tag bubbles with dashed signal lines from measurement to final element; Interlocks shows red cause → effect lines (I interlock, P permissive).<br><br>Design values from the Stage 2 PDC and control philosophies, not live plant data.</div>
 </aside>
 
 <div id="stage"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
@@ -309,8 +331,26 @@ svg.showloops .loop{display:inline}
   const defs = el("defs", {}, svg);
   Object.entries(STREAM_TYPES).forEach(([k, v]) => {
     const m = el("marker", { id: "ah_" + k, viewBox: "0 0 10 10", refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: "auto-start-reverse" }, defs);
-    el("path", { d: "M0 0 L10 5 L0 10 z", fill: v.color }, m);
+    el("path", { d: "M0 0 L10 5 L0 10 z", style: `fill:${v.color}` }, m);
   });
+  [["sig", "var(--ink)"], ["ilk", "#ff3b30"]].forEach(([k, c]) => { const m = el("marker", { id: "ah_" + k, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto" }, defs); el("path", { d: "M0 0 L10 5 L0 10 z", style: `fill:${c}` }, m); });
+  // Symbol drawn along lines so each fluid is identifiable without colour
+  function drawSym(g, t, x, y, r, parent){
+    const c = t.color, solid = `fill:${c};stroke:var(--bg);stroke-width:1.2`, open = `fill:var(--bg);stroke:${c};stroke-width:2.2`;
+    switch (t.sym){
+      case "square": return el("rect", { x: x - r, y: y - r, width: 2 * r, height: 2 * r, style: solid }, g);
+      case "circle": return el("circle", { cx: x, cy: y, r: r * 1.05, style: solid }, g);
+      case "triangle": return el("path", { d: `M${x} ${y - r * 1.2} L${x + r * 1.15} ${y + r * .9} L${x - r * 1.15} ${y + r * .9} Z`, style: solid }, g);
+      case "cross": return el("path", { d: `M${x - r} ${y - r} L${x + r} ${y + r} M${x + r} ${y - r} L${x - r} ${y + r}`, style: `stroke:${c};stroke-width:3;fill:none` }, g);
+      case "diamond": return el("path", { d: `M${x} ${y - r * 1.25} L${x + r * 1.25} ${y} L${x} ${y + r * 1.25} L${x - r * 1.25} ${y} Z`, style: solid }, g);
+      case "bar": return el("rect", { x: x - r * 1.4, y: y - r * .55, width: r * 2.8, height: r * 1.1, style: solid }, g);
+      case "star": { let d = ""; for (let i = 0; i < 10; i++){ const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .55 : r * 1.35; d += (i ? "L" : "M") + (x + rr * Math.cos(a)).toFixed(1) + " " + (y + rr * Math.sin(a)).toFixed(1); } return el("path", { d: d + "Z", style: solid }, g); }
+      case "ring": return el("circle", { cx: x, cy: y, r: r * .95, style: open }, g);
+      case "tri-open": return el("path", { d: `M${x} ${y - r * 1.15} L${x + r * 1.1} ${y + r * .85} L${x - r * 1.1} ${y + r * .85} Z`, style: open }, g);
+      case "dia-open": return el("path", { d: `M${x} ${y - r * 1.2} L${x + r * 1.2} ${y} L${x} ${y + r * 1.2} L${x - r * 1.2} ${y} Z`, style: open }, g);
+      case "plus": return el("path", { d: `M${x - r} ${y} L${x + r} ${y} M${x} ${y - r} L${x} ${y + r}`, style: `stroke:${c};stroke-width:3.2;fill:none` }, g);
+    }
+  }
   const world = el("g", { id: "world" }, svg);
   el("rect", { x: -2000, y: -2000, width: PFD_W + 4000, height: PFD_H + 4000, fill: "transparent", id: "bgHit" }, world);
   const gFrames = el("g", {}, world), gStreams = el("g", {}, world), gNodes = el("g", {}, world), gLoops = el("g", {}, world);
@@ -327,7 +367,9 @@ svg.showloops .loop{display:inline}
     const g = el("g", { class: "stream" + ((s.rg || s.hide || ["water", "cnw", "air"].includes(s.ty)) ? " svc" : "") }, gStreams);
     const d = "M" + pts.map(p => p.join(" ")).join(" L");
     el("path", { class: "hit", d }, g);
-    el("path", { class: "ln", d, stroke: STREAM_TYPES[s.ty].color, "marker-end": `url(#ah_${s.ty})` }, g);
+    const ln = el("path", { class: "ln", d, style: `stroke:${STREAM_TYPES[s.ty].color}`, "marker-end": `url(#ah_${s.ty})` }, g);
+    try { const L = ln.getTotalLength(); const gs = el("g", { class: "sym" }, g);
+      for (let at = Math.min(70, L / 2); at < L - 35; at += 170){ const q = ln.getPointAtLength(at); drawSym(gs, STREAM_TYPES[s.ty], q.x, q.y, 6); } } catch (e) {}
     if (s.lab){
       let best = 0, bi = 0;
       for (let i = 0; i < pts.length - 1; i++){ const L = Math.abs(pts[i + 1][0] - pts[i][0]) + Math.abs(pts[i + 1][1] - pts[i][1]); if (L > best){ best = L; bi = i; } }
@@ -354,13 +396,43 @@ svg.showloops .loop{display:inline}
   });
   function wrap(s, max){ const w = s.split(" "); const out = [""]; w.forEach(x => { if ((out[out.length - 1] + " " + x).trim().length > max) out.push(x); else out[out.length - 1] = (out[out.length - 1] + " " + x).trim(); }); return out; }
 
-  LOOPS.forEach((L, i) => {
-    const n = byId[L.n]; const cx = n.x + L.dx, cy = n.y + L.dy;
-    const g = el("g", { class: "loop" }, gLoops);
-    el("circle", { cx, cy, r: 11 }, g); const t = el("text", { x: cx, y: cy + 4 }, g); t.textContent = "C";
-    el("title", {}, g).textContent = "Control loop: " + L.name;
+  // ISA control loops: measurement dot → DCS tag bubble → final element, dashed signal lines
+  const elbow = (p, q, vFirst) => (p[0] === q[0] || p[1] === q[1]) ? [p, q] : [p, vFirst ? [p[0], q[1]] : [q[0], p[1]], q];
+  const pathD = pts => "M" + pts.map(p => p.join(" ")).join(" L");
+  function finalEl(g, a){
+    const [x, y] = a.p;
+    if (a.k === "valve") el("path", { class: "fe", d: `M${x - 9} ${y - 6} L${x + 9} ${y + 6} L${x + 9} ${y - 6} L${x - 9} ${y + 6} Z` }, g);
+    else if (a.k === "vsd"){ el("rect", { class: "fe", x: x - 14, y: y - 8, width: 28, height: 16, rx: 3 }, g); const t = el("text", { x, y: y + 4, "text-anchor": "middle", style: "font-size:9px;font-weight:800;fill:var(--ink)" }, g); t.textContent = "VSD"; }
+    else if (a.k === "gate"){ el("rect", { class: "fe", x: x - 9, y: y - 7, width: 18, height: 14 }, g); el("line", { x1: x, y1: y - 12, x2: x, y2: y + 7, style: "stroke:var(--ink);stroke-width:2" }, g); }
+    else if (a.k === "mot"){ el("circle", { class: "fe", cx: x, cy: y, r: 9 }, g); const t = el("text", { x, y: y + 4, "text-anchor": "middle", style: "font-size:10px;font-weight:800;fill:var(--ink)" }, g); t.textContent = "M"; }
+    else if (a.k === "burner"){ el("path", { class: "fe", d: `M${x} ${y - 11} C ${x + 10} ${y - 2}, ${x + 6} ${y + 8}, ${x} ${y + 8} C ${x - 6} ${y + 8}, ${x - 10} ${y - 2}, ${x} ${y - 11} Z` }, g); }
+    const lt = el("text", { class: "fel", x: x + 13, y: y - 9 }, g); lt.textContent = a.l || "";
+  }
+  LOOPS.forEach(L => {
+    const g = el("g", { class: "ctl" }, gLoops);
+    const segs = [elbow(L.se, L.b, true)].concat(L.a.map(a => elbow(L.b, a.p, false)));
+    segs.forEach((pts, i) => { const d = pathD(pts); el("path", { class: "hitl", d }, g); el("path", { class: "sig", d, "marker-end": i ? "url(#ah_sig)" : "" }, g); });
+    el("circle", { class: "sp", cx: L.se[0], cy: L.se[1], r: 3.5 }, g);
+    L.a.forEach(a => finalEl(g, a));
+    const bg = el("g", { class: "bub" }, g); const w = Math.max(40, L.tag.length * 9 + 12);
+    el("rect", { x: L.b[0] - w / 2, y: L.b[1] - 16, width: w, height: 32, rx: 2 }, bg);
+    el("circle", { cx: L.b[0], cy: L.b[1], r: 15 }, bg);
+    const t = el("text", { x: L.b[0], y: L.b[1] + 4 }, bg); t.textContent = L.tag;
+    el("title", {}, g).textContent = L.tag + ": " + L.name;
     g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); showLoop(L); });
-    L.g = g;
+    L.g = g; if (L.st == null && byId[L.node] && byId[L.node].st) L.st = byId[L.node].st;
+  });
+  // Interlocks (I) and permissives (P): red dash-dot cause → effect
+  INTERLOCKS.forEach(I => {
+    const g = el("g", { class: "ilk" }, gLoops); const d = pathD(I.pts);
+    el("path", { class: "hitl", d }, g); el("path", { class: "sig", d, "marker-end": "url(#ah_ilk)" }, g);
+    let best = 0, bi = 0; for (let i = 0; i < I.pts.length - 1; i++){ const Ln = Math.abs(I.pts[i + 1][0] - I.pts[i][0]) + Math.abs(I.pts[i + 1][1] - I.pts[i][1]); if (Ln > best){ best = Ln; bi = i; } }
+    const mx = (I.pts[bi][0] + I.pts[bi + 1][0]) / 2, my = (I.pts[bi][1] + I.pts[bi + 1][1]) / 2;
+    el("path", { class: "dia" + (I.k === "P" ? " p" : ""), d: `M${mx} ${my - 13} L${mx + 13} ${my} L${mx} ${my + 13} L${mx - 13} ${my} Z` }, g);
+    const t = el("text", { x: mx, y: my + 4.5, class: I.k === "P" ? "p" : "" }, g); t.textContent = I.k;
+    el("title", {}, g).textContent = (I.k === "P" ? "Permissive: " : "Interlock: ") + I.name;
+    g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); showIlk(I); });
+    I.g = g;
   });
 
   // ---------- stage / scenario ----------
@@ -379,8 +451,7 @@ svg.showloops .loop{display:inline}
       if (st === "b" && !endsOk && stage === 2) s.g.style.display = "none";
     });
     FRAMES.forEach(f => f.g.style.opacity = (f.st && f.st !== stage) ? .25 : "");
-    LOOPS.forEach(L => { const n = byId[L.n]; L.g.style.visibility = (n.st && n.st !== stage) ? "hidden" : ""; });
-    LOOPS.forEach(L => { if (L.g.style.visibility === "hidden") L.g.style.display = "none"; else L.g.style.display = ""; });
+    LOOPS.concat(INTERLOCKS).forEach(L => { L.g.style.display = (L.st && L.st !== stage) ? "none" : ""; });
     if (focusFlow) showStep(stepIx);
   }
   document.querySelectorAll("#stageSeg button").forEach(b => b.onclick = () => {
@@ -398,12 +469,31 @@ svg.showloops .loop{display:inline}
   // ---------- toggles ----------
   const tog = (id, cls, key) => { const b = $(id); const on = pref.get(key, "0") === "1"; b.classList.toggle("on", on); svg.classList.toggle(cls, on);
     b.onclick = () => { const v = !b.classList.contains("on"); b.classList.toggle("on", v); svg.classList.toggle(cls, v); pref.set(key, v ? "1" : "0"); }; };
-  tog("tLoops", "showloops", "pfd_loops"); tog("tSvc", "showsvc", "pfd_svc"); tog("tAnim", "anim", "pfd_anim");
+  tog("tLoops", "showloops", "pfd_loops"); tog("tIlk", "showilk", "pfd_ilk"); tog("tSvc", "showsvc", "pfd_svc"); tog("tAnim", "anim", "pfd_anim");
   $("tTheme").onclick = () => { const l = document.documentElement.dataset.theme !== "light"; document.documentElement.dataset.theme = l ? "light" : ""; pref.set("pfd_theme", l ? "light" : "dark"); };
 
   // ---------- legend ----------
-  $("legend").innerHTML = Object.values(STREAM_TYPES).map(t => `<i style="background:${t.color}"></i><span>${t.name}</span>`).join("") +
-    `<span style="grid-column:1/3;margin-top:6px"><b style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#1a1307;font-size:11px">C</b> Control loop (turn on at the top)</span>`;
+  let legendType = null;
+  const lg = $("legend");
+  lg.innerHTML = '<div class="lg-hint">Click a fluid to isolate it.</div>';
+  Object.entries(STREAM_TYPES).forEach(([k, t]) => {
+    const it = document.createElement("div"); it.className = "lg-item"; it.dataset.k = k;
+    const sv = document.createElementNS(NS, "svg"); sv.setAttribute("viewBox", "0 0 46 14");
+    el("line", { x1: 2, y1: 7, x2: 44, y2: 7, style: `stroke:${t.color};stroke-width:3` }, sv); drawSym(sv, t, 23, 7, 5);
+    it.appendChild(sv); const sp = document.createElement("span"); sp.textContent = t.name; it.appendChild(sp);
+    it.onclick = () => setLegend(legendType === k ? null : k); t.item = it; lg.appendChild(it);
+  });
+  lg.insertAdjacentHTML("beforeend", `<div class="lg-sig" style="margin-top:8px"><svg viewBox="0 0 46 22"><line x1="2" y1="11" x2="30" y2="11" style="stroke:var(--ink);stroke-width:1.7;stroke-dasharray:6 4"/><rect x="28" y="3" width="16" height="16" style="fill:var(--panel);stroke:var(--ink)"/><circle cx="36" cy="11" r="7" style="fill:none;stroke:var(--ink)"/></svg><span>Control loop: DCS tag and signal (toggle at top)</span></div>
+  <div class="lg-sig"><svg viewBox="0 0 46 22"><line x1="2" y1="11" x2="44" y2="11" style="stroke:#ff3b30;stroke-width:2.2;stroke-dasharray:10 3 2 3"/><path d="M23 2 L32 11 L23 20 L14 11 Z" style="fill:#ff3b30"/></svg><span>Interlock (I, filled) or permissive (P, hollow)</span></div>`);
+  function setLegend(k){
+    if (focusFlow) setFlow(null);
+    legendType = k; Object.entries(STREAM_TYPES).forEach(([kk, t]) => t.item.classList.toggle("on", kk === k));
+    clearHl();
+    if (!k){ svg.classList.remove("focus"); return; }
+    svg.classList.add("focus");
+    STREAMS.filter(s => s.ty === k && s.g.style.display !== "none").forEach(s => { s.g.classList.add("hl"); [s.f, s.to].forEach(id => nEls[id].classList.add("hl")); });
+    toast(STREAM_TYPES[k].name + ": " + STREAMS.filter(s => s.ty === k && s.g.style.display !== "none").length + " lines. Click it again to clear.");
+  }
 
   // ---------- flows ----------
   FLOWS.forEach(f => {
@@ -411,6 +501,7 @@ svg.showloops .loop{display:inline}
     b.onclick = () => setFlow(focusFlow && focusFlow.id === f.id ? null : f); f.btn = b; $("flows").appendChild(b);
   });
   function setFlow(f){
+    if (f && legendType) setLegend(null);
     stopPlay(); focusFlow = f; FLOWS.forEach(x => x.btn.classList.toggle("on", x === f));
     $("steps").classList.toggle("on", !!f);
     if (!f){ svg.classList.remove("focus"); clearHl(); return; }
@@ -460,10 +551,10 @@ svg.showloops .loop{display:inline}
     const ins = STREAMS.filter(s => s.to === n.id && s.f !== n.id && s.g.style.display !== "none");
     const outs = STREAMS.filter(s => s.f === n.id && s.g.style.display !== "none");
     const link = s => `<a data-s="${s.id}"><span style="color:${STREAM_TYPES[s.ty].color}">■</span> ${esc(s.n)}</a>`;
-    const loops = LOOPS.filter(L => L.n === n.id);
+    const loops = LOOPS.filter(L => L.node === n.id);
     $("iBody").innerHTML = `<div>${esc(n.s)}</div>` + table(n.d) +
       (n.c ? `<h4>Control</h4><div>${esc(n.c)}</div>` : "") +
-      (loops.length ? loops.map(L => `<h4>Control loop: ${esc(L.name)}</h4><table><tr><td>Measures</td><td>${esc(L.pv)}</td></tr><tr><td>Moves</td><td>${esc(L.mv)}</td></tr></table><div>${esc(L.txt)}</div>`).join("") : "") +
+      (loops.length ? loops.map(L => `<h4>${esc(L.tag)} loop: ${esc(L.name)}</h4><table><tr><td>Measures</td><td>${esc(L.pv)}</td></tr><tr><td>Moves</td><td>${esc(L.mv)}</td></tr></table><div>${esc(L.txt)}</div>`).join("") : "") +
       (n.hear ? `<h4>What you'll hear</h4><div>${esc(n.hear)}</div>` : "") +
       (ins.length ? `<h4>In</h4><div class="conn">${ins.map(link).join("")}</div>` : "") +
       (outs.length ? `<h4>Out</h4><div class="conn">${outs.map(link).join("")}</div>` : "");
@@ -478,19 +569,34 @@ svg.showloops .loop{display:inline}
       ((!s.i || !s.i.length) ? `<div style="color:var(--mute);margin-top:8px">No specific design data in the documents for this line.</div>` : "");
     bindLinks(); openInfo();
   }
+  const tagMeaning = t => ({ AIC: "Analysis indicating controller", WIC: "Weight (mass rate) indicating controller", LIC: "Level indicating controller", DIC: "Density indicating controller",
+    PIC: "Pressure indicating controller", FIC: "Flow indicating controller", FFIC: "Flow ratio indicating controller", JIC: "Power indicating controller",
+    TIC: "Temperature indicating controller", LSH: "Level switch high (with low)" }[t] || "");
+  function clearSel2(){ document.querySelectorAll(".sel, .sel2").forEach(x => x.classList.remove("sel", "sel2")); }
   function showLoop(L){
-    const n = byId[L.n];
-    document.querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); n.g.classList.add("sel");
-    $("iKind").textContent = "Control loop"; $("iName").textContent = L.name; $("iTag").textContent = n.n;
-    $("iBody").innerHTML = `<table><tr><td>Measures (PV)</td><td>${esc(L.pv)}</td></tr><tr><td>Moves (output)</td><td>${esc(L.mv)}</td></tr></table><div>${esc(L.txt)}</div><div class="conn" style="margin-top:12px"><a data-n="${n.id}">Open ${esc(n.n)}</a></div>`;
+    const n = byId[L.node];
+    clearSel2(); L.g.classList.add("sel2"); if (n) n.g.classList.add("sel");
+    $("iKind").textContent = "Control loop · " + L.tag; $("iName").textContent = L.name; $("iTag").textContent = tagMeaning(L.tag);
+    $("iBody").innerHTML = `<table><tr><td>Measures (PV)</td><td>${esc(L.pv)}</td></tr><tr><td>Moves (output)</td><td>${esc(L.mv)}</td></tr>` +
+      `<tr><td>Final element</td><td>${esc(L.a.map(a => a.l).join(", "))}</td></tr></table><div>${esc(L.txt)}</div>` +
+      `<div style="color:var(--mute);font-size:12.5px;margin-top:10px">Tag shows the ISA function letters only; loop numbers aren't in the source documents.</div>` +
+      (n ? `<div class="conn" style="margin-top:12px"><a data-n="${n.id}">Open ${esc(n.n)}</a></div>` : "");
     bindLinks(); openInfo();
+  }
+  function showIlk(I){
+    clearSel2(); I.g.classList.add("sel2");
+    const ty = { critical: "Critical (safety) interlock: trips in Auto, Manual and Local, can't be bypassed", process: "Process interlock: trips in Auto and Manual, bypassable by named users one at a time, bypassed in Local", permissive: "Start permissive: stops a start, doesn't trip a running drive (unless noted)" }[I.ty];
+    $("iKind").textContent = I.k === "P" ? "Permissive" : "Interlock"; $("iName").textContent = I.name; $("iTag").textContent = "";
+    $("iBody").innerHTML = `<table><tr><td>Cause</td><td>${esc(I.cause)}</td></tr><tr><td>Effect</td><td>${esc(I.eff)}</td></tr><tr><td>Type</td><td>${esc(ty)}</td></tr></table><div>${esc(I.txt)}</div>` +
+      `<div style="color:var(--mute);font-size:12.5px;margin-top:10px">DCS interlocks have an adjustable time delay so instrument spikes don't trip the plant, and trips record a 'first out'.</div>`;
+    openInfo();
   }
   function bindLinks(){
     $("iBody").querySelectorAll("a[data-s]").forEach(a => a.onclick = () => { const s = STREAMS.find(x => x.id === a.dataset.s); select("s", s.id); flyTo(bboxOf(s.g)); });
     $("iBody").querySelectorAll("a[data-n]").forEach(a => a.onclick = () => { select("n", a.dataset.n); const n = byId[a.dataset.n]; flyTo({ x: n.x, y: n.y, w: n.w, h: n.h }); });
   }
   function openInfo(){ $("info").classList.add("on"); }
-  function closeInfo(){ $("info").classList.remove("on"); document.querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); selected = null; }
+  function closeInfo(){ $("info").classList.remove("on"); document.querySelectorAll(".sel, .sel2").forEach(x => x.classList.remove("sel", "sel2")); selected = null; }
   $("infoX").onclick = closeInfo;
 
   // ---------- pan / zoom ----------
