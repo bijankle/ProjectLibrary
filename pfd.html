@@ -157,14 +157,11 @@ svg.showilk .ilk{display:inline}
 .ilk:hover .sig,.ilk.sel2 .sig{stroke-width:3.5}
 svg.focus .ctl, svg.focus .ilk{opacity:.12}
 .sym{cursor:pointer}
-/* PDC case colours: a changed tph box fills with its case colour; the dropdown is the legend */
-:root{--case1:#9cc8ff;--case2:#9fe0a8;--case3:#e3b3ff}
-.lab.chg rect{fill:var(--cc)}
-.lab.chg text{fill:#111}
-.lab.chg.inf rect{fill:var(--cc)}
-#case{font-weight:700}
-#case.on{background:var(--cc);color:#111;border-color:var(--cc)}
-#case option{color:#111;font-weight:700}
+/* PDC case colour (red = highest flow ... blue = lowest) is the border of every tph box; the dropdown text is the legend */
+:root{--cc:#eab308}
+.lab rect{stroke:var(--cc) !important}
+#case{font-weight:700;color:var(--cc);border-color:var(--cc);border-width:2px}
+#case option{font-weight:700;background:#fff}
 #info .sc .cur{background:color-mix(in srgb,var(--cc) 35%,transparent)}
 #info .sc th.cur{color:var(--ink)}
 .casenote{font-size:12.5px;background:color-mix(in srgb,var(--cc) 35%,transparent);border:1px solid var(--cc);border-radius:8px;padding:7px 9px;margin:8px 0}
@@ -611,11 +608,12 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     toast(stage === 1 ? "Stage 1 as built: tails to old CIL2/3 and the dam, concentrate to CIL1 and Gidji. Stage 2 items shown faded." : "Stage 2: all tails to CIL4, UFG 3 added, CIL2 leach and CIL3 adsorption, Gidji shut.");
   });
   // ---------- PDC case ----------
-  const CASE_COL = ["", "var(--case1)", "var(--case2)", "var(--case3)"];
-  PDC_CASES.forEach((c, i) => { const o = document.createElement("option"); o.value = i; o.textContent = "PDC: " + c; o.style.background = i ? CASE_COL[i] : "#ffffff"; $("case").appendChild(o); });
+  // order of PDC_CASES: nominal, design grade (24.0, lowest), achievable (25.5, higher grade), high throughput (28.35)
+  const CASE_COL = ["#eab308", "#2563eb", "#f97316", "#dc2626"], CASE_TXT = ["#a16207", "#1d4ed8", "#c2410c", "#b91c1c"];
+  PDC_CASES.forEach((c, i) => { const o = document.createElement("option"); o.value = i; o.textContent = "PDC: " + c; o.style.color = CASE_TXT[i]; o.textContent = "● " + o.textContent; $("case").appendChild(o); });
   $("case").onchange = e => setCase(+e.target.value);
   function setCase(ci){
-    pdcCase = ci; $("case").classList.toggle("on", ci !== 0); document.documentElement.style.setProperty("--cc", CASE_COL[ci] || "transparent");
+    pdcCase = ci; $("case").classList.toggle("on", ci !== 0); document.documentElement.style.setProperty("--cc", CASE_COL[ci]);
     const changed = [];
     STREAMS.forEach(s => { if (!s.fb) return;
       const txt = flowText(s, ci) || s.fb.t0, diff = txt !== s.fb.t0;
@@ -623,7 +621,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       s.fb.tip.textContent = diff ? `${PDC_CASES[ci]}: ${txt}  (nominal ${s.fb.t0})` : s.n + ": " + txt;
       if (diff) changed.push(s.id);
     });
-    toast(ci === 0 ? "Nominal case (25.5 Mtpa, nominal grade, P80 180 µm)." : `${PDC_CASES[ci]}: ${changed.length} line figures differ from nominal; their boxes are coloured to match the dropdown. Stream panels highlight this case's column.`);
+    toast(ci === 0 ? "Nominal case (25.5 Mtpa, nominal grade, P80 180 µm)." : `${PDC_CASES[ci]}: ${changed.length} line figures differ from nominal; box borders show this case's colour (red highest flow, blue lowest). Stream panels highlight this case's column.`);
     if (lastPanel && $("info").classList.contains("on")) lastPanel();
   }
 
@@ -1052,6 +1050,8 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   // PFD items become search results that jump straight to the diagram
   const goNode = n => () => { if (n.st && n.st !== stage) document.querySelector(`#stageSeg button[data-s="${n.st}"]`).click(); pick({}, { k: "n", id: n.id }, () => showNode(n)); };
   const goStream = s => () => pick({}, { k: "s", id: s.id }, () => showStream(s));
+  // peek: highlight and zoom to the item on the diagram but keep the search result open in the panel
+  const peek = (st, item) => () => { if (st && st !== stage) document.querySelector(`#stageSeg button[data-s="${st}"]`).click(); if (focusFlow) setFlow(null); sel = [item]; applySel(true); };
   const goLoop = L => () => { if (L.st && L.st !== stage) document.querySelector(`#stageSeg button[data-s="${L.st}"]`).click(); pick({}, { k: "loop", id: L.id }, () => showLoop(L)); };
   Lookup.addExtra([
     ...NODES.map(n => ({ t: "pfd", key: n.tag || n.n, name: "Equipment: " + n.n, words: n.n + " " + (n.sn || "") + " " + (EQUIP_DATA[n.id] ? EQUIP_DATA[n.id].eq.map(r => r.tag + " " + (r.n || "")).join(" ") : ""), go: goNode(n) })),
@@ -1061,17 +1061,20 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   ]);
   // list item → place on the PFD (MEL tag, instrument on mapped equipment, or a loop device)
   const onPfd = new Map();
-  Object.entries(EQUIP_DATA).forEach(([id, d]) => { d.eq.forEach(r => onPfd.set(Lookup.norm(r.tag), { label: "Show " + byId[id].n + " on the PFD", go: goNode(byId[id]) }));
-    d.ins.forEach(i => onPfd.has(Lookup.norm(i.tag)) || onPfd.set(Lookup.norm(i.tag), { label: "Show " + byId[id].n + " on the PFD", go: goNode(byId[id]) })); });
-  LOOPS.forEach(L => [...(L.m || []), ...(L.f || [])].forEach(t => expandTag(t).forEach(x => { const k = Lookup.norm(x); if (!onPfd.has(k) || !/^F\d\d[A-Z]/.test(k)) onPfd.set(k, { label: "Show the " + L.tag + " loop on the PFD", go: goLoop(L) }); })));
+  Object.entries(EQUIP_DATA).forEach(([id, d]) => { d.eq.forEach(r => onPfd.set(Lookup.norm(r.tag), { label: "Show " + byId[id].n + " on the PFD", go: goNode(byId[id]), peek: peek(byId[id].st, { k: "n", id }) }));
+    d.ins.forEach(i => onPfd.has(Lookup.norm(i.tag)) || onPfd.set(Lookup.norm(i.tag), { label: "Show " + byId[id].n + " on the PFD", go: goNode(byId[id]), peek: peek(byId[id].st, { k: "n", id }) })); });
+  LOOPS.forEach(L => [...(L.m || []), ...(L.f || [])].forEach(t => expandTag(t).forEach(x => { const k = Lookup.norm(x); if (!onPfd.has(k) || !/^F\d\d[A-Z]/.test(k)) onPfd.set(k, { label: "Show the " + L.tag + " loop on the PFD", go: goLoop(L), peek: peek(L.st, { k: "loop", id: L.id }) }); })));
   const pfdFor = it => { const f = onPfd.get(it.k); if (f) return f;
-    if (it.t === "ins" && it.r[3]) { const e = onPfd.get(Lookup.norm(it.r[3])); if (e) return e; } return null; };
+    if (it.t === "ins" && it.r[3]) { const e = onPfd.get(Lookup.norm(it.r[3])); if (e) return e; }
+    // otherwise the first equipment or loop device the item mentions (e.g. a line's From/To, a valve's location)
+    if (it.r) for (const v of it.r) { const m = String(v || "").match(/F\d{2}-[A-Z]{1,4}-\d{2,4}[A-Z]?|\b[A-Z]{1,5} ?\d{5}[A-Z]?\b/g); if (m) for (const t of m) { const e = onPfd.get(Lookup.norm(t)); if (e) return e; } }
+    return null; };
   let lkUI = null;
   function openSearch(q, enter){
     const draw = () => {
       $("iKind").textContent = "Search · plant lists"; $("iName").textContent = "Look up any code"; $("iTag").textContent = "MEL, instruments, valves, lines, SPI, hoses, PFD";
       $("iBody").innerHTML = '<div id="lkPanel"></div>';
-      lkUI = Lookup.mount($("lkPanel"), { pfd: pfdFor, initial: q || "", intro: `<div class="lk-empty">Type any part of a code (e.g. <b>13-PP-401</b>, <b>FCV16011</b>, <b>0716</b>, a P&amp;ID number) or words (e.g. <b>cyclone feed pump</b>). Spaces and hyphens don't matter. 📷 reads a tag from a photo.</div>` });
+      lkUI = Lookup.mount($("lkPanel"), { pfd: pfdFor, onOpen: it => { const f = !it.go && pfdFor(it); if (f && f.peek) f.peek(); }, initial: q || "", intro: `<div class="lk-empty">Type any part of a code (e.g. <b>13-PP-401</b>, <b>FCV16011</b>, <b>0716</b>, a P&amp;ID number) or words (e.g. <b>cyclone feed pump</b>). Spaces and hyphens don't matter. 📷 reads a tag from a photo.</div>` });
       openInfo();
     };
     lastPanel = () => draw(); draw();

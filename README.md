@@ -22,7 +22,7 @@ Scroll to zoom, drag to pan, click equipment or streams for design data, control
 grinding loops, flotation, concentrate and gold path, carbon loop, water and reagents. Toggles show control loop badges, service lines, Stage 1 vs Stage 2 routing
 and the four PDC design cases. Click anything (equipment, stream, loop, interlock, symbol or legend item) to select it; Ctrl+click adds more; the view zooms to fit and Esc clears.
 
-The header dropdown picks the PDC case (nominal 25.5 Mtpa, design grade 24.0, achievable 25.5, high throughput 28.35). Each case has a colour (shown in the dropdown); tph boxes whose value differs from nominal fill with that colour, and stream panels highlight that case column in it. Mill reline modes are not offered because the PDC gives no flows for them.
+The header dropdown picks the PDC case (nominal 25.5 Mtpa, design grade 24.0, achievable 25.5, high throughput 28.35). The tph box borders take the selected case colour (red high throughput, orange achievable, yellow nominal, blue design grade), shown as a legend in the dropdown. Mill reline modes are not offered because the PDC gives no flows for them.
 
 Look up (phone home screen, or the PFD header search, press / ): type any part of a tag, line number, valve, hose, SPI or P&ID number, or plain words. Spaces and hyphens are ignored. Each result shows every field from its list, links to anything it mentions, and everything that references it. 📷 reads a tag from a photo using Tesseract.js (downloaded from jsDelivr the first time, then runs on the device).
 
