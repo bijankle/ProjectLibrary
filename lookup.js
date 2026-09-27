@@ -99,20 +99,43 @@
   // A self contained search box: input, camera, results and item view with back history.
   L.mount = (root, opts = {}) => {
     root.classList.add("lk");
-    root.innerHTML = `<div class="lk-bar"><input class="lk-in" type="search" placeholder="${esc(opts.placeholder || "Any tag, line, valve or word")}" autocomplete="off" autocapitalize="characters" spellcheck="false">
-      <button class="lk-cam" title="Read a tag from a photo">📷</button><input type="file" accept="image/*" capture="environment" hidden></div>
+    root.innerHTML = `<form class="lk-bar" role="search" autocomplete="off" onsubmit="return false"><input class="lk-in" type="search" name="kcgm-tag-search" id="kcgm-tag-search-${Math.random().toString(36).slice(2, 7)}" inputmode="search" enterkeyhint="search" placeholder="${esc(opts.placeholder || "Any tag, line, valve or word")}" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" aria-label="Search tags, lines, valves" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
+      <button class="lk-cam" type="button" title="Read a tag from a photo">📷</button><input type="file" accept="image/*" capture="environment" hidden></form>
       <div class="lk-status"></div><div class="lk-body"></div>`;
     const inp = root.querySelector(".lk-in"), cam = root.querySelector(".lk-cam"), file = root.querySelector("input[type=file]"), body = root.querySelector(".lk-body"), stat = root.querySelector(".lk-status");
-    const stack = []; let hits = [];
+    const stack = []; let hits = [], showingRecent = false;
+    // recent searches (items opened), shown when the empty bar gets focus
+    const RK = opts.recent || "kcgm_recent_lookups";
+    const recents = () => { try { return JSON.parse(localStorage.getItem(RK) || "[]"); } catch (e) { return []; } };
+    const rememberQ = q => { q = q.trim(); if (q.length < 2) return; try { const r = recents().filter(x => x.q !== q && !(x.k && x.k === norm(q))); r.unshift({ q }); localStorage.setItem(RK, JSON.stringify(r.slice(0, 12))); } catch (e) {} };
+    const remember = it => { try { const r = recents().filter(x => !(x.k === it.k && x.t === it.t) && x.q !== inp.value.trim()); r.unshift({ k: it.k, t: it.t, key: it.key, name: it.name });
+      localStorage.setItem(RK, JSON.stringify(r.slice(0, 12))); } catch (e) {} };
+    const showRecent = () => {
+      const r = recents(); status(""); showingRecent = true;
+      body.innerHTML = `<div class="lk-rh"><span>Recent searches</span>${r.length ? '<button type="button" class="lk-clr">Clear</button>' : ""}</div>` +
+        (r.length ? r.map((x, i) => x.q ? `<button type="button" class="lk-hit lk-rec" data-r="${i}"><span class="lk-ic">🔍</span><span class="lk-hb"><b>${esc(x.q)}</b><em>search</em></span></button>`
+          : `<button type="button" class="lk-hit lk-rec" data-r="${i}"><span class="lk-ic">🕘</span><span class="lk-hb"><b>${esc(x.key)}</b><span>${esc(x.name)}</span><em>${esc(DB ? typeName(x.t) : "")}</em></span></button>`).join("")
+          : `<div class="lk-empty">Nothing yet. Type any part of a tag, line, valve or plain words; items you open show up here.</div>`);
+      body.querySelectorAll(".lk-rec").forEach(b => b.onclick = () => { const x = r[+b.dataset.r];
+        if (x.q){ inp.value = x.q; rememberQ(x.q); ensure().then(() => showList(x.q)); return; }
+        ensure().then(() => { const it = L.find(x.k, x.t); if (it){ showingRecent = false; inp.value = it.key; open(it, true); } }); });
+      const c = body.querySelector(".lk-clr"); if (c) c.onclick = () => { try { localStorage.removeItem(RK); } catch (e) {} showRecent(); inp.focus(); };
+    };
+    const hideRecent = () => { if (showingRecent){ showingRecent = false; body.innerHTML = opts.intro || ""; } };
+    // taps inside the results must not count as leaving the search
+    let keep = false; body.addEventListener("pointerdown", () => { keep = true; setTimeout(() => keep = false, 400); });
+    inp.addEventListener("focus", () => { if (!inp.value.trim() && !cur) showRecent(); });
+    inp.addEventListener("blur", () => setTimeout(() => { if (!keep && !inp.value.trim() && document.activeElement !== inp) hideRecent(); }, 150));
     const status = m => { stat.innerHTML = m || ""; };
     const showList = q => {
+      showingRecent = false; if (!q.trim() && document.activeElement === inp){ showRecent(); return; }
       hits = L.search(q); const n = hits.length >= 60 ? L.count(q) : hits.length;
       status(q.trim().length < 2 ? "" : n ? `${n} match${n > 1 ? "es" : ""}${n > hits.length ? ", best " + hits.length + " shown" : ""}` : "");
       body.innerHTML = q.trim().length < 2 ? (opts.intro || "") : L.resultsHTML(hits, q);
       body.querySelectorAll(".lk-hit").forEach(b => b.onclick = () => open(hits[+b.dataset.i], true));
     };
     const open = (it, push) => {
-      if (!it) return; if (it.go){ it.go(); return; } if (push) stack.push({ q: inp.value, scroll: body.scrollTop, it: cur });
+      if (!it) return; remember(it); showingRecent = false; if (it.go){ it.go(); return; } if (push) stack.push({ q: inp.value, scroll: body.scrollTop, it: cur });
       cur = it;
       body.innerHTML = `<button class="lk-back">← Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}</button>` + L.itemHTML(it, opts);
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
@@ -124,7 +147,7 @@
     let cur = null;
     const back = () => { const s = stack.pop(); if (s && s.it){ cur = null; open(s.it, false); } else { cur = null; showList(inp.value); if (s) body.scrollTop = s.scroll; } };
     let tmr; inp.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(() => { stack.length = 0; cur = null; ensure().then(() => showList(inp.value)); }, 120); });
-    inp.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); clearTimeout(tmr); stack.length = 0; ensure().then(() => { showList(inp.value); if (hits.length && (hits[0].k === norm(inp.value) || hits.length === 1)) open(hits[0], true); }); inp.blur(); } });
+    inp.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); clearTimeout(tmr); stack.length = 0; rememberQ(inp.value); ensure().then(() => { showList(inp.value); if (hits.length && (hits[0].k === norm(inp.value) || hits.length === 1)) open(hits[0], true); }); inp.blur(); } });
     const ensure = () => DB ? Promise.resolve() : (status("Loading plant lists…"), L.load().then(() => status("")).catch(e => { status("Couldn't load the lists (" + esc(e.message) + "). Check your connection and try again."); throw e; }));
     cam.onclick = () => file.click();
     file.onchange = () => { const f = file.files[0]; file.value = ""; if (!f) return;
@@ -188,6 +211,8 @@
 .lk-hit{display:flex;gap:10px;width:100%;text-align:left;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:12px;padding:10px 11px;margin-bottom:7px;cursor:pointer;font:inherit}
 .lk-hit:hover{border-color:var(--lk-a)}.lk-ic{font-size:18px;line-height:1.2}.lk-hb{display:flex;flex-direction:column;gap:2px;min-width:0}
 .lk-hb b{font-family:ui-monospace,Consolas,monospace;font-size:14.5px;color:var(--lk-a);word-break:break-all}.lk-hb span{font-size:13.5px;line-height:1.3}.lk-hb em{font-size:11.5px;color:var(--mute);font-style:normal}
+.lk-rh{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mute);margin:2px 2px 8px}
+.lk-rh button{border:0;background:none;color:var(--lk-a);font:inherit;text-transform:none;letter-spacing:0;font-size:13px;cursor:pointer;padding:4px}
 .lk-empty{color:var(--mute);font-size:14px;padding:10px 2px;line-height:1.45}
 .lk-back{border:0;background:none;color:var(--lk-a);font:inherit;font-weight:700;padding:4px 0 10px;cursor:pointer}
 .lk-kind{font-size:11.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--lk-a)}

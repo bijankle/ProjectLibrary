@@ -95,6 +95,7 @@ body.searching #homeMain{display:none}
 #lkResults .lk-status:empty{display:none}
 .pill{flex:1;height:46px;border-radius:14px;background:var(--gold);color:#1a1307;border:1px solid var(--gold);display:flex;align-items:center;
   justify-content:center;gap:8px;font-weight:800;font-size:16px;text-decoration:none}
+.secret{-webkit-text-security:disc;text-security:disc}
 .x{border:0;background:var(--card);color:var(--ink);width:42px;height:42px;border-radius:12px;font-size:20px;flex:none}
 
 /* DECK */
@@ -232,7 +233,7 @@ body.searching #homeMain{display:none}
   </div>
   <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">⛶ Full screen</button>
   <h2>Free Google AI key</h2>
-  <input class="field" id="keyIn" type="password" placeholder="Paste key (starts with AIza)" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <input class="field secret" id="keyIn" type="text" name="kcgm-ai-key" placeholder="Paste key (starts with AIza)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
   <div class="row" style="margin-top:10px">
     <button class="btn primary" id="keyTest">Test &amp; save</button>
     <button class="btn" id="keyClear">Remove key</button>
