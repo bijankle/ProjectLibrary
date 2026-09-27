@@ -291,6 +291,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     }
     const exit = out(start, ps, 22), appr = out(end, pe, 22);
     let mids = s.via ? s.via.slice() : [];
+    if (!s.via && s.ar) mids = autoRoute(exit, appr, ps, pe) || [];
     if (!s.via && s.mx != null) mids = [[s.mx, exit[1]], [s.mx, appr[1]]];
     if (!s.via && s.my != null) mids = [[exit[0], s.my], [appr[0], s.my]];
     const raw = [start, exit, ...mids, appr, end];
@@ -319,6 +320,61 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     res.push(clean[clean.length - 1]);
     return unjog(res, a, b);
   }
+  // ---------- automatic orthogonal router (A* on a 10 unit grid) for lines marked ar:1 ----------
+  // Blocks equipment and name boxes, charges for turns, for hugging equipment, heavily for running on top of
+  // another line and lightly for crossing one. Results are baked into pfd-data.js as via points (pfdBake()).
+  const RG = 10; let RGW, RGH, rBlock, rNear, rOccH, rOccV, rEdge;
+  function rInit(){
+    RGW = Math.ceil((PFD_W + 100) / RG); RGH = Math.ceil((PFD_H + 100) / RG); const N = RGW * RGH;
+    rBlock = new Uint8Array(N); rNear = new Uint8Array(N); rOccH = new Uint8Array(N); rOccV = new Uint8Array(N); rEdge = new Uint8Array(N);
+    const mark = (arr, r, pad) => { for (let j = Math.max(0, Math.floor((r.y1 - pad) / RG)); j <= Math.min(RGH - 1, Math.ceil((r.y2 + pad) / RG)); j++)
+      for (let i = Math.max(0, Math.floor((r.x1 - pad) / RG)); i <= Math.min(RGW - 1, Math.ceil((r.x2 + pad) / RG)); i++) arr[j * RGW + i] = 1; };
+    NODES.forEach(n => { const b = { x1: n.x, y1: n.y - ({ tank: 16, cell: 10 }[n.t] || 0), x2: n.x + n.w, y2: n.y + n.h };
+      mark(rBlock, b, 4); mark(rNear, b, 26); if (n.lb){ mark(rBlock, n.lb, 2); mark(rNear, n.lb, 14); } });
+    // title strips along the top and bottom inside each area: lines may cross them but not run along them
+    FRAMES.forEach(f => { mark(rEdge, { x1: f.x, y1: f.y, x2: f.x + f.w, y2: f.y + 30 }, 0); mark(rEdge, { x1: f.x, y1: f.y + f.h - 30, x2: f.x + f.w, y2: f.y + f.h }, 0); });
+  }
+  function rMark(pts){ if (!rBlock) rInit();
+    for (let k = 0; k < pts.length - 1; k++){ const [a, b] = [pts[k], pts[k + 1]], h = a[1] === b[1];
+      const n = Math.round((Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1])) / RG);
+      for (let t = 0; t <= n; t++){ const x = a[0] + (b[0] - a[0]) * t / Math.max(1, n), y = a[1] + (b[1] - a[1]) * t / Math.max(1, n);
+        const c = Math.round(y / RG) * RGW + Math.round(x / RG); (h ? rOccH : rOccV)[c] = 1; } } }
+  function autoRoute(exit, appr, ps, pe){
+    if (!rBlock) rInit();
+    const DIR = [[1, 0], [0, 1], [-1, 0], [0, -1]];                   // E S W N
+    const d0 = { r: 0, b: 1, l: 2, t: 3 }[ps], dEnd = { l: 0, t: 1, r: 2, b: 3 }[pe];
+    const si = Math.round(exit[0] / RG), sj = Math.round(exit[1] / RG), ti = Math.round(appr[0] / RG), tj = Math.round(appr[1] / RG);
+    const N = RGW * RGH, g = new Float32Array(N * 4).fill(Infinity), from = new Int32Array(N * 4).fill(-1);
+    const heap = [], push = (f, st) => { heap.push([f, st]); let i = heap.length - 1; while (i){ const p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+    const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length){ heap[0] = last; let i = 0; for (;;){ const l = 2 * i + 1, r = l + 1; let m = i;
+      if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
+    const H = (i, j) => Math.abs(i - ti) + Math.abs(j - tj);
+    const s0 = (sj * RGW + si) * 4 + d0; g[s0] = 0; push(H(si, sj), s0);
+    let goal = -1, it = 0;
+    while (heap.length && it++ < 600000){
+      const [, st] = pop(), c = st >> 2, d = st & 3, i = c % RGW, j = (c - i) / RGW;
+      if (i === ti && j === tj && d === dEnd){ goal = st; break; }
+      for (const nd of [d, (d + 1) & 3, (d + 3) & 3]){
+        const ni = i + DIR[nd][0], nj = j + DIR[nd][1]; if (ni < 0 || nj < 0 || ni >= RGW || nj >= RGH) continue;
+        const nc = nj * RGW + ni; if (rBlock[nc] && !(ni === ti && nj === tj)) continue;
+        const hz = nd % 2 === 0;
+        const cost = 1 + (nd !== d ? 8 : 0) + (rNear[nc] ? 2 : 0) + (rEdge[nc] && hz ? 12 : 0) + ((hz ? rOccH : rOccV)[nc] ? 25 : 0) + ((hz ? rOccV : rOccH)[nc] ? 1.5 : 0);
+        const ns = nc * 4 + nd, ng = g[st] + cost; if (ng < g[ns]){ g[ns] = ng; from[ns] = st; push(ng + H(ni, nj), ns); }
+      }
+    }
+    if (goal < 0) return null;
+    const cells = []; for (let st = goal; st >= 0; st = from[st]) cells.push(st);
+    cells.reverse();
+    const P = cells.map(st => { const c = st >> 2, i = c % RGW; return [i * RG, (c - i) / RGW * RG, st & 3]; });
+    const mids = []; for (let k = 1; k < P.length; k++) if (P[k][2] !== P[k - 1][2]) mids.push([P[k - 1][0], P[k - 1][1]]);
+    if (mids.length){ // snap the first and last corners onto the exact exit / approach lines
+      const f = mids[0]; if (d0 % 2 === 0) f[1] = exit[1]; else f[0] = exit[0];
+      const l = mids[mids.length - 1]; if (dEnd % 2 === 0) l[1] = appr[1]; else l[0] = appr[0];
+    }
+    return mids;
+  }
+  window.pfdBake = () => { const out = {}; STREAMS.forEach(s => { if (s.ar && !s.via && s.pts) out[s.id] = s.pts.slice(1, -1).map(p => p.map(Math.round)); }); return out; };
+
   // Remove a small step (< 45) next to either end when that end's symbol is big enough to take the line straight
   function unjog(P, a, b){
     const n = P.length, H = (p, q) => p[1] === q[1], seg = (p, q) => Math.abs(q[0] - p[0]) + Math.abs(q[1] - p[1]);
@@ -508,7 +564,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     const ln = el("path", { class: "ln", d, style: `stroke:${STREAM_TYPES[s.ty].color}`, "marker-end": `url(#ah_${s.ty})` }, g);
     try { const L = ln.getTotalLength(); const gs = el("g", { class: "sym" }, g);
       for (let at = Math.min(70, L / 2); at < L - 35; at += 170){ const q = ln.getPointAtLength(at); drawSym(gs, STREAM_TYPES[s.ty], q.x, q.y, 6); } } catch (e) {}
-    s.pts = pts;
+    s.pts = pts; rMark(pts);
     g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); pick(e, { k: "s", id: s.id }, () => showStream(s, e.target.closest(".sym"))); });
     sEls[s.id] = g; s.g = g;
   });
