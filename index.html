@@ -81,6 +81,18 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
   display:grid;place-items:center;flex:none;padding:0}
 .ib svg,.pill svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ib:active,.pill:active{transform:scale(.96)}
+.lktop{flex:1;min-width:0}
+.lktop .lk-in{height:46px;padding:0 12px 0 40px;border-radius:14px;font-family:inherit;font-size:16px;
+  background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") 12px 50%/20px no-repeat}
+.lktop .lk-cam{width:46px;height:46px;border-radius:14px;font-size:19px}
+.lktop .lk-bar{gap:8px}
+#lkResults{margin-bottom:8px}
+body.searching #homeMain{display:none}
+.titlerow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.titlerow h1{white-space:nowrap;font-size:clamp(19px,5.3vw,26px);min-width:0}
+.pill.sm{flex:none;height:38px;padding:0 12px;font-size:14px;gap:6px}
+.pill.sm svg{width:18px;height:18px}
+#lkResults .lk-status:empty{display:none}
 .pill{flex:1;height:46px;border-radius:14px;background:var(--gold);color:#1a1307;border:1px solid var(--gold);display:flex;align-items:center;
   justify-content:center;gap:8px;font-weight:800;font-size:16px;text-decoration:none}
 .x{border:0;background:var(--card);color:var(--ink);width:42px;height:42px;border-radius:12px;font-size:20px;flex:none}
@@ -149,12 +161,13 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
 <!-- HOME -->
 <section id="home" class="screen on"><div class="page">
   <nav class="appbar">
-    <button class="ib" id="lkBtn" aria-label="Search tags, lines and valves" title="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/></svg></button>
+    <div id="lkRoot" class="lktop"></div>
     <button class="ib" id="glossBtn" aria-label="Glossary" title="Glossary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5c2.5-1.3 5.5-1.3 8 .5v14c-2.5-1.8-5.5-1.8-8-.5z"/><path d="M20 5.5c-2.5-1.3-5.5-1.3-8 .5v14c2.5-1.8 5.5-1.8 8-.5z"/></svg></button>
-    <a class="pill" href="pfd.html" title="Interactive plant diagram (best on a computer)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span>Smart PFD</span></a>
     <button class="ib" id="setBtn" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </nav>
-  <h1>KCGM <span>Flashcards</span></h1>
+  <div id="lkResults" class="lk"></div>
+  <div id="homeMain">
+  <div class="titlerow"><h1>KCGM <span>Flashcards</span></h1><a class="pill sm" href="pfd.html" title="Interactive plant diagram (best on a computer)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span>Smart PFD</span></a></div>
   <p class="sub">A question fills the screen. Swipe to see the answer. Swipe again: right if you knew it, left to see it again.</p>
   <div class="stats" id="stats"></div>
 
@@ -176,6 +189,7 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
   <div class="topics" id="topics"></div>
 
   <div class="sticky"><button class="btn primary" style="width:100%" id="startBtn">Start</button></div>
+  </div>
 </div></section>
 
 <!-- DECK -->
@@ -208,15 +222,6 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
   </div>
   <input class="search" id="gSearch" placeholder="Search e.g. F21, PAX, roping" autocomplete="off">
   <div class="gl" id="gList"></div>
-</div></section>
-
-<!-- LOOKUP -->
-<section id="lookup" class="screen"><div class="page">
-  <div class="topbar" style="margin-bottom:12px">
-    <button class="x" id="lkBack" aria-label="Back">←</button>
-    <h1 style="margin:0;font-size:22px">Look <span>up</span></h1>
-  </div>
-  <div id="lkRoot"></div>
 </div></section>
 
 <!-- SETTINGS -->
@@ -512,18 +517,16 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
   }
   // ---------- LOOKUP ----------
   let lk = null;
-  const LK_INTRO = `<div class="lk-empty">Type any part of a code, e.g. <b>13-PP-401</b>, <b>FCV16011</b>, <b>0716</b>, <b>SP-HS-001</b>, a P&amp;ID number, or words like <b>cyclone feed pump</b>. Spaces and hyphens don't matter. Tap 📷 to read a tag from a photo.<br><br>Covers the MEL, instrument list, control valve list, manual valve list, line list, SPI list, slurry hose lists and the glossary.</div>`;
-  $("lkBtn").onclick = () => {
-    show("lookup");
-    if (!lk){
-      Lookup.addExtra(GLOSSARY.map(([k, v]) => ({ t: "gloss", key: k, name: v, text: v })));
-      lk = Lookup.mount($("lkRoot"), { intro: LK_INTRO, scrollTop: () => window.scrollTo(0, 0),
-        pfd: it => ["mel", "ins", "cv"].includes(it.t) ? { label: "Find it on the PFD", go: () => location.href = "pfd.html?find=" + encodeURIComponent(it.key) } : null });
-      Lookup.load().catch(() => {});
-    }
-    setTimeout(() => lk.input.focus(), 50);
-  };
-  $("lkBack").onclick = () => show("home");
+  const LK_INTRO_UNUSED = `<div class="lk-empty">Type any part of a code, e.g. <b>13-PP-401</b>, <b>FCV16011</b>, <b>0716</b>, <b>SP-HS-001</b>, a P&amp;ID number, or words like <b>cyclone feed pump</b>. Spaces and hyphens don't matter. Tap 📷 to read a tag from a photo.<br><br>Covers the MEL, instrument list, control valve list, manual valve list, line list, SPI list, slurry hose lists and the glossary.</div>`;
+  // Search lives in the top bar: type straight in, results replace the home content until the bar is cleared
+  Lookup.addExtra(GLOSSARY.map(([k, v]) => ({ t: "gloss", key: k, name: v, text: v })));
+  lk = Lookup.mount($("lkRoot"), { placeholder: "Search tags, lines, valves…", intro: "", scrollTop: () => window.scrollTo(0, 0),
+    pfd: it => ["mel", "ins", "cv"].includes(it.t) ? { label: "Find it on the PFD", go: () => location.href = "pfd.html?find=" + encodeURIComponent(it.key) } : null });
+  { const st = $("lkRoot").querySelector(".lk-status"), bd = $("lkRoot").querySelector(".lk-body");
+    $("lkResults").append(st, bd);
+    const sync = () => document.body.classList.toggle("searching", bd.innerHTML.trim() !== "" || st.textContent.trim() !== "");
+    new MutationObserver(sync).observe(bd, { childList: true, subtree: true }); new MutationObserver(sync).observe(st, { childList: true, subtree: true, characterData: true });
+    lk.input.addEventListener("focus", () => Lookup.load().catch(() => {}), { once: true }); }
   $("glossBtn").onclick = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
   $("glossBack").onclick = () => show("home");
   $("gSearch").oninput = e => renderGloss(e.target.value);
