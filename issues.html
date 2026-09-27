@@ -30,6 +30,8 @@ h1 span{color:var(--gold)}
 .bar input{flex:1;min-width:200px}
 .count{font-size:13px;color:var(--mute)}
 table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);border-radius:12px;overflow:hidden}
+td.date{white-space:nowrap;font-variant-numeric:tabular-nums}.newer{font-weight:800;color:var(--gold)}.newer::after{content:" ★"}
+.srcs{margin:0 0 12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px}.srcs summary{cursor:pointer;font-weight:700}.srcs p{color:var(--mute);font-size:13px;margin:8px 0}.srcs table{margin-top:4px}
 th{text-align:left;font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--mute);background:var(--card2);padding:9px 8px;position:sticky;top:0}
 td{padding:8px;border-top:1px solid var(--line);vertical-align:top;line-height:1.4}
 td.doc{color:var(--mute);font-size:12.5px}
@@ -56,7 +58,8 @@ td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13
     <button class="btn" id="updBtn">⟳ Update app</button>
   </header>
   <div class="ver" id="ver"></div>
-  <p class="sub">Contradictions and gaps between the project documents, and checks on the Smart PFD itself. Each row says what one document states, what the other states, and which one the app takes as true and why. Built from the lists by <code>tools/build_issues.py</code>; the diagram checks run live.</p>
+  <p class="sub">Contradictions and gaps between the project documents, and checks on the Smart PFD itself. Each row says what one document states, what the other states, and which one the app takes as true and why. Where two documents clash, the one with the newer revision date (marked ★) is taken as true unless the comment says why not. Built from the lists by <code>tools/build_issues.py</code>; the diagram checks run live.</p>
+  <details class="srcs" id="srcs"></details>
   <div class="chips" id="sevChips"></div>
   <div class="bar">
     <input id="q" type="search" placeholder="Filter by tag, document or words" autocomplete="off" data-lpignore="true" data-1p-ignore="true">
@@ -65,7 +68,7 @@ td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13
     <span class="count" id="count"></span>
   </div>
   <table>
-    <thead><tr><th>Type</th><th>Category</th><th>Item</th><th>What document 1 says</th><th>Document 1</th><th>What document 2 says</th><th>Document 2</th><th>Comment (which is taken as true and why)</th></tr></thead>
+    <thead><tr><th>Type</th><th>Category</th><th>Item</th><th>What document 1 says</th><th>Document 1</th><th>Date 1</th><th>What document 2 says</th><th>Document 2</th><th>Date 2</th><th>Comment (which is taken as true and why)</th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
   <div class="more" id="more"></div>
@@ -81,7 +84,11 @@ td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13
   const SEVC = { Decision: "var(--s-decision)", Clash: "var(--s-clash)", Missing: "var(--s-missing)", Placeholder: "var(--s-placeholder)", Check: "var(--s-check)", Diagram: "var(--s-diagram)" };
   const SEVTIP = { Decision: "Documents disagree; the app made a choice", Clash: "Same item, different value in two lists", Missing: "In one list, not the other",
     Placeholder: "Deleted or unnumbered tag", Check: "Possibly fine, worth checking", Diagram: "Smart PFD layout and data checks" };
-  let all = [], off = new Set(), shown = 200;
+  let all = [], off = new Set(), shown = 200, SRC = {};
+  const MON = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
+  const fmt = d => d ? `${d.slice(8, 10)} ${MON[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}` : "";
+  // date cell; the newer of the two dates is marked, as the newer document is taken as true
+  const dcell = (a, b) => !a ? "–" : `<span class="${b && a > b ? "newer" : ""}"${b && a > b ? ' title="Newer document"' : ""}>${fmt(a)}</span>`;
   AppUpdate.mount($("updBtn"), $("ver"));
 
   function chips(){
@@ -97,21 +104,27 @@ td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13
     const f = filtered();
     $("count").textContent = `${f.length} of ${all.length} shown`;
     $("rows").innerHTML = f.slice(0, shown).map(r => `<tr><td data-l="Type"><span class="sev" style="background:${SEVC[r.sev]}">${esc(r.sev)}</span></td><td data-l="Category">${esc(r.cat)}</td>
-      <td class="item" data-l="Item">${esc(r.item)}</td><td data-l="Document 1 says">${esc(r.v1)}</td><td class="doc" data-l="Document 1">${esc(r.d1)}</td>
-      <td data-l="Document 2 says">${esc(r.v2) || "–"}</td><td class="doc" data-l="Document 2">${esc(r.d2) || "–"}</td><td class="note" data-l="Comment">${esc(r.note)}</td></tr>`).join("");
+      <td class="item" data-l="Item">${esc(r.item)}</td><td data-l="Document 1 says">${esc(r.v1)}</td><td class="doc" data-l="Document 1">${esc(r.d1)}</td><td class="date" data-l="Date 1">${dcell(r.date1, r.date2)}</td>
+      <td data-l="Document 2 says">${esc(r.v2) || "–"}</td><td class="doc" data-l="Document 2">${esc(r.d2) || "–"}</td><td class="date" data-l="Date 2">${dcell(r.date2, r.date1)}</td><td class="note" data-l="Comment">${esc(r.note)}</td></tr>`).join("");
     $("more").innerHTML = f.length > shown ? `<button class="btn" id="moreBtn">Show ${Math.min(500, f.length - shown)} more</button>` : "";
     if ($("moreBtn")) $("moreBtn").onclick = () => { shown += 500; draw(); };
   }
+  function sources(m){
+    $("srcs").innerHTML = `<summary>Source documents and their revision dates (${Object.keys(m.sources).length})</summary><p>${esc(m.rule)} Dates are read from each document's revision block (cover page or drawing title block).</p>
+      <table><thead><tr><th>Document</th><th>Number and revision</th><th>Revision date</th><th>Status</th></tr></thead><tbody>${Object.entries(m.sources)
+      .sort((a, b) => b[1].date.localeCompare(a[1].date)).map(([k, v]) => `<tr><td data-l="Document">${esc(k)}</td><td class="doc" data-l="Number">${esc(v.doc)}</td><td class="date" data-l="Date">${fmt(v.date)}</td><td data-l="Status">${esc(v.status) || "–"}</td></tr>`).join("")}</tbody></table>`;
+  }
   $("q").oninput = () => { shown = 200; draw(); }; $("cat").onchange = () => { shown = 200; draw(); };
   $("xls").onclick = () => {
-    const f = filtered(), head = ["Type", "Category", "Item", "What document 1 says", "Document 1", "What document 2 says", "Document 2", "Comment (which is taken as true and why)"];
+    const f = filtered(), head = ["Type", "Category", "Item", "What document 1 says", "Document 1", "Date 1", "What document 2 says", "Document 2", "Date 2", "Comment (which is taken as true and why)"];
     XLSX.download(`KCGM checks ${new Date().toISOString().slice(0, 10)}.xlsx`, [
-      { name: "Checks", widths: [12, 16, 26, 45, 34, 45, 34, 60], rows: [head, ...f.map(r => [r.sev, r.cat, r.item, r.v1, r.d1, r.v2, r.d2, r.note])] },
+      { name: "Checks", widths: [12, 16, 26, 45, 34, 12, 45, 34, 12, 60], rows: [head, ...f.map(r => [r.sev, r.cat, r.item, r.v1, r.d1, fmt(r.date1), r.v2, r.d2, fmt(r.date2), r.note])] },
+      { name: "Sources", widths: [30, 44, 14, 40], rows: [["Document", "Number and revision", "Revision date", "Status"], ...Object.entries(SRC).map(([k, v]) => [k, v.doc, fmt(v.date), v.status])] },
       { name: "Types", widths: [14, 60, 10], rows: [["Type", "Meaning", "Count"], ...SEV.map(s => [s, SEVTIP[s], all.filter(r => r.sev === s).length])] }]);
   };
 
   // list checks (built offline)
-  fetch("issues.json").then(r => r.json()).then(d => { all = all.concat(d.rows); chips(); draw(); diagram(); }).catch(e => { $("count").textContent = "Couldn't load issues.json: " + e.message; diagram(); });
+  fetch("issues.json").then(r => r.json()).then(d => { all = all.concat(d.rows); SRC = d.meta.sources || {}; sources(d.meta); chips(); draw(); diagram(); }).catch(e => { $("count").textContent = "Couldn't load issues.json: " + e.message; diagram(); });
 
   // diagram checks: load the Smart PFD invisibly and run its self check
   function diagram(){

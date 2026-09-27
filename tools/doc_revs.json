@@ -1,0 +1,86 @@
+{
+ "mel": {
+  "title": "MEL",
+  "number": "2000-F00-LST-ME-10001",
+  "rev": "0",
+  "date": "2025-12-26",
+  "status": "Issued for Use"
+ },
+ "ins": {
+  "title": "Instrument List",
+  "number": "2000-F00-LST-IC-11011",
+  "rev": "1",
+  "date": "2026-07-08",
+  "status": "Re-Issued for Use"
+ },
+ "cv": {
+  "title": "Control Valve List",
+  "number": "2000-F00-LST-PP-10003",
+  "rev": "0",
+  "date": "2025-08-25",
+  "status": "Issued for Use"
+ },
+ "line": {
+  "title": "Line List",
+  "number": "2000-F00-LST-PP-10001",
+  "rev": "1",
+  "date": "2025-10-24",
+  "status": "General and Testing Requirements Updates"
+ },
+ "mv": {
+  "title": "Manual Valve List",
+  "number": "2000-F00-LST-PP-10002",
+  "rev": "8",
+  "date": "2025-10-08",
+  "status": "Issued for SP1 & SP2 Top Up Purchase"
+ },
+ "spi": {
+  "title": "SPI List",
+  "number": "2000-F00-LST-PP-10005",
+  "rev": "0",
+  "date": "2025-09-24",
+  "status": "Issued for Use"
+ },
+ "hose1": {
+  "title": "Slurry Hose List Stage 1",
+  "number": "2000-F00-LST-PP-10032",
+  "rev": "4",
+  "date": "2025-09-04",
+  "status": "Cons Thickener U/F Elbows Added"
+ },
+ "hose2": {
+  "title": "Slurry Hose List Stage 2",
+  "number": "2000-F00-LST-PP-12032",
+  "rev": "B",
+  "date": "2025-07-11",
+  "status": "Issued for Purchase"
+ },
+ "pdc": {
+  "title": "PDC",
+  "number": "2000-F00-DCR-PR-10002",
+  "rev": "4",
+  "date": "2025-07-22",
+  "status": ""
+ },
+ "cp1": {
+  "title": "Control Philosophy Stage 1",
+  "number": "2000-F00-REP-PR-10001",
+  "rev": "4",
+  "date": "2024-09-10",
+  "status": ""
+ },
+ "cp2": {
+  "title": "Control Philosophy Stage 2",
+  "number": "2000-F00-REP-PR-10002",
+  "rev": "0",
+  "date": "2025-07-16",
+  "status": ""
+ },
+ "pfd": {
+  "title": "Stage 1 PFDs",
+  "number": "2000-F00-PFD-PR series",
+  "rev": "1",
+  "date": "2026-09-04",
+  "status": "SP1 AS BUILT"
+ }
+}

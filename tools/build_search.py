@@ -6,7 +6,7 @@ Files are found by document number in the file name, so revisions can be dropped
   Line List 2000-F00-LST-PP-10001, Manual Valve List 2000-F00-LST-PP-10002, SPI List 2000-F00-LST-PP-10005,
   Slurry Hose Lists 2000-F00-LST-PP-10032 (Stage 1) and 2000-F00-LST-PP-12032 (Stage 2).
 """
-import glob, json, os, re, sys, warnings
+import datetime, glob, json, os, re, sys, warnings
 import openpyxl
 warnings.filterwarnings("ignore")
 SRC = sys.argv[1]
@@ -31,8 +31,13 @@ def rows(doc, sheet, hdr):
         if i > hdr: yield r
 
 TYPES, DATA = {}, {}
+REVS = {}   # cover page revision and date of each list, from tools/doc_revs.py
+try: REVS = json.load(open(os.path.join(os.path.dirname(__file__), "doc_revs.json")))
+except OSError: pass
+def revtext(*keys):
+    return " / ".join(f"Rev {REVS[k]['rev']} ({datetime.date.fromisoformat(REVS[k]['date']):%d %b %Y})" for k in keys if k in REVS)
 def add_type(key, name, doc, rev, fields):
-    TYPES[key] = {"n": name, "doc": doc, "rev": rev, "f": [f[0] for f in fields]}
+    TYPES[key] = {"n": name, "doc": doc, "rev": revtext(*(("hose1", "hose2") if key == "hose" else (key,))) or rev, "f": [f[0] for f in fields]}
     DATA[key] = []
 def put(key, fields, r):
     rec = [clean(r[c]) if c < len(r) else "" for _, c in fields]
