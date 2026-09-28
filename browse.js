@@ -68,7 +68,9 @@ window.Browse = (() => {
   const match = r => path.every(p => p.v == null || r[p.f] === p.v);
   const nextStep = () => t() ? steps()[path.length - 1] : ["t", "Asset type"];
   // alphabetical by what the chip shows ("?" reads "Other"); numbers in number order, so sizes run 15, 25, 50…
-  const order = (f, c) => Object.keys(c).sort((x, y) => (x === "?" ? "Other" : x).localeCompare(y === "?" ? "Other" : y, undefined, { numeric: true, sensitivity: "base" }));
+  // most items first (ties alphabetical, by what the chip shows: "?" reads "Other")
+  const alpha = (x, y) => (x === "?" ? "Other" : x).localeCompare(y === "?" ? "Other" : y, undefined, { numeric: true, sensitivity: "base" });
+  const order = (f, c) => Object.keys(c).sort((x, y) => c[y] - c[x] || alpha(x, y));
 
   let el = null, lk = null, resY = 0;
   // a short form of a name for the option chips: the first one or two words, about 14 characters ("Pump Process")
@@ -77,7 +79,6 @@ window.Browse = (() => {
     if (!w.length) return ""; let s = w[0];
     if (w[1]) s += (s + " " + w[1]).length <= 14 ? " " + w[1] : " " + w[1].slice(0, Math.max(3, 12 - s.length)) + ".";   // "Analysis Elem."
     return s === s.toUpperCase() && /[A-Z]{3}/.test(s) ? s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : s; };
-  const AZ_MIN = 16;   // lists at least this long get the A–Z strip
   function draw(){
     const list = rows.filter(match), st = nextStep();
     const crumbs = path.map((p, i) => { const nm = p.f === "t" || p.v == null || p.v === "?" ? "" : nameOf(p.f, t(), p.v);
@@ -86,14 +87,14 @@ window.Browse = (() => {
     let opts = "", az = null, qw = 1;
     if (st){
       const c = {}; for (const r of list) c[r[st[0]]] = (c[r[st[0]]] || 0) + 1;
-      const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => TN[x].localeCompare(TN[y])) : order(st[0], c);
+      const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => c[y] - c[x] || TN[x].localeCompare(TN[y])) : order(st[0], c);
       opts = `<div class="bw-h">${esc(st[1])}${st[0] !== "t" ? `<button class="bw-any">Any</button>` : ""}</div>` +
         vals.map(v => { const n = st[0] === "t" || v === "?" ? "" : shortName(nameOf(st[0], t(), v)), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
           // code (short name); the full name and the count show on the gold chip once picked
           // qty × code (short name): the quantities share one right aligned column, so the items line up
           return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}"><i class="q">(x${c[v].toLocaleString()})</i><em>${esc(label)}</em>${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
       qw = Math.max(...vals.map(v => c[v].toLocaleString().length)) + 3;   // "(x" and ")"
-      if (st[0] !== "t" && vals.length >= AZ_MIN) az = [...new Set(vals.map(v => azKey(v === "?" ? "Other" : v)))].sort((a, b) => a.localeCompare(b));
+      az = [...new Set(vals.map(v => azKey(st[0] === "t" ? TN[v] : v === "?" ? "Other" : v)))].sort((a, b) => a.localeCompare(b));   // shown only if the list runs off the screen
     } else opts = `<div class="bw-h">All steps set</div><div class="bw-note">Tap × on a step above to change it.</div>`;
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts stack" style="--qw:${qw}ch">${opts}</div></div></div>
@@ -126,6 +127,8 @@ window.Browse = (() => {
     // one option per row whenever they all fit without scrolling; flowing side by side only for longer lists
     const l = el.querySelector(".bw-l"), op = el.querySelector(".bw-opts");
     // (one option per row, always: the quantity column keeps the items aligned)
+    azSel = null; const lwr = el.querySelector(".bw-lw");
+    if (lwr){ lwr.classList.remove("az-on"); if (el.querySelector(".bw-az") && l.scrollHeight > l.clientHeight + 1) lwr.classList.add("az-on"); }
     fitRows(".bw-o", 11.5);
     const W = el.clientWidth, lw = el.querySelector(".bw-lw"); let need = 0;
     el.querySelectorAll(".bw-o").forEach(b => { need = Math.max(need, b.scrollWidth - b.clientWidth); });
@@ -134,19 +137,23 @@ window.Browse = (() => {
   }
   const azKey = s => { const c = String(s).charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
   // Niagara style A–Z strip: slide a finger down it and the options jump to that letter, with a big letter bubble
+  // Niagara style A–Z strip (only when the options run off the screen): slide along it and only that letter's options
+  // show, with a big letter bubble; tap the same letter again for all of them
+  let azSel = null;
   function bindAZ(){
     const strip = el.querySelector(".bw-az"), l = el.querySelector(".bw-l"), bub = el.querySelector(".bw-bub"), lw = el.querySelector(".bw-lw");
-    let on = null, down = false;
-    const at = e => { const r = strip.getBoundingClientRect(), k = strip.children, i = Math.max(0, Math.min(k.length - 1, Math.floor((e.clientY - r.top) / r.height * k.length)));
-      const L = k[i].dataset.l, lr = lw.getBoundingClientRect();
+    let down = false, moved = false, start = null;
+    const show = L => { azSel = L; [...strip.children].forEach(x => x.classList.toggle("on", x.dataset.l === L));
+      el.querySelectorAll(".bw-o").forEach(o => o.hidden = !!L && o.dataset.l !== L); l.scrollTop = 0; };
+    const letterAt = e => { const r = strip.getBoundingClientRect(), k = strip.children; return k[Math.max(0, Math.min(k.length - 1, Math.floor((e.clientY - r.top) / r.height * k.length)))].dataset.l; };
+    const at = e => { const L = letterAt(e), lr = lw.getBoundingClientRect();
       bub.textContent = L; bub.style.top = Math.max(0, Math.min(lr.height - 56, e.clientY - lr.top - 28)) + "px"; bub.style.display = "grid";
-      if (L === on) return; on = L; [...k].forEach(x => x.classList.toggle("on", x.dataset.l === L));
-      const first = l.querySelector(`.bw-o[data-l="${CSS.escape(L)}"]`);
-      if (first) l.scrollTop += first.getBoundingClientRect().top - l.getBoundingClientRect().top - 4;
-      if (navigator.vibrate) try { navigator.vibrate(4); } catch (x) {} };
-    const end = () => { down = false; bub.style.display = ""; setTimeout(() => { if (!down) [...strip.children].forEach(x => x.classList.remove("on")); on = null; }, 400); };
-    strip.addEventListener("pointerdown", e => { down = true; try { strip.setPointerCapture(e.pointerId); } catch (x) {} at(e); e.preventDefault(); });
-    strip.addEventListener("pointermove", e => { if (down) at(e); });
+      if (L !== start) moved = true;
+      if (L !== azSel){ show(L); if (navigator.vibrate) try { navigator.vibrate(4); } catch (x) {} } };
+    strip.addEventListener("pointerdown", e => { down = true; moved = false; start = letterAt(e); const was = azSel; try { strip.setPointerCapture(e.pointerId); } catch (x) {}
+      if (was === start){ strip.dataset.clear = "1"; } else { strip.dataset.clear = ""; at(e); } e.preventDefault(); });
+    strip.addEventListener("pointermove", e => { if (down && (letterAt(e) !== start || !strip.dataset.clear)) { strip.dataset.clear = ""; at(e); } });
+    const end = () => { down = false; bub.style.display = ""; if (strip.dataset.clear && !moved) show(null); strip.dataset.clear = ""; };
     strip.addEventListener("pointerup", end); strip.addEventListener("pointercancel", end);
   }
   const after = () => { shownN = 60; save(); draw(); };
@@ -169,6 +176,7 @@ window.Browse = (() => {
 .bw-l,.bw-r{overflow-y:auto;overscroll-behavior:contain;min-height:0;-webkit-overflow-scrolling:touch}
 .bw-lw{position:relative;display:flex;min-height:0;min-width:0}
 .bw-lw .bw-l{flex:1;min-width:0}
+.bw-lw:not(.az-on) .bw-az{display:none}.bw-o[hidden]{display:none}
 .bw-az{flex:none;width:30px;margin-left:-16px;padding-left:4px;margin-right:2px;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
 .bw-az i{font-style:normal;font-size:10.5px;font-weight:800;line-height:1;color:var(--mute);transition:transform .1s,color .1s}
 .bw-az i.on{color:var(--gold);transform:scale(1.5)}
