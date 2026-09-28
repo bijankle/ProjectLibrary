@@ -2,6 +2,7 @@
 (2000-F00-STS-GE-10003, tables in sources/num) and the lists themselves.
   areas: {"F13": "Milling & Classification"}   equip: {"PP": "Pump"}   inst: {"L": ["Level", "Light"]} (1st / later letter)
   svc:   {"BW": "Bore Water (Raw Water)"}      (line service codes, from the line list)
+  spec:  {"CL1": "Carbon Steel, Spun Ceramic Lined"} (pipe classes, from spec/index.json)
 Usage: python3 tools/build_browse.py   (after tools/build_sources.py and tools/build_search.py)
 """
 import json, os
@@ -39,5 +40,15 @@ d = json.load(open(os.path.join(ROOT, "search-data.json")))
 f = d["types"]["line"]["f"]; si, di = f.index("Service"), f.index("Service description")
 for r in d["data"]["line"]:
     if len(r) > di and r[si] and r[di]: out["svc"].setdefault(r[si], r[di])
+# pipe classes (line pipe spec), named by their material, from the spec index (tools/build_spec.py)
+sp = os.path.join(ROOT, "spec", "index.json")
+if os.path.exists(sp):
+    import re
+    for k, v in json.load(open(sp))["pipe"].items():
+        m = re.sub(r"\s*[–-]\s*", ", ", re.sub(r"\s+\d+$", "", str(v.get("material") or v.get("title") or ""))).strip(" ,")
+        m = re.sub(r"\s*\(.*", "", m.replace("High Density Polyethylene", "HDPE")).strip(" ,")
+        for a, b in (("Hot Dipped Galvanised", "Galvanised CS"), ("Natural Rubber", "Rubber lined CS"), ("Spun Ceramic", "Ceramic lined CS"), ("Butyl", "Butyl lined CS"), ("chlorotrifluroethylene", "ECTFE")):
+            if a in m: m = b; break
+        out.setdefault("spec", {})[k] = m if len(m) <= 34 else m[:32].rsplit(" ", 1)[0] + "…"
 json.dump(out, open(os.path.join(ROOT, "browse.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 print({k: len(v) for k, v in out.items()})

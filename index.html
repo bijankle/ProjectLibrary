@@ -77,15 +77,16 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
 .gl .k{font-weight:800;color:var(--gold);white-space:nowrap}
 .topbar{display:flex;align-items:center;gap:12px}
 /* home app bar: search, glossary, Smart PFD, settings */
-.appbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 10px}
+.appbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+.appbar .ib{width:42px;height:42px}
 .ib{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink);width:46px;height:46px;border-radius:14px;
   display:grid;place-items:center;flex:none;padding:0}
 .ib svg,.pill svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ib:active,.pill:active{transform:scale(.96)}
 .lktop{flex:1;min-width:0}
-.lktop .lk-in{height:46px;padding:0 12px 0 40px;border-radius:14px;font-family:inherit;font-size:16px;
+.lktop .lk-in{height:42px;padding:0 12px 0 40px;border-radius:14px;font-family:inherit;font-size:16px;
   background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") 12px 50%/20px no-repeat}
-.lktop .lk-cam{width:46px;height:46px;border-radius:14px;font-size:19px}
+.lktop .lk-cam{width:42px;height:42px;border-radius:14px;font-size:19px}
 .lktop .lk-bar{gap:8px}
 #lkResults{margin-bottom:8px}
 body.searching #homeMain{display:none}

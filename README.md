@@ -16,9 +16,9 @@ A tab strip sits across the top of every screen, on the phone and the computer: 
 
 The Quiz tab opens on one big ▶ Start quiz button with the current choice written under it (e.g. 20 cards · shuffled · all topics) and the progress stats. ⚙ Filters in the corner opens the deck order, length and topics; the choices are remembered.
 
-## Browse (phone home screen)
+## Browse (Assets tab)
 
-The phone opens on Browse: three side by side pill columns, Type (equipment, instruments, control and manual valves, lines, pipe specials, hoses, drawings), Area (the WBS number, e.g. F13 Milling & Classification) and Kind (depends on the type: equipment code such as PP Pump, instrument letters such as PIT, valve type, line service, SPI type, hose service, P&ID or PFD). Pick in any order; every pill shows how many items it leaves and tapping it again clears it. Matching items are listed underneath and open the same detail view as search. The last pick is remembered. Typing in the search bar still searches everything. Pill names come from `browse.json`, built by `tools/build_browse.py` from the plant numbering spec and the line list (standard ISA letters fill any gaps). `browse.js` holds the logic.
+The Assets tab is split in two. The left half is the filter: first the asset type (equipment, instruments, control and manual valves, lines, pipe specials, hoses, drawings), then steps that follow that type's own tag nomenclature: equipment code then area for equipment (e.g. PP - Pump (277)), instrument letters then area, valve type, area and size for valves, service, area, pipe spec and size for lines. Each option shows how many items it leaves. Chosen steps stack at the top left as pills; × on one goes back to that step. Any skips a step. The right half always lists the items that match so far; tap one for its full detail. The last pick is remembered, and typing in the search bar still searches everything. Option names come from `browse.json`, built by `tools/build_browse.py` from the plant numbering spec, the line list and the pipe spec index (standard ISA letters fill any gaps). `browse.js` holds the logic.
 
 ## Follow up questions (AI)
 
