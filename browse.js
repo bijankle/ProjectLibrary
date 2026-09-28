@@ -96,7 +96,7 @@ window.Browse = (() => {
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts">${opts}</div></div></div>
       <div class="bw-r"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
-      ${hits.map((it, i) => `<button class="bw-it" data-i="${i}"><b>${Lookup.ICON[it.t] || ""} ${esc(it.key)}</b><span>${esc(Lookup.listName(it))}</span></button>`).join("")}
+      ${hits.map((it, i) => `<button class="bw-it" data-i="${i}"><b>${t() ? "" : (Lookup.ICON[it.t] || "") + " "}${esc(it.key)}</b> <span>(${esc(resDesc(it))})</span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bw-o").forEach(b => b.onclick = () => { path.push({ f: st[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
     const any = el.querySelector(".bw-any"); if (any) any.onclick = () => { path.push({ f: st[0], v: null }); after(); };
@@ -104,7 +104,26 @@ window.Browse = (() => {
     el.querySelectorAll(".bw-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i]); });
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
     if (az) bindAZ();
-    fit();
+    fit(); fitLayout();
+  }
+  // one row per result: code (description); a line reads code (from Name (tag), to Name (tag))
+  const resDesc = it => { if (it.t === "line" && it.r){ const [a, b] = Lookup.lineEnds(it); return `from ${a}, to ${b}`; } return Lookup.listName(it); };
+  // the bracket text shrinks until its row fits on one line (never below 8px; then it ends with …);
+  // chips that still don't fit at 8px widen the filter column (up to half the screen)
+  function fitRows(sel, max){
+    el.querySelectorAll(sel).forEach(b => { const s = b.querySelector("span"); if (!s) return; s.style.fontSize = max + "px";
+      if (b.scrollWidth <= b.clientWidth + 1) return;
+      const over = b.scrollWidth - b.clientWidth, w = s.getBoundingClientRect().width, fs = Math.max(8, max * Math.max(0, w - over - 2) / w);
+      s.style.fontSize = fs.toFixed(1) + "px"; if (b.scrollWidth > b.clientWidth + 1 && fs > 8) s.style.fontSize = "8px"; });
+  }
+  function fitLayout(){
+    if (!el || !el.offsetParent) return;
+    el.style.gridTemplateColumns = "";
+    fitRows(".bw-o", 11.5);
+    const W = el.clientWidth, lw = el.querySelector(".bw-lw"); let need = 0;
+    el.querySelectorAll(".bw-o").forEach(b => { need = Math.max(need, b.scrollWidth - b.clientWidth); });
+    if (need > 1 && lw){ const w = Math.min(W * .5, lw.getBoundingClientRect().width + need + 2); el.style.gridTemplateColumns = `${Math.round(w)}px minmax(0,1fr)`; fitRows(".bw-o", 11.5); }
+    fitRows(".bw-it", 11.5);
   }
   const azKey = s => { const c = String(s).charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
   // Niagara style A–Z strip: slide a finger down it and the options jump to that letter, with a big letter bubble
@@ -127,7 +146,7 @@ window.Browse = (() => {
   // the two panes fill the screen below the search bar and scroll on their own
   function fit(){ if (!el || !el.offsetParent) return; const z = window.TextSize ? TextSize.z() : 1;   // inside a zoomed page, CSS pixels are scaled by the text size
     el.style.height = Math.max(260, (window.innerHeight - el.getBoundingClientRect().top - window.scrollY - 6) / z) + "px"; }
-  window.addEventListener("resize", fit);
+  window.addEventListener("resize", () => { fit(); fitLayout(); });
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(path)); } catch (e) {} };
   function mount(root, box){
     el = root; lk = box; el.classList.add("bw");
@@ -138,15 +157,15 @@ window.Browse = (() => {
       .catch(e => { el.innerHTML = `<div class="bw-note">Couldn't load the lists (${esc(e.message)}). Check the connection and reopen the app.</div>`; });
   }
   // back from an item: the list where it was
-  const restore = () => { fit(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
+  const restore = () => { fit(); fitLayout(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
   const css = `.bw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px;min-height:260px}
 .bw-l,.bw-r{overflow-y:auto;overscroll-behavior:contain;min-height:0;-webkit-overflow-scrolling:touch}
 .bw-lw{position:relative;display:flex;min-height:0;min-width:0}
 .bw-lw .bw-l{flex:1;min-width:0}
-.bw-az{flex:none;width:17px;margin-right:3px;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+.bw-az{flex:none;width:30px;margin-left:-16px;padding-left:4px;margin-right:2px;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
 .bw-az i{font-style:normal;font-size:10.5px;font-weight:800;line-height:1;color:var(--mute);transition:transform .1s,color .1s}
 .bw-az i.on{color:var(--gold);transform:scale(1.5)}
-.bw-bub{position:absolute;left:24px;width:54px;height:54px;border-radius:50% 50% 50% 10px;background:var(--gold);color:#1a1307;font-size:28px;font-weight:900;display:none;place-items:center;z-index:5;pointer-events:none;box-shadow:0 6px 18px #0008}
+.bw-bub{position:absolute;left:18px;width:54px;height:54px;border-radius:50% 50% 50% 10px;background:var(--gold);color:#1a1307;font-size:28px;font-weight:900;display:none;place-items:center;z-index:5;pointer-events:none;box-shadow:0 6px 18px #0008}
 .bw-l{display:flex;flex-direction:column;gap:6px;padding-right:2px}
 .bw-crs{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .bw-cr{display:flex;align-items:center;gap:5px;max-width:100%;border:1px solid var(--gold);background:var(--gold);color:#1a1307;border-radius:99px;padding:3px 5px 3px 9px;font:inherit;font-size:12px;font-weight:700}
@@ -156,13 +175,13 @@ window.Browse = (() => {
 .bw-h{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:2px 0}
 .bw-any{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:2px 8px;font:inherit;font-size:11px;letter-spacing:0;text-transform:none}
 .bw-o{display:block;width:auto;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:9px;padding:5px 8px;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.2}
-.bw-o span{font-weight:500;color:var(--mute);font-size:11.5px}.bw-o b{color:var(--ink);font-size:12.5px}.bw-o i{font-style:normal;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bw-o{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.bw-o span{font-weight:500;color:var(--mute);font-size:11.5px}.bw-o b{color:var(--ink);font-size:12.5px}.bw-o i{font-style:normal;font-variant-numeric:tabular-nums;white-space:nowrap}
 .bw-o:active{border-color:var(--gold)}
 .bw-r{border-left:1px solid var(--line);padding-left:8px}
 .bw-n{font-size:11.5px;color:var(--mute);margin:2px 0 4px}.bw-n b{color:var(--ink)}
-.bw-it{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:6px 0;font:inherit}
-.bw-it b{display:block;font-size:12.5px;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
-.bw-it span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11.5px;line-height:1.3;color:var(--mute)}
+.bw-it{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:7px 0;font:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bw-it b{font-size:12px;color:var(--gold);font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
+.bw-it span{font-size:11.5px;color:var(--mute)}
 .bw-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-size:12px;font-weight:700}
 .bw-note{font-size:12px;color:var(--mute);line-height:1.4}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
