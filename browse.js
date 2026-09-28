@@ -121,6 +121,9 @@ window.Browse = (() => {
   function fitLayout(){
     if (!el || !el.offsetParent) return;
     el.style.gridTemplateColumns = "";
+    // one option per row whenever they all fit without scrolling; flowing side by side only for longer lists
+    const l = el.querySelector(".bw-l"), op = el.querySelector(".bw-opts");
+    if (op){ op.classList.add("stack"); if (l.scrollHeight > l.clientHeight + 1) op.classList.remove("stack"); }
     fitRows(".bw-o", 11.5);
     const W = el.clientWidth, lw = el.querySelector(".bw-lw"); let need = 0;
     el.querySelectorAll(".bw-o").forEach(b => { need = Math.max(need, b.scrollWidth - b.clientWidth); });
@@ -173,7 +176,8 @@ window.Browse = (() => {
 .bw-cr{display:flex;align-items:center;gap:5px;max-width:100%;border:1px solid var(--gold);background:var(--gold);color:#1a1307;border-radius:99px;padding:3px 5px 3px 9px;font:inherit;font-size:12px;font-weight:700}
 .bw-cr{border-radius:10px !important;text-align:left}.bw-cr span{white-space:normal;line-height:1.25}.bw-cr i{font-style:normal;font-weight:600;opacity:.75}
 .bw-cr b{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(0,0,0,.18);font-size:12px;line-height:1}
-.bw-opts{display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;align-content:flex-start}.bw-opts .bw-h,.bw-opts .bw-note{flex-basis:100%}
+.bw-opts{display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;align-content:flex-start}
+.bw-opts.stack{flex-direction:column;align-items:flex-start;flex-wrap:nowrap}.bw-opts .bw-h,.bw-opts .bw-note{flex-basis:100%}
 .bw-h{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:2px 0}
 .bw-any{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:2px 8px;font:inherit;font-size:11px;letter-spacing:0;text-transform:none}
 .bw-o{display:block;width:auto;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:9px;padding:5px 8px;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.2}
