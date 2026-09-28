@@ -28,7 +28,9 @@ window.PdfView = (() => {
       fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), close })[b.dataset.a]());
     addEventListener("keydown", e => { if (el.hidden) return; if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
     addEventListener("popstate", () => { if (!el.hidden) close(true); });
-    addEventListener("resize", () => { if (!el.hidden) layout(true); });
+    // rotating the phone: refit the sheet once the new size has settled (keeps the zoom level)
+    let rt; const refit = () => { clearTimeout(rt); rt = setTimeout(() => { if (!el.hidden) layout(true); }, 250); };
+    addEventListener("resize", refit); if (screen.orientation) screen.orientation.addEventListener("change", refit);
     let t; V.body.addEventListener("scroll", () => { clearTimeout(t); t = setTimeout(sharp, 70); });
     V.body.addEventListener("wheel", e => { if (!e.ctrlKey && cur.fit !== "page") return; e.preventDefault(); zoomTo(V.zoom * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025)), e.clientX, e.clientY); }, { passive: false });
     // touch pinch: scale the sheet while pinching, redraw sharp when the fingers lift
