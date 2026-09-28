@@ -67,48 +67,40 @@ window.Browse = (() => {
   const steps = () => t() ? STEPS[t()] : [];
   const match = r => path.every(p => p.v == null || r[p.f] === p.v);
   const nextStep = () => t() ? steps()[path.length - 1] : ["t", "Asset type"];
-  const order = (f, c) => Object.keys(c).sort(f === "sz" ? (x, y) => (x === "?") - (y === "?") || parseFloat(x) - parseFloat(y) || x.localeCompare(y)
-    : f === "a" ? (x, y) => (x === "?") - (y === "?") || x.localeCompare(y) : (x, y) => (x === "?") - (y === "?") || c[y] - c[x] || x.localeCompare(y));
+  // alphabetical (numbers in number order, so sizes run 15, 25, 50…), "Other" last
+  const order = (f, c) => Object.keys(c).sort((x, y) => (x === "?") - (y === "?") || x.localeCompare(y, undefined, { numeric: true }));
 
   let el = null, lk = null, resY = 0;
   function draw(){
     const list = rows.filter(match), st = nextStep();
-    const crumbs = path.map((p, i) => `<button class="bw-cr" data-i="${i}" title="Remove this and the steps after it"><span>${esc(p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : p.v === "?" ? "Other" : p.v + (nameOf(p.f, t(), p.v) ? " - " + nameOf(p.f, t(), p.v) : ""))}</span><b>×</b></button>`).join("");
+    const crumbs = path.map((p, i) => { const nm = p.f === "t" || p.v == null || p.v === "?" ? "" : nameOf(p.f, t(), p.v);
+      const txt = p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : (p.v === "?" ? "Other" : p.v) + (nm ? " - " + nm : "");
+      return `<button class="bw-cr" data-i="${i}" title="Remove this and the steps after it"><span>${esc(txt)}${p.n ? ` <i>(${p.n.toLocaleString()})</i>` : ""}</span><b>×</b></button>`; }).join("");
     let opts = "";
     if (st){
       const c = {}; for (const r of list) c[r[st[0]]] = (c[r[st[0]]] || 0) + 1;
-      const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]) : order(st[0], c);
+      const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => TN[x].localeCompare(TN[y])) : order(st[0], c);
       opts = `<div class="bw-h">${esc(st[1])}${st[0] !== "t" ? `<button class="bw-any">Any</button>` : ""}</div>` +
         vals.map(v => { const n = st[0] === "t" ? "" : nameOf(st[0], t(), v), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
-          return `<button class="bw-o" data-v="${esc(v)}"${n ? ` title="${esc(n)}"` : ""}><b>${esc(label)}</b>${n ? `<span class="bw-nm"> - ${esc(n)}</span>` : ""} <i>(${c[v].toLocaleString()})</i></button>`; }).join("");
+          return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}">${esc(label)}</button>`; }).join("");   // just the code: the name and count show once picked
     } else opts = `<div class="bw-h">All steps set</div><div class="bw-note">Tap × on a step above to change it.</div>`;
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = `<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts">${opts}</div></div>
       <div class="bw-r"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
       ${hits.map((it, i) => `<button class="bw-it" data-i="${i}"><b>${Lookup.ICON[it.t] || ""} ${esc(it.key)}</b><span>${esc(Lookup.listName(it))}</span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
-    el.querySelectorAll(".bw-o").forEach(b => b.onclick = () => { path.push({ f: st[0], v: b.dataset.v }); after(); });
+    el.querySelectorAll(".bw-o").forEach(b => b.onclick = () => { path.push({ f: st[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
     const any = el.querySelector(".bw-any"); if (any) any.onclick = () => { path.push({ f: st[0], v: null }); after(); };
     el.querySelectorAll(".bw-cr").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
     el.querySelectorAll(".bw-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i]); });
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
-    fit(); arrange();
-  }
-  // Filters on top (options wrapping left to right, results full width below) when they fit in the top half of the
-  // split area; otherwise the side by side split (e.g. the long list of equipment codes).
-  function arrange(){
-    if (!el || !el.offsetParent) return;
-    // try: on top with names, on top as compact code chips (name shown once picked), else side by side
-    const l = el.querySelector(".bw-l"), fits = () => l && l.scrollHeight <= el.clientHeight / 2;
-    el.classList.remove("compact"); el.classList.add("top"); if (fits()) return;
-    el.classList.add("compact"); if (fits()) return;
-    el.classList.remove("top", "compact");
+    fit();
   }
   const after = () => { shownN = 60; save(); draw(); };
   // the two panes fill the screen below the search bar and scroll on their own
   function fit(){ if (!el || !el.offsetParent) return; const z = window.TextSize ? TextSize.z() : 1;   // inside a zoomed page, CSS pixels are scaled by the text size
     el.style.height = Math.max(260, (window.innerHeight - el.getBoundingClientRect().top - window.scrollY - 6) / z) + "px"; }
-  window.addEventListener("resize", () => { fit(); arrange(); });
+  window.addEventListener("resize", fit);
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(path)); } catch (e) {} };
   function mount(root, box){
     el = root; lk = box; el.classList.add("bw");
@@ -119,25 +111,18 @@ window.Browse = (() => {
       .catch(e => { el.innerHTML = `<div class="bw-note">Couldn't load the lists (${esc(e.message)}). Check the connection and reopen the app.</div>`; });
   }
   // back from an item: the list where it was
-  const restore = () => { fit(); arrange(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
-  const css = `.bw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;min-height:260px}
-.bw.top{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
-.bw.top .bw-l{overflow:visible;padding-right:0}
-.bw.top .bw-opts{flex-direction:row;flex-wrap:wrap}
-.bw.top .bw-h{flex-basis:100%}
-.bw.top .bw-o{width:auto;padding:5px 9px}
-.bw.compact .bw-nm{display:none}.bw.compact .bw-o{padding:4px 8px}
-.bw.top .bw-r{border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:4px}
+  const restore = () => { fit(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
+  const css = `.bw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px;min-height:260px}
 .bw-l,.bw-r{overflow-y:auto;overscroll-behavior:contain;min-height:0;-webkit-overflow-scrolling:touch}
 .bw-l{display:flex;flex-direction:column;gap:6px;padding-right:2px}
 .bw-crs{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .bw-cr{display:flex;align-items:center;gap:5px;max-width:100%;border:1px solid var(--gold);background:var(--gold);color:#1a1307;border-radius:99px;padding:3px 5px 3px 9px;font:inherit;font-size:12px;font-weight:700}
-.bw-cr span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bw-cr{border-radius:10px !important;text-align:left}.bw-cr span{white-space:normal;line-height:1.25}.bw-cr i{font-style:normal;font-weight:600;opacity:.75}
 .bw-cr b{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(0,0,0,.18);font-size:12px;line-height:1}
-.bw-opts{display:flex;flex-direction:column;gap:4px}
+.bw-opts{display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;align-content:flex-start}.bw-opts .bw-h,.bw-opts .bw-note{flex-basis:100%}
 .bw-h{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:2px 0}
 .bw-any{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:2px 8px;font:inherit;font-size:11px;letter-spacing:0;text-transform:none}
-.bw-o{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:9px;padding:6px 8px;font:inherit;font-size:12px;line-height:1.3}
+.bw-o{display:block;width:auto;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:9px;padding:5px 8px;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.2}
 .bw-o b{color:var(--ink);font-size:12.5px}.bw-o i{font-style:normal;font-variant-numeric:tabular-nums;white-space:nowrap}
 .bw-o:active{border-color:var(--gold)}
 .bw-r{border-left:1px solid var(--line);padding-left:8px}
