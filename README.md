@@ -8,6 +8,10 @@ Open it at https://bijankle.github.io/KCGMhomework/ and use Chrome's "Add to Hom
 To add cards, edit `cards.js` (each card has a question `q`, a short answer `a` and the detail `e`),
 then bump `VERSION` in `sw.js` so phones pick up the change.
 
+## Browse (phone home screen)
+
+The phone opens on Browse: three side by side pill columns, Type (equipment, instruments, control and manual valves, lines, pipe specials, hoses, drawings), Area (the WBS number, e.g. F13 Milling & Classification) and Kind (depends on the type: equipment code such as PP Pump, instrument letters such as PIT, valve type, line service, SPI type, hose service, P&ID or PFD). Pick in any order; every pill shows how many items it leaves and tapping it again clears it. Matching items are listed underneath and open the same detail view as search. The last pick is remembered. Typing in the search bar still searches everything. Flashcards are one tap away on the Browse / Flashcards switch. Pill names come from `browse.json`, built by `tools/build_browse.py` from the plant numbering spec and the line list (standard ISA letters fill any gaps). `browse.js` holds the logic.
+
 ## Follow up questions (AI)
 
 On the answer side of each card there is a "Dig deeper" section with three suggested follow up questions and a box for your own.

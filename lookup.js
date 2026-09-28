@@ -127,6 +127,10 @@
   L.fillSpec = (root, it) => { const el = root.querySelector(".lk-spec"); if (!el || !window.Spec) return;
     Spec.load().then(() => { if (!el.isConnected) return; el.innerHTML = Spec.html(it, it.r && DB.types[it.t] ? DB.types[it.t].f : []) + Spec.note(); Spec.bind(el); })
       .catch(e => { el.innerHTML = `<div class="lk-ns">Couldn't load the pipe and valve spec (${esc(e.message)}).</div>`; }); };
+  // for the Browse pickers (browse.js): every item, a field by name, the list icons and names
+  L.items = () => items;
+  L.get = (it, n) => { if (!it.r || !DB.types[it.t]) return ""; const i = DB.types[it.t].f.indexOf(n); return i < 0 ? "" : it.r[i] || ""; };
+  L.ICON = ICON; L.typeName = t => typeName(t);
   L.find = (k, t) => { const a = byKey.get(k) || []; return (t && a.find(x => x.t === t)) || a[0] || null; };
 
   // A self contained search box: input, camera, results and item view with back history.
@@ -212,7 +216,8 @@
         : `<div class="lk-empty">No list code recognised. Edit the text below and search, or retake the photo closer and straight on.</div>`) +
       `<h4 class="lk-h">Text read</h4><textarea class="lk-ocr" rows="4">${esc(res.text)}</textarea><button class="lk-btn lk-ocrgo">Search this text</button>`;
     inp.value = opts.initial || ""; if (opts.initial) ensure().then(() => showList(inp.value)); else body.innerHTML = opts.intro || "";
-    return { input: inp, search: q => { inp.value = q; ensure().then(() => showList(q)); }, openKey: k => ensure().then(() => open(L.find(norm(k)), true)) };
+    return { input: inp, search: q => { inp.value = q; ensure().then(() => showList(q)); }, openKey: k => ensure().then(() => open(L.find(norm(k)), true)),
+      openItem: it => { stack.length = 0; cur = null; open(it, true); } };
   };
 
   // ---------- photo text recognition ----------

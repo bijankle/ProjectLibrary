@@ -1,10 +1,10 @@
 // Offline cache. Bump VERSION when questions change so phones pick up the new bank.
-const VERSION = "kcgm-v31";
+const VERSION = "kcgm-v32";
 // Documents (spec PDF, drawings, source tables) live in their own cache that app updates keep. The spec and drawings
 // are saved there the first time they're opened; Settings > Offline downloads (offline.js) can fetch any of them.
 const DOCS = "kcgm-docs-1",   // bump when a document is rebuilt so devices refetch it
       DOC_PDF = /\/(spec\/pvs|PIDs\/[^/]+|PFDs\/[^/]+)\.pdf$/, DOC_ANY = /\/(spec|PIDs|PFDs|sources)\/(?!index\.json)/;
-const FILES = ["./", "index.html", "cards.js", "facts.js", "ai.js", "glossary.js", "manifest.json", "icon.svg", "icon-192.png", "icon-512.png", "pfd.html", "pfd-data.js", "pfd-streams.js", "pfd-equip.js", "pfd-layout-data.js", "pfd-layout.js", "tools/tagutil.js", "lookup.js", "search-data.json", "app-update.js", "xlsx-lite.js", "issues.html", "issues.json", "spec.js", "spec/index.json", "pdfview.js", "pid.js", "offline.js", "PIDs/index.json", "vendor/pdfjs/pdf.min.js", "vendor/pdfjs/pdf.worker.min.js", "sources-view.js", "sources/index.json"];
+const FILES = ["./", "index.html", "cards.js", "facts.js", "ai.js", "glossary.js", "manifest.json", "icon.svg", "icon-192.png", "icon-512.png", "pfd.html", "pfd-data.js", "pfd-streams.js", "pfd-equip.js", "pfd-layout-data.js", "pfd-layout.js", "tools/tagutil.js", "lookup.js", "browse.js", "browse.json", "search-data.json", "app-update.js", "xlsx-lite.js", "issues.html", "issues.json", "spec.js", "spec/index.json", "pdfview.js", "pid.js", "offline.js", "PIDs/index.json", "vendor/pdfjs/pdf.min.js", "vendor/pdfjs/pdf.worker.min.js", "sources-view.js", "sources/index.json"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION && k !== DOCS).map(k => caches.delete(k)))));

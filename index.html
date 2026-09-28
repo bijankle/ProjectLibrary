@@ -88,6 +88,8 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
 .lktop .lk-bar{gap:8px}
 #lkResults{margin-bottom:8px}
 body.searching #homeMain{display:none}
+.homeseg{display:flex;gap:8px;align-items:center;margin:2px 0 10px}.homeseg .seg{flex:1}
+#flash .titlerow .pill{display:none}
 .titlerow{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .titlerow h1{white-space:nowrap;font-size:clamp(19px,5.3vw,26px);min-width:0}
 .pill.sm{flex:none;height:38px;padding:0 12px;font-size:14px;gap:6px}
@@ -169,6 +171,9 @@ body.searching #homeMain{display:none}
   </nav>
   <div id="lkResults" class="lk"></div>
   <div id="homeMain">
+  <div class="homeseg"><div class="seg" id="homeSeg"><button data-v="browse" class="on">🔎 Browse</button><button data-v="flash">🃏 Flashcards</button></div><a class="pill sm" href="pfd.html" title="Interactive plant diagram (best on a computer)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span>PFD</span></a></div>
+  <div id="browse"></div>
+  <div id="flash" hidden>
   <div class="titlerow"><h1>KCGM <span>Flashcards</span></h1><a class="pill sm" href="pfd.html" title="Interactive plant diagram (best on a computer)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span>Smart PFD</span></a></div>
   <p class="sub">A question fills the screen. Swipe to see the answer. Swipe again: right if you knew it, left to see it again.</p>
   <div class="stats" id="stats"></div>
@@ -191,6 +196,7 @@ body.searching #homeMain{display:none}
   <div class="topics" id="topics"></div>
 
   <div class="sticky"><button class="btn primary" style="width:100%" id="startBtn">Start</button></div>
+  </div>
   </div>
 </div></section>
 
@@ -278,6 +284,7 @@ body.searching #homeMain{display:none}
 <script src="pid.js"></script>
 <script src="offline.js"></script>
 <script src="lookup.js"></script>
+<script src="browse.js"></script>
 <script src="app-update.js"></script>
 <script>
 (() => {
@@ -542,7 +549,12 @@ body.searching #homeMain{display:none}
     $("lkResults").append(st, bd);
     const sync = () => document.body.classList.toggle("searching", bd.innerHTML.trim() !== "" || st.textContent.trim() !== "");
     new MutationObserver(sync).observe(bd, { childList: true, subtree: true }); new MutationObserver(sync).observe(st, { childList: true, subtree: true, characterData: true });
-    lk.input.addEventListener("focus", () => Lookup.load().catch(() => {}), { once: true }); }
+    lk.input.addEventListener("focus", () => Lookup.load().catch(() => {}), { once: true });
+    let was = false; new MutationObserver(() => { const now = document.body.classList.contains("searching"); if (was && !now) Browse.restore(); was = now; }).observe(document.body, { attributes: true, attributeFilter: ["class"] }); }
+  // home: Browse pickers by default, flashcards one tap away
+  Browse.mount($("browse"), lk);
+  $("homeSeg").querySelectorAll("button").forEach(b => b.onclick = () => { $("homeSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    $("browse").hidden = b.dataset.v !== "browse"; $("flash").hidden = b.dataset.v === "browse"; });
   $("glossBtn").onclick = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
   $("glossBack").onclick = () => show("home");
   $("gSearch").oninput = e => renderGloss(e.target.value);
