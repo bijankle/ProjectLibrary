@@ -17,5 +17,7 @@
     btn.addEventListener("click", () => { btn.disabled = true; btn.textContent = "Updating…"; U.update(); });
     show();
   };
+  // ask the browser to protect this site's storage (downloaded documents) from automatic clean-up, every time the app opens
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => p || navigator.storage.persist()).catch(() => {}); } catch (e) {}
   window.AppUpdate = U;
 })();

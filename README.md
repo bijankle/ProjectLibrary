@@ -8,9 +8,11 @@ Open it at https://bijankle.github.io/KCGMhomework/ and use Chrome's "Add to Hom
 To add cards, edit `cards.js` (each card has a question `q`, a short answer `a` and the detail `e`),
 then bump `VERSION` in `sw.js` so phones pick up the change.
 
-## Text size
+## App size
 
-Settings (phone and Smart PFD) has a Text size slider, 80% to 150% in 5% steps, with Reset. One value for the whole app, kept on the device and applied straight away on both pages (`textsize.js`). It scales the reading areas (pages, record details, flashcards, the info panel and sidebar); the tab strip and the diagram / map themselves keep their size so taps and positions stay exact.
+Settings on the phone has an App size slider, 70% to 160% in 5% steps, with Reset: the whole app bigger or smaller, like Ctrl + scroll in a browser (tab strip, buttons, text, the PFD and the map all together). It sets the page's viewport width, so it is the browser's own zoom and taps and map positions stay exact (`textsize.js`); one value for both pages, kept on the device. On a computer the setting points to the browser's zoom (Ctrl + scroll).
+
+Settings > Offline downloads shows whether the phone has agreed to protect the downloads from automatic clean-up; the app asks for that protection every time it opens (`app-update.js`). Updating the app never clears them.
 
 ## Tabs
 

@@ -59,7 +59,11 @@ window.Offline = (() => {
         r.querySelector(".off-st").textContent = full ? "✓ on this device, up to date" : old ? `${old} updated file${old > 1 ? "s" : ""}: ${mb(left)} to download` : ok ? `${ok} of ${g.files.length} saved: ${mb(left)} to go` : "";
         const b = r.querySelector(".off-b"); b.textContent = full ? "Remove" : old ? "⟳ Update" : ok ? "⬇ Finish" : "⬇ Download"; b.disabled = busy; b.dataset.act = full ? "rm" : "get";
       }
-      if (navigator.storage && navigator.storage.estimate){ const e = await navigator.storage.estimate(); el.querySelector("#offUse").textContent = `Using ${mb(e.usage || 0)} of the ${mb(e.quota || 0)} this browser allows.`; }
+      if (navigator.storage && navigator.storage.estimate){ const e = await navigator.storage.estimate();
+        const kept = navigator.storage.persisted ? await navigator.storage.persisted().catch(() => false) : false;
+        el.querySelector("#offUse").innerHTML = `Using ${mb(e.usage || 0)} of the ${mb(e.quota || 0)} this browser allows. ` + (kept
+          ? `<b style="color:#22c55e">Protected:</b> the phone won't clear these downloads to free space.`
+          : `<b style="color:#f59e0b">Not protected:</b> the phone may clear downloads when it needs space. Installing the app to the home screen (browser menu, Install app) usually lets it keep them.`); }
     }
     el.querySelectorAll(".off-b").forEach(b => b.onclick = async () => {
       const r = b.closest(".off-row"), g = rows[+r.dataset.i];
