@@ -98,10 +98,10 @@
   // secs: [{ id, label, n, html }]; sections without html are left out. The last pill picked in a group is kept
   // for the next item, when it has one. Clicks are handled once for the whole page (below).
   const pfLast = {};
-  L.pills = (secs, group = "g") => {
+  L.pills = (secs, group = "g", mid = "") => {
     secs = secs.filter(x => x && x.html); if (!secs.length) return "";
     const last = pfLast[group], act = last && !/^(r-|also$)/.test(last) && secs.some(x => x.id === last) ? last : secs[0].id;   // links to other items are not carried over
-    return `<div class="pf" data-g="${esc(group)}"><div class="pf-bar">${secs.map(x => `<button type="button" class="pf-b${x.id === act ? " on" : ""}" data-p="${esc(x.id)}">${esc(x.label)}${x.n != null ? ` <i>${x.n}</i>` : ""}</button>`).join("")}</div>` +
+    return `<div class="pf" data-g="${esc(group)}"><div class="pf-bar">${secs.map(x => `<button type="button" class="pf-b${x.id === act ? " on" : ""}" data-p="${esc(x.id)}">${esc(x.label)}${x.n != null ? ` <i>${x.n}</i>` : ""}</button>`).join("")}</div>` + mid +
       secs.map(x => `<div class="pf-sec" data-p="${esc(x.id)}"${x.id === act ? "" : " hidden"}>${x.html}</div>`).join("") + `</div>`;
   };
   document.addEventListener("click", e => { const b = e.target.closest && e.target.closest(".pf-b"); if (!b) return; const pf = b.closest(".pf"); pfLast[pf.dataset.g] = b.dataset.p;
@@ -317,6 +317,10 @@
 .pf-b i{font-style:normal;color:var(--mute);font-weight:600;font-size:11px}
 .pf-b.on{background:var(--lk-a,var(--accent));border-color:var(--lk-a,var(--accent));color:#1a1307}.pf-b.on i{color:#3a2b0c}
 .pf-sec[hidden]{display:none}
+.pf .pf .pf-bar,.pf-sec>.lk-spec>.pf>.pf-bar{margin:-2px 0 8px;padding-left:10px;border-left:2px solid var(--lk-a,var(--accent))}
+.pf .pf .pf-b{font-size:11px;padding:3px 9px;background:transparent}
+.pf .pf .pf-b.on{background:color-mix(in srgb,var(--lk-a,var(--accent)) 28%,transparent);color:var(--ink);border-color:var(--lk-a,var(--accent))}
+.pf .pf .pf-b.on i{color:var(--ink)}
 .lk-d{border:1px solid var(--lk-l);border-radius:10px;margin:6px 0;padding:0 8px}.lk-d summary{cursor:pointer;padding:8px 0;font-weight:700;font-size:13.5px}
 .lk-ns{font-size:12px;color:var(--mute);margin:4px 0;line-height:1.4}.lk-src{font-size:12px;color:var(--mute);margin-top:12px;line-height:1.4}
 .lk-btn{border:1px solid var(--lk-a);background:none;color:var(--lk-a);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer;margin:6px 0}

@@ -13,31 +13,32 @@ window.Spec = (() => {
   // collapsed section: summary line, content hidden until tapped
   // sections become pill filters (Lookup.pills): one shown at a time
   const sec = (id, label, n, html) => ({ id, label, n, html });
-  const pills = (S, g) => window.Lookup && Lookup.pills ? Lookup.pills(S, g) : S.map(x => x.html).join("");
+  // the sub pills sit straight under the main pill row; the class / datasheet heading goes below them
+  const pills = (S, g, head) => window.Lookup && Lookup.pills ? Lookup.pills(S, g, head) : head + S.map(x => x.html).join("");
   const tbl = rows => `<table class="lk-t">${rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</table>`;
   const short = t => { t = String(t || ""); return t.length > 70 ? t.slice(0, 68) + "…" : t; };
 
   // ---------- piping class ----------
   // one line always visible (class, title, the datasheet button); everything else in tap-to-open sections
-  function pipeHTML(cls, size, service){
+  function pipeHTML(cls, size, service, parts){
     const P = IX.pipe[cls];
     if (!P) return `<div class="lk-ns">Piping class ${esc(cls)} is not in the spec.</div>`;
     const comps = P.comps || [], unit = comps.find(c => c.u) ? comps.find(c => c.u).u : "DN";
     const fit = size != null ? comps.filter(c => c.lo != null && size >= c.lo && size <= c.hi) : [];
     const dp = (P.design || []).find(r => /pressure/i.test(r[0])), dt = (P.design || []).find(r => /temperature/i.test(r[0]));
-    let h = `<div class="sp-head"><b>📘 ${esc(cls)}</b> <span>${esc(short(P.title))}</span></div>` +
+    const h = `<div class="sp-head"><b>📘 ${esc(cls)}</b> <span>${esc(short(P.title))}</span></div>` +
       (dp && dt ? `<div class="sp-sub">${esc(dp[1])} kPa(g) at ${esc(dt[1])} °C${P.material ? " · " + esc(short(P.material)) : ""}</div>` : "") +
       pageBtn(P.page, "Open the " + cls + " datasheet", "Piping class " + cls);
     const S = [];
     if (size != null)
-      S.push(sec("fit", `At ${unit}${size}`, fit.length, fit.length
+      S.push(sec("fit", `${unit}${size}`, fit.length, fit.length
         ? `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Type / rating</th><th>Ends</th><th>Standard</th><th>Material</th></tr>` +
           fit.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.dim)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`
         : `<div class="lk-ns">No component row in ${esc(cls)} covers ${esc(unit)}${esc(size)}: check the datasheet (the size may be non preferred).</div>`));
     const sv = service ? IX.services.filter(r => r.code === service && r.sys === cls) : [];
     sv.forEach((r, k) => {
       const vs = String(r.valves || "").split(/[,\s]+/).filter(v => /^V[A-Z0-9]+$/.test(v));
-      S.push(sec("vl" + k, sv.length > 1 ? "Valves, " + r.service : "Allowed valves", vs.length, `<div class="lk-ns" style="margin:0 0 4px">For ${esc(r.service)}</div><div class="sp-v">${vs.map(v => IX.valve[v]
+      S.push(sec("vl" + k, sv.length > 1 ? "Valves " + (k + 1) : "Valves", vs.length, `<div class="lk-ns" style="margin:0 0 4px">For ${esc(r.service)}</div><div class="sp-v">${vs.map(v => IX.valve[v]
         ? `<button class="sp-chip sp-open" data-page="${IX.valve[v].page}" data-title="Valve ${esc(v)}" title="${esc(IX.valve[v].title || "")}">${esc(v)}</button>` : `<span class="sp-chip off" title="No datasheet for this code in the spec">${esc(v)}</span>`).join("")}</div>` +
         tbl([["Fluid design", r.fluid], ["Class rating", r.rating], ["Gasket", r.gasket], ["External finish", r.ext], ["Note", r.notes]].filter(x => x[1] && x[1] !== "N/A"))));
     });
@@ -46,17 +47,17 @@ window.Spec = (() => {
       const cols = Math.max(...P.design.map(r => r.length));
       cd += `<div class="sp-sc"><table class="lk-t sp-dt">${P.design.map(r => `<tr><td>${esc(r[0])}</td>${Array.from({ length: cols - 1 }, (_, i) => `<td>${esc(r[i + 1] || "")}</td>`).join("")}</tr>`).join("")}</table></div>`;
     }
-    S.push(sec("cd", "Class data", null, cd));
+    S.push(sec("cd", "Class", null, cd));
     if (comps.length && fit.length < comps.length)
-      S.push(sec("all", "All components", comps.length, `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Size</th><th>Type / rating</th><th>Ends</th><th>Material</th></tr>` +
+      S.push(sec("all", "All parts", comps.length, `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Size</th><th>Type / rating</th><th>Ends</th><th>Material</th></tr>` +
         comps.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.size)}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`));
     if (P.notes && P.notes.length) S.push(sec("notes", "Notes", P.notes.length, P.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("")));
-    return h + pills(S, "spec-pipe");
+    return parts ? { head: h, S } : pills(S, "spec-pipe", h);
   }
 
   // ---------- valve datasheet ----------
   const KEY_ROWS = /^(Type|Service|Size Range|End Connections|Actuation|Lockable|Body Material|Ball Material|Disc Material|Gate Material|Seat Material|Liner|Diaphragm|Stem\/Trim Material|Stem Packing|Design Pressure|Design Temperature|Pressure Class|Flange)/i;
-  function valveHTML(code, size){
+  function valveHTML(code, size, parts){
     const V = IX.valve[code];
     if (!V) return `<div class="lk-ns">Valve code ${esc(code)} has no datasheet in the spec.</div>`;
     const get = k => ((V.rows || []).find(r => new RegExp("^" + k, "i").test(r[0])) || [])[1];
@@ -65,9 +66,10 @@ window.Spec = (() => {
     if (size != null && V.lo != null && (size < V.lo || size > V.hi)) h += `<div class="sp-warn">DN${esc(size)} is outside this datasheet's size range (${esc(V.u)}${V.lo} to ${V.hi}).</div>`;
     h += pageBtn(V.page, "Open the " + code + " datasheet", "Valve " + code);
     const rest = (V.rows || []).filter(r => !KEY_ROWS.test(r[0]));
-    return h + pills([sec("sum", "Materials & ratings", null, tbl((V.rows || []).filter(r => KEY_ROWS.test(r[0])))),
-      rest.length ? sec("more", "More data", rest.length, tbl(rest)) : null,
-      (V.notes || []).length ? sec("vn", "Notes", V.notes.length, V.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("")) : null].filter(Boolean), "spec-valve");
+    const S = [sec("sum", "Materials", null, tbl((V.rows || []).filter(r => KEY_ROWS.test(r[0])))),
+      rest.length ? sec("more", "More", rest.length, tbl(rest)) : null,
+      (V.notes || []).length ? sec("vn", "Notes", V.notes.length, V.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("")) : null].filter(Boolean);
+    return parts ? { head: h, S } : pills(S, "spec-valve", h);
   }
 
   // ---------- which record needs what ----------
@@ -84,13 +86,13 @@ window.Spec = (() => {
       const code = get(it, f, "Spec"), size = num(get(it, f, "Size (DN)"));
       return code && IX.valve[code] ? valveHTML(code, size) : code ? `<div class="lk-ns">Valve code ${esc(code)} has no datasheet in the spec.</div>` : "";
     }
-    if (it.t === "cv"){
-      let h = "";
-      const m = get(it, f, "Valve code").match(/^(\d+)([A-Z][A-Z0-9]+)/);
-      if (m && IX.valve[m[2]]) h += valveHTML(m[2], +m[1]);
+    if (it.t === "cv"){   // valve datasheet and the line's piping class under one row of sub pills
+      const S = [], m = get(it, f, "Valve code").match(/^(\d+)([A-Z][A-Z0-9]+)/);
+      if (m && IX.valve[m[2]]){ const v = valveHTML(m[2], +m[1], true); v.S[0] = sec("sum", "Valve", null, v.head + v.S[0].html); v.S.slice(1).forEach(x => x.label = "Valve " + x.label.toLowerCase()); S.push(...v.S); }
       const cls = get(it, f, "Line spec"), size = num(get(it, f, "Line size (mm)"));
-      if (cls && IX.pipe[cls]) h += pipeHTML(cls, size, (get(it, f, "Line number").match(/^\d{2}-\d{4}-([A-Z]+)-/) || [])[1]);
-      return h;
+      if (cls && IX.pipe[cls]){ const p = pipeHTML(cls, size, (get(it, f, "Line number").match(/^\d{2}-\d{4}-([A-Z]+)-/) || [])[1], true);
+        S.push(sec("pipe", "Line " + cls, null, p.head), ...p.S.map(x => Object.assign(x, { id: "p-" + x.id }))); }
+      return S.length ? pills(S, "spec-cv", "") : "";
     }
     return "";
   }
