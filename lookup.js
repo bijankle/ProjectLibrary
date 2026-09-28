@@ -327,6 +327,7 @@
 .lk-btn{border:1px solid var(--lk-a);background:none;color:var(--lk-a);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer;margin:6px 0}
 .lk-spec .lk-btn{font-size:13px;padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:13.5px;line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:12px;margin-left:4px}
+.sp-cl{display:flex;flex-direction:column}.sp-p{padding:6px 2px;border-bottom:1px solid var(--lk-l);font-size:13px;line-height:1.4;color:var(--mute)}.sp-p b{color:var(--ink);font-weight:600}
 .sp-sc{overflow-x:auto;-webkit-overflow-scrolling:touch}.sp-dt td,.sp-ct td,.sp-ct th{white-space:nowrap}.sp-dt td:first-child{width:auto}
 .sp-ct th{font-size:11px;text-align:left;color:var(--mute);padding:4px;border-bottom:1px solid var(--lk-l)}.sp-ct td:first-child{color:var(--ink);width:auto;white-space:normal;min-width:120px}
 .sp-n{font-size:12.5px;line-height:1.4;margin:6px 0}.sp-n b{color:var(--lk-a);margin-right:4px}

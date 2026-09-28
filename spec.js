@@ -21,6 +21,8 @@ window.Spec = (() => {
   // HDPE outside diameter (mm) to the nominal size used on valve datasheets
   const OD_DN = { 20: 15, 25: 20, 32: 25, 40: 32, 50: 40, 63: 50, 75: 65, 90: 80, 110: 100, 125: 100, 140: 125, 160: 150, 180: 150, 200: 150, 225: 200, 250: 200, 280: 250,
     315: 300, 355: 300, 400: 350, 450: 400, 500: 450, 560: 500, 630: 600, 710: 700, 800: 800, 900: 900, 1000: 1000, 1200: 1200 };
+  // one component per line, comma separated: "Elbow, 90°: SDR17, plain ends, AS/NZS 4129, PE100"
+  const part = (c, withSize) => `<div class="sp-p"><b>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</b>: ${esc([withSize && c.size, c.type, c.ends, c.dim, c.mat].map(x => String(x || "").trim()).filter(x => x && x !== "-" && x !== "N/A").join(", "))}</div>`;
   // ---------- piping class ----------
   // one line always visible (class, title, the datasheet button); everything else in tap-to-open sections
   function pipeHTML(cls, size, service, parts){
@@ -35,8 +37,7 @@ window.Spec = (() => {
     const S = [];
     if (size != null)
       S.push(sec("fit", `${unit}${size}`, fit.length, fit.length
-        ? `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Type / rating</th><th>Ends</th><th>Standard</th><th>Material</th></tr>` +
-          fit.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.dim)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`
+        ? `<div class="sp-cl">${fit.map(c => part(c, false)).join("")}</div>`
         : `<div class="lk-ns">No component row in ${esc(cls)} covers ${esc(unit)}${esc(size)}: check the datasheet (the size may be non preferred).</div>`));
     const sv = service ? IX.services.filter(r => r.code === service && r.sys === cls) : [];
     // valves: only the datasheets whose size range covers this line (HDPE OD sizes compared as the matching DN)
@@ -55,8 +56,7 @@ window.Spec = (() => {
     }
     S.push(sec("cd", "Class", null, cd));
     if (comps.length && size == null)   // the whole table only when no size is known (the class opened on its own); sizes that don't apply stay in the PDF
-      S.push(sec("all", "All parts", comps.length, `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Size</th><th>Type / rating</th><th>Ends</th><th>Material</th></tr>` +
-        comps.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.size)}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`));
+      S.push(sec("all", "All parts", comps.length, `<div class="sp-cl">${comps.map(c => part(c, true)).join("")}</div>`));
     if (P.notes && P.notes.length) S.push(sec("notes", "Notes", P.notes.length, P.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("")));
     return parts ? { head: h, S } : pills(S, "spec-pipe", h);
   }
