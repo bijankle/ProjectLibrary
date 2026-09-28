@@ -4,7 +4,7 @@
 // and plain words search every description. Photo text recognition (Tesseract.js) is loaded only when used.
 (function(){
   const L = {};
-  let DB = null, loading = null, items = [], byKey = new Map(), refs = new Map(), extras = [];
+  let DB = null, done = false, loading = null, items = [], byKey = new Map(), refs = new Map(), extras = [];
   const norm = s => String(s || "").toUpperCase().replace(/[\s\-_/.]+/g, "");
   L.norm = norm;
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -22,7 +22,7 @@
     // drawings in the app (small index, waited for so records can show their 📐 open buttons straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
     return (window.Pid ? Pid.load().then(() => Pid.all().forEach(d => { const k = norm(d.number); if (byKey.has(k)) return;
-      const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => L); }));
+      const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => { done = true; return L; }); }));
   L.ready = () => !!DB;
   function build(){
     Object.entries(DB.data).forEach(([t, rows]) => rows.forEach(r => { const it = { t, r, key: r[0], k: norm(r[0]), name: nameOf(t, r) }; items.push(it); addKey(it.k, it); }));
@@ -169,7 +169,7 @@
     const back = () => { const s = stack.pop(); if (s && s.it){ cur = null; open(s.it, false); } else { cur = null; showList(inp.value); if (s) body.scrollTop = s.scroll; } };
     let tmr; inp.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(() => { stack.length = 0; cur = null; ensure().then(() => showList(inp.value)); }, 120); });
     inp.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); clearTimeout(tmr); stack.length = 0; rememberQ(inp.value); ensure().then(() => { showList(inp.value); if (hits.length && (hits[0].k === norm(inp.value) || hits.length === 1)) open(hits[0], true); }); inp.blur(); } });
-    const ensure = () => DB ? Promise.resolve() : (status("Loading plant lists…"), L.load().then(() => status("")).catch(e => { status("Couldn't load the lists (" + esc(e.message) + "). Check your connection and try again."); throw e; }));
+    const ensure = () => done ? Promise.resolve() : (status("Loading plant lists…"), L.load().then(() => status("")).catch(e => { status("Couldn't load the lists (" + esc(e.message) + "). Check your connection and try again."); throw e; }));
     cam.onclick = () => file.click();
     file.onchange = () => { const f = file.files[0]; file.value = ""; if (!f) return;
       ensure().then(() => L.scan(f, m => status(m))).then(res => {

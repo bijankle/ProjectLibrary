@@ -5,7 +5,8 @@
 //   another search is opened; spaces, hyphens and slashes are ignored and a tag split over several text pieces is found.
 // PDF.js is bundled in vendor/pdfjs and loaded on first use.
 window.PdfView = (() => {
-  const norm = s => String(s || "").toUpperCase().replace(/[\s\-_/.]+/g, "");
+  // OCR'd sheets: , ; : read for - or ., $ for S, O for 0 in numbers, so both sides are folded the same way
+  const norm = s => String(s || "").toUpperCase().replace(/\$/g, "S").replace(/[\s\-_/.,;:|]+/g, "").replace(/(?<=\d)O|O(?=\d)/g, "0");
   let V = null, lib = null, cur = null;
   const docs = new Map();
   const loadLib = () => lib || (lib = new Promise((ok, bad) => { const s = document.createElement("script"); s.src = "vendor/pdfjs/pdf.min.js";

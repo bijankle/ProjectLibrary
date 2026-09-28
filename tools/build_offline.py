@@ -13,7 +13,7 @@ def add(id, name, note, files):
     if files: groups.append({"id": id, "name": name, "note": note, "files": files, "size": size(files)})
 
 add("spec", "Pipe & valve spec", "2000-F00-STS-PP-10001 Rev 3, every piping class and valve datasheet", ["spec/pvs.pdf"])
-dw = json.load(open(os.path.join(ROOT, "drawings", "index.json")))["pids"] if os.path.exists(os.path.join(ROOT, "drawings", "index.json")) else {}
+dw = json.load(open(os.path.join(ROOT, "PIDs", "index.json")))["pids"] if os.path.exists(os.path.join(ROOT, "PIDs", "index.json")) else {}
 pid = sorted(v["file"] for k, v in dw.items() if "-PID-" in k); pfd = sorted(v["file"] for k, v in dw.items() if "-PFD-" in k)
 add("pids", "P&IDs", f"{len(pid)} drawings", pid)
 add("pfds", "PFD sheets", f"{len(pfd)} drawings", pfd)
