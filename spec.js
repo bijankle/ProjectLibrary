@@ -10,40 +10,44 @@ window.Spec = (() => {
   const num = v => { const m = String(v || "").match(/\d+(?:\.\d+)?/); return m ? +m[0] : null; };
   const pageBtn = (page, label, title) => `<button class="lk-btn sp-open" data-page="${page}" data-title="${esc(title)}">📄 ${esc(label)} <span>page ${page}</span></button>`;
 
+  // collapsed section: summary line, content hidden until tapped
+  const sec = (title, body, open) => `<details class="lk-d"${open ? " open" : ""}><summary>${title}</summary>${body}</details>`;
+  const tbl = rows => `<table class="lk-t">${rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</table>`;
+  const short = t => { t = String(t || ""); return t.length > 70 ? t.slice(0, 68) + "…" : t; };
+
   // ---------- piping class ----------
+  // one line always visible (class, title, the datasheet button); everything else in tap-to-open sections
   function pipeHTML(cls, size, service){
     const P = IX.pipe[cls];
     if (!P) return `<div class="lk-ns">Piping class ${esc(cls)} is not in the spec.</div>`;
-    let h = `<h4 class="lk-h">Piping class ${esc(cls)}</h4><div class="sp-t">${esc(P.title || "")}</div>` + pageBtn(P.page, "Open the " + cls + " datasheet", "Piping class " + cls);
-    const rows = [["Material", P.material], ["Design code", P.codes], ["Corrosion allowance", P.ca && P.ca + " mm"], ["Pressure test", P.test], ["NDT", P.nde]].filter(r => r[1]);
-    h += `<table class="lk-t">${rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</table>`;
-    if (P.design && P.design.length){
-      const cols = Math.max(...P.design.map(r => r.length));
-      h += `<div class="sp-sc"><table class="lk-t sp-dt">${P.design.map(r => `<tr><td>${esc(r[0])}</td>${Array.from({ length: cols - 1 }, (_, i) => `<td>${esc(r[i + 1] || "")}</td>`).join("")}</tr>`).join("")}</table></div>`;
-    }
-    // components that cover this line size
-    const comps = (P.comps || []);
+    const comps = P.comps || [], unit = comps.find(c => c.u) ? comps.find(c => c.u).u : "DN";
     const fit = size != null ? comps.filter(c => c.lo != null && size >= c.lo && size <= c.hi) : [];
-    const unit = comps.find(c => c.u) ? comps.find(c => c.u).u : "DN";
-    if (size != null){
-      h += `<h4 class="lk-h">What to expect at ${esc(unit)}${esc(size)} (${fit.length} item${fit.length === 1 ? "" : "s"})</h4>`;
-      h += fit.length ? `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Type / rating</th><th>Ends</th><th>Standard</th><th>Material</th></tr>` +
-        fit.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.dim)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`
-        : `<div class="lk-ns">No component row in ${esc(cls)} covers ${esc(unit)}${esc(size)}: check the datasheet (the size may be non preferred).</div>`;
-    }
-    if (comps.length && fit.length < comps.length)
-      h += `<details class="lk-d"><summary>All ${comps.length} component rows in ${esc(cls)}</summary><div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Size</th><th>Type / rating</th><th>Ends</th><th>Material</th></tr>` +
-        comps.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.size)}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div></details>`;
-    if (P.notes && P.notes.length)
-      h += `<details class="lk-d"><summary>${esc(cls)} notes (${P.notes.length})</summary>${P.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("")}</details>`;
-    // valves the spec allows for this fluid service in this class
+    const dp = (P.design || []).find(r => /pressure/i.test(r[0])), dt = (P.design || []).find(r => /temperature/i.test(r[0]));
+    let h = `<div class="sp-head"><b>📘 ${esc(cls)}</b> <span>${esc(short(P.title))}</span></div>` +
+      (dp && dt ? `<div class="sp-sub">${esc(dp[1])} kPa(g) at ${esc(dt[1])} °C${P.material ? " · " + esc(short(P.material)) : ""}</div>` : "") +
+      pageBtn(P.page, "Open the " + cls + " datasheet", "Piping class " + cls);
+    if (size != null)
+      h += sec(`What to expect at ${esc(unit)}${esc(size)} <span class="sp-c">${fit.length} item${fit.length === 1 ? "" : "s"}</span>`, fit.length
+        ? `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Type / rating</th><th>Ends</th><th>Standard</th><th>Material</th></tr>` +
+          fit.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.dim)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`
+        : `<div class="lk-ns">No component row in ${esc(cls)} covers ${esc(unit)}${esc(size)}: check the datasheet (the size may be non preferred).</div>`);
     const sv = service ? IX.services.filter(r => r.code === service && r.sys === cls) : [];
     sv.forEach(r => {
       const vs = String(r.valves || "").split(/[,\s]+/).filter(v => /^V[A-Z0-9]+$/.test(v));
-      h += `<h4 class="lk-h">Allowed valves: ${esc(r.service)} in ${esc(cls)}</h4><div class="sp-v">${vs.map(v => IX.valve[v]
+      h += sec(`Allowed valves for ${esc(r.service)} <span class="sp-c">${vs.length}</span>`, `<div class="sp-v">${vs.map(v => IX.valve[v]
         ? `<button class="sp-chip sp-open" data-page="${IX.valve[v].page}" data-title="Valve ${esc(v)}" title="${esc(IX.valve[v].title || "")}">${esc(v)}</button>` : `<span class="sp-chip off" title="No datasheet for this code in the spec">${esc(v)}</span>`).join("")}</div>` +
-        `<table class="lk-t">${[["Fluid design", r.fluid], ["Class rating", r.rating], ["Gasket", r.gasket], ["External finish", r.ext], ["Note", r.notes]].filter(x => x[1] && x[1] !== "N/A").map(x => `<tr><td>${esc(x[0])}</td><td>${esc(x[1])}</td></tr>`).join("")}</table>`;
+        tbl([["Fluid design", r.fluid], ["Class rating", r.rating], ["Gasket", r.gasket], ["External finish", r.ext], ["Note", r.notes]].filter(x => x[1] && x[1] !== "N/A")));
     });
+    let cd = tbl([["Material", P.material], ["Design code", P.codes], ["Corrosion allowance", P.ca && P.ca + " mm"], ["Pressure test", P.test], ["NDT", P.nde]].filter(r => r[1]));
+    if (P.design && P.design.length){
+      const cols = Math.max(...P.design.map(r => r.length));
+      cd += `<div class="sp-sc"><table class="lk-t sp-dt">${P.design.map(r => `<tr><td>${esc(r[0])}</td>${Array.from({ length: cols - 1 }, (_, i) => `<td>${esc(r[i + 1] || "")}</td>`).join("")}</tr>`).join("")}</table></div>`;
+    }
+    h += sec(`Class data (material, design, testing)`, cd);
+    if (comps.length && fit.length < comps.length)
+      h += sec(`All component rows <span class="sp-c">${comps.length}</span>`, `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Size</th><th>Type / rating</th><th>Ends</th><th>Material</th></tr>` +
+        comps.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.size)}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`);
+    if (P.notes && P.notes.length) h += sec(`Notes <span class="sp-c">${P.notes.length}</span>`, P.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join(""));
     return h;
   }
 
@@ -52,13 +56,14 @@ window.Spec = (() => {
   function valveHTML(code, size){
     const V = IX.valve[code];
     if (!V) return `<div class="lk-ns">Valve code ${esc(code)} has no datasheet in the spec.</div>`;
-    let h = `<h4 class="lk-h">Valve datasheet ${esc(code)}</h4><div class="sp-t">${esc(V.title || "")}</div>` + pageBtn(V.page, "Open the " + code + " datasheet", "Valve " + code);
-    const rows = (V.rows || []).filter(r => KEY_ROWS.test(r[0]));
-    h += `<table class="lk-t">${rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</table>`;
+    const get = k => ((V.rows || []).find(r => new RegExp("^" + k, "i").test(r[0])) || [])[1];
+    let h = `<div class="sp-head"><b>📘 ${esc(code)}</b> <span>${esc(short(V.title))}</span></div>` +
+      `<div class="sp-sub">${esc([get("Size Range"), get("End Connections"), get("Actuation"), get("Design Pressure")].filter(Boolean).join(" · "))}</div>`;
     if (size != null && V.lo != null && (size < V.lo || size > V.hi)) h += `<div class="sp-warn">DN${esc(size)} is outside this datasheet's size range (${esc(V.u)}${V.lo} to ${V.hi}).</div>`;
+    h += pageBtn(V.page, "Open the " + code + " datasheet", "Valve " + code);
+    h += sec("Datasheet summary (materials, ratings)", tbl((V.rows || []).filter(r => KEY_ROWS.test(r[0]))));
     const rest = (V.rows || []).filter(r => !KEY_ROWS.test(r[0]));
-    if (rest.length || (V.notes || []).length)
-      h += `<details class="lk-d"><summary>More from the datasheet</summary><table class="lk-t">${rest.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</table>${(V.notes || []).map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("")}</details>`;
+    if (rest.length || (V.notes || []).length) h += sec("More from the datasheet", tbl(rest) + (V.notes || []).map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join(""));
     return h;
   }
 

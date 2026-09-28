@@ -1033,16 +1033,16 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     let h = (pdcCase ? `<div class="casenote">Case selected: ${esc(PDC_CASES[pdcCase])}. The summary rows below are nominal figures; open a stream for this case's values.</div>` : "") + `<div>${esc(n.s)}</div>` + table(n.d) + (n.c ? `<h4>Control</h4><div>${esc(n.c)}</div>` : "");
     if (loops.length) h += `<h4>Control loops acting on it</h4><div class="conn">${loops.map(loopLink).join("")}</div>`;
     if (ilks.length) h += `<h4>Interlocks & permissives</h4><div class="conn">${ilks.map(ilkLink).join("")}</div>`;
-    if (n.hear) h += `<h4>What you'll hear</h4><div>${esc(n.hear)}</div>`;
+    if (n.hear) h += `<details><summary>What you'll hear</summary><div style="padding-bottom:8px">${esc(n.hear)}</div></details>`;
     if (ins.length) h += `<h4>In</h4><div class="conn">${ins.map(link).join("")}</div>`;
     if (outs.length) h += `<h4>Out</h4><div class="conn">${outs.map(link).join("")}</div>`;
     if (E){
       h += `<h4>Mechanical equipment list (${E.eq.length} item${E.eq.length > 1 ? "s" : ""})</h4>` +
-        E.eq.map((r, i) => `<details${i ? "" : " open"}><summary>${esc(r.n || r.tag)}<span>${esc(r.tag)}</span></summary>${melTable(r)}<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div></details>`).join("");
+        E.eq.map((r, i) => `<details><summary>${esc(r.n || r.tag)}<span>${esc(r.tag)}</span></summary>${melTable(r)}<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div></details>`).join("");
       if (E.ins.length){
-        h += `<h4>Instruments on this equipment (${E.insN}${E.insN > E.ins.length ? ", first " + E.ins.length + " shown" : ""})</h4><table class="it">` +
+        h += `<details><summary>Instruments on this equipment<span>${E.insN}${E.insN > E.ins.length ? ", first " + E.ins.length + " shown" : ""}</span></summary><table class="it">` +
           E.ins.map(i => `<tr><td>${i.cv ? `<a data-cv="${esc(i.tag)}" style="color:var(--accent);cursor:pointer">${esc(i.tag)}</a>` : esc(i.tag)}</td><td>${esc(i.ty)}${i.loc ? ` <span class="m">· ${esc(i.loc)}</span>` : ""}${i.u ? ` <span class="m">· ${esc(i.u)}</span>` : ""}</td></tr>`).join("") + "</table>" +
-          `<div style="font-size:12px;color:var(--mute)">Highlighted tags are in the control valve list: click for valve data.</div>`;
+          `<div style="font-size:12px;color:var(--mute);padding-bottom:8px">Highlighted tags are in the control valve list: click for valve data.</div></details>`;
       } else h += `<h4>Instruments</h4><div>${NS_TXT} in the instrument list for these equipment numbers.</div>`;
     } else h += `<h4>Mechanical equipment list</h4><div>${NS_TXT}: no MEL item for this block (off site or a symbolic block).</div>`;
     h += `<div class="src">Sources: node description <code>pfd-data.js</code>; MEL 2000-F00-LST-ME-10001 Rev 0 and instrument list rows in <code>pfd-equip.js</code> (built by <code>tools/build_equip.py</code>).</div>`;
@@ -1101,10 +1101,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     h += `<h4>Stream properties by PDC case</h4><table class="sc"><tr><th>Property (unit)</th>${CASE_SHORT.map((c, i) => `<th${i === pdcCase ? ' class="cur"' : ""}>${c}</th>`).join("")}</tr>` +
       rows.map(([k, l, u]) => caseRow(l, u, C[k], calc[k])).join("") + "</table>";
     const anyCalc = Object.values(calc).some(c => c.some(Boolean));
-    if (anyCalc) h += `<div style="font-size:11.5px;color:var(--mute);line-height:1.45"><span style="color:#8fb8ff;font-style:italic">Blue italic</span> = calculated here from PDC values. <sup>c</sup> water = solids × (100 ÷ %solids − 1); slurry = solids ÷ %solids; slurry SG from 1/SG = x/SG<sub>s</sub> + (1 − x)/SG<sub>l</sub>; m³/h = slurry t/h ÷ slurry SG. <sup>a</sup> liquid assumed to be process water SG 1.07 (PDC 2.9).</div>`;
+    if (anyCalc) h += `<details><summary>How the blue figures are calculated</summary><div style="font-size:11.5px;color:var(--mute);line-height:1.45;padding-bottom:8px"><span style="color:#8fb8ff;font-style:italic">Blue italic</span> = calculated here from PDC values. <sup>c</sup> water = solids × (100 ÷ %solids − 1); slurry = solids ÷ %solids; slurry SG from 1/SG = x/SG<sub>s</sub> + (1 − x)/SG<sub>l</sub>; m³/h = slurry t/h ÷ slurry SG. <sup>a</sup> liquid assumed to be process water SG 1.07 (PDC 2.9).</div></details>`;
     if (D.x && D.x.length){
-      h += `<h4>Other PDC data for this stream</h4><table class="sc"><tr><th>Item (unit)</th>${CASE_SHORT.map((c, i) => `<th${i === pdcCase ? ' class="cur"' : ""}>${c}</th>`).join("")}</tr>` +
-        D.x.map(([l, u, v]) => Array.isArray(v) ? caseRow(l, u, v) : `<tr><td>${esc(l)}${u ? " (" + esc(u) + ")" : ""}</td><td colspan="4" style="text-align:center">${esc(typeof v === "number" ? fmt(v) : v)}</td></tr>`).join("") + "</table>";
+      h += `<details><summary>Other PDC data for this stream<span>${D.x.length}</span></summary><table class="sc"><tr><th>Item (unit)</th>${CASE_SHORT.map((c, i) => `<th${i === pdcCase ? ' class="cur"' : ""}>${c}</th>`).join("")}</tr>` +
+        D.x.map(([l, u, v]) => Array.isArray(v) ? caseRow(l, u, v) : `<tr><td>${esc(l)}${u ? " (" + esc(u) + ")" : ""}</td><td colspan="4" style="text-align:center">${esc(typeof v === "number" ? fmt(v) : v)}</td></tr>`).join("") + "</table></details>";
     }
     if (D.n) h += `<div style="margin-top:8px">${esc(D.n)}</div>`;
     if (s.i && s.i.length) h += `<h4>Operating notes</h4>` + table(s.i);

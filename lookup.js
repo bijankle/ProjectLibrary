@@ -76,6 +76,14 @@
     const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
     return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><span class="lk-ic1">${ICON[it.t] || "•"}</span><b>${esc(it.key)}</b><span>${esc(it.name)}</span></button>`).join("");
   };
+  const KEYF = {
+    mel: ["Equipment name", "Size / description", "Installed power (kW)", "Status", "Stage", "P&ID"],
+    ins: ["Description", "Instrument type", "Equipment number", "Range / units", "Loop number", "P&ID"],
+    cv: ["Location", "Valve type", "Valve code", "Valve size (mm)", "Line number", "Fail position", "P&ID"],
+    line: ["Service description", "Size (DN)", "Pipe spec", "From", "To", "P&ID"],
+    mv: ["Valve type", "Spec", "Size (DN)", "Line number", "Model", "P&ID"],
+    spi: ["Description", "Size (DN)", "Pipe spec", "Make / model", "P&IDs"],
+    hose: ["Description", "Size (DN)", "Length (m)", "Service", "Stage"] };
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
     let h = `<div class="lk-kind">${ICON[it.t] || ""} ${esc(typeName(it.t))}</div>` +
@@ -87,21 +95,27 @@
     if (it.t === "pfd" || it.t === "gloss"){ h += it.html || `<p>${esc(it.text || "")}</p>`; }
     else if (it.t === "spec"){ h += `<div class="lk-spec"></div>`; }
     else if (it.r){
-      const f = DB.types[it.t].f;
-      h += `<table class="lk-t">` + f.map((n, i) => it.r[i] ? `<tr><td>${esc(n)}</td><td>${linkify(it.r[i])}</td></tr>` : "").join("") + `</table>`;
+      // the fields people look for first; the rest (and the empty ones) behind "All fields"
+      const f = DB.types[it.t].f, key = KEYF[it.t] || f.slice(1, 7);
+      const row = i => `<tr><td>${esc(f[i])}</td><td>${linkify(it.r[i])}</td></tr>`;
+      const top = key.map(n => f.indexOf(n)).filter(i => i > 0 && it.r[i]);
+      const rest = f.map((n, i) => i).filter(i => i > 0 && it.r[i] && !top.includes(i));
       const empty = f.filter((n, i) => !it.r[i]);
-      if (empty.length) h += `<div class="lk-ns">Not specified in the list: ${esc(empty.join(", "))}.</div>`;
+      h += `<table class="lk-t">` + top.map(row).join("") + `</table>`;
+      if (rest.length || empty.length) h += `<details class="lk-d"><summary>All fields <span class="sp-c">${rest.length} more</span></summary><table class="lk-t">${rest.map(row).join("")}</table>` +
+        (empty.length ? `<div class="lk-ns">Not specified in the list: ${esc(empty.join(", "))}.</div>` : "") + `</details>`;
       if (window.Spec && Spec.wanted(it)) h += `<div class="lk-spec"><div class="lk-ns">Loading the pipe and valve spec…</div></div>`;
     }
     const same = (byKey.get(it.k) || []).filter(x => x !== it);
-    if (same.length) h += `<h4 class="lk-h">Same tag in other lists</h4>` + same.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${ICON[x.t] || ""} ${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("");
+    if (same.length) h += `<h4 class="lk-h">Also in</h4>` + same.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${ICON[x.t] || ""} ${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("");
     const rf = (refs.get(it.k) || []).filter(x => x !== it);
     if (rf.length){
       h += `<h4 class="lk-h">${it.t === "pid" ? "On this P&ID" : "Referenced by"} (${rf.length})</h4>`;
       const g = {}; rf.forEach(x => (g[x.t] = g[x.t] || []).push(x));
+      const few = rf.length <= 4;   // a handful stays open; longer lists are one tap away
       TYPE_ORDER.filter(t => g[t]).forEach(t => {
         const a = g[t], show = a.slice(0, 40);
-        h += `<details class="lk-d"${a.length <= 12 ? " open" : ""}><summary>${ICON[t] || ""} ${esc(typeName(t))} (${a.length})</summary>` +
+        h += `<details class="lk-d"${few ? " open" : ""}><summary>${ICON[t] || ""} ${esc(typeName(t))} <span class="sp-c">${a.length}</span></summary>` +
           show.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b> ${esc(x.name)}</a>`).join("") +
           (a.length > show.length ? `<div class="lk-ns">and ${a.length - show.length} more; search the tag to see them all.</div>` : "") + `</details>`;
       });
@@ -268,6 +282,7 @@
 .lk-d{border:1px solid var(--lk-l);border-radius:10px;margin:6px 0;padding:0 8px}.lk-d summary{cursor:pointer;padding:8px 0;font-weight:700;font-size:13.5px}
 .lk-ns{font-size:12px;color:var(--mute);margin:4px 0;line-height:1.4}.lk-src{font-size:12px;color:var(--mute);margin-top:12px;line-height:1.4}
 .lk-btn{border:1px solid var(--lk-a);background:none;color:var(--lk-a);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer;margin:6px 0}
+.lk-spec .lk-btn{font-size:13px;padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:13.5px;line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:12px;margin-left:4px}
 .sp-sc{overflow-x:auto;-webkit-overflow-scrolling:touch}.sp-dt td,.sp-ct td,.sp-ct th{white-space:nowrap}.sp-dt td:first-child{width:auto}
 .sp-ct th{font-size:11px;text-align:left;color:var(--mute);padding:4px;border-bottom:1px solid var(--lk-l)}.sp-ct td:first-child{color:var(--ink);width:auto;white-space:normal;min-width:120px}
@@ -293,6 +308,9 @@ body.sp-on{overflow:hidden}
 .lk-dwg{display:inline-block;color:#2f7cf6 !important;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.lk-dwg:hover{color:#5b9bff !important}
 .lk-dwgnote{font-size:12.5px;color:var(--mute);margin:-4px 0 8px;line-height:1.4}
 .lk-dwgb{color:#2f7cf6;text-decoration:none;white-space:nowrap;font-size:12.5px;font-weight:700;margin-left:4px;cursor:pointer}
+.lk-d summary{list-style:none}.lk-d summary::-webkit-details-marker{display:none}.lk-d summary::before{content:"▸";display:inline-block;width:14px;color:var(--lk-a);transition:transform .15s}
+.lk-d[open]>summary::before{transform:rotate(90deg)}.sp-c{font-weight:600;color:var(--mute);font-size:12px;margin-left:4px}
+.sp-head{margin:14px 0 2px;font-size:14px;line-height:1.35}.sp-head b{color:var(--lk-a)}.sp-sub{font-size:12.5px;color:var(--mute);margin-bottom:2px}
 .lk-ocr{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);font-family:ui-monospace,monospace;font-size:14px;padding:8px}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   window.Lookup = L;
