@@ -43,7 +43,7 @@
     if (t === "ins") return g("Description") || g("Instrument type");
     if (t === "cv") return g("Location");
     if (t === "line") return [g("Service description") || g("Service"), "DN" + g("Size (DN)"), g("From") && "from " + g("From"), g("To") && "to " + g("To")].filter(Boolean).join(" ");
-    if (t === "mv") return [g("Size (DN)") && "DN" + g("Size (DN)"), g("Valve type"), "valve", g("Line number") && "on " + g("Line number")].filter(Boolean).join(" ");
+    if (t === "mv") return [g("Size (DN)") && "DN" + g("Size (DN)"), g("Valve type"), "valve", /^\d{2,3}-[A-Z]?\d{3,4}-/.test(g("Line number")) && "on " + g("Line number")].filter(Boolean).join(" ");
     if (t === "spi" || t === "hose") return g("Description");
     return r[1] || "";
   }
@@ -170,10 +170,14 @@
       const rest = f.map((n, i) => i).filter(i => i > 0 && it.r[i] && !top.includes(i));
       // this list first, then the same tag in other lists; each property once (L.dedupe)
       const rows = [...top, ...rest].map(i => ({ l: f[i], v: it.r[i], h: linkify(it.r[i]) }));
+      // the manual valve list puts words like "Commissioning" in its line number column: that is a note, not a line
+      rows.forEach(r => { if (/^line number$/i.test(r.l) && !/\d{2,3}-[A-Z]?\d{3,4}-/.test(r.v)) r.l = "Note"; });
       twins.forEach(x => { const g = DB.types[x.t].f; g.forEach((n, i) => { if (i > 0 && x.r[i]) rows.push({ l: n, v: x.r[i], h: linkify(x.r[i]) }); }); });
       const kept = L.dedupe(rows, { heads: [it.key, ...twins.map(x => x.key), headName(it)] });
       const filled = new Set(rows.map(r => canon(r.l)));
-      const blank = [...new Set([it, ...twins].flatMap(x => DB.types[x.t].f.filter((n, i) => i > 0 && !x.r[i])))].filter(n => !filled.has(canon(n)));
+      // a missing line number isn't worth a mention when the item's P&ID is given (the drawing shows the line)
+      const onPid = rows.some(r => /P&ID/i.test(r.l) && /PID/.test(r.v));
+      const blank = [...new Set([it, ...twins].flatMap(x => DB.types[x.t].f.filter((n, i) => i > 0 && !x.r[i])))].filter(n => !filled.has(canon(n)) && !(onPid && /^line number$/i.test(n)));
       secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` +
         (blank.length ? `<div class="lk-ns">Blank in the list: ${esc([...new Set(blank)].join(", "))}.</div>` : "") });
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
