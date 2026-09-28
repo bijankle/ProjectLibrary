@@ -29,7 +29,10 @@ window.PdfView = (() => {
     addEventListener("keydown", e => { if (el.hidden) return; if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
     addEventListener("popstate", () => { if (!el.hidden) close(true); });
     // rotating the phone: refit the sheet once the new size has settled (keeps the zoom level)
-    let rt; const refit = () => { clearTimeout(rt); rt = setTimeout(() => { if (!el.hidden) layout(true); }, 250); };
+    // (only a real size change: the browser bar sliding in and out while panning must not redraw everything)
+    let rt, lastW = 0, lastH = 0; const refit = () => { clearTimeout(rt); rt = setTimeout(() => { if (el.hidden) return; const w = V.body.clientWidth, h = V.body.clientHeight;
+      if (Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 120) return; lastW = w; lastH = h; layout(true); }, 250); };
+    V.size = () => { lastW = V.body.clientWidth; lastH = V.body.clientHeight; };
     addEventListener("resize", refit); if (screen.orientation) screen.orientation.addEventListener("change", refit);
     let t; V.body.addEventListener("scroll", () => { clearTimeout(t); t = setTimeout(sharp, 70); });
     V.body.addEventListener("wheel", e => { if (!e.ctrlKey && cur.fit !== "page") return; e.preventDefault(); zoomTo(V.zoom * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025)), e.clientX, e.clientY); }, { passive: false });
@@ -49,8 +52,12 @@ window.PdfView = (() => {
     return V;
   }
 
+  // Let the phone turn with the viewer open, whatever the installed app was set to (older installs are locked to
+  // portrait until the phone refreshes the app's settings). "any" follows the phone's sensor; closing puts it back.
+  let freed = false;
+  function freeRotate(){ const so = screen.orientation; if (!so || !so.lock || freed) return; so.lock("any").then(() => freed = true).catch(() => {}); }
   async function open(o){
-    ui(); cur = Object.assign({ page: 1, fit: "width" }, o);
+    ui(); freeRotate(); cur = Object.assign({ page: 1, fit: "width" }, o);
     V.el.hidden = false; document.body.classList.add("sp-on"); V.el.querySelector(".sp-tt").textContent = cur.title || "";
     const dl = V.el.querySelector(".sp-dl"); dl.href = cur.url; dl.download = cur.download || cur.url.split("/").pop();
     if (!(history.state && history.state.sp)) history.pushState({ sp: 1 }, "");
@@ -67,19 +74,19 @@ window.PdfView = (() => {
     const so = screen.orientation;
     try {
       if (!document.fullscreenElement && document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen({ navigationUI: "hide" });
-      rotated = !rotated; await so.lock(rotated ? "landscape" : "portrait");
+      rotated = !rotated; await so.lock(rotated ? "landscape" : "any"); freed = !rotated;
     } catch (e){   // the phone won't turn the screen for us (iPhone, some Androids): turn the drawing instead
       rotated = false; V.rot = V.rot ? 0 : 90; V.zoom = 1; layout(true); V.body.scrollTo(0, 0);
       if (cur.find) mark(cur.find);
       if (V.rot) toast("Drawing turned: hold the phone sideways. Tap ⟲ again to turn it back.");
     }
   }
-  async function unrot(){ if (V) V.rot = 0; if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
+  async function unrot(){ if (V) V.rot = 0; if (freed){ freed = false; try { screen.orientation.unlock(); } catch (e) {} } if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
   function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; document.body.classList.remove("sp-on"); if (!fromPop && history.state && history.state.sp) history.back(); }
   async function go(n){
     const d = await getDoc(cur.url); n = Math.max(1, Math.min(d.numPages, n)); V.page = n;
     V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
-    V.pg = await d.getPage(n); V.body.scrollTo(0, 0); layout(true);
+    V.pg = await d.getPage(n); V.body.scrollTo(0, 0); V.size(); layout(true);
     if (cur.find) mark(cur.find);
   }
   // zoom 1 fits the page width (spec) or the whole sheet (drawings)
@@ -87,14 +94,18 @@ window.PdfView = (() => {
     if (!V.pg) return;
     const vp1 = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16;
     V.base = Math.max(.05, cur.fit === "page" ? Math.min(W / vp1.width, H / vp1.height) : W / vp1.width); const s = V.base * V.zoom;
-    V.sheet.style.width = Math.round(vp1.width * s) + "px"; V.sheet.style.height = Math.round(vp1.height * s) + "px";
+    const w = Math.round(vp1.width * s) + "px", h = Math.round(vp1.height * s) + "px";
+    // the sharp layer no longer matches a new size: hide it (the background layer stretches) until its redraw is ready
+    if (V.sheet.style.width !== w || V.sheet.style.height !== h || bg){ V.hi.style.visibility = "hidden"; V.sheet.style.width = w; V.sheet.style.height = h; }
     if (bg) drawBg(); sharp();
   }
-  let bgTask = null, hiTask = null;
+  // Both layers draw off screen and are swapped in whole when finished, so nothing blanks or jumps while panning.
+  let bgTask = null, hiTask = null, bgGen = 0, hiGen = 0;
   function drawBg(){
     const dpr = Math.min(2, devicePixelRatio || 1), vp = V.pg.getViewport({ rotation: V.rot || 0, scale: V.base * dpr * (cur.fit === "page" ? 1.5 : 1) });
-    V.bg.width = vp.width; V.bg.height = vp.height;
-    if (bgTask) bgTask.cancel(); bgTask = V.pg.render({ canvasContext: V.bg.getContext("2d"), viewport: vp }); bgTask.promise.catch(() => {});
+    const off = document.createElement("canvas"), g = ++bgGen; off.width = vp.width; off.height = vp.height;
+    if (bgTask) bgTask.cancel(); bgTask = V.pg.render({ canvasContext: off.getContext("2d"), viewport: vp });
+    bgTask.promise.then(() => { if (g !== bgGen) return; V.bg.width = off.width; V.bg.height = off.height; V.bg.getContext("2d").drawImage(off, 0, 0); }).catch(() => {});
   }
   function sharp(){
     if (!V.pg) return;
@@ -102,10 +113,12 @@ window.PdfView = (() => {
     const x0 = Math.max(0, V.body.scrollLeft - 8), y0 = Math.max(0, V.body.scrollTop - 8);
     const w = Math.min(sw - x0, V.body.clientWidth + 16), h = Math.min(sh - y0, V.body.clientHeight + 16);
     if (w <= 0 || h <= 0) return;
-    const c = V.hi; c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
-    c.style.left = x0 + "px"; c.style.top = y0 + "px"; c.style.width = w + "px"; c.style.height = h + "px";
+    const off = document.createElement("canvas"), g = ++hiGen; off.width = Math.round(w * dpr); off.height = Math.round(h * dpr);
     const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: s * dpr, offsetX: -x0 * dpr, offsetY: -y0 * dpr });
-    if (hiTask) hiTask.cancel(); hiTask = V.pg.render({ canvasContext: c.getContext("2d"), viewport: vp }); hiTask.promise.catch(() => {});
+    if (hiTask) hiTask.cancel(); hiTask = V.pg.render({ canvasContext: off.getContext("2d"), viewport: vp });
+    hiTask.promise.then(() => { if (g !== hiGen) return; const c = V.hi;
+      c.width = off.width; c.height = off.height; c.getContext("2d").drawImage(off, 0, 0);
+      c.style.left = x0 + "px"; c.style.top = y0 + "px"; c.style.width = w + "px"; c.style.height = h + "px"; c.style.visibility = ""; }).catch(() => {});
   }
   function zoomTo(z, cx, cy){
     z = Math.max(1, Math.min(cur.fit === "page" ? 24 : 10, z)); if (!V.pg || Math.abs(z - V.zoom) < .001) return;
