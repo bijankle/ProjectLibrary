@@ -20,7 +20,7 @@ A tab strip sits across the top of every screen, on the phone and the computer: 
 
 ## Quiz
 
-The Quiz tab opens on one big ▶ Start quiz button with the current choice written under it (e.g. 20 cards · shuffled · all topics) and the progress stats. ⚙ Filters in the corner opens the deck order, length and topics; the choices are remembered.
+The Quiz tab opens straight on a card (the deck in progress, or a fresh one dealt with the last choices). Tap or swipe left reveals the answer; again moves to the next question. Swipe right goes back through earlier cards, answer side only. Moving past an answer counts as known unless "↻ Revisit this one" is ticked on it (it can be ticked or unticked later when going back). ⚙ on the card screen opens the deck order, length, topics and progress stats with a New deck button; ✕ shows the debrief for the cards done so far. Leaving the tab and coming back resumes the same card.
 
 ## Browse (Assets tab)
 

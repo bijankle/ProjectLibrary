@@ -148,7 +148,10 @@ body.searching #homeMain{display:none}
 .stamp.got{left:22px;color:var(--ok);border-color:var(--ok)}
 .stamp.again{right:22px;color:var(--bad);border-color:var(--bad);transform:rotate(12deg)}
 .legend{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:0 6px}
-.legend .l{color:var(--bad)} .legend .r{color:var(--ok)}
+.legend{font-size:12.5px;font-weight:600;color:var(--mute)}
+.card.past .qmini{display:none}
+.again-t{display:block;margin:14px 0 4px;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px;font-weight:700}
+.again-t.on{border-color:var(--bad);color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
 .qa{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
 .qa h3{margin:0 0 10px;font-size:13px;letter-spacing:1.1px;text-transform:uppercase;color:var(--mute)}
 .bub{border-radius:14px;padding:11px 13px;margin:8px 0;font-size:15.5px;line-height:1.5;white-space:pre-wrap}
@@ -195,7 +198,7 @@ body.searching #homeMain{display:none}
 <section id="quiz" class="screen"><div class="page">
   <div class="titlerow"><h1>KCGM <span>Quiz</span></h1><button class="qfbtn" id="qfBtn" aria-expanded="false">⚙ Filters</button></div>
   <p class="sub">A question fills the screen. Swipe to see the answer. Swipe again: right if you knew it, left to see it again.</p>
-  <button class="qstart" id="startBtn"><b>▶ Start quiz</b><span id="qSum"></span></button>
+  <button class="qstart" id="startBtn"><b>▶ New deck</b><span id="qSum"></span></button>
   <div class="stats" id="stats"></div>
   <div id="qFilters" hidden>
   <h2>Deck order</h2>
@@ -224,9 +227,10 @@ body.searching #homeMain{display:none}
     <button class="x" id="quitBtn" aria-label="Finish">✕</button>
     <div class="prog"><i id="progBar"></i></div>
     <div class="count" id="count"></div>
+    <button class="x" id="deckSet" aria-label="Quiz settings" title="Deck, length, topics and progress">⚙</button>
   </div>
   <div class="stage" id="stage"></div>
-  <div class="legend" id="legend"><span class="l">← again</span><span class="r">got it →</span></div>
+  <div class="legend" id="legend"><span class="l">→ swipe right: back</span><span class="r">swipe left or tap: next ←</span></div>
 </section>
 
 <!-- END -->
@@ -236,7 +240,7 @@ body.searching #homeMain{display:none}
   <p class="sub" id="scoreSub"></p>
   <div class="row" style="margin-top:20px;flex-direction:column">
     <button class="btn primary" id="againBtn">Go through the 'again' pile</button>
-    <button class="btn" id="homeBtn">Back to the quiz</button>
+    <button class="btn" id="homeBtn">▶ New deck</button>
   </div>
 </div></section>
 
@@ -385,34 +389,35 @@ body.searching #homeMain{display:none}
   }
   function start(list){
     if (!list.length){ alert("Pick at least one topic."); return; }
-    run = { list, i: 0, got: 0, again: [] };
+    run = { list, i: 0, max: 0, marks: {}, done: {}, got: 0, again: [] };
     show("deck"); renderCard();
   }
   $("startBtn").onclick = () => start(pick());
 
   // ---------- DECK ----------
+  // One continuous stack: tap or swipe left reveals the answer, again moves to the next question; swipe right goes back
+  // through earlier cards (answer side). Moving past an answer counts as known unless "Revisit this" is ticked on it.
   let card = null, shown = false;
-  function renderCard(){
-    const c = run.list[run.i];
+  function renderCard(dir = 1){
+    const c = run.list[run.i], past = run.i < run.max;
     $("count").textContent = (run.i + 1) + " / " + run.list.length;
-    $("progBar").style.width = (100 * run.i / run.list.length) + "%";
-    $("legend").style.visibility = "hidden";
-    shown = false;
+    $("progBar").style.width = (100 * run.max / run.list.length) + "%";
+    shown = past;
     const el = document.createElement("div");
-    el.className = "card";
+    el.className = "card" + (past ? " shown past" : "");   // looking back: the answer only
     const tp = TOPICS[c.t];
     el.innerHTML = `
-      <div class="stamp got">GOT IT</div><div class="stamp again">AGAIN</div>
       <div class="flip">
         <div class="side front">
           <div class="chip"></div>
           <div class="qwrap"><div class="qtext"></div></div>
-          <div class="hint">Swipe or tap to reveal</div>
+          <div class="hint">Tap or swipe left to reveal</div>
         </div>
         <div class="side back">
           <div class="chip"></div>
           <div class="qmini"></div>
-          <div class="scroll"><div class="atext"></div><div class="etext"></div><div class="qa"></div></div>
+          <div class="scroll"><div class="atext"></div><div class="etext"></div>
+            <button type="button" class="again-t" aria-pressed="false">↻ Revisit this one</button><div class="qa"></div></div>
         </div>
       </div>`;
     el.querySelectorAll(".chip").forEach(x => x.textContent = tp.icon + "  " + tp.name);
@@ -420,29 +425,36 @@ body.searching #homeMain{display:none}
     el.querySelector(".qmini").textContent = c.q;
     el.querySelector(".atext").textContent = c.a;
     el.querySelector(".etext").textContent = c.e;
-    el.style.transform = "translateY(24px) scale(.96)"; el.style.opacity = "0";
+    const ag = el.querySelector(".again-t"), setAg = () => { const on = !!run.marks[run.i]; ag.classList.toggle("on", on); ag.setAttribute("aria-pressed", on); ag.textContent = on ? "↻ Marked to revisit (tap to undo)" : "↻ Revisit this one"; };
+    ag.onclick = () => { run.marks[run.i] = !run.marks[run.i]; if (run.done[run.i] != null) record(run.i); setAg(); }; setAg();
+    if (past) el.querySelector(".flip").style.transition = "none";
+    el.style.transform = `translateX(${dir * 40}px)`; el.style.opacity = "0";
     $("stage").innerHTML = ""; $("stage").appendChild(el);
-    requestAnimationFrame(() => { el.style.transition = "transform .25s ease, opacity .25s ease"; el.style.transform = ""; el.style.opacity = "1"; });
+    requestAnimationFrame(() => { el.style.transition = "transform .22s ease, opacity .22s ease"; el.style.transform = ""; el.style.opacity = "1"; });
     card = el; bindSwipe(el);
     renderQA(el, c, []);
   }
-  function reveal(){
-    if (shown) return; shown = true;
-    card.classList.add("shown");
-    $("legend").style.visibility = "visible";
+  function reveal(){ if (shown) return; shown = true; card.classList.add("shown"); }
+  // the result for card i (first time past it, or again when its "revisit" tick changes)
+  function record(i){
+    const c = run.list[i], known = !run.marks[i], h = hist[c.q] || { s: 0, k: 0, last: 0 };
+    if (run.done[i] == null){ h.s++; if (known) h.k++; }
+    else if (run.done[i] !== known) h.k += known ? 1 : -1;
+    h.last = known ? 1 : 0; hist[c.q] = h; store.set("kcgm_cards", hist); run.done[i] = known;
   }
-  function decide(known){
-    const c = run.list[run.i];
-    const h = hist[c.q] || { s: 0, k: 0, last: 0 };
-    h.s++; if (known) h.k++; h.last = known ? 1 : 0; hist[c.q] = h; store.set("kcgm_cards", hist);
-    if (known) run.got++; else run.again.push(c);
-    if (navigator.vibrate) navigator.vibrate(known ? 12 : [20, 30, 20]);
+  function slide(to, dir){
     const el = card; card = null;
-    el.style.transition = "transform .3s ease-in, opacity .3s ease-in";
-    el.style.transform = `translateX(${known ? 130 : -130}vw) rotate(${known ? 24 : -24}deg)`;
-    el.style.opacity = "0";
-    setTimeout(() => { run.i++; run.i < run.list.length ? renderCard() : finish(); }, 220);
+    el.style.transition = "transform .2s ease-in, opacity .2s ease-in"; el.style.transform = `translateX(${-dir * 110}vw)`; el.style.opacity = "0";
+    setTimeout(() => { run.i = to; renderCard(dir); }, 160);
   }
+  function next(){
+    if (!card) return;
+    if (!shown){ reveal(); return; }
+    if (run.done[run.i] == null){ record(run.i); if (navigator.vibrate) navigator.vibrate(10); }
+    if (run.i + 1 >= run.list.length){ run.max = run.list.length; finish(); return; }
+    run.max = Math.max(run.max, run.i + 1); slide(run.i + 1, 1);
+  }
+  function back(){ if (card && run.i > 0) slide(run.i - 1, -1); }
 
   // ---------- FOLLOW UP Q&A ----------
   const SRC = { "plant docs": ["docs", "FROM PLANT DOCS"], "docs + general": ["mixed", "DOCS + GENERAL"],
@@ -512,10 +524,9 @@ body.searching #homeMain{display:none}
 
   function bindSwipe(el){
     let x0 = 0, y0 = 0, dx = 0, t0 = 0, drag = false, id = null;
-    const got = el.querySelector(".stamp.got"), ag = el.querySelector(".stamp.again");
     el.addEventListener("pointerdown", e => {
       if (card !== el) return;
-      if (e.target.closest("input, button, form, select") || document.activeElement?.tagName === "INPUT") return;
+      if (e.target.closest("input, button, form, select, a") || document.activeElement?.tagName === "INPUT") return;
       id = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0; t0 = Date.now(); drag = false;
       el.style.transition = "none";
     });
@@ -524,35 +535,29 @@ body.searching #homeMain{display:none}
       const mx = e.clientX - x0, my = e.clientY - y0;
       if (!drag && Math.abs(mx) > 10 && Math.abs(mx) > Math.abs(my)) { drag = true; try{ el.setPointerCapture(id); }catch(_){} }
       if (!drag) return;
-      dx = mx;
-      el.style.transform = `translateX(${dx}px) rotate(${dx / 22}deg)`;
-      if (shown){ got.style.opacity = Math.max(0, Math.min(1, dx / 110)); ag.style.opacity = Math.max(0, Math.min(1, -dx / 110)); }
+      dx = mx; el.style.transform = `translateX(${dx}px)`;
     });
     const end = e => {
       if (e.pointerId !== id) return; id = null;
-      const fast = Math.abs(dx) / Math.max(1, Date.now() - t0) > 0.5;
-      if (drag && (Math.abs(dx) > 90 || (fast && Math.abs(dx) > 30))) {
-        if (!shown){ snapBack(); reveal(); }
-        else decide(dx > 0);
-      } else if (!drag && e.type === "pointerup") {
-        if (!shown) reveal();   // tap reveals; after that only a swipe moves on
-        snapBack();
-      } else snapBack();
+      const fast = Math.abs(dx) / Math.max(1, Date.now() - t0) > 0.5, far = drag && (Math.abs(dx) > 80 || (fast && Math.abs(dx) > 30));
+      el.style.transition = "transform .2s ease"; el.style.transform = "";
+      if (far) dx < 0 ? next() : back();
+      else if (!drag && e.type === "pointerup" && !e.target.closest(".scroll")) next();   // a tap on the card (not on the answer text) moves on
       drag = false;
     };
-    const snapBack = () => { el.style.transition = "transform .25s ease"; el.style.transform = ""; got.style.opacity = 0; ag.style.opacity = 0; };
     el.addEventListener("pointerup", end);
     el.addEventListener("pointercancel", end);
   }
   document.addEventListener("keydown", e => {
     if (!$("deck").classList.contains("on") || !card || e.target.tagName === "INPUT") return;
-    if (!shown && ["ArrowLeft", "ArrowRight", " ", "Enter"].includes(e.key)) { reveal(); e.preventDefault(); }
-    else if (shown && e.key === "ArrowRight") decide(true);
-    else if (shown && e.key === "ArrowLeft") decide(false);
+    if (["ArrowRight", " ", "Enter"].includes(e.key)){ next(); e.preventDefault(); }
+    else if (e.key === "ArrowLeft"){ back(); e.preventDefault(); }
   });
-  $("quitBtn").onclick = () => { run && run.i > 0 ? finish() : (run = null, renderHome(), show("quiz")); };
+  $("quitBtn").onclick = () => { run && Object.keys(run.done).length ? finish() : (renderHome(), show("quiz")); };
+  $("deckSet").onclick = () => { renderHome(); $("qFilters").hidden = false; $("qfBtn").classList.add("on"); show("quiz"); };
 
   function finish(){
+    run.got = Object.values(run.done).filter(Boolean).length; run.again = Object.keys(run.done).filter(k => !run.done[k]).map(k => run.list[k]);
     const n = run.got + run.again.length;
     const pct = n ? Math.round(100 * run.got / n) : 0;
     $("score").textContent = n ? pct + "%" : "–";
@@ -561,10 +566,10 @@ body.searching #homeMain{display:none}
       : "No cards answered.";
     $("againBtn").style.display = run.again.length ? "block" : "none";
     $("againBtn").textContent = `Go through the 'again' pile (${run.again.length})`;
-    run.done = true; show("end");
+    run.finished = true; show("end");
   }
   $("againBtn").onclick = () => start(shuffle(run.again));
-  $("homeBtn").onclick = () => { renderHome(); show("quiz"); };
+  $("homeBtn").onclick = () => start(pick());
 
   // ---------- GLOSSARY ----------
   function renderGloss(f){
@@ -645,9 +650,11 @@ body.searching #homeMain{display:none}
   // the tab strip: Assets and Quiz switch here, PFD and Layout open pfd.html; a quiz left half way resumes
   Tabs.mount({ active: "assets", onSettings: openSettings, onTab: t => {
     if (t === "assets"){ show("home"); return true; }
-    if (t === "quiz"){ show(run && !run.done && run.i < run.list.length ? "deck" : "quiz"); return true; }
+    if (t === "quiz"){ openQuiz(); return true; }
     return false; } });
-  const openHash = () => { if (location.hash === "#quiz") show("quiz"); else if (location.hash === "#assets") show("home"); };
+  // the Quiz tab opens on a card: the deck in progress, or a fresh one with the last choices
+  function openQuiz(){ if (run && !run.finished) show("deck"); else start(pick()); }
+  const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); };
   openHash(); window.addEventListener("hashchange", openHash);
 })();
 </script>
