@@ -25,6 +25,14 @@ window.Tabs = (() => {
 .tb-i{font-size:15px}
 .tb-s{flex:none;width:42px;border:0;background:none;color:var(--mute);font-size:19px;cursor:pointer}
 .tb-t{overflow:hidden;text-overflow:ellipsis}
+/* scroll bars across the app: barely there until you hover the area, clearer on the bar itself, gold while dragging */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}
+::-webkit-scrollbar-thumb{background-color:transparent;border:3px solid transparent;background-clip:padding-box;border-radius:6px;transition:background-color .2s}
+:hover::-webkit-scrollbar-thumb{background-color:color-mix(in srgb,var(--mute) 30%,transparent)}
+::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--mute) 75%,transparent);border-width:2px}
+::-webkit-scrollbar-thumb:active{background-color:var(--gold,var(--accent));border-width:2px}
+@supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:transparent transparent}*:hover{scrollbar-color:color-mix(in srgb,var(--mute) 45%,transparent) transparent}}
 @media (max-width:380px){.tb-t{flex-direction:column;gap:0;font-size:11.5px;padding-top:4px;line-height:1.1}.tb-i{font-size:14px}.tb-s{width:34px}}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   return { mount, set };

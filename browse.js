@@ -198,11 +198,6 @@ window.Browse = (() => {
 .bw-o:active{border-color:var(--gold)}
 .bw-r{border-left:1px solid var(--line);padding-left:8px;padding-right:12px}
 .bw-l{padding-right:10px}
-/* slim scroll bars kept clear of the content */
-.bw-l,.bw-r{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--mute) 45%,transparent) transparent}
-.bw-l::-webkit-scrollbar,.bw-r::-webkit-scrollbar{width:6px}
-.bw-l::-webkit-scrollbar-thumb,.bw-r::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--mute) 45%,transparent);border-radius:3px}
-.bw-l::-webkit-scrollbar-track,.bw-r::-webkit-scrollbar-track{background:transparent}
 .bw-n{font-size:11.5px;color:var(--mute);margin:2px 0 4px}.bw-n b{color:var(--ink)}
 .bw-it{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:7px 0;font:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bw-it.ln b{font-size:11px}.bw-it b{font-size:12px;color:var(--gold);font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
