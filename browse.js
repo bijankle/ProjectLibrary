@@ -85,7 +85,7 @@ window.Browse = (() => {
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = `<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts">${opts}</div></div>
       <div class="bw-r"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
-      ${hits.map((it, i) => `<button class="bw-it" data-i="${i}"><b>${Lookup.ICON[it.t] || ""} ${esc(it.key)}</b><span>${esc(it.name)}</span></button>`).join("")}
+      ${hits.map((it, i) => `<button class="bw-it" data-i="${i}"><b>${Lookup.ICON[it.t] || ""} ${esc(it.key)}</b><span>${esc(Lookup.listName(it))}</span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bw-o").forEach(b => b.onclick = () => { path.push({ f: st[0], v: b.dataset.v }); after(); });
     const any = el.querySelector(".bw-any"); if (any) any.onclick = () => { path.push({ f: st[0], v: null }); after(); };

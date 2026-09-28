@@ -74,7 +74,7 @@
     if (!hits.length) return `<div class="lk-empty">No match for “${esc(q)}”. Try fewer characters, e.g. the number only.</div>`;
     // one line per result: icon, code, description (the pill shows the list it comes from)
     const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
-    return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><span class="lk-ic1">${ICON[it.t] || "•"}</span><b>${esc(it.key)}</b><span>${esc(it.name)}</span></button>`).join("");
+    return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><span class="lk-ic1">${ICON[it.t] || "•"}</span><b>${esc(it.key)}</b><span>${esc(L.listName(it))}</span></button>`).join("");
   };
   const PILLN = { mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
   const KEYF = {
@@ -98,16 +98,60 @@
   document.addEventListener("click", e => { const b = e.target.closest && e.target.closest(".pf-b"); if (!b) return; const pf = b.closest(".pf"); pfLast[pf.dataset.g] = b.dataset.p;
     [...pf.children].forEach(c => { if (c.classList.contains("pf-bar")) c.querySelectorAll(".pf-b").forEach(x => x.classList.toggle("on", x === b)); else if (c.classList.contains("pf-sec")) c.hidden = c.dataset.p !== b.dataset.p; }); });
   L.refs = k => refs.get(norm(k)) || [];
+  // ---------- no double ups ----------
+  // rows [{ l: label, v: value, h: html }] in priority order. The same property (label without units, synonyms joined)
+  // is kept once with the more complete value; a value already readable from the tag, a longer code, other text or the
+  // heading is dropped. Different properties that happen to share a value both stay.
+  const SYN = { "process fluid": "fluid", "equipment name": "name", "valve size": "size", "size": "size", "line size": "line size", "quantity": "total qty", "p&ids": "p&id" };
+  const ABBR = { "internal diameter": "ID", "outside diameter": "OD", "max bend radius": "bend radius" };
+  const canon = l => { l = String(l).toLowerCase().replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim(); return SYN[l] || l; };
+  const unitless = v => String(v).toUpperCase().replace(/\bDN\s*(?=\d)|\bOD\s*(?=\d)|\bMM\b|\bNB\b/g, "").replace(/[^A-Z0-9.]/g, "");
+  const segs = v => String(v).toUpperCase().split(/[\s\-_/,;:()]+/).filter(Boolean);
+  const CODEL = /type|class|spec|service|code|model|size|area|loop|number|tag|fluid|package|panel|stage/i;
+  const reEsc = x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  function said(r, o){   // is r's value already said inside the (longer) text o?
+    const v = String(r.v).trim(), O = String(o || "").trim(); if (!v || O.length <= v.length) return false;
+    const V = v.toUpperCase();
+    // a figure a longer text already states under its own name, e.g. Length 0.835 in "Hose Length: 0.835 m"
+    const nm = canon(r.l).replace(/[^a-z ]/g, "").trim();
+    if (nm.length >= 4 && [nm, ABBR[nm]].filter(Boolean).some(w => new RegExp("(^|[^a-z])" + reEsc(w) + "[^0-9A-Za-z]{0,12}" + reEsc(v) + "([^0-9A-Za-z]|$)", "i").test(O))) return true;
+    if (/^[\d.,]+$/.test(v)){   // a bare number only when it is a size / area / loop / number field
+      if (!/size|area|loop|number|dn/i.test(r.l)) return false;
+      return segs(O).some(x => x === V || (x.length > V.length && /[A-Z]/.test(x) && (x.startsWith(V) || x.endsWith(V))) || (V.length >= 4 && x.includes(V)));
+    }
+    if (/^[A-Za-z0-9.]+$/.test(v)){   // a code
+      if (segs(O).includes(V)) return CODEL.test(r.l) || V.length >= 3;
+      if (!CODEL.test(r.l) && V.length < 5) return false;
+      return segs(O).some(x => x.length > V.length && (x.startsWith(V) || x.endsWith(V) || ((V.length >= 4 || (V.length === 3 && CODEL.test(r.l) && /\d/.test(x))) && x.includes(V))));
+    }
+    return v.length >= 4 && new RegExp("(^|[^A-Za-z0-9])" + reEsc(v) + "([^A-Za-z0-9]|$)", "i").test(O);   // words inside other words
+  }
+  const same = (a, b) => unitless(a) === unitless(b) && unitless(a) !== "";
+  L.dedupe = (rows, ctx = {}) => {
+    const out = [];
+    rows.forEach(r => { if (r.v == null || String(r.v).trim() === "") return;
+      const c = canon(r.l), prev = out.find(x => x.c === c);
+      if (prev){ if (same(prev.v, r.v) || said(r, prev.v)) return; if (said(prev, r.v)){ Object.assign(prev, r, { c }); return; } }
+      out.push(Object.assign({ c }, r)); });
+    const heads = (ctx.heads || []).filter(Boolean);
+    return out.filter(r => !heads.some(t => same(r.v, t) || said(r, t)) && !out.some(o => o !== r && said(r, o.v)));
+  };
+  L.rowsHTML = rows => rows.map(r => `<tr><td>${esc(r.l)}</td><td>${r.h != null ? r.h : esc(r.v)}</td></tr>`).join("");
   L.fields = t => DB && DB.types[t] ? DB.types[t].f : null;
   // a line in a list: "from <equipment description> (<tag>) to …", equipment named from the MEL; another line stays a number
   const endText = v => { v = String(v || "").trim().replace(/^(to|from)\s+/i, ""); if (!v) return "not given";
     return v.replace(TAG_RE, m => { const e = (byKey.get(norm(m)) || []).find(x => x.t === "mel"); return e && e.name ? `${e.name} (${m})` : m; }); };
   L.lineText = it => { if (it.t !== "line" || !it.r) return it.name; const f = DB.types.line.f;
     return `from ${endText(it.r[f.indexOf("From")])} to ${endText(it.r[f.indexOf("To")])}`; };
+  // the line under the tag: a line's service and size (its ends are in Details, tappable); never the tag again
+  const headName = it => { let n = it.t === "line" && it.r ? [L.get(it, "Service description") || L.get(it, "Service"), L.get(it, "Size (DN)") && "DN" + L.get(it, "Size (DN)")].filter(Boolean).join(" ") : String(it.name || "");
+    const k = String(it.key); if (n.toUpperCase().startsWith(k.toUpperCase())) n = n.slice(k.length).replace(/^[\s:,\-]+/, ""); return n; };
+  // the text beside a tag in a list: lines say where they run, everything else its name without the tag again
+  L.listName = it => it.t === "line" ? L.lineText(it) : headName(it);
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
     let h = `<div class="lk-kind">${ICON[it.t] || ""} ${esc(typeName(it.t))}</div>` +
-      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + `<div class="lk-name">${esc(it.name)}</div>`;
+      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + `<div class="lk-name">${linkify(headName(it))}</div>`;
     if (dwg) h += `<div class="lk-dwgnote">${esc([dwg.title, dwg.rev && "Rev " + dwg.rev, dwg.status, dwg.pages > 1 && dwg.pages + " sheets"].filter(Boolean).join(" · "))}${dwg.inferred ? " · number read from the sheet order" : ""}. Tap the number to open the drawing${opts.find ? `; ${esc(opts.find)} is marked on it` : ""}.</div>`;
     else if (it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
     const pfd = opts.pfd && opts.pfd(it);
@@ -123,16 +167,14 @@
       const f = DB.types[it.t].f, key = KEYF[it.t] || f.slice(1, 7);
       const top = key.map(n => f.indexOf(n)).filter(i => i > 0 && it.r[i]);
       const rest = f.map((n, i) => i).filter(i => i > 0 && it.r[i] && !top.includes(i));
-      const seen = new Map(); [...top, ...rest].forEach(i => seen.set(f[i].toLowerCase(), norm(it.r[i])));
-      let t = [...top, ...rest].map(i => `<tr><td>${esc(f[i])}</td><td>${linkify(it.r[i])}</td></tr>`).join("");
-      const blank = new Set(f.filter((n, i) => i > 0 && !it.r[i]));
-      twins.forEach(x => { const g = DB.types[x.t].f;
-        const add = g.map((n, i) => i).filter(i => i > 0 && x.r[i] && seen.get(g[i].toLowerCase()) !== norm(x.r[i]));
-        g.forEach((n, i) => { if (i > 0 && x.r[i]) blank.delete(n); });
-        if (add.length) t += `<tr><td colspan="2" class="lk-sub">${ICON[x.t] || ""} From the ${esc(DB.types[x.t].n.toLowerCase())} list</td></tr>` +
-          add.map(i => `<tr><td>${esc(g[i])}</td><td>${linkify(x.r[i])}</td></tr>`).join(""); });
-      secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${t}</table>` +
-        (blank.size ? `<div class="lk-ns">Blank in the list: ${esc([...blank].join(", "))}.</div>` : "") });
+      // this list first, then the same tag in other lists; each property once (L.dedupe)
+      const rows = [...top, ...rest].map(i => ({ l: f[i], v: it.r[i], h: linkify(it.r[i]) }));
+      twins.forEach(x => { const g = DB.types[x.t].f; g.forEach((n, i) => { if (i > 0 && x.r[i]) rows.push({ l: n, v: x.r[i], h: linkify(x.r[i]) }); }); });
+      const kept = L.dedupe(rows, { heads: [it.key, ...twins.map(x => x.key), headName(it)] });
+      const filled = new Set(rows.map(r => canon(r.l)));
+      const blank = [...new Set([it, ...twins].flatMap(x => DB.types[x.t].f.filter((n, i) => i > 0 && !x.r[i])))].filter(n => !filled.has(canon(n)));
+      secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` +
+        (blank.length ? `<div class="lk-ns">Blank in the list: ${esc([...new Set(blank)].join(", "))}.</div>` : "") });
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
       if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
     }

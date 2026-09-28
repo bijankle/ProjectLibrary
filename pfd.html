@@ -1023,29 +1023,29 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     ["stt", "Starter type"], ["ds", "Duty / standby"], ["ep", "Emergency power"], ["moc", "Material of construction"], ["ven", "Vendor"], ["mm", "Make / model"], ["pkg", "Package"],
     ["sta", "Status"], ["stg", "Stage"], ["bg", "Brownfield / greenfield"], ["sup", "Supply type"], ["pfd", "PFD"], ["pid", "P&ID"], ["ref", "Reference drawing"]];
   // a record's own fields in one table (list order, blank ones named once); a spec, when given, is its own pill beside it
-  const groupTable = (r, G, g, rowsDef, extra = [], more = "") => {
-    const ks = rowsDef.filter(([k]) => r[k] != null && r[k] !== ""), blank = rowsDef.filter(([k]) => r[k] == null || r[k] === "").map(([, l]) => l);
-    const t = (ks.length ? "<table>" + ks.map(([k, l]) => `<tr><td>${l}</td><td>${esc(r[k])}</td></tr>`).join("") + "</table>" : "") +
-      (blank.length ? `<div style="font-size:11.5px;color:var(--mute);margin:4px 0 6px">Blank in the list: ${esc(blank.join(", "))}.</div>` : "") + more;
+  // one table for a tag's rows from one or more lists: each property once, nothing the heading or tag already says
+  // (Lookup.dedupe); blank fields named once. A spec, when given, is its own pill beside it.
+  const recTable = (parts, heads = [], extra = [], g = "rec") => {
+    const rows = parts.flatMap(([r, def]) => r ? def.filter(([k]) => r[k] != null && r[k] !== "").map(([k, l]) => ({ l, v: r[k] })) : []);
+    const kept = Lookup.dedupe(rows, { heads }), filled = new Set(rows.map(x => x.l.toLowerCase()));
+    const blank = [...new Set(parts.flatMap(([r, def]) => r ? def.filter(([k]) => r[k] == null || r[k] === "").map(([, l]) => l) : []))].filter(l => !filled.has(l.toLowerCase()));
+    const t = (kept.length ? "<table>" + Lookup.rowsHTML(kept) + "</table>" : "") +
+      (blank.length ? `<div style="font-size:11.5px;color:var(--mute);margin:4px 0 6px">Blank in the list: ${esc(blank.join(", "))}.</div>` : "");
     return extra.length ? Lookup.pills([{ id: "det", label: "Details", html: t }, ...extra], g) : t; };
-  const MEL_G = [["duty", "Duty", ["n", "sz", "nd", "dd", "ds"]], ["elec", "Electrical", ["kw", "v", "stt", "ep"]], ["sup", "Supply", ["moc", "ven", "mm", "pkg", "sup"]],
-    ["st", "Status", ["sta", "stg", "bg"]], ["dwg", "Drawings", ["pfd", "pid", "ref"]]];
-  const melTable = r => groupTable(r, MEL_G, "mel", MEL_ROWS);
+  const melTable = (r, heads = []) => recTable([[r, MEL_ROWS]], [r.tag, ...heads]);
   const CV_ROWS = [["ty", "Valve type"], ["code", "Valve code"], ["sz", "Valve size (mm)"], ["ls", "Line size (mm)"], ["cl", "Class"], ["fl", "Service fluid"], ["qmin", "Flow min (m³/h)"], ["qmax", "Flow max (m³/h)"],
     ["pin", "Inlet pressure (kPag)"], ["p80", "Solids P80 (µm)"], ["cw", "% solids (w/w)"], ["sg", "Fluid SG"], ["fail", "Fail position (air/power loss)"], ["act", "Actuator"], ["pos", "Positioner"],
     ["mfr", "Valve make"], ["mod", "Valve model"], ["am", "Actuator model"], ["loc", "Location"], ["pid", "P&ID"], ["stg", "Stage"]];
-  const CV_G = [["vlv", "Valve", ["ty", "code", "sz", "ls", "cl"]], ["proc", "Process", ["fl", "qmin", "qmax", "pin", "p80", "cw", "sg"]], ["act", "Actuation", ["fail", "act", "pos", "am"]],
-    ["sup", "Supply", ["mfr", "mod"]], ["where", "Where", ["loc", "pid", "stg"]]];
   // the valve datasheet from the pipe and valve spec, filled in once spec/index.json has loaded
-  const cvTable = (c, more = "") => groupTable(c, CV_G, "cv", CV_ROWS, /^\d+[A-Z]/.test(c.code || "") ? [{ id: "spec", label: "Valve spec", html: `<div class="cv-spec" data-code="${esc(c.code)}">Loading the spec…</div>` }] : [], more);
+  const cvSpec = c => /^\d+[A-Z]/.test(c.code || "") ? [{ id: "spec", label: "Valve spec", html: `<div class="cv-spec" data-code="${esc(c.code)}">Loading the spec…</div>` }] : [];
+  const cvTable = (c, ins, heads = []) => recTable([[c, CV_ROWS], [ins, IN_ROWS]], [c.tag, ins && ins.tag, ...heads], cvSpec(c), "cv");
   const fillCvSpec = root => root.querySelectorAll(".cv-spec").forEach(el => Spec.load().then(() => { el.innerHTML = Spec.forCode(el.dataset.code) || "This valve code has no datasheet in the spec."; Spec.bind(el); }).catch(() => el.textContent = "Couldn't load the spec."));
   const IN_ROWS = [["ty", "Instrument type"], ["desc", "Description"], ["eq", "On equipment"], ["loc", "Location"], ["fl", "Fluid"], ["u", "Range / units"], ["mk", "Make"], ["md", "Model"], ["pid", "P&ID"]];
-  const IN_G = [["ins", "Instrument", ["ty", "desc", "u"]], ["where", "Where", ["eq", "loc", "fl", "pid"]], ["sup", "Supply", ["mk", "md"]]];
-  const inTable = r => groupTable(r, IN_G, "in", IN_ROWS);
+  const inTable = r => recTable([[r, IN_ROWS]], [r.tag]);
   // instrument list rows by tag (loop tags plus every instrument pulled in against a PFD block)
   const INS_BY_TAG = Object.assign({}, ...Object.values(EQUIP_DATA).map(d => Object.fromEntries(d.ins.map(i => [i.tag, i]))), INSTR_DATA);
 
-  const melOne = r => melTable(r) + `<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div>`;
+  const melOne = (r, heads) => melTable(r, heads) + `<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div>`;
   function showNode(n){
     $("iKind").innerHTML = (n.area ? "Equipment · Area " + esc(n.area) : "Equipment") + stageNote(n.st);
     $("iName").textContent = n.n; $("iTag").textContent = n.tag || "";
@@ -1064,7 +1064,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     const eqTags = eq.map(r => r.tag);
     const secs = [
       { id: "ov", label: "Overview", html: ov },
-      { id: "eq", label: "Equipment", n: eq.length, html: eq.length ? (eq.length === 1 ? melOne(eq[0]) : Lookup.pills(eq.map(r => ({ id: r.tag, label: r.tag, html: `<div style="font-weight:700;margin:2px 0 4px">${esc(r.n || r.tag)}</div>` + melOne(r) })), "node-eq"))
+      { id: "eq", label: "Equipment", n: eq.length, html: eq.length ? (eq.length === 1 ? melOne(eq[0], [n.n]) : Lookup.pills(eq.map(r => ({ id: r.tag, label: r.tag, html: `<div style="font-weight:700;margin:2px 0 4px">${esc(r.n || r.tag)}</div>` + melOne(r, [r.n]) })), "node-eq"))
           : `<div>${NS_TXT}: no MEL item for this block (off site or a symbolic block).</div>` },
       { id: "ins", label: "Instruments", n: inst.length + (more ? "+" : ""), html: inst.length ? `<table class="it">${inst.map(insRow).join("")}</table>` + moreNote : `<div>${NS_TXT} in the instrument list for these equipment numbers.</div>` },
       { id: "vlv", label: "Valves", n: vlv.length + (more ? "+" : ""), html: vlv.length ? `<table class="it">${vlv.map(insRow).join("")}</table><div style="font-size:12px;color:var(--mute);padding:6px 0">Control and actuated valves; tap a tag for its control valve list data.</div>` + moreNote : `<div>${NS_TXT}: no control valves listed on these equipment numbers.</div>` },
@@ -1189,9 +1189,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     if (ex.length > 1) h += `<div style="font-size:12.5px;color:var(--mute)">${ex.length} devices: ${esc(ex.join(", "))}. Details below are for ${esc(first)}; the others are the same design.</div>`;
     const I = INSTR_DATA[first], V = CV_DATA[first], M = MEL[first];
     // the same tag's rows from each list, one after the other
-    if (I) h += `<h4>Instrument list</h4>` + inTable(I);
-    if (V) h += `<h4>Control valve list</h4>` + cvTable(V);
-    if (M) h += `<h4>Mechanical equipment list</h4>` + melTable(M);
+    if (I || V || M) h += recTable([[I, IN_ROWS], [V, CV_ROWS], [M, MEL_ROWS]], [first, V && V.tag, M && M.n], V ? cvSpec(V) : [], "dev");
     if (!I && !V && !M) h += `<div style="margin-top:6px">${esc(first)}: ${NS_TXT} in the instrument, valve or equipment lists supplied.</div>`;
     return h;
   }
@@ -1260,7 +1258,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     fillCvSpec($("iBody"));
     $("iBody").querySelectorAll("a[data-cv]").forEach(a => a.onclick = e => { e.preventDefault(); const c = CV_DATA[a.dataset.cv]; if (!c) return;
       const back = lastPanel; $("iKind").textContent = "Control valve"; $("iName").textContent = c.loc || c.tag; $("iTag").textContent = c.tag;
-      $("iBody").innerHTML = `<div class="symm">${feSvg("valve")}<div><b>Control valve list entry</b></div></div>` + cvTable(c, INS_BY_TAG[a.dataset.cv] ? `<h4>Instrument list</h4>` + inTable(INS_BY_TAG[a.dataset.cv]) : "") + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;
+      $("iBody").innerHTML = `<div class="symm">${feSvg("valve")}<div><b>Control valve list entry</b></div></div>` + cvTable(c, INS_BY_TAG[a.dataset.cv], [c.loc]) + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;
       $("cvBack").onclick = () => back && back(); fillCvSpec($("iBody")); });
   }
   function openInfo(){ $("info").classList.add("on"); }
