@@ -3,7 +3,7 @@ Run after the sources, spec and drawings builders: python3 tools/build_offline.p
 Groups: the pipe and valve spec, the P&IDs, the PFD sheets, and one group per source document (its tables for the
 viewer plus its Excel copy). The app itself (lists, PFD, flashcards) is always kept offline by sw.js and is not listed.
 """
-import glob, json, os
+import glob, hashlib, json, os
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 rel = lambda p: os.path.relpath(p, ROOT).replace(os.sep, "/")
 size = lambda fs: sum(os.path.getsize(os.path.join(ROOT, f)) for f in fs)
@@ -25,6 +25,9 @@ for k, d in six.items():
     add("src-" + k, r.get("full") or k, f"{r.get('number', '')} Rev {r.get('rev', '')}: tables to view offline and the Excel copy".strip(), files)
 import re
 cache = re.search(r'const DOCS = "([^"]+)"', open(os.path.join(ROOT, "sw.js")).read()).group(1)
-json.dump({"cache": cache, "groups": groups, "total": sum(g["size"] for g in groups)}, open(os.path.join(ROOT, "offline.json"), "w"), indent=1)
+# a short fingerprint of every file, so devices re-download only what has changed
+ver = {f: hashlib.sha1(open(os.path.join(ROOT, f), "rb").read()).hexdigest()[:10] for g in groups for f in g["files"]}
+sz = {f: os.path.getsize(os.path.join(ROOT, f)) for f in ver}
+json.dump({"cache": cache, "ver": ver, "sz": sz, "groups": groups, "total": sum(g["size"] for g in groups)}, open(os.path.join(ROOT, "offline.json"), "w"), indent=1)
 for g in groups: print(f"{g['name'][:40]:40} {len(g['files']):4} files {g['size'] / 1e6:7.1f} MB")
 print(f"{'Everything':40} {sum(len(g['files']) for g in groups):4} files {sum(g['size'] for g in groups) / 1e6:7.1f} MB")

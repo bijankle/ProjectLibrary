@@ -19,13 +19,13 @@ window.PdfView = (() => {
     el.innerHTML = `<div class="sp-top"><b class="sp-tt"></b><div class="sp-nav sp-pages"><button data-a="prev" title="Previous page">◀</button><span class="sp-pg"></span><button data-a="next" title="Next page">▶</button></div>
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="fit" title="Fit">⤢</button><button data-a="in" title="Zoom in">+</button></div>
-      <a class="sp-dl" title="Download this PDF">⬇ PDF</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
+      <button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">⬇ PDF</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
       <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div></div></div><div class="sp-msg"></div>`;
     document.body.appendChild(el);
     V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
       msg: el.querySelector(".sp-msg"), page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
-      fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), close })[b.dataset.a]());
+      fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close })[b.dataset.a]());
     addEventListener("keydown", e => { if (el.hidden) return; if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
     addEventListener("popstate", () => { if (!el.hidden) close(true); });
     // rotating the phone: refit the sheet once the new size has settled (keeps the zoom level)
@@ -60,7 +60,22 @@ window.PdfView = (() => {
     V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
     V.zoom = 1; await go(cur.page);
   }
-  function close(fromPop){ if (!V || V.el.hidden) return; V.el.hidden = true; document.body.classList.remove("sp-on"); if (!fromPop && history.state && history.state.sp) history.back(); }
+  // Rotate: phones can only switch orientation by script in full screen. Landscape is forced (whatever the installed
+  // app's own setting says); tapping again returns to portrait. Closing the viewer puts everything back.
+  let rotated = false;
+  async function rot(){
+    const so = screen.orientation;
+    try {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen({ navigationUI: "hide" });
+      rotated = !rotated; await so.lock(rotated ? "landscape" : "portrait");
+    } catch (e){   // the phone won't turn the screen for us (iPhone, some Androids): turn the drawing instead
+      rotated = false; V.rot = V.rot ? 0 : 90; V.zoom = 1; layout(true); V.body.scrollTo(0, 0);
+      if (cur.find) mark(cur.find);
+      if (V.rot) toast("Drawing turned: hold the phone sideways. Tap ⟲ again to turn it back.");
+    }
+  }
+  async function unrot(){ if (V) V.rot = 0; if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
+  function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; document.body.classList.remove("sp-on"); if (!fromPop && history.state && history.state.sp) history.back(); }
   async function go(n){
     const d = await getDoc(cur.url); n = Math.max(1, Math.min(d.numPages, n)); V.page = n;
     V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
@@ -70,14 +85,14 @@ window.PdfView = (() => {
   // zoom 1 fits the page width (spec) or the whole sheet (drawings)
   function layout(bg){
     if (!V.pg) return;
-    const vp1 = V.pg.getViewport({ scale: 1 }), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16;
+    const vp1 = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16;
     V.base = Math.max(.05, cur.fit === "page" ? Math.min(W / vp1.width, H / vp1.height) : W / vp1.width); const s = V.base * V.zoom;
     V.sheet.style.width = Math.round(vp1.width * s) + "px"; V.sheet.style.height = Math.round(vp1.height * s) + "px";
     if (bg) drawBg(); sharp();
   }
   let bgTask = null, hiTask = null;
   function drawBg(){
-    const dpr = Math.min(2, devicePixelRatio || 1), vp = V.pg.getViewport({ scale: V.base * dpr * (cur.fit === "page" ? 1.5 : 1) });
+    const dpr = Math.min(2, devicePixelRatio || 1), vp = V.pg.getViewport({ rotation: V.rot || 0, scale: V.base * dpr * (cur.fit === "page" ? 1.5 : 1) });
     V.bg.width = vp.width; V.bg.height = vp.height;
     if (bgTask) bgTask.cancel(); bgTask = V.pg.render({ canvasContext: V.bg.getContext("2d"), viewport: vp }); bgTask.promise.catch(() => {});
   }
@@ -89,7 +104,7 @@ window.PdfView = (() => {
     if (w <= 0 || h <= 0) return;
     const c = V.hi; c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
     c.style.left = x0 + "px"; c.style.top = y0 + "px"; c.style.width = w + "px"; c.style.height = h + "px";
-    const vp = V.pg.getViewport({ scale: s * dpr, offsetX: -x0 * dpr, offsetY: -y0 * dpr });
+    const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: s * dpr, offsetX: -x0 * dpr, offsetY: -y0 * dpr });
     if (hiTask) hiTask.cancel(); hiTask = V.pg.render({ canvasContext: c.getContext("2d"), viewport: vp }); hiTask.promise.catch(() => {});
   }
   function zoomTo(z, cx, cy){
@@ -103,7 +118,7 @@ window.PdfView = (() => {
   // ---------- mark a tag on the page ----------
   async function mark(tag){
     const want = norm(tag); if (want.length < 3) return;
-    const tc = await V.pg.getTextContent(), vp = V.pg.getViewport({ scale: 1 }), W = vp.width, H = vp.height;
+    const tc = await V.pg.getTextContent(), vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), W = vp.width, H = vp.height;
     const items = tc.items.filter(t => t.str && t.str.trim()).map(t => { const [a, b, c, d, e, f] = t.transform, h = Math.hypot(c, d) || Math.hypot(a, b);
       const x = e, y = f, w = t.width || h * t.str.length * .5, rot = Math.abs(b) > Math.abs(a);
       // box in PDF units (origin bottom left), vertical text included

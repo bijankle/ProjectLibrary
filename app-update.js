@@ -6,7 +6,8 @@
   U.latest = async () => { try { const t = await (await fetch("sw.js?" + Date.now(), { cache: "no-store" })).text(); return (t.match(/VERSION = "([^"]+)"/) || [])[1] || null; } catch (e) { return null; } };
   U.update = async () => {
     try { const regs = navigator.serviceWorker ? await navigator.serviceWorker.getRegistrations() : []; await Promise.all(regs.map(r => r.update().catch(() => {}))); } catch (e) {}
-    try { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); } catch (e) {}
+    // only the app's own copy (kcgm-v…); downloaded documents (kcgm-docs…) are kept
+    try { const ks = await caches.keys(); await Promise.all(ks.filter(k => /^kcgm-v/.test(k)).map(k => caches.delete(k))); } catch (e) {}
     const q = new URLSearchParams(location.search); q.set("u", Date.now()); location.replace(location.pathname + "?" + q.toString() + location.hash);
   };
   U.mount = (btn, info) => {
