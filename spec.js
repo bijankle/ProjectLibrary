@@ -11,7 +11,9 @@ window.Spec = (() => {
   const pageBtn = (page, label, title) => `<button class="lk-btn sp-open" data-page="${page}" data-title="${esc(title)}">📄 ${esc(label)} <span>page ${page}</span></button>`;
 
   // collapsed section: summary line, content hidden until tapped
-  const sec = (title, body, open) => `<details class="lk-d"${open ? " open" : ""}><summary>${title}</summary>${body}</details>`;
+  // sections become pill filters (Lookup.pills): one shown at a time
+  const sec = (id, label, n, html) => ({ id, label, n, html });
+  const pills = (S, g) => window.Lookup && Lookup.pills ? Lookup.pills(S, g) : S.map(x => x.html).join("");
   const tbl = rows => `<table class="lk-t">${rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</table>`;
   const short = t => { t = String(t || ""); return t.length > 70 ? t.slice(0, 68) + "…" : t; };
 
@@ -26,29 +28,30 @@ window.Spec = (() => {
     let h = `<div class="sp-head"><b>📘 ${esc(cls)}</b> <span>${esc(short(P.title))}</span></div>` +
       (dp && dt ? `<div class="sp-sub">${esc(dp[1])} kPa(g) at ${esc(dt[1])} °C${P.material ? " · " + esc(short(P.material)) : ""}</div>` : "") +
       pageBtn(P.page, "Open the " + cls + " datasheet", "Piping class " + cls);
+    const S = [];
     if (size != null)
-      h += sec(`What to expect at ${esc(unit)}${esc(size)} <span class="sp-c">${fit.length} item${fit.length === 1 ? "" : "s"}</span>`, fit.length
+      S.push(sec("fit", `At ${unit}${size}`, fit.length, fit.length
         ? `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Type / rating</th><th>Ends</th><th>Standard</th><th>Material</th></tr>` +
           fit.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.dim)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`
-        : `<div class="lk-ns">No component row in ${esc(cls)} covers ${esc(unit)}${esc(size)}: check the datasheet (the size may be non preferred).</div>`);
+        : `<div class="lk-ns">No component row in ${esc(cls)} covers ${esc(unit)}${esc(size)}: check the datasheet (the size may be non preferred).</div>`));
     const sv = service ? IX.services.filter(r => r.code === service && r.sys === cls) : [];
-    sv.forEach(r => {
+    sv.forEach((r, k) => {
       const vs = String(r.valves || "").split(/[,\s]+/).filter(v => /^V[A-Z0-9]+$/.test(v));
-      h += sec(`Allowed valves for ${esc(r.service)} <span class="sp-c">${vs.length}</span>`, `<div class="sp-v">${vs.map(v => IX.valve[v]
+      S.push(sec("vl" + k, sv.length > 1 ? "Valves, " + r.service : "Allowed valves", vs.length, `<div class="lk-ns" style="margin:0 0 4px">For ${esc(r.service)}</div><div class="sp-v">${vs.map(v => IX.valve[v]
         ? `<button class="sp-chip sp-open" data-page="${IX.valve[v].page}" data-title="Valve ${esc(v)}" title="${esc(IX.valve[v].title || "")}">${esc(v)}</button>` : `<span class="sp-chip off" title="No datasheet for this code in the spec">${esc(v)}</span>`).join("")}</div>` +
-        tbl([["Fluid design", r.fluid], ["Class rating", r.rating], ["Gasket", r.gasket], ["External finish", r.ext], ["Note", r.notes]].filter(x => x[1] && x[1] !== "N/A")));
+        tbl([["Fluid design", r.fluid], ["Class rating", r.rating], ["Gasket", r.gasket], ["External finish", r.ext], ["Note", r.notes]].filter(x => x[1] && x[1] !== "N/A"))));
     });
     let cd = tbl([["Material", P.material], ["Design code", P.codes], ["Corrosion allowance", P.ca && P.ca + " mm"], ["Pressure test", P.test], ["NDT", P.nde]].filter(r => r[1]));
     if (P.design && P.design.length){
       const cols = Math.max(...P.design.map(r => r.length));
       cd += `<div class="sp-sc"><table class="lk-t sp-dt">${P.design.map(r => `<tr><td>${esc(r[0])}</td>${Array.from({ length: cols - 1 }, (_, i) => `<td>${esc(r[i + 1] || "")}</td>`).join("")}</tr>`).join("")}</table></div>`;
     }
-    h += sec(`Class data (material, design, testing)`, cd);
+    S.push(sec("cd", "Class data", null, cd));
     if (comps.length && fit.length < comps.length)
-      h += sec(`All component rows <span class="sp-c">${comps.length}</span>`, `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Size</th><th>Type / rating</th><th>Ends</th><th>Material</th></tr>` +
-        comps.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.size)}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`);
-    if (P.notes && P.notes.length) h += sec(`Notes <span class="sp-c">${P.notes.length}</span>`, P.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join(""));
-    return h;
+      S.push(sec("all", "All components", comps.length, `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Size</th><th>Type / rating</th><th>Ends</th><th>Material</th></tr>` +
+        comps.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.size)}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`));
+    if (P.notes && P.notes.length) S.push(sec("notes", "Notes", P.notes.length, P.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("")));
+    return h + pills(S, "spec-pipe");
   }
 
   // ---------- valve datasheet ----------
@@ -61,10 +64,10 @@ window.Spec = (() => {
       `<div class="sp-sub">${esc([get("Size Range"), get("End Connections"), get("Actuation"), get("Design Pressure")].filter(Boolean).join(" · "))}</div>`;
     if (size != null && V.lo != null && (size < V.lo || size > V.hi)) h += `<div class="sp-warn">DN${esc(size)} is outside this datasheet's size range (${esc(V.u)}${V.lo} to ${V.hi}).</div>`;
     h += pageBtn(V.page, "Open the " + code + " datasheet", "Valve " + code);
-    h += sec("Datasheet summary (materials, ratings)", tbl((V.rows || []).filter(r => KEY_ROWS.test(r[0]))));
     const rest = (V.rows || []).filter(r => !KEY_ROWS.test(r[0]));
-    if (rest.length || (V.notes || []).length) h += sec("More from the datasheet", tbl(rest) + (V.notes || []).map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join(""));
-    return h;
+    return h + pills([sec("sum", "Materials & ratings", null, tbl((V.rows || []).filter(r => KEY_ROWS.test(r[0])))),
+      rest.length ? sec("more", "More data", rest.length, tbl(rest)) : null,
+      (V.notes || []).length ? sec("vn", "Notes", V.notes.length, V.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("")) : null].filter(Boolean), "spec-valve");
   }
 
   // ---------- which record needs what ----------

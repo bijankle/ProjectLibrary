@@ -77,6 +77,15 @@
     return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><span class="lk-ic1">${ICON[it.t] || "•"}</span><b>${esc(it.key)}</b><span>${esc(it.name)}</span></button>`).join("");
   };
   const PILLN = { mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
+  // property headings for the fields beyond the key facts (first match wins)
+  const FGROUPS = [
+    ["Drawings", /P&ID|PFD|drawing|arrangement|\bGA\b/i],
+    ["Supply", /make|model|vendor|supplier|manufacturer|package|supplied|installed by|supply/i],
+    ["Control & power", /power|voltage|starter|actuat|solenoid|positioner|fail|loop|range|remote io|burnout|limit|feedback|closing|pneumatic|hpu|instrument type|valve type|duty \/ standby/i],
+    ["Process", /pressure|temperature|flow|fluid|\bsg\b|solids|ΔP|duty point|service|p50|p80|medium|test|nde|stress/i],
+    ["Size & material", /size|spec|material|class|code|connection|dimension|length|diameter|insulation|coating|corrosion|bend|standard|qty|quantity|rating|colour/i],
+    ["Notes", /comment|special|note/i],
+    ["Location & status", /area|location|stage|status|brownfield|from|^to$|equipment|sub-system|above|revision|type|description/i]];
   const KEYF = {
     mel: ["Equipment name", "Size / description", "Installed power (kW)", "Status", "Stage", "P&ID"],
     ins: ["Description", "Instrument type", "Equipment number", "Range / units", "Loop number", "P&ID"],
@@ -91,7 +100,7 @@
   const pfLast = {};
   L.pills = (secs, group = "g") => {
     secs = secs.filter(x => x && x.html); if (!secs.length) return "";
-    const act = secs.some(x => x.id === pfLast[group]) ? pfLast[group] : secs[0].id;
+    const last = pfLast[group], act = last && !/^(r-|also$)/.test(last) && secs.some(x => x.id === last) ? last : secs[0].id;   // links to other items are not carried over
     return `<div class="pf" data-g="${esc(group)}"><div class="pf-bar">${secs.map(x => `<button type="button" class="pf-b${x.id === act ? " on" : ""}" data-p="${esc(x.id)}">${esc(x.label)}${x.n != null ? ` <i>${x.n}</i>` : ""}</button>`).join("")}</div>` +
       secs.map(x => `<div class="pf-sec" data-p="${esc(x.id)}"${x.id === act ? "" : " hidden"}>${x.html}</div>`).join("") + `</div>`;
   };
@@ -116,10 +125,12 @@
       const top = key.map(n => f.indexOf(n)).filter(i => i > 0 && it.r[i]);
       const rest = f.map((n, i) => i).filter(i => i > 0 && it.r[i] && !top.includes(i));
       const empty = f.filter((n, i) => !it.r[i]);
-      secs.push({ id: "det", label: "Details", html: `<table class="lk-t">` + top.map(row).join("") + `</table>` });
+      secs.push({ id: "det", label: "Key facts", html: `<table class="lk-t">` + top.map(row).join("") + `</table>` +
+        (empty.length ? `<div class="lk-ns">${empty.length} field${empty.length > 1 ? "s" : ""} blank in the list: ${esc(empty.join(", "))}.</div>` : "") });
+      // every other field, sorted under property headings, each heading a pill
+      const grp = {}; rest.forEach(i => { const g = FGROUPS.find(([, re]) => re.test(f[i])); (grp[g ? g[0] : "Other"] = grp[g ? g[0] : "Other"] || []).push(i); });
+      [...FGROUPS.map(g => g[0]), "Other"].filter(g => grp[g]).forEach(g => secs.push({ id: "g-" + g, label: g, n: grp[g].length, html: `<table class="lk-t">${grp[g].map(row).join("")}</table>` }));
       if (window.Spec && Spec.wanted(it)) secs.push({ id: "spec", label: it.t === "line" ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
-      if (rest.length || empty.length) secs.push({ id: "all", label: "All fields", n: rest.length + top.length, html: `<table class="lk-t">${[...top, ...rest].sort((a, b) => a - b).map(row).join("")}</table>` +
-        (empty.length ? `<div class="lk-ns">Not specified in the list: ${esc(empty.join(", "))}.</div>` : "") });
     }
     const same = (byKey.get(it.k) || []).filter(x => x !== it);
     if (same.length) secs.push({ id: "also", label: "Also in", n: same.length, html: same.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${ICON[x.t] || ""} ${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("") });

@@ -1022,14 +1022,26 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   const MEL_ROWS = [["n", "Name"], ["sz", "Size / description"], ["nd", "Nominal duty point"], ["dd", "Design duty point"], ["kw", "Installed power (kW)"], ["v", "Voltage"],
     ["stt", "Starter type"], ["ds", "Duty / standby"], ["ep", "Emergency power"], ["moc", "Material of construction"], ["ven", "Vendor"], ["mm", "Make / model"], ["pkg", "Package"],
     ["sta", "Status"], ["stg", "Stage"], ["bg", "Brownfield / greenfield"], ["sup", "Supply type"], ["pfd", "PFD"], ["pid", "P&ID"], ["ref", "Reference drawing"]];
-  const melTable = r => "<table>" + MEL_ROWS.map(([k, l]) => `<tr><td>${l}</td><td>${val(r[k])}</td></tr>`).join("") + "</table>";
+  // a record's fields under property headings, each heading a pill (Lookup.pills); blank fields listed once at the end
+  const LBL = {}; const groupTable = (r, G, g, rowsDef) => { rowsDef.forEach(([k, l]) => LBL[g + k] = l);
+    const blank = rowsDef.filter(([k]) => r[k] == null || r[k] === "").map(([, l]) => l);
+    return Lookup.pills(G.map(([id, label, keys]) => { const ks = keys.filter(k => r[k] != null && r[k] !== "");
+      return { id, label, html: ks.length ? "<table>" + ks.map(k => `<tr><td>${LBL[g + k]}</td><td>${esc(r[k])}</td></tr>`).join("") + "</table>" : "" }; }), g) +
+      (blank.length ? `<div style="font-size:11.5px;color:var(--mute);margin:4px 0 6px">Blank in the list: ${esc(blank.join(", "))}.</div>` : ""); };
+  const MEL_G = [["duty", "Duty", ["n", "sz", "nd", "dd", "ds"]], ["elec", "Electrical", ["kw", "v", "stt", "ep"]], ["sup", "Supply", ["moc", "ven", "mm", "pkg", "sup"]],
+    ["st", "Status", ["sta", "stg", "bg"]], ["dwg", "Drawings", ["pfd", "pid", "ref"]]];
+  const melTable = r => groupTable(r, MEL_G, "mel", MEL_ROWS);
   const CV_ROWS = [["ty", "Valve type"], ["code", "Valve code"], ["sz", "Valve size (mm)"], ["ls", "Line size (mm)"], ["cl", "Class"], ["fl", "Service fluid"], ["qmin", "Flow min (m³/h)"], ["qmax", "Flow max (m³/h)"],
     ["pin", "Inlet pressure (kPag)"], ["p80", "Solids P80 (µm)"], ["cw", "% solids (w/w)"], ["sg", "Fluid SG"], ["fail", "Fail position (air/power loss)"], ["act", "Actuator"], ["pos", "Positioner"],
     ["mfr", "Valve make"], ["mod", "Valve model"], ["am", "Actuator model"], ["loc", "Location"], ["pid", "P&ID"], ["stg", "Stage"]];
-  const cvTable = c => "<table>" + CV_ROWS.map(([k, l]) => `<tr><td>${l}</td><td>${val(c[k])}</td></tr>`).join("") + "</table>";
+  const CV_G = [["vlv", "Valve", ["ty", "code", "sz", "ls", "cl"]], ["proc", "Process", ["fl", "qmin", "qmax", "pin", "p80", "cw", "sg"]], ["act", "Actuation", ["fail", "act", "pos", "am"]],
+    ["sup", "Supply", ["mfr", "mod"]], ["where", "Where", ["loc", "pid", "stg"]]];
+  const cvTable = c => groupTable(c, CV_G, "cv", CV_ROWS);
   const IN_ROWS = [["ty", "Instrument type"], ["desc", "Description"], ["eq", "On equipment"], ["loc", "Location"], ["fl", "Fluid"], ["u", "Range / units"], ["mk", "Make"], ["md", "Model"], ["pid", "P&ID"]];
-  const inTable = r => "<table>" + IN_ROWS.map(([k, l]) => `<tr><td>${l}</td><td>${val(r[k])}</td></tr>`).join("") + "</table>";
+  const IN_G = [["ins", "Instrument", ["ty", "desc", "u"]], ["where", "Where", ["eq", "loc", "fl", "pid"]], ["sup", "Supply", ["mk", "md"]]];
+  const inTable = r => groupTable(r, IN_G, "in", IN_ROWS);
 
+  const melOne = r => melTable(r) + `<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div>`;
   function showNode(n){
     $("iKind").innerHTML = (n.area ? "Equipment · Area " + esc(n.area) : "Equipment") + stageNote(n.st);
     $("iName").textContent = n.n; $("iTag").textContent = n.tag || "";
@@ -1040,7 +1052,6 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     let ov = (pdcCase ? `<div class="casenote">Case selected: ${esc(PDC_CASES[pdcCase])}. The summary rows below are nominal figures; open a stream for this case's values.</div>` : "") + `<div>${esc(n.s)}</div>` + table(n.d) + (n.c ? `<h4>Control</h4><div>${esc(n.c)}</div>` : "");
     if (loops.length) ov += `<h4>Control loops acting on it</h4><div class="conn">${loops.map(loopLink).join("")}</div>`;
     if (ilks.length) ov += `<h4>Interlocks & permissives</h4><div class="conn">${ilks.map(ilkLink).join("")}</div>`;
-    if (n.hear) ov += `<details><summary>What you'll hear</summary><div style="padding-bottom:8px">${esc(n.hear)}</div></details>`;
     const eq = E ? E.eq : [], insAll = E ? E.ins : [], inst = insAll.filter(i => !i.cv), vlv = insAll.filter(i => i.cv), more = E && E.insN > insAll.length;
     const insRow = i => `<tr><td>${i.cv ? `<a data-cv="${esc(i.tag)}" style="color:var(--accent);cursor:pointer">${esc(i.tag)}</a>` : `<a data-find="${esc(i.tag)}" style="cursor:pointer">${esc(i.tag)}</a>`}</td><td>${esc(i.ty)}${i.loc ? ` <span class="m">· ${esc(i.loc)}</span>` : ""}${i.u ? ` <span class="m">· ${esc(i.u)}</span>` : ""}${i.eq && eq.length > 1 ? ` <span class="m">· ${esc(i.eq)}</span>` : ""}</td></tr>`;
     const moreNote = more ? `<div style="font-size:12px;color:var(--mute);padding:6px 0">First ${insAll.length} of ${E.insN} instruments and valves on this equipment; search an equipment number for the rest.</div>` : "";
@@ -1049,12 +1060,13 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     const eqTags = eq.map(r => r.tag);
     const secs = [
       { id: "ov", label: "Overview", html: ov },
-      { id: "eq", label: "Equipment", n: eq.length, html: eq.length ? eq.map(r => `<details><summary>${esc(r.n || r.tag)}<span>${esc(r.tag)}</span></summary>${melTable(r)}<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div></details>`).join("")
+      { id: "eq", label: "Equipment", n: eq.length, html: eq.length ? (eq.length === 1 ? melOne(eq[0]) : Lookup.pills(eq.map(r => ({ id: r.tag, label: r.tag, html: `<div style="font-weight:700;margin:2px 0 4px">${esc(r.n || r.tag)}</div>` + melOne(r) })), "node-eq"))
           : `<div>${NS_TXT}: no MEL item for this block (off site or a symbolic block).</div>` },
       { id: "ins", label: "Instruments", n: inst.length + (more ? "+" : ""), html: inst.length ? `<table class="it">${inst.map(insRow).join("")}</table>` + moreNote : `<div>${NS_TXT} in the instrument list for these equipment numbers.</div>` },
       { id: "vlv", label: "Valves", n: vlv.length + (more ? "+" : ""), html: vlv.length ? `<table class="it">${vlv.map(insRow).join("")}</table><div style="font-size:12px;color:var(--mute);padding:6px 0">Control and actuated valves; tap a tag for its control valve list data.</div>` + moreNote : `<div>${NS_TXT}: no control valves listed on these equipment numbers.</div>` },
       { id: "lin", label: "Lines", n: ins.length + outs.length, html: (ins.length ? `<h4>In (PFD)</h4><div class="conn">${ins.map(link).join("")}</div>` : "") + (outs.length ? `<h4>Out (PFD)</h4><div class="conn">${outs.map(link).join("")}</div>` : "") +
           (eqTags.length ? `<h4>Line list lines to or from this equipment</h4><div id="nLines" class="conn"><span style="color:var(--mute)">Loading the line list…</span></div>` : "") || `<div>${NS_TXT}</div>` },
+      { id: "hear", label: "What you'll hear", html: n.hear ? `<div>${esc(n.hear)}</div>` : "" },
       { id: "dwg", label: "Drawings", n: dw.size, html: dw.size ? `<div class="conn">${[...dw].sort().map(d => `<a data-dwg="${esc(d)}">📐 ${esc(d)}</a>`).join("")}</div>` : `<div>${NS_TXT}: no drawing numbers in the MEL or instrument rows.</div>` } ];
     let h = Lookup.pills(secs, "node");
     h += `<div class="src">Sources: node description <code>pfd-data.js</code>; MEL 2000-F00-LST-ME-10001 Rev 0 and instrument list rows in <code>pfd-equip.js</code> (built by <code>tools/build_equip.py</code>).</div>`;
@@ -1115,19 +1127,22 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     const { C, calc } = streamCalc(D);
     const rows = SROWS.filter(([k]) => !(k === "p80mm" && C.p80mm.every(v => v == null)) && !(k === "p80" && C.p80.every(v => v == null) && C.p80mm.some(v => v != null)));
     if (pdcCase) h += `<div class="casenote">Highlighted column: ${esc(PDC_CASES[pdcCase])}.</div>`;
-    h += `<h4>Stream properties by PDC case</h4><table class="sc"><tr><th>Property (unit)</th>${CASE_SHORT.map((c, i) => `<th${i === pdcCase ? ' class="cur"' : ""}>${c}</th>`).join("")}</tr>` +
+    const S = []; let props = `<table class="sc"><tr><th>Property (unit)</th>${CASE_SHORT.map((c, i) => `<th${i === pdcCase ? ' class="cur"' : ""}>${c}</th>`).join("")}</tr>` +
       rows.map(([k, l, u]) => caseRow(l, u, C[k], calc[k])).join("") + "</table>";
+    S.push({ id: "props", label: "Properties", html: props });
     const anyCalc = Object.values(calc).some(c => c.some(Boolean));
-    if (anyCalc) h += `<details><summary>How the blue figures are calculated</summary><div style="font-size:11.5px;color:var(--mute);line-height:1.45;padding-bottom:8px"><span style="color:#8fb8ff;font-style:italic">Blue italic</span> = calculated here from PDC values. <sup>c</sup> water = solids × (100 ÷ %solids − 1); slurry = solids ÷ %solids; slurry SG from 1/SG = x/SG<sub>s</sub> + (1 − x)/SG<sub>l</sub>; m³/h = slurry t/h ÷ slurry SG. <sup>a</sup> liquid assumed to be process water SG 1.07 (PDC 2.9).</div></details>`;
+    let calcH = ""; if (anyCalc) calcH = `<div style="font-size:11.5px;color:var(--mute);line-height:1.45;padding-bottom:8px"><span style="color:#8fb8ff;font-style:italic">Blue italic</span> = calculated here from PDC values. <sup>c</sup> water = solids × (100 ÷ %solids − 1); slurry = solids ÷ %solids; slurry SG from 1/SG = x/SG<sub>s</sub> + (1 − x)/SG<sub>l</sub>; m³/h = slurry t/h ÷ slurry SG. <sup>a</sup> liquid assumed to be process water SG 1.07 (PDC 2.9).</div>`;
     if (D.x && D.x.length){
-      h += `<details><summary>Other PDC data for this stream<span>${D.x.length}</span></summary><table class="sc"><tr><th>Item (unit)</th>${CASE_SHORT.map((c, i) => `<th${i === pdcCase ? ' class="cur"' : ""}>${c}</th>`).join("")}</tr>` +
-        D.x.map(([l, u, v]) => Array.isArray(v) ? caseRow(l, u, v) : `<tr><td>${esc(l)}${u ? " (" + esc(u) + ")" : ""}</td><td colspan="4" style="text-align:center">${esc(typeof v === "number" ? fmt(v) : v)}</td></tr>`).join("") + "</table></details>";
+      S.push({ id: "more", label: "Other PDC data", n: D.x.length, html: `<table class="sc"><tr><th>Item (unit)</th>${CASE_SHORT.map((c, i) => `<th${i === pdcCase ? ' class="cur"' : ""}>${c}</th>`).join("")}</tr>` +
+        D.x.map(([l, u, v]) => Array.isArray(v) ? caseRow(l, u, v) : `<tr><td>${esc(l)}${u ? " (" + esc(u) + ")" : ""}</td><td colspan="4" style="text-align:center">${esc(typeof v === "number" ? fmt(v) : v)}</td></tr>`).join("") + "</table>" });
     }
-    if (D.n) h += `<div style="margin-top:8px">${esc(D.n)}</div>`;
-    if (s.i && s.i.length) h += `<h4>Operating notes</h4>` + table(s.i);
+    const notes = (D.n ? `<div style="margin-top:4px">${esc(D.n)}</div>` : "") + (s.i && s.i.length ? table(s.i) : "");
+    S.push({ id: "notes", label: "Operating notes", html: notes });
     const loops = LOOPS.filter(L => (L.rel || []).includes(s.id)), ilks = INTERLOCKS.filter(I => (I.rel || []).includes(s.id));
-    if (loops.length) h += `<h4>Control loops on this line</h4><div class="conn">${loops.map(loopLink).join("")}</div>`;
-    if (ilks.length) h += `<h4>Interlocks on this line</h4><div class="conn">${ilks.map(ilkLink).join("")}</div>`;
+    S.push({ id: "ctl", label: "Control", n: loops.length + ilks.length, html: (loops.length ? `<h4>Control loops on this line</h4><div class="conn">${loops.map(loopLink).join("")}</div>` : "") +
+      (ilks.length ? `<h4>Interlocks on this line</h4><div class="conn">${ilks.map(ilkLink).join("")}</div>` : "") });
+    S.push({ id: "calc", label: "How calculated", html: calcH });
+    h += Lookup.pills(S, "stream");
     h += `<div class="src">Source: Process Design Criteria Stage 2, 2000-F00-DCR-PR-10002 Rev 4, section ${esc(D.sec || "not specified")}. Data lives in <code>pfd-streams.js</code> under key <code>${esc(s.id)}</code>; routing in <code>pfd-data.js</code>.</div>`;
     $("iBody").innerHTML = h;
     drawSym($("symSlot").querySelector("svg"), T, 22, 15, 6);
@@ -1167,9 +1182,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     let h = ""; const first = ex[0];
     if (ex.length > 1) h += `<div style="font-size:12.5px;color:var(--mute)">${ex.length} devices: ${esc(ex.join(", "))}. Details below are for ${esc(first)}; the others are the same design.</div>`;
     const I = INSTR_DATA[first], V = CV_DATA[first], M = MEL[first];
-    if (I) h += `<h4>Instrument list: ${esc(first)}</h4>` + inTable(I);
-    if (V) h += `<h4>Control valve list: ${esc(V.tag)}</h4>` + cvTable(V);
-    if (M) h += `<h4>Mechanical equipment list: ${esc(first)}</h4>` + melTable(M);
+    h += Lookup.pills([I && { id: "in", label: "Instrument list", html: inTable(I) }, V && { id: "cv", label: "Control valve list", html: cvTable(V) }, M && { id: "mel", label: "MEL", html: melTable(M) }], "dev");
     if (!I && !V && !M) h += `<div style="margin-top:6px">${esc(first)}: ${NS_TXT} in the instrument, valve or equipment lists supplied.</div>`;
     return h;
   }
@@ -1180,10 +1193,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     h += `<table><tr><td>Measures (PV)</td><td>${esc(L.pv)}</td></tr><tr><td>Moves (output)</td><td>${esc(L.mv)}</td></tr>` +
       `<tr><td>Measurement tag(s)</td><td>${val((L.m || []).join(", "))}</td></tr><tr><td>Controller tag</td><td>${val(L.c)}</td></tr>` +
       L.a.map((a, i) => `<tr><td>Final element ${L.a.length > 1 ? i + 1 : ""}</td><td>${esc(FE_MEAN[a.k] ? FE_MEAN[a.k][0] : a.k)}: ${esc(a.l)}<br><b style="font-family:ui-monospace,monospace">${val((L.f || [])[i])}</b></td></tr>`).join("") + "</table>";
-    h += `<div>${esc(L.txt)}</div>` + (L.note ? `<div style="margin-top:8px;color:var(--mute);font-size:13px">${esc(L.note)}</div>` : "");
     const rn = (L.rel || []).filter(id => byId[id]), rs = (L.rel || []).map(id => STREAMS.find(s => s.id === id)).filter(Boolean);
-    if (rn.length) h += `<h4>Equipment it measures or acts on</h4><div class="conn">${rn.map(id => `<a data-n="${id}">${esc(byId[id].n)}${byId[id].tag ? " (" + esc(byId[id].tag) + ")" : ""}</a>`).join("")}</div>`;
-    if (rs.length) h += `<h4>Process lines</h4><div class="conn">${rs.map(link).join("")}</div>`;
+    h += Lookup.pills([{ id: "how", label: "How it works", html: `<div>${esc(L.txt)}</div>` + (L.note ? `<div style="margin-top:8px;color:var(--mute);font-size:13px">${esc(L.note)}</div>` : "") },
+      { id: "eq", label: "Equipment", n: rn.length, html: rn.length ? `<div class="conn">${rn.map(id => `<a data-n="${id}">${esc(byId[id].n)}${byId[id].tag ? " (" + esc(byId[id].tag) + ")" : ""}</a>`).join("")}</div>` : "" },
+      { id: "lin", label: "Lines", n: rs.length, html: rs.length ? `<div class="conn">${rs.map(link).join("")}</div>` : "" }], "loop");
     h += `<div style="color:var(--mute);font-size:12px;margin-top:10px">Tags from the Master Instrument List and Control Valve List. A controller tag marked (d) is derived from the loop number, because the instrument list holds field devices only. Click the dot or final element symbol for full device data.</div>`;
     $("iBody").innerHTML = h; bindLinks(); openInfo();
   }
@@ -1222,8 +1235,8 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     let h = `<div class="symm"><svg viewBox="0 0 44 30"><line x1="2" y1="15" x2="42" y2="15" style="stroke:#ff3b30;stroke-width:2.2;stroke-dasharray:10 3 2 3"/><path d="M22 3 L34 15 L22 27 L10 15 Z" style="fill:${P ? "var(--panel)" : "#ff3b30"};stroke:#ff3b30;stroke-width:2"/><text x="22" y="19" text-anchor="middle" style="font-size:11px;font-weight:900;fill:${P ? "#ff3b30" : "#fff"}">${I.k}</text></svg><div><b>${P ? "Hollow diamond with P = start permissive" : "Filled diamond with I = interlock"}</b>. Red dash dot line runs from cause to effect (arrow end).</div></div>`;
     h += `<table><tr><td>Cause</td><td>${esc(I.cause)}</td></tr><tr><td>Effect</td><td>${esc(I.eff)}</td></tr><tr><td>Type</td><td>${esc(ty)}</td></tr><tr><td>Devices</td><td>${val(I.tags)}</td></tr></table><div>${esc(I.txt)}</div>`;
     const rn = (I.rel || []).filter(id => byId[id]), rs = (I.rel || []).map(id => STREAMS.find(s => s.id === id)).filter(Boolean);
-    if (rn.length) h += `<h4>Equipment involved</h4><div class="conn">${rn.map(id => `<a data-n="${id}">${esc(byId[id].n)}</a>`).join("")}</div>`;
-    if (rs.length) h += `<h4>Process lines</h4><div class="conn">${rs.map(link).join("")}</div>`;
+    h += Lookup.pills([{ id: "eq", label: "Equipment", n: rn.length, html: rn.length ? `<div class="conn">${rn.map(id => `<a data-n="${id}">${esc(byId[id].n)}</a>`).join("")}</div>` : "" },
+      { id: "lin", label: "Lines", n: rs.length, html: rs.length ? `<div class="conn">${rs.map(link).join("")}</div>` : "" }], "ilk");
     h += `<div style="color:var(--mute);font-size:12.5px;margin-top:10px">DCS interlocks have an adjustable time delay so instrument spikes don't trip the plant, and trips record a 'first out'.</div>`;
     $("iBody").innerHTML = h; bindLinks(); openInfo();
   }
