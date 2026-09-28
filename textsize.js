@@ -7,16 +7,9 @@ window.TextSize = (() => {
   const KEY = "kcgm_text_size", MIN = .7, MAX = 1.6;
   const phone = matchMedia("(pointer: coarse)").matches;
   const get = () => { try { const v = parseFloat(localStorage.getItem(KEY)); return v >= MIN && v <= MAX ? v : 1; } catch (e) { return 1; } };
-  let meta = document.querySelector('meta[name="viewport"]');
-  const base = meta ? meta.getAttribute("content") : "width=device-width, initial-scale=1";
+  // the page itself sets the size before it first draws (kcgmViewport in the page head); this re-applies on a change
   function apply(v){
-    if (phone){
-      if (!meta){ meta = document.createElement("meta"); meta.name = "viewport"; document.head.appendChild(meta); }
-      // the screen's width in CSS pixels divided by the size: a narrower page, drawn full width, is everything bigger
-      const land = screen.orientation ? /landscape/.test(screen.orientation.type) : innerWidth > innerHeight;
-      const w = land ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
-      meta.setAttribute("content", v === 1 ? base : `width=${Math.round(w / v)}, viewport-fit=cover, user-scalable=no`);
-    }
+    if (phone && window.kcgmViewport) kcgmViewport(v);
     setTimeout(() => dispatchEvent(new Event("resize")), 60);
   }
   const css = `.ts{display:flex;align-items:center;gap:10px;margin:6px 0 4px}
@@ -25,7 +18,6 @@ window.TextSize = (() => {
 .ts span{font-size:13px;color:var(--mute)}.ts span.big{font-size:19px}
 .ts-r{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:4px 9px;font:inherit;font-size:12px;cursor:pointer}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  apply(get());
   addEventListener("storage", e => { if (e.key === KEY) apply(get()); });   // changed in the other page
   if (screen.orientation) screen.orientation.addEventListener("change", () => apply(get()));
   function mount(el){

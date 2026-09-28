@@ -24,7 +24,8 @@ window.Tabs = (() => {
 .tb-t.on{color:var(--ink);border-bottom-color:var(--gold,var(--accent))}
 .tb-i{font-size:15px}
 .tb-s{flex:none;width:42px;border:0;background:none;color:var(--mute);font-size:19px;cursor:pointer}
-@media (max-width:360px){.tb-i{display:none}}`;
+.tb-t{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:380px){.tb-t{flex-direction:column;gap:0;font-size:11.5px;padding-top:4px;line-height:1.1}.tb-i{font-size:14px}.tb-s{width:34px}}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   return { mount, set };
 })();

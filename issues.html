@@ -2,7 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+<script>
+// App size (textsize.js) set before the first paint, so every page opens at the chosen size: on a phone the page is
+// laid out narrower (screen width / size) and the zoom is locked there, like Ctrl + scroll in a browser.
+window.kcgmViewport = function(z){ try {
+  var m = document.querySelector('meta[name="viewport"]'); if (!m || !matchMedia("(pointer: coarse)").matches) return;
+  if (!(z >= .7 && z <= 1.6) || z === 1){ m.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"); return; }
+  var land = screen.orientation ? /landscape/.test(screen.orientation.type) : innerWidth > innerHeight, w = land ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+  m.setAttribute("content", "width=" + Math.round(w / z) + ", initial-scale=" + z + ", minimum-scale=" + z + ", maximum-scale=" + z + ", viewport-fit=cover, user-scalable=no");
+} catch (e) {} };
+try { kcgmViewport(parseFloat(localStorage.getItem("kcgm_text_size"))); } catch (e) {}
+</script>
 <title>KCGM Checks</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
