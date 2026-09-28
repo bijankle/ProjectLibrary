@@ -252,6 +252,8 @@ body.searching #homeMain{display:none}
   </div>
   <p class="sub" id="ver" style="font-size:13px;margin:0 0 10px"></p>
   <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">⛶ Full screen</button>
+  <h2>Text size</h2>
+  <div id="tsRoot"></div>
   <h2>Offline downloads</h2>
   <div id="offRoot"></div>
   <h2>Free Google AI key</h2>
@@ -292,6 +294,7 @@ body.searching #homeMain{display:none}
 <script src="offline.js"></script>
 <script src="lookup.js"></script>
 <script src="browse.js"></script>
+<script src="textsize.js"></script>
 <script src="tabs.js"></script>
 <script src="app-update.js"></script>
 <script>
@@ -316,6 +319,7 @@ body.searching #homeMain{display:none}
     document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
     $("deck").classList.toggle("on", id === "deck"); window.scrollTo(0, 0);
     if (id === "settings" && window.Offline) Offline.mount($("offRoot"));
+    if (id === "home" && window.Browse) requestAnimationFrame(() => Browse.fit());   // e.g. after the text size changed
   };
 
   // ---------- HOME ----------
@@ -583,7 +587,7 @@ body.searching #homeMain{display:none}
     $("modelWrap").style.display = AI.ready() && AI.model() ? "block" : "none";
     if (AI.model()) $("modelSel").innerHTML = `<option>${AI.model()}</option>`;
   }
-  const openSettings = () => { renderSettings(); show("settings"); };
+  const openSettings = () => { renderSettings(); TextSize.mount($("tsRoot")); show("settings"); };
   AppUpdate.mount($("updBtn"), $("ver"));
   $("setBack").onclick = () => { renderHome(); show(cur); };
   $("keyTest").onclick = async () => {

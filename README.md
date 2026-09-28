@@ -8,6 +8,10 @@ Open it at https://bijankle.github.io/KCGMhomework/ and use Chrome's "Add to Hom
 To add cards, edit `cards.js` (each card has a question `q`, a short answer `a` and the detail `e`),
 then bump `VERSION` in `sw.js` so phones pick up the change.
 
+## Text size
+
+Settings (phone and Smart PFD) has a Text size slider, 80% to 150% in 5% steps, with Reset. One value for the whole app, kept on the device and applied straight away on both pages (`textsize.js`). It scales the reading areas (pages, record details, flashcards, the info panel and sidebar); the tab strip and the diagram / map themselves keep their size so taps and positions stay exact.
+
 ## Tabs
 
 A tab strip sits across the top of every screen, on the phone and the computer: 🔎 Assets (Browse and search), 🃏 Quiz, 〰️ PFD, 🗺️ Layout, and ⚙ Settings at the right. Assets and Quiz live in `index.html` (`#assets`, `#quiz`), PFD and Layout in `pfd.html` (`#pfd`, `#layout`); switching page keeps each page's own state (Browse pick, quiz filters). A quiz left half way resumes when you come back to the Quiz tab. `tabs.js` draws the strip; both pages offset their fixed layout by its height (`--tb`).

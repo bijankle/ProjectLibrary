@@ -376,6 +376,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <script src="pid.js"></script>
 <script src="offline.js"></script>
 <script src="lookup.js"></script>
+<script src="textsize.js"></script>
 <script src="tabs.js"></script>
 <script src="app-update.js"></script>
 <script src="pfd-layout-data.js"></script>
@@ -861,7 +862,8 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     lastPanel = showSettings; $("iKind").textContent = "Settings"; $("iName").textContent = "App settings"; $("iTag").textContent = "";
     $("iBody").innerHTML = `<div class="set-row"><button class="hbtn" id="updBtn2">⟳ Update app</button><a class="hbtn" href="issues.html">🐞 Checks</a><a class="hbtn" href="issues.html#sources">📄 Sources</a>
         <a class="hbtn" href="index.html?cards">🃏 Flashcards</a><button class="hbtn" id="thBtn2">◐ Light / dark</button></div><div class="ver" id="ver2"></div>
-      <h4>Offline downloads</h4><div id="offRoot"></div>`;
+      <h4>Text size</h4><div id="tsRoot2"></div><h4>Offline downloads</h4><div id="offRoot"></div>`;
+    TextSize.mount($("tsRoot2"));
     AppUpdate.mount($("updBtn2"), $("ver2")); $("thBtn2").onclick = () => $("tTheme").click();
     Offline.mount($("offRoot")); openInfo(); if (matchMedia("(max-width: 900px)").matches) document.body.classList.remove("menu");
   }

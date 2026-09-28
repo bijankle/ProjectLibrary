@@ -96,7 +96,8 @@ window.Browse = (() => {
   }
   const after = () => { shownN = 60; save(); draw(); };
   // the two panes fill the screen below the search bar and scroll on their own
-  function fit(){ if (!el || !el.offsetParent) return; el.style.height = Math.max(260, window.innerHeight - el.getBoundingClientRect().top - window.scrollY - 6) + "px"; }
+  function fit(){ if (!el || !el.offsetParent) return; const z = window.TextSize ? TextSize.z() : 1;   // inside a zoomed page, CSS pixels are scaled by the text size
+    el.style.height = Math.max(260, (window.innerHeight - el.getBoundingClientRect().top - window.scrollY - 6) / z) + "px"; }
   window.addEventListener("resize", fit);
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(path)); } catch (e) {} };
   function mount(root, box){
@@ -130,5 +131,5 @@ window.Browse = (() => {
 .bw-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-size:12px;font-weight:700}
 .bw-note{font-size:12px;color:var(--mute);line-height:1.4}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  return { mount, restore };
+  return { mount, restore, fit: () => fit() };
 })();
