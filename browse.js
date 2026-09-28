@@ -71,21 +71,30 @@ window.Browse = (() => {
   const order = (f, c) => Object.keys(c).sort((x, y) => (x === "?") - (y === "?") || x.localeCompare(y, undefined, { numeric: true }));
 
   let el = null, lk = null, resY = 0;
+  // a short form of a name for the option chips: the first one or two words, about 14 characters ("Pump Process")
+  const SKIP = /^(and|of|the|for|with|to|in|on|at)$/i;
+  const shortName = n => { const w = String(n || "").replace(/\(.*?\)/g, " ").replace(/[·&/,;:]+|\s[-–]\s/g, " ").split(/\s+/).filter(x => x && !SKIP.test(x));
+    if (!w.length) return ""; let s = w[0];
+    if (w[1]) s += (s + " " + w[1]).length <= 14 ? " " + w[1] : " " + w[1].slice(0, Math.max(3, 12 - s.length)) + ".";   // "Analysis Elem."
+    return s === s.toUpperCase() && /[A-Z]{3}/.test(s) ? s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : s; };
+  const AZ_MIN = 16;   // lists at least this long get the A–Z strip
   function draw(){
     const list = rows.filter(match), st = nextStep();
     const crumbs = path.map((p, i) => { const nm = p.f === "t" || p.v == null || p.v === "?" ? "" : nameOf(p.f, t(), p.v);
       const txt = p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : (p.v === "?" ? "Other" : p.v) + (nm ? " - " + nm : "");
       return `<button class="bw-cr" data-i="${i}" title="Remove this and the steps after it"><span>${esc(txt)}${p.n ? ` <i>(${p.n.toLocaleString()})</i>` : ""}</span><b>×</b></button>`; }).join("");
-    let opts = "";
+    let opts = "", az = null;
     if (st){
       const c = {}; for (const r of list) c[r[st[0]]] = (c[r[st[0]]] || 0) + 1;
       const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => TN[x].localeCompare(TN[y])) : order(st[0], c);
       opts = `<div class="bw-h">${esc(st[1])}${st[0] !== "t" ? `<button class="bw-any">Any</button>` : ""}</div>` +
-        vals.map(v => { const n = st[0] === "t" ? "" : nameOf(st[0], t(), v), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
-          return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}">${esc(label)}</button>`; }).join("");   // just the code: the name and count show once picked
+        vals.map(v => { const n = st[0] === "t" || v === "?" ? "" : shortName(nameOf(st[0], t(), v)), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
+          // code (short name); the full name and the count show on the gold chip once picked
+          return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}">${esc(label)}${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
+      if (st[0] !== "t" && vals.length >= AZ_MIN) az = [...new Set(vals.map(v => azKey(v === "?" ? "Other" : v)))].sort((a, b) => (a === "#") - (b === "#") || a.localeCompare(b));
     } else opts = `<div class="bw-h">All steps set</div><div class="bw-note">Tap × on a step above to change it.</div>`;
     const hits = list.slice(0, shownN).map(r => r.it);
-    el.innerHTML = `<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts">${opts}</div></div>
+    el.innerHTML = `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts">${opts}</div></div></div>
       <div class="bw-r"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
       ${hits.map((it, i) => `<button class="bw-it" data-i="${i}"><b>${Lookup.ICON[it.t] || ""} ${esc(it.key)}</b><span>${esc(Lookup.listName(it))}</span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
@@ -94,7 +103,25 @@ window.Browse = (() => {
     el.querySelectorAll(".bw-cr").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
     el.querySelectorAll(".bw-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i]); });
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
+    if (az) bindAZ();
     fit();
+  }
+  const azKey = s => { const c = String(s).charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
+  // Niagara style A–Z strip: slide a finger down it and the options jump to that letter, with a big letter bubble
+  function bindAZ(){
+    const strip = el.querySelector(".bw-az"), l = el.querySelector(".bw-l"), bub = el.querySelector(".bw-bub"), lw = el.querySelector(".bw-lw");
+    let on = null, down = false;
+    const at = e => { const r = strip.getBoundingClientRect(), k = strip.children, i = Math.max(0, Math.min(k.length - 1, Math.floor((e.clientY - r.top) / r.height * k.length)));
+      const L = k[i].dataset.l, lr = lw.getBoundingClientRect();
+      bub.textContent = L; bub.style.top = Math.max(0, Math.min(lr.height - 56, e.clientY - lr.top - 28)) + "px"; bub.style.display = "grid";
+      if (L === on) return; on = L; [...k].forEach(x => x.classList.toggle("on", x.dataset.l === L));
+      const first = l.querySelector(`.bw-o[data-l="${CSS.escape(L)}"]`);
+      if (first) l.scrollTop += first.getBoundingClientRect().top - l.getBoundingClientRect().top - 4;
+      if (navigator.vibrate) try { navigator.vibrate(4); } catch (x) {} };
+    const end = () => { down = false; bub.style.display = ""; setTimeout(() => { if (!down) [...strip.children].forEach(x => x.classList.remove("on")); on = null; }, 400); };
+    strip.addEventListener("pointerdown", e => { down = true; try { strip.setPointerCapture(e.pointerId); } catch (x) {} at(e); e.preventDefault(); });
+    strip.addEventListener("pointermove", e => { if (down) at(e); });
+    strip.addEventListener("pointerup", end); strip.addEventListener("pointercancel", end);
   }
   const after = () => { shownN = 60; save(); draw(); };
   // the two panes fill the screen below the search bar and scroll on their own
@@ -114,6 +141,12 @@ window.Browse = (() => {
   const restore = () => { fit(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
   const css = `.bw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px;min-height:260px}
 .bw-l,.bw-r{overflow-y:auto;overscroll-behavior:contain;min-height:0;-webkit-overflow-scrolling:touch}
+.bw-lw{position:relative;display:flex;min-height:0;min-width:0}
+.bw-lw .bw-l{flex:1;min-width:0}
+.bw-az{flex:none;width:17px;margin-right:3px;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+.bw-az i{font-style:normal;font-size:10.5px;font-weight:800;line-height:1;color:var(--mute);transition:transform .1s,color .1s}
+.bw-az i.on{color:var(--gold);transform:scale(1.5)}
+.bw-bub{position:absolute;left:24px;width:54px;height:54px;border-radius:50% 50% 50% 10px;background:var(--gold);color:#1a1307;font-size:28px;font-weight:900;display:none;place-items:center;z-index:5;pointer-events:none;box-shadow:0 6px 18px #0008}
 .bw-l{display:flex;flex-direction:column;gap:6px;padding-right:2px}
 .bw-crs{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .bw-cr{display:flex;align-items:center;gap:5px;max-width:100%;border:1px solid var(--gold);background:var(--gold);color:#1a1307;border-radius:99px;padding:3px 5px 3px 9px;font:inherit;font-size:12px;font-weight:700}
@@ -123,7 +156,7 @@ window.Browse = (() => {
 .bw-h{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:2px 0}
 .bw-any{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:2px 8px;font:inherit;font-size:11px;letter-spacing:0;text-transform:none}
 .bw-o{display:block;width:auto;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:9px;padding:5px 8px;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.2}
-.bw-o b{color:var(--ink);font-size:12.5px}.bw-o i{font-style:normal;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bw-o span{font-weight:500;color:var(--mute);font-size:11.5px}.bw-o b{color:var(--ink);font-size:12.5px}.bw-o i{font-style:normal;font-variant-numeric:tabular-nums;white-space:nowrap}
 .bw-o:active{border-color:var(--gold)}
 .bw-r{border-left:1px solid var(--line);padding-left:8px}
 .bw-n{font-size:11.5px;color:var(--mute);margin:2px 0 4px}.bw-n b{color:var(--ink)}
