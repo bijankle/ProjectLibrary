@@ -76,14 +76,33 @@ window.PFDLayout = (() => {
     declutter();
   }
   // labels never overlap: selected first, then highlighted, then big items, then the rest
+  // Boxes are never hidden for overlapping: most important first (selected, highlighted, major items), and a box
+  // that would sit on another slides to the nearest free spot, with a thin leader and a dot at its true position.
+  let lastOff = "";
+  function setOff(o, dx, dy){
+    o.dx = dx; o.dy = dy; o.el.style.setProperty("--dx", dx + "px"); o.el.style.setProperty("--dy", dy + "px");
+    const on = !!(dx || dy); o.lead.style.display = o.dot.style.display = on ? "block" : "";
+    if (on){ o.lead.style.width = Math.hypot(dx, dy) + "px"; o.lead.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`; }
+  }
   function declutter(){
     const labs = [];
-    Object.values(N).forEach(o => { const e = o.el; if (!e) return; e.classList.remove("dc");
-      labs.push({ e, pr: e.classList.contains("sel") ? 0 : e.classList.contains("hl") ? 1 : e.classList.contains("big") ? 2 : 3 }); });
+    Object.values(N).forEach(o => { if (!o.el) return; o.el.classList.remove("dc"); if (!o.el.classList.contains("lift")) setOff(o, 0, 0);
+      labs.push({ o, pr: o.el.classList.contains("sel") ? 0 : o.el.classList.contains("hl") ? 1 : o.el.classList.contains("big") ? 2 : 3 }); });
     labs.sort((a, b) => a.pr - b.pr);
-    const boxes = [];
-    labs.forEach(l => { if (getComputedStyle(l.e).display === "none") return; const r = l.e.getBoundingClientRect(); if (!r.width) return;
-      if (boxes.some(b => r.left < b.right + 3 && r.right > b.left - 3 && r.top < b.bottom + 1 && r.bottom > b.top - 1)) l.e.classList.add("dc"); else boxes.push(r); });
+    const placed = [];
+    labs.forEach(({ o }) => { const e = o.el; if (getComputedStyle(e).display === "none") return; const r = e.getBoundingClientRect(); if (!r.width) return;
+      const hit = (dx, dy) => placed.some(b => r.left + dx < b.right + 3 && r.right + dx > b.left - 3 && r.top + dy < b.bottom + 2 && r.bottom + dy > b.top - 2);
+      let best = [0, 0];
+      if (!e.classList.contains("lift") && hit(0, 0)){
+        const h = r.height + 3, w = r.width / 2 + 8, C = [];
+        for (let k = 1; k <= 8; k++) C.push([0, k * h], [0, -k * h], [k * w, k * h], [-k * w, k * h], [k * w, -k * h], [-k * w, -k * h]);
+        for (let k = 1; k <= 4; k++) C.push([k * 2 * w, 0], [-k * 2 * w, 0]);
+        best = C.sort((a, b) => Math.hypot(...a) - Math.hypot(...b)).find(([dx, dy]) => !hit(dx, dy)) || [0, 0];
+      }
+      if (best[0] || best[1]) setOff(o, best[0], best[1]);
+      placed.push({ left: r.left + best[0], right: r.right + best[0], top: r.top + best[1], bottom: r.bottom + best[1] }); });
+    const sig = Object.values(N).map(o => (o.dx || 0) + "," + (o.dy || 0)).join(";");
+    if (sig !== lastOff){ lastOff = sig; redrawStreamsOf(null); }   // lines to a moved box end at its dot
   }
   // arrowheads, one per stream colour
   function markers(){
@@ -108,13 +127,13 @@ window.PFDLayout = (() => {
     const m = N[nd.id].mel, big = !!LAYOUT.nodes[nd.id].sh;
     const why = !m.rows.length ? "No MEL entry" : "Not in MEL: " + m.missing.join(", ");
     return `<div class="lo-box${big ? " big" : ""}${LAYOUT.nodes[nd.id].est ? " est" : ""}${m.gap ? " gap" : ""}" title="${esc(m.gap ? why : "")}">` +
-      `<b>${esc(m.tag || nd.n)}</b><span>${esc(m.desc)}</span>${m.gap ? `<em>⚠ ${esc(why)}</em>` : ""}</div>`;
+      `<b>${esc(m.tag || nd.n)}</b><span>${esc(m.desc)}</span>${m.gap ? `<em>⚠ ${esc(why)}</em>` : ""}</div><i class="lo-lead"></i><s class="lo-dot"></s>`;
   }
   function drawNode(nd){
     const id = nd.id; if (!LAYOUT.nodes[id]) return;
     const o = N[id] = { mel: melInfo(nd) };
     o.lay = L.marker(pos(id), { icon: L.divIcon({ className: "lo-bw", html: boxHtml(nd), iconSize: null }), keyboard: false }).addTo(map);
-    o.el = o.lay.getElement().querySelector(".lo-box");
+    o.el = o.lay.getElement().querySelector(".lo-box"); o.lead = o.lay.getElement().querySelector(".lo-lead"); o.dot = o.lay.getElement().querySelector(".lo-dot");
     o.lay.on("click", e => { L.DomEvent.stopPropagation(e); if (moving || Date.now() - dropped < 400) return; api.pick(e.originalEvent, { k: "n", id }); });
     holdToDrag(id, o);
   }
@@ -162,6 +181,7 @@ window.PFDLayout = (() => {
   // lines stop there so their arrowheads touch the box at every zoom
   function edgeM(id, d){
     const e = N[id] && N[id].el, lat = pos(id)[0];
+    if (N[id] && (N[id].dx || N[id].dy)) return 3 * (map ? 40075016.686 * Math.cos(lat * Math.PI / 180) / Math.pow(2, map.getZoom() + 8) : .5);   // box slid aside: stop at its dot
     const mpp = map ? 40075016.686 * Math.cos(lat * Math.PI / 180) / Math.pow(2, map.getZoom() + 8) : .5;
     const r = e && e.offsetParent ? e.getBoundingClientRect() : null, hw = r && r.width ? r.width / 2 + 3 : 3, hh = r && r.height ? r.height / 2 + 3 : 3;
     const l = Math.hypot(d[0], d[1]) || 1, ux = Math.abs(d[0] / l), uy = Math.abs(d[1] / l);
@@ -275,7 +295,7 @@ window.PFDLayout = (() => {
   }
   return {
     init(a){ api = a; },
-    show, active: () => on, sync: z => on && sync(z), panelHtml, bindPanel,
+    show, active: () => on, sync: z => on && sync(z), panelHtml, bindPanel, declutter: () => map && declutter(),
     zoomBy: d => map && (d > 0 ? map.zoomIn(.75) : map.zoomOut(.75)), home: () => map && home(true)
   };
 })();
