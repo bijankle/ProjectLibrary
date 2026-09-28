@@ -90,7 +90,9 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 .lo-box.lift{transform:translate(-50%,-50%) scale(1.12);box-shadow:0 0 0 2px var(--accent),0 10px 24px #000c;cursor:grabbing;visibility:visible !important}
 #mapView.moving{cursor:grabbing}
 #mapView .lo-tip{font-size:11.5px;padding:3px 7px}
-#mapView:not(.zl2):not(.svcon) .lo-s.svc{display:none}
+#mapView:not(.zl2):not(.svcon) .lo-s.svc,#mapView:not(.zl2):not(.svcon) .lo-hit.svc:not(.hl){display:none}
+.lo-hit{cursor:pointer;stroke-linecap:round;stroke-linejoin:round}
+#mapView .lo-s.hov{stroke-width:3.2}
 #mapView svg{width:auto;height:auto;cursor:inherit;touch-action:auto}
 #mapView .hide{display:none !important}
 #mapView .ghost{opacity:.35}

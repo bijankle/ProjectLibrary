@@ -185,17 +185,22 @@ window.PFDLayout = (() => {
   function drawStreams(){
     api.STREAMS.forEach(s => { if (!LAYOUT.nodes[s.f] || !LAYOUT.nodes[s.to]) return;
       const t = api.STREAM_TYPES[s.ty];
-      const lay = L.polyline(pathFor(s), { renderer: rend, color: t.color, weight: 1.6, opacity: .95, smoothFactor: 0, interactive: true, className: "lo-s ty-" + s.ty + (SVC.has(s.ty) ? " svc" : "") });
+      const lay = L.polyline(pathFor(s), { renderer: rend, color: t.color, weight: 1.6, opacity: .95, smoothFactor: 0, interactive: false, className: "lo-s ty-" + s.ty + (SVC.has(s.ty) ? " svc" : "") });
       lay.addTo(map); arrow(lay, s.ty);
-      lay.on("click", e => { L.DomEvent.stopPropagation(e); if (moving) return; api.pick(e.originalEvent, { k: "s", id: s.id }); });
-      lay.bindTooltip(esc(s.n), { sticky: true, className: "lo-tip", direction: "top", offset: [0, -6] });
-      S[s.id] = { lay, s };
+      // the thin line is only drawn; a wide invisible line on top of it takes the taps (about a finger wide)
+      const hit = L.polyline(pathFor(s), { renderer: rend, color: "#000", weight: matchMedia("(pointer: coarse)").matches ? 22 : 14, opacity: 0, smoothFactor: 0, interactive: true, className: "lo-hit" + (SVC.has(s.ty) ? " svc" : "") });
+      hit.addTo(map);
+      hit.on("click", e => { L.DomEvent.stopPropagation(e); if (moving) return; api.pick(e.originalEvent, { k: "s", id: s.id }); });
+      hit.on("mouseover", () => lay._path && lay._path.classList.add("hov")); hit.on("mouseout", () => lay._path && lay._path.classList.remove("hov"));
+      hit.bindTooltip(esc(s.n), { sticky: true, className: "lo-tip", direction: "top", offset: [0, -6] });
+      S[s.id] = { lay, hit, s };
     });
   }
   function arrow(lay, ty){ const p = lay._path; if (p){ p.setAttribute("marker-mid", `url(#loA-${ty})`); p.setAttribute("marker-end", `url(#loA-${ty})`); if (/var\(/.test(api.STREAM_TYPES[ty].color)) p.style.stroke = api.STREAM_TYPES[ty].color; } }
   function redrawStreamsOf(id){
     Object.values(S).forEach(o => { if (o.s.f !== id && o.s.to !== id) return;
-      const cls = o.lay._path.getAttribute("class"); o.lay.setLatLngs(pathFor(o.s)); o.lay._path.setAttribute("class", cls); arrow(o.lay, o.s.ty); });
+      const cls = o.lay._path.getAttribute("class"), hc = o.hit._path.getAttribute("class"), pts = pathFor(o.s);
+      o.lay.setLatLngs(pts); o.lay._path.setAttribute("class", cls); arrow(o.lay, o.s.ty); o.hit.setLatLngs(pts); o.hit._path.setAttribute("class", hc); });
   }
 
   // ---------- keep in step with the schematic ----------
@@ -207,7 +212,8 @@ window.PFDLayout = (() => {
       e.classList.toggle("hide", st.hidden); e.classList.toggle("ghost", st.ghost); e.classList.toggle("hl", hl.has(nd.id)); e.classList.toggle("sel", sel.has(nd.id));
       o.lay.setZIndexOffset(sel.has(nd.id) ? 2000 : hl.has(nd.id) ? 1000 : 0); });
     Object.values(S).forEach(o => { const st = api.streamState(o.s.id), p = o.lay._path; if (!p) return;
-      p.classList.toggle("hide", st.hidden); p.classList.toggle("ghost", st.ghost); p.classList.toggle("hl", hl.has(o.s.id)); p.classList.toggle("sel", sel.has(o.s.id)); });
+      p.classList.toggle("hide", st.hidden); p.classList.toggle("ghost", st.ghost); p.classList.toggle("hl", hl.has(o.s.id)); p.classList.toggle("sel", sel.has(o.s.id));
+      const hp = o.hit._path; if (hp){ hp.classList.toggle("hide", st.hidden); hp.classList.toggle("hl", hl.has(o.s.id)); } });
     declutter();
     const key = [...hl].sort().join(",");
     if (zoom && focus && key !== lastHl){
