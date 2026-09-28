@@ -17,7 +17,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
 button,select,input{font:inherit;color:inherit}
-header{position:fixed;left:0;right:0;top:0;height:54px;display:flex;align-items:center;gap:10px;padding:0 14px;
+header{position:fixed;left:0;right:0;top:var(--tb,0px);height:54px;display:flex;align-items:center;gap:10px;padding:0 14px;
   background:var(--panel);border-bottom:1px solid var(--line);z-index:5}
 header h1{font-size:17px;margin:0;white-space:nowrap}
 header h1 span{color:var(--accent)}
@@ -30,7 +30,7 @@ select.hbtn{padding:6px 8px}
 .grow{flex:1}
 #search{width:210px;min-width:120px;border:1px solid var(--line);background:var(--panel2);border-radius:9px;padding:7px 10px;font-size:13px}
 a.hbtn{text-decoration:none;color:var(--ink)}
-#side{position:fixed;left:0;top:54px;bottom:0;width:270px;background:var(--panel);border-right:1px solid var(--line);
+#side{position:fixed;left:0;top:calc(54px + var(--tb,0px));bottom:0;width:270px;background:var(--panel);border-right:1px solid var(--line);
   overflow-y:auto;padding:14px;z-index:4}
 #side h2{font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mute);margin:16px 0 8px}
 #side h2:first-child{margin-top:0}
@@ -56,9 +56,9 @@ a.hbtn{text-decoration:none;color:var(--ink)}
 .lg-sig{display:flex;gap:9px;align-items:center;font-size:12.5px;color:var(--mute);padding:3px 6px}
 .lg-sig svg{width:46px;height:22px;flex:none}
 .note{font-size:12.5px;color:var(--mute);line-height:1.45;background:var(--panel2);border-radius:9px;padding:9px 10px}
-#stage{position:fixed;left:270px;right:0;top:54px;bottom:0}
+#stage{position:fixed;left:270px;right:0;top:calc(54px + var(--tb,0px));bottom:0}
 /* ---------- layout (map) view ---------- */
-#mapView{position:fixed;left:270px;right:0;top:54px;bottom:0;background:#20242a;z-index:0}
+#mapView{position:fixed;left:270px;right:0;top:calc(54px + var(--tb,0px));bottom:0;background:#20242a;z-index:0}
 body.layout #stage{visibility:hidden}
 body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opacity:.45}
 #mapView.dim .leaflet-tile-pane{filter:brightness(.62) saturate(.75)}
@@ -107,7 +107,7 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 .lo-mv span{flex:1 1 180px}
 svg{width:100%;height:100%;display:block;cursor:grab;user-select:none}
 svg.dragging{cursor:grabbing}
-#info{position:fixed;right:14px;top:68px;bottom:14px;width:460px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+#info{position:fixed;right:14px;top:calc(68px + var(--tb,0px));bottom:14px;width:460px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
   box-shadow:0 12px 40px rgba(0,0,0,.35);z-index:6;display:none;flex-direction:column;overflow:hidden}
 #info.on{display:flex}
 #info .top{padding:16px 16px 10px;border-bottom:1px solid var(--line);position:relative}
@@ -126,7 +126,7 @@ svg.dragging{cursor:grabbing}
 #zoom{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:5}
 #info.on ~ #zoom{right:488px}
 #zoom button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:18px;cursor:pointer}
-#stepbar{position:fixed;top:64px;left:284px;right:14px;display:none;gap:10px;align-items:stretch;justify-content:center;z-index:5;pointer-events:none}
+#stepbar{position:fixed;top:calc(64px + var(--tb,0px));left:284px;right:14px;display:none;gap:10px;align-items:stretch;justify-content:center;z-index:5;pointer-events:none}
 #stepbar.on{display:flex}
 #info.on ~ #stepbar{right:488px}
 .sb-card{pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;font:inherit;color:var(--ink);text-align:left;
@@ -143,8 +143,8 @@ svg.dragging{cursor:grabbing}
 .sb-cur .sb-t{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:2px}
 .sb-cur.pulse{animation:sbin .25s ease-out}
 @keyframes sbin{from{transform:translateY(-6px);opacity:.3}to{transform:none;opacity:1}}
-body.flowing #toast{top:190px}
-#toast{position:fixed;left:50%;top:66px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--accent);border-radius:10px;
+body.flowing #toast{top:calc(190px + var(--tb,0px))}
+#toast{position:fixed;left:50%;top:calc(66px + var(--tb,0px));transform:translateX(-50%);background:var(--panel);border:1px solid var(--accent);border-radius:10px;
   padding:8px 14px;font-size:13.5px;z-index:7;display:none;max-width:620px;text-align:center}
 .appbox{display:flex;flex-wrap:wrap;gap:6px}
 .set-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}.set-row .hbtn{text-decoration:none;color:var(--ink)}
@@ -153,6 +153,8 @@ body.flowing #toast{top:190px}
 .ver{font-size:12px;color:var(--mute);margin:6px 2px 0}
 .m-only{display:none !important}
 svg{touch-action:none}
+/* the tab strip (tabs.js) does what these did: PFD / Layout, Flashcards, Settings */
+#viewSeg,header #setBtn,header a[href^="index.html"],#side a.m-only[href^="index.html"]{display:none !important}
 @media (max-width: 900px){
   .m-only{display:revert !important}
   header{height:50px;gap:6px;padding:0 8px}
@@ -163,12 +165,12 @@ svg{touch-action:none}
   .seg button::after{content:"S" attr(data-s);font-size:12.5px}
   #search{width:auto;flex:1;min-width:60px;font-size:13px;padding:7px 8px}
   header .grow{display:none}
-  #side{top:50px;width:min(86vw,330px);transform:translateX(-102%);transition:transform .2s;z-index:9;box-shadow:0 0 30px rgba(0,0,0,.4)}
+  #side{top:calc(50px + var(--tb,0px));width:min(86vw,330px);transform:translateX(-102%);transition:transform .2s;z-index:9;box-shadow:0 0 30px rgba(0,0,0,.4)}
   body.menu #side{transform:none}
-  #scrim{position:fixed;inset:50px 0 0 0;background:rgba(0,0,0,.35);z-index:8;display:none !important}
+  #scrim{position:fixed;inset:calc(50px + var(--tb,0px)) 0 0 0;background:rgba(0,0,0,.35);z-index:8;display:none !important}
   body.menu #scrim{display:block !important}
-  #stage{left:0;top:50px;bottom:52px}
-  #mapView{left:0;top:50px;bottom:52px}
+  #stage{left:0;top:calc(50px + var(--tb,0px));bottom:52px}
+  #mapView{left:0;top:calc(50px + var(--tb,0px));bottom:52px}
   #viewSeg button::after{content:attr(data-l);font-size:12.5px}
   .lo-bar{left:6px;top:6px;gap:4px}.lo-seg button,.lo-b{font-size:11px;padding:4px 7px}
   body.flowing .lo-bar{display:none}
@@ -177,14 +179,14 @@ svg{touch-action:none}
   #zoom{bottom:62px;right:10px}
   #zoom #zIn,#zoom #zOut{display:none}
   #info.on ~ #zoom{display:none}
-  #stepbar{left:8px;right:8px;top:56px;gap:6px}
+  #stepbar{left:8px;right:8px;top:calc(56px + var(--tb,0px));gap:6px}
   #info.on ~ #stepbar{right:8px}
   .sb-card{font-size:11.5px;padding:6px 8px}
   .sb-card span{-webkit-line-clamp:3}
   .sb-prev,.sb-next{flex:0 1 22%}
   .sb-cur{flex:1 1 56%;font-size:12.5px}
-  #toast{top:56px;max-width:92vw;font-size:12.5px}
-  body.flowing #toast{top:150px}
+  #toast{top:calc(56px + var(--tb,0px));max-width:92vw;font-size:12.5px}
+  body.flowing #toast{top:calc(150px + var(--tb,0px))}
   #mleg{position:fixed;left:0;right:0;bottom:0;height:52px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--panel);
     border-top:1px solid var(--line);z-index:7;display:flex !important;gap:6px;overflow-x:auto;scrollbar-width:none;align-items:center}
   #mleg::-webkit-scrollbar{display:none}
@@ -372,6 +374,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <script src="pid.js"></script>
 <script src="offline.js"></script>
 <script src="lookup.js"></script>
+<script src="tabs.js"></script>
 <script src="app-update.js"></script>
 <script src="pfd-layout-data.js"></script>
 <script src="pfd-layout.js"></script>
@@ -870,11 +873,15 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     hlIds: () => { const h = new Set(); for (const id in nEls) if (nEls[id].classList.contains("hl")) h.add(id); for (const id in sEls) if (sEls[id].classList.contains("hl")) h.add(id); return h; },
     selIds: () => new Set(sel.filter(x => x.k === "n" || x.k === "s").map(x => x.id)),
     nodeState: id => gState(byId[id] && byId[id].g), streamState: id => gState(sById[id] && sById[id].g) });
-  const setView = v => { document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v);
+  const setView = v => { document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v); Tabs.set(v === "map" ? "layout" : "pfd");
     PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); });
     if (v === "map") toast("Layout: the PFD items on the real plant. Zoom in for more detail; select anything as usual. Move an item from its panel if it's in the wrong spot.");
     else { setVB(); } };
   document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
+  // the tab strip: PFD and Layout switch here, Assets and Quiz open the phone app page
+  Tabs.mount({ active: "pfd", onSettings: () => showSettings(), onTab: t => { if (t !== "pfd" && t !== "layout") return false; setView(t === "layout" ? "map" : "pfd"); return true; } });
+  const openHash = () => { if (location.hash === "#layout") setView("map"); else if (location.hash === "#pfd" && PFDLayout.active()) setView("pfd"); };
+  window.addEventListener("hashchange", openHash); if (location.hash === "#layout") setTimeout(openHash, 0);
   $("tSvc").addEventListener("click", () => $("mapView").classList.toggle("svcon", $("tSvc").classList.contains("on")));
   $("mapView").classList.toggle("svcon", pref.get("pfd_svc", "0") === "1");
 

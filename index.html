@@ -38,7 +38,8 @@ body{overscroll-behavior:none}
 
 /* HOME / END / GLOSSARY */
 .page{max-width:640px;margin:0 auto;
-  padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 24px)}
+  padding:14px 16px calc(env(safe-area-inset-bottom) + 24px)}
+body{padding-top:var(--tb,0px)}
 h1{font-size:26px;margin:4px 0 2px}
 h1 span{color:var(--gold)}
 h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute);margin:22px 0 10px}
@@ -88,8 +89,12 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
 .lktop .lk-bar{gap:8px}
 #lkResults{margin-bottom:8px}
 body.searching #homeMain{display:none}
-.homeseg{display:flex;gap:8px;align-items:center;margin:2px 0 10px}.homeseg .seg{flex:1}
-#flash .titlerow .pill{display:none}
+.qstart{display:block;width:100%;margin-top:16px;border:0;border-radius:18px;background:var(--gold);color:#1a1307;padding:20px 18px;text-align:left;cursor:pointer}
+.qstart b{display:block;font-size:24px;font-weight:900}
+.qstart span{font-size:14px;font-weight:600;opacity:.8}
+.qfbtn{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 12px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.qfbtn.on{border-color:var(--gold);color:var(--gold)}
+#qFilters{margin-top:6px}
 .titlerow{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .titlerow h1{white-space:nowrap;font-size:clamp(19px,5.3vw,26px);min-width:0}
 .pill.sm{flex:none;height:38px;padding:0 12px;font-size:14px;gap:6px}
@@ -102,8 +107,8 @@ body.searching #homeMain{display:none}
 .x{border:0;background:var(--card);color:var(--ink);width:42px;height:42px;border-radius:12px;font-size:20px;flex:none}
 
 /* DECK */
-#deck{position:fixed;inset:0;display:none;flex-direction:column;
-  padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 12px);overflow:hidden}
+#deck{position:fixed;inset:var(--tb,0px) 0 0 0;display:none;flex-direction:column;
+  padding:12px 14px calc(env(safe-area-inset-bottom) + 12px);overflow:hidden}
 #deck.on{display:flex}
 .prog{flex:1;height:6px;background:var(--card2);border-radius:99px;overflow:hidden}
 .prog i{display:block;height:100%;background:var(--gold);width:0;transition:width .3s}
@@ -167,24 +172,27 @@ body.searching #homeMain{display:none}
   <nav class="appbar">
     <div id="lkRoot" class="lktop"></div>
     <button class="ib" id="glossBtn" aria-label="Glossary" title="Glossary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5c2.5-1.3 5.5-1.3 8 .5v14c-2.5-1.8-5.5-1.8-8-.5z"/><path d="M20 5.5c-2.5-1.3-5.5-1.3-8 .5v14c2.5-1.8 5.5-1.8 8-.5z"/></svg></button>
-    <button class="ib" id="setBtn" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </nav>
   <div id="lkResults" class="lk"></div>
   <div id="homeMain">
-  <div class="homeseg"><div class="seg" id="homeSeg"><button data-v="browse" class="on">🔎 Browse</button><button data-v="flash">🃏 Flashcards</button></div><a class="pill sm" href="pfd.html" title="Interactive plant diagram (best on a computer)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span>PFD</span></a></div>
   <div id="browse"></div>
-  <div id="flash" hidden>
-  <div class="titlerow"><h1>KCGM <span>Flashcards</span></h1><a class="pill sm" href="pfd.html" title="Interactive plant diagram (best on a computer)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg><span>Smart PFD</span></a></div>
-  <p class="sub">A question fills the screen. Swipe to see the answer. Swipe again: right if you knew it, left to see it again.</p>
-  <div class="stats" id="stats"></div>
+  </div>
+</div></section>
 
-  <h2>Deck</h2>
+<!-- QUIZ -->
+<section id="quiz" class="screen"><div class="page">
+  <div class="titlerow"><h1>KCGM <span>Quiz</span></h1><button class="qfbtn" id="qfBtn" aria-expanded="false">⚙ Filters</button></div>
+  <p class="sub">A question fills the screen. Swipe to see the answer. Swipe again: right if you knew it, left to see it again.</p>
+  <button class="qstart" id="startBtn"><b>▶ Start quiz</b><span id="qSum"></span></button>
+  <div class="stats" id="stats"></div>
+  <div id="qFilters" hidden>
+  <h2>Deck order</h2>
   <div class="seg" id="modeSeg">
     <button data-m="mix" class="on">Shuffle</button>
     <button data-m="weak">Revisit</button>
     <button data-m="new">Unseen</button>
   </div>
-  <div style="height:10px"></div>
+  <h2>Length</h2>
   <div class="seg" id="lenSeg">
     <button data-n="10">10</button>
     <button data-n="20" class="on">20</button>
@@ -195,8 +203,6 @@ body.searching #homeMain{display:none}
   <h2>Topics <button class="linkish" id="allBtn">select all</button></h2>
   <div class="topics" id="topics"></div>
 
-  <div class="sticky"><button class="btn primary" style="width:100%" id="startBtn">Start</button></div>
-  </div>
   </div>
 </div></section>
 
@@ -218,7 +224,7 @@ body.searching #homeMain{display:none}
   <p class="sub" id="scoreSub"></p>
   <div class="row" style="margin-top:20px;flex-direction:column">
     <button class="btn primary" id="againBtn">Go through the 'again' pile</button>
-    <button class="btn" id="homeBtn">Home</button>
+    <button class="btn" id="homeBtn">Back to the quiz</button>
   </div>
 </div></section>
 
@@ -285,6 +291,7 @@ body.searching #homeMain{display:none}
 <script src="offline.js"></script>
 <script src="lookup.js"></script>
 <script src="browse.js"></script>
+<script src="tabs.js"></script>
 <script src="app-update.js"></script>
 <script>
 (() => {
@@ -297,10 +304,14 @@ body.searching #homeMain{display:none}
   let hist = store.get("kcgm_cards", {});
   let sel = new Set(store.get("kcgm_topics", Object.keys(TOPICS)).filter(t => TOPICS[t]));
   if (!sel.size) sel = new Set(Object.keys(TOPICS));
-  let mode = "mix", len = 20, run = null;
+  let mode = store.get("kcgm_mode", "mix"), len = store.get("kcgm_len", 20), run = null;
 
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const TAB_OF = { home: "assets", gloss: "assets", quiz: "quiz", deck: "quiz", end: "quiz", history: "quiz" };
+  let cur = "home";
   const show = id => {
+    if (id !== "settings") cur = id;
+    if (TAB_OF[id]) Tabs.set(TAB_OF[id]);
     document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
     $("deck").classList.toggle("on", id === "deck"); window.scrollTo(0, 0);
     if (id === "settings" && window.Offline) Offline.mount($("offRoot"));
@@ -327,6 +338,8 @@ body.searching #homeMain{display:none}
     $("stats").innerHTML = `<div class="stat"><b>${seen}/${CARDS.length}</b><span>seen</span></div>
       <div class="stat"><b>${known}</b><span>known</span></div><div class="stat"><b>${again}</b><span>to revisit</span></div>`;
     $("allBtn").textContent = sel.size === Object.keys(TOPICS).length ? "clear" : "select all";
+    const nT = Object.keys(TOPICS).length, nC = CARDS.filter(c => sel.has(c.t)).length;
+    $("qSum").textContent = `${len >= 9999 ? "All " + nC : Math.min(len, nC)} cards · ${{ mix: "shuffled", weak: "revisit first", new: "unseen first" }[mode]} · ${sel.size === nT ? "all topics" : sel.size + " of " + nT + " topics"}`;
   }
   $("allBtn").onclick = () => {
     sel = sel.size === Object.keys(TOPICS).length ? new Set() : new Set(Object.keys(TOPICS));
@@ -334,8 +347,13 @@ body.searching #homeMain{display:none}
   };
   const segs = (id, fn) => document.querySelectorAll(`#${id} button`).forEach(b => b.onclick = () => {
     document.querySelectorAll(`#${id} button`).forEach(x => x.classList.remove("on")); b.classList.add("on"); fn(b.dataset); });
-  segs("modeSeg", d => mode = d.m);
-  segs("lenSeg", d => len = +d.n);
+  segs("modeSeg", d => { mode = d.m; store.set("kcgm_mode", mode); renderHome(); });
+  segs("lenSeg", d => { len = +d.n; store.set("kcgm_len", len); renderHome(); });
+  document.querySelectorAll("#modeSeg button").forEach(b => b.classList.toggle("on", b.dataset.m === mode));
+  document.querySelectorAll("#lenSeg button").forEach(b => b.classList.toggle("on", +b.dataset.n === len));
+  // filters stay tucked away; the quiz starts straight from the big button with the last choices
+  $("qfBtn").onclick = () => { const f = $("qFilters"), open = f.hidden; f.hidden = !open; $("qfBtn").classList.toggle("on", open); $("qfBtn").setAttribute("aria-expanded", open);
+    if (open) f.scrollIntoView({ behavior: "smooth", block: "start" }); };
 
   function pick(){
     let pool = CARDS.filter(c => sel.has(c.t));
@@ -516,7 +534,7 @@ body.searching #homeMain{display:none}
     else if (shown && e.key === "ArrowRight") decide(true);
     else if (shown && e.key === "ArrowLeft") decide(false);
   });
-  $("quitBtn").onclick = () => { run && run.i > 0 ? finish() : (renderHome(), show("home")); };
+  $("quitBtn").onclick = () => { run && run.i > 0 ? finish() : (run = null, renderHome(), show("quiz")); };
 
   function finish(){
     const n = run.got + run.again.length;
@@ -527,10 +545,10 @@ body.searching #homeMain{display:none}
       : "No cards answered.";
     $("againBtn").style.display = run.again.length ? "block" : "none";
     $("againBtn").textContent = `Go through the 'again' pile (${run.again.length})`;
-    show("end");
+    run.done = true; show("end");
   }
   $("againBtn").onclick = () => start(shuffle(run.again));
-  $("homeBtn").onclick = () => { renderHome(); show("home"); };
+  $("homeBtn").onclick = () => { renderHome(); show("quiz"); };
 
   // ---------- GLOSSARY ----------
   function renderGloss(f){
@@ -553,8 +571,6 @@ body.searching #homeMain{display:none}
     let was = false; new MutationObserver(() => { const now = document.body.classList.contains("searching"); if (was && !now) Browse.restore(); was = now; }).observe(document.body, { attributes: true, attributeFilter: ["class"] }); }
   // home: Browse pickers by default, flashcards one tap away
   Browse.mount($("browse"), lk);
-  $("homeSeg").querySelectorAll("button").forEach(b => b.onclick = () => { $("homeSeg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
-    $("browse").hidden = b.dataset.v !== "browse"; $("flash").hidden = b.dataset.v === "browse"; });
   $("glossBtn").onclick = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
   $("glossBack").onclick = () => show("home");
   $("gSearch").oninput = e => renderGloss(e.target.value);
@@ -566,9 +582,9 @@ body.searching #homeMain{display:none}
     $("modelWrap").style.display = AI.ready() && AI.model() ? "block" : "none";
     if (AI.model()) $("modelSel").innerHTML = `<option>${AI.model()}</option>`;
   }
-  $("setBtn").onclick = () => { renderSettings(); show("settings"); };
+  const openSettings = () => { renderSettings(); show("settings"); };
   AppUpdate.mount($("updBtn"), $("ver"));
-  $("setBack").onclick = () => { renderHome(); show("home"); };
+  $("setBack").onclick = () => { renderHome(); show(cur); };
   $("keyTest").onclick = async () => {
     const k = $("keyIn").value.trim();
     if (!k){ $("keyStatus").textContent = "Paste a key first."; return; }
@@ -598,7 +614,7 @@ body.searching #homeMain{display:none}
     });
     show("history");
   };
-  $("histBack").onclick = () => show("home");
+  $("histBack").onclick = () => show("quiz");
 
   // ---------- FULL SCREEN ----------
   $("fsBtn").onclick = () => {
@@ -610,6 +626,13 @@ body.searching #homeMain{display:none}
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   renderHome();
+  // the tab strip: Assets and Quiz switch here, PFD and Layout open pfd.html; a quiz left half way resumes
+  Tabs.mount({ active: "assets", onSettings: openSettings, onTab: t => {
+    if (t === "assets"){ show("home"); return true; }
+    if (t === "quiz"){ show(run && !run.done && run.i < run.list.length ? "deck" : "quiz"); return true; }
+    return false; } });
+  const openHash = () => { if (location.hash === "#quiz") show("quiz"); else if (location.hash === "#assets") show("home"); };
+  openHash(); window.addEventListener("hashchange", openHash);
 })();
 </script>
 </body>
