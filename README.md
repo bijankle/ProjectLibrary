@@ -16,7 +16,7 @@ Settings > Offline downloads shows whether the phone has agreed to protect the d
 
 ## Tabs
 
-A tab strip sits across the top of every screen, on the phone and the computer: 🔎 Assets (Browse and search), 🃏 Quiz, 〰️ PFD, 🗺️ Layout, and ⚙ Settings at the right. Assets and Quiz live in `index.html` (`#assets`, `#quiz`), PFD and Layout in `pfd.html` (`#pfd`, `#layout`); switching page keeps each page's own state (Browse pick, quiz filters). A quiz left half way resumes when you come back to the Quiz tab. `tabs.js` draws the strip; both pages offset their fixed layout by its height (`--tb`).
+A tab strip sits across the top of every screen, on the phone and the computer: 🔎 Assets (Browse and search), 〰️ PFD, 🗺️ Layout, 🃏 Quiz, sitting together at the top left, and ⚙ Settings at the right. Assets and Quiz live in `index.html` (`#assets`, `#quiz`), PFD and Layout in `pfd.html` (`#pfd`, `#layout`); switching page keeps each page's own state (Browse pick, quiz filters). A quiz left half way resumes when you come back to the Quiz tab. `tabs.js` draws the strip; both pages offset their fixed layout by its height (`--tb`).
 
 ## Quiz
 
