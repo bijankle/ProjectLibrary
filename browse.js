@@ -91,8 +91,8 @@ window.Browse = (() => {
         vals.map(v => { const n = st[0] === "t" || v === "?" ? "" : shortName(nameOf(st[0], t(), v)), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
           // code (short name); the full name and the count show on the gold chip once picked
           // qty × code (short name): the quantities share one right aligned column, so the items line up
-          return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}"><i class="q">${c[v].toLocaleString()}</i><i class="x">×</i><em>${esc(label)}</em>${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
-      qw = Math.max(...vals.map(v => c[v].toLocaleString().length));
+          return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}"><i class="q">(x${c[v].toLocaleString()})</i><em>${esc(label)}</em>${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
+      qw = Math.max(...vals.map(v => c[v].toLocaleString().length)) + 3;   // "(x" and ")"
       if (st[0] !== "t" && vals.length >= AZ_MIN) az = [...new Set(vals.map(v => azKey(v === "?" ? "Other" : v)))].sort((a, b) => a.localeCompare(b));
     } else opts = `<div class="bw-h">All steps set</div><div class="bw-note">Tap × on a step above to change it.</div>`;
     const hits = list.slice(0, shownN).map(r => r.it);
@@ -181,7 +181,7 @@ window.Browse = (() => {
 .bw-opts{display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;align-content:flex-start}
 .bw-opts.stack{flex-direction:column;align-items:flex-start;flex-wrap:nowrap}
 .bw-o .q{display:inline-block;width:var(--qw,1ch);text-align:right;font-style:normal;font-weight:600;color:var(--mute);font-variant-numeric:tabular-nums;font-size:11.5px}
-.bw-o .x{font-style:normal;color:var(--mute);margin:0 5px 0 4px;font-size:11px}.bw-o em{font-style:normal}
+.bw-o .q{margin-right:6px}.bw-o em{font-style:normal}
 .bw-opts.stack .bw-h,.bw-opts.stack .bw-note{flex-basis:auto;align-self:stretch}.bw-o{flex:none}.bw-opts .bw-h,.bw-opts .bw-note{flex-basis:100%}
 .bw-h{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:2px 0}
 .bw-any{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:2px 8px;font:inherit;font-size:11px;letter-spacing:0;text-transform:none}
