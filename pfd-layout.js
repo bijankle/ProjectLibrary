@@ -40,7 +40,7 @@ window.PFDLayout = (() => {
     rend = L.svg({ padding: .6 });
     setBase(api.pref.get("lo_base", "sat"));
     home(false);
-    map.on("zoomend", zoomCls); zoomCls(); map.on("moveend", () => setTimeout(declutter, 0));
+    map.on("zoomend", () => { zoomCls(); redrawStreamsOf(null); }); zoomCls(); map.on("moveend", () => setTimeout(declutter, 0));
     map.on("click", () => { if (moving || Date.now() - dropped < 400) return; api.clearSel(true); api.closeInfo(); });
     // corner controls: imagery, dim, home, export
     const bar = L.DomUtil.create("div", "lo-bar"); bar.innerHTML =
@@ -158,24 +158,35 @@ window.PFDLayout = (() => {
 
   // ---------- streams ----------
   const pairIx = {};
+  // how far (metres) from an item's position to the edge of its text box, in direction d = [east, north] metres;
+  // lines stop there so their arrowheads touch the box at every zoom
+  function edgeM(id, d){
+    const e = N[id] && N[id].el, lat = pos(id)[0];
+    const mpp = map ? 40075016.686 * Math.cos(lat * Math.PI / 180) / Math.pow(2, map.getZoom() + 8) : .5;
+    const r = e && e.offsetParent ? e.getBoundingClientRect() : null, hw = r && r.width ? r.width / 2 + 3 : 3, hh = r && r.height ? r.height / 2 + 3 : 3;
+    const l = Math.hypot(d[0], d[1]) || 1, ux = Math.abs(d[0] / l), uy = Math.abs(d[1] / l);
+    return Math.min(ux ? hw / ux : 1e9, uy ? hh / uy : 1e9) * mpp;
+  }
   function pathFor(s){
     const a = pos(s.f), b = pos(s.to), o = a;
     if (s.f === s.to){   // recycle onto itself: small loop beside the item
-      const r = reach(s.f) + 5, c = toM(a, o);
-      return [0, 1, 2, 3, 4, 5, 6].map(i => { const t = -Math.PI / 2 + i * Math.PI / 3.5; return toLL([c[0] + r * Math.cos(t) + r * .9, c[1] + r * Math.sin(t)], o); });
+      const hw = edgeM(s.f, [1, 0]), hh = edgeM(s.f, [0, 1]), r = Math.max(hh * .9, hw * .25), c = toM(a, o);
+      // a smooth loop off the right edge of the box, leaving and rejoining it
+      return Array.from({ length: 19 }, (_, i) => { const t = -Math.PI / 2 + i * Math.PI / 10; return toLL([c[0] + hw * .85 + r * Math.cos(t) + r * .2, c[1] + r * Math.sin(t)], o); });
     }
     let pts = [toM(a, o), ...(LAYOUT.via[s.id] || []).map(p => toM(p, o)), toM(b, o)];
     // several streams between the same two items: spread them sideways
     const k = [s.f, s.to].sort().join("|"), list = pairIx[k], i = list.indexOf(s.id), n = list.length;
     if (n > 1 && !LAYOUT.via[s.id]){
       const d = [pts[1][0] - pts[0][0], pts[1][1] - pts[0][1]], L0 = Math.hypot(...d) || 1, sgn = s.f < s.to ? 1 : -1;
-      const off = (i - (n - 1) / 2) * 3.5 * sgn, nx = -d[1] / L0 * off, ny = d[0] / L0 * off;
+      const mpp = map ? 40075016.686 * Math.cos(a[0] * Math.PI / 180) / Math.pow(2, map.getZoom() + 8) : .5;   // 8 px apart on screen at any zoom
+      const off = (i - (n - 1) / 2) * 8 * mpp * sgn, nx = -d[1] / L0 * off, ny = d[0] / L0 * off;
       pts = pts.map(p => [p[0] + nx, p[1] + ny]);
     }
     // stop short of the shapes at both ends
     const cut = (p, q, r) => { const dx = q[0] - p[0], dy = q[1] - p[1], l = Math.hypot(dx, dy) || 1, t = Math.min(r, l * .4) / l; return [p[0] + dx * t, p[1] + dy * t]; };
-    pts[0] = cut(pts[0], pts[1], reach(s.f) + 1); pts[pts.length - 1] = cut(pts[pts.length - 1], pts[pts.length - 2], reach(s.to) + 2);
-    if (pts.length === 2) pts.splice(1, 0, [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2]);   // middle vertex carries a direction arrow
+    const dir = (p, q) => [q[0] - p[0], q[1] - p[1]], P = pts.length;
+    pts[0] = cut(pts[0], pts[1], edgeM(s.f, dir(pts[0], pts[1]))); pts[P - 1] = cut(pts[P - 1], pts[P - 2], edgeM(s.to, dir(pts[P - 1], pts[P - 2])));
     return pts.map(p => toLL(p, o));
   }
   function drawStream(s){
@@ -187,20 +198,31 @@ window.PFDLayout = (() => {
       const t = api.STREAM_TYPES[s.ty];
       const lay = L.polyline(pathFor(s), { renderer: rend, color: t.color, weight: 1.6, opacity: .95, smoothFactor: 0, interactive: false, className: "lo-s ty-" + s.ty + (SVC.has(s.ty) ? " svc" : "") });
       lay.addTo(map); arrow(lay, s.ty);
+      const mid = L.polyline(midSeg(lay.getLatLngs()), { renderer: rend, color: t.color, weight: 1.6, opacity: .95, smoothFactor: 0, interactive: false, className: "lo-s lo-mid ty-" + s.ty + (SVC.has(s.ty) ? " svc" : "") }).addTo(map); arrow(mid, s.ty);
       // the thin line is only drawn; a wide invisible line on top of it takes the taps (about a finger wide)
       const hit = L.polyline(pathFor(s), { renderer: rend, color: "#000", weight: matchMedia("(pointer: coarse)").matches ? 22 : 14, opacity: 0, smoothFactor: 0, interactive: true, className: "lo-hit" + (SVC.has(s.ty) ? " svc" : "") });
       hit.addTo(map);
       hit.on("click", e => { L.DomEvent.stopPropagation(e); if (moving) return; api.pick(e.originalEvent, { k: "s", id: s.id }); });
       hit.on("mouseover", () => lay._path && lay._path.classList.add("hov")); hit.on("mouseout", () => lay._path && lay._path.classList.remove("hov"));
       hit.bindTooltip(esc(s.n), { sticky: true, className: "lo-tip", direction: "top", offset: [0, -6] });
-      S[s.id] = { lay, hit, s };
+      S[s.id] = { lay, hit, mid, s };
     });
   }
-  function arrow(lay, ty){ const p = lay._path; if (p){ p.setAttribute("marker-mid", `url(#loA-${ty})`); p.setAttribute("marker-end", `url(#loA-${ty})`); if (/var\(/.test(api.STREAM_TYPES[ty].color)) p.style.stroke = api.STREAM_TYPES[ty].color; } }
+  // two arrowheads per line whatever its bends: one halfway along (a short segment of its own) and one at the end
+  function arrow(lay, ty){ const p = lay._path; if (p){ p.removeAttribute("marker-mid"); p.setAttribute("marker-end", `url(#loA-${ty})`); if (/var\(/.test(api.STREAM_TYPES[ty].color)) p.style.stroke = api.STREAM_TYPES[ty].color; } }
+  function midSeg(pts){
+    const o = [pts[0].lat != null ? pts[0].lat : pts[0][0], pts[0].lng != null ? pts[0].lng : pts[0][1]];
+    const m = pts.map(p => toM([p.lat != null ? p.lat : p[0], p.lng != null ? p.lng : p[1]], o)), seg = [];
+    let tot = 0; for (let i = 1; i < m.length; i++){ const l = Math.hypot(m[i][0] - m[i - 1][0], m[i][1] - m[i - 1][1]); seg.push(l); tot += l; }
+    let half = tot / 2; for (let i = 1; i < m.length; i++){ if (half <= seg[i - 1] || i === m.length - 1){ const l = seg[i - 1] || 1, f = Math.min(1, half / l), d = [(m[i][0] - m[i - 1][0]) / l, (m[i][1] - m[i - 1][1]) / l];
+      const c = [m[i - 1][0] + (m[i][0] - m[i - 1][0]) * f, m[i - 1][1] + (m[i][1] - m[i - 1][1]) * f]; return [toLL([c[0] - d[0] * .3, c[1] - d[1] * .3], o), toLL([c[0] + d[0] * .3, c[1] + d[1] * .3], o)]; } half -= seg[i - 1]; }
+    return [pts[0], pts[pts.length - 1]];
+  }
   function redrawStreamsOf(id){
-    Object.values(S).forEach(o => { if (o.s.f !== id && o.s.to !== id) return;
+    Object.values(S).forEach(o => { if (id != null && o.s.f !== id && o.s.to !== id) return;   // null: every line (after a zoom)
       const cls = o.lay._path.getAttribute("class"), hc = o.hit._path.getAttribute("class"), pts = pathFor(o.s);
-      o.lay.setLatLngs(pts); o.lay._path.setAttribute("class", cls); arrow(o.lay, o.s.ty); o.hit.setLatLngs(pts); o.hit._path.setAttribute("class", hc); });
+      o.lay.setLatLngs(pts); o.lay._path.setAttribute("class", cls); arrow(o.lay, o.s.ty); o.hit.setLatLngs(pts); o.hit._path.setAttribute("class", hc);
+      const mc = o.mid._path.getAttribute("class"); o.mid.setLatLngs(midSeg(pts)); o.mid._path.setAttribute("class", mc); arrow(o.mid, o.s.ty); });
   }
 
   // ---------- keep in step with the schematic ----------
@@ -212,7 +234,7 @@ window.PFDLayout = (() => {
       e.classList.toggle("hide", st.hidden); e.classList.toggle("ghost", st.ghost); e.classList.toggle("hl", hl.has(nd.id)); e.classList.toggle("sel", sel.has(nd.id));
       o.lay.setZIndexOffset(sel.has(nd.id) ? 2000 : hl.has(nd.id) ? 1000 : 0); });
     Object.values(S).forEach(o => { const st = api.streamState(o.s.id), p = o.lay._path; if (!p) return;
-      p.classList.toggle("hide", st.hidden); p.classList.toggle("ghost", st.ghost); p.classList.toggle("hl", hl.has(o.s.id)); p.classList.toggle("sel", sel.has(o.s.id));
+      [p, o.mid._path].forEach(q => { if (!q) return; q.classList.toggle("hide", st.hidden); q.classList.toggle("ghost", st.ghost); q.classList.toggle("hl", hl.has(o.s.id)); q.classList.toggle("sel", sel.has(o.s.id)); });
       const hp = o.hit._path; if (hp){ hp.classList.toggle("hide", st.hidden); hp.classList.toggle("hl", hl.has(o.s.id)); } });
     declutter();
     const key = [...hl].sort().join(",");
@@ -247,7 +269,7 @@ window.PFDLayout = (() => {
     on = v; document.body.classList.toggle("layout", v); $("mapView").hidden = !v;
     if (!v){ if (moving) moving.cancel(); return true; }
     try { await load(); } catch (e) { api.toast("Couldn't load the map (" + e.message + "). Check the connection."); on = false; document.body.classList.remove("layout"); $("mapView").hidden = true; return false; }
-    if (!map){ build(); drawStreams(); markers(); Object.values(S).forEach(o => arrow(o.lay, o.s.ty)); }
+    if (!map){ build(); drawStreams(); markers(); Object.values(S).forEach(o => { arrow(o.lay, o.s.ty); arrow(o.mid, o.s.ty); }); }
     setTimeout(declutter, 50);
     map.invalidateSize(); sync(false); return true;
   }
