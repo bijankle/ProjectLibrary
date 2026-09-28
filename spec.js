@@ -18,6 +18,9 @@ window.Spec = (() => {
   const tbl = rows => `<table class="lk-t">${rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</table>`;
   const short = t => { t = String(t || ""); return t.length > 70 ? t.slice(0, 68) + "…" : t; };
 
+  // HDPE outside diameter (mm) to the nominal size used on valve datasheets
+  const OD_DN = { 20: 15, 25: 20, 32: 25, 40: 32, 50: 40, 63: 50, 75: 65, 90: 80, 110: 100, 125: 100, 140: 125, 160: 150, 180: 150, 200: 150, 225: 200, 250: 200, 280: 250,
+    315: 300, 355: 300, 400: 350, 450: 400, 500: 450, 560: 500, 630: 600, 710: 700, 800: 800, 900: 900, 1000: 1000, 1200: 1200 };
   // ---------- piping class ----------
   // one line always visible (class, title, the datasheet button); everything else in tap-to-open sections
   function pipeHTML(cls, size, service, parts){
@@ -36,9 +39,12 @@ window.Spec = (() => {
           fit.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.dim)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`
         : `<div class="lk-ns">No component row in ${esc(cls)} covers ${esc(unit)}${esc(size)}: check the datasheet (the size may be non preferred).</div>`));
     const sv = service ? IX.services.filter(r => r.code === service && r.sys === cls) : [];
+    // valves: only the datasheets whose size range covers this line (HDPE OD sizes compared as the matching DN)
+    const dn = size == null ? null : unit === "OD" ? OD_DN[size] || size : size;
     sv.forEach((r, k) => {
-      const vs = String(r.valves || "").split(/[,\s]+/).filter(v => /^V[A-Z0-9]+$/.test(v));
-      S.push(sec("vl" + k, sv.length > 1 ? "Valves " + (k + 1) : "Valves", vs.length, `<div class="lk-ns" style="margin:0 0 4px">For ${esc(r.service)}</div><div class="sp-v">${vs.map(v => IX.valve[v]
+      const all = String(r.valves || "").split(/[,\s]+/).filter(v => /^V[A-Z0-9]+$/.test(v));
+      const vs = dn == null ? all : all.filter(v => !IX.valve[v] || IX.valve[v].lo == null || (dn >= IX.valve[v].lo && dn <= IX.valve[v].hi)), off = all.length - vs.length;
+      S.push(sec("vl" + k, sv.length > 1 ? "Valves " + (k + 1) : "Valves", vs.length, `<div class="lk-ns" style="margin:0 0 4px">For ${esc(r.service)}${dn != null ? ` at ${esc(unit)}${esc(size)}` : ""}${off ? `; ${off} more for other sizes are in the datasheet` : ""}</div><div class="sp-v">${vs.map(v => IX.valve[v]
         ? `<button class="sp-chip sp-open" data-page="${IX.valve[v].page}" data-title="Valve ${esc(v)}" title="${esc(IX.valve[v].title || "")}">${esc(v)}</button>` : `<span class="sp-chip off" title="No datasheet for this code in the spec">${esc(v)}</span>`).join("")}</div>` +
         tbl([["Fluid design", r.fluid], ["Class rating", r.rating], ["Gasket", r.gasket], ["External finish", r.ext], ["Note", r.notes]].filter(x => x[1] && x[1] !== "N/A"))));
     });
@@ -48,7 +54,7 @@ window.Spec = (() => {
       cd += `<div class="sp-sc"><table class="lk-t sp-dt">${P.design.map(r => `<tr><td>${esc(r[0])}</td>${Array.from({ length: cols - 1 }, (_, i) => `<td>${esc(r[i + 1] || "")}</td>`).join("")}</tr>`).join("")}</table></div>`;
     }
     S.push(sec("cd", "Class", null, cd));
-    if (comps.length && fit.length < comps.length)
+    if (comps.length && size == null)   // the whole table only when no size is known (the class opened on its own); sizes that don't apply stay in the PDF
       S.push(sec("all", "All parts", comps.length, `<div class="sp-sc"><table class="lk-t sp-ct"><tr><th>Item</th><th>Size</th><th>Type / rating</th><th>Ends</th><th>Material</th></tr>` +
         comps.map(c => `<tr><td>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</td><td>${esc(c.size)}</td><td>${esc(c.type)}</td><td>${esc(c.ends)}</td><td>${esc(c.mat)}</td></tr>`).join("") + `</table></div>`));
     if (P.notes && P.notes.length) S.push(sec("notes", "Notes", P.notes.length, P.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("")));
