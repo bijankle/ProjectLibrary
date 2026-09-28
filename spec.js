@@ -82,6 +82,14 @@ window.Spec = (() => {
       const cls = get(it, f, "Pipe spec"), size = num(get(it, f, "Size (DN)")) ?? num((it.key.match(/-(\d+)(?:-[A-Z]+)?$/) || [])[1]);
       return cls ? pipeHTML(cls, size, get(it, f, "Service")) : "";
     }
+    if (it.t === "spi" || it.t === "hose"){   // pipe specials and hoses name the piping class they sit in
+      const cls = get(it, f, "Pipe spec");
+      return cls && IX.pipe[cls] ? pipeHTML(cls, num(get(it, f, "Size (DN)")), null) : cls ? `<div class="lk-ns">Piping class ${esc(cls)} is not in the spec.</div>` : "";
+    }
+    if (it.t === "ins"){   // valves in the instrument list carry their valve datasheet code
+      const code = get(it, f, "Valve type").trim();
+      return IX.valve[code] ? valveHTML(code, num(get(it, f, "Valve size"))) : "";
+    }
     if (it.t === "mv"){
       const code = get(it, f, "Spec"), size = num(get(it, f, "Size (DN)"));
       return code && IX.valve[code] ? valveHTML(code, size) : code ? `<div class="lk-ns">Valve code ${esc(code)} has no datasheet in the spec.</div>` : "";
@@ -96,7 +104,10 @@ window.Spec = (() => {
     }
     return "";
   }
-  const wanted = it => it && (["line", "mv", "cv"].includes(it.t) || it.t === "spec");
+  const wanted = it => it && (["line", "mv", "cv", "spi", "hose"].includes(it.t) || it.t === "spec" || (it.t === "ins" && it.r && /^V[A-Z0-9]{3,}$/.test(String(it.r[DBf("ins").indexOf("Valve type")] || "").trim())));
+  const DBf = t => (window.Lookup && Lookup.fields ? Lookup.fields(t) : []) || [];
+  // a control valve list code such as "50VTWD1C1-Double Acting…": the valve datasheet at that size (Smart PFD panel)
+  const forCode = c => { const m = String(c || "").match(/^(\d+)([A-Z][A-Z0-9]+)/); return IX && m && IX.valve[m[2]] ? valveHTML(m[2], +m[1]) : ""; };
   const note = () => IX ? `<div class="lk-src">Spec: ${esc(IX.meta.title)} ${esc(IX.meta.doc)} Rev ${esc(IX.meta.rev)}. Datasheet pages open in the built in viewer; the first open keeps the PDF on this device.</div>` : "";
 
   // search entries for every piping class and valve datasheet
@@ -109,5 +120,5 @@ window.Spec = (() => {
   const open = (page, title) => load().then(() => PdfView.open({ url: IX.meta.file, page, title: title || IX.meta.title, fit: "width", download: "2000-F00-STS-PP-10001 Rev 3 Piping Materials and Valves.pdf" }));
   function bind(root){ root.querySelectorAll(".sp-open").forEach(b => b.onclick = e => { e.preventDefault(); open(+b.dataset.page, b.dataset.title); }); }
 
-  return { load, ready: () => !!IX, html, wanted, note, extras, bind, open };
+  return { load, ready: () => !!IX, html, wanted, note, extras, bind, open, forCode };
 })();

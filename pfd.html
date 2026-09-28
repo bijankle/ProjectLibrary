@@ -1023,10 +1023,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     ["stt", "Starter type"], ["ds", "Duty / standby"], ["ep", "Emergency power"], ["moc", "Material of construction"], ["ven", "Vendor"], ["mm", "Make / model"], ["pkg", "Package"],
     ["sta", "Status"], ["stg", "Stage"], ["bg", "Brownfield / greenfield"], ["sup", "Supply type"], ["pfd", "PFD"], ["pid", "P&ID"], ["ref", "Reference drawing"]];
   // a record's fields under property headings, each heading a pill (Lookup.pills); blank fields listed once at the end
-  const LBL = {}; const groupTable = (r, G, g, rowsDef) => { rowsDef.forEach(([k, l]) => LBL[g + k] = l);
+  const LBL = {}; const groupTable = (r, G, g, rowsDef, extra = []) => { rowsDef.forEach(([k, l]) => LBL[g + k] = l);
     const blank = rowsDef.filter(([k]) => r[k] == null || r[k] === "").map(([, l]) => l);
     return Lookup.pills(G.map(([id, label, keys]) => { const ks = keys.filter(k => r[k] != null && r[k] !== "");
-      return { id, label, html: ks.length ? "<table>" + ks.map(k => `<tr><td>${LBL[g + k]}</td><td>${esc(r[k])}</td></tr>`).join("") + "</table>" : "" }; }), g) +
+      return { id, label, html: ks.length ? "<table>" + ks.map(k => `<tr><td>${LBL[g + k]}</td><td>${esc(r[k])}</td></tr>`).join("") + "</table>" : "" }; }).concat(extra), g) +
       (blank.length ? `<div style="font-size:11.5px;color:var(--mute);margin:4px 0 6px">Blank in the list: ${esc(blank.join(", "))}.</div>` : ""); };
   const MEL_G = [["duty", "Duty", ["n", "sz", "nd", "dd", "ds"]], ["elec", "Electrical", ["kw", "v", "stt", "ep"]], ["sup", "Supply", ["moc", "ven", "mm", "pkg", "sup"]],
     ["st", "Status", ["sta", "stg", "bg"]], ["dwg", "Drawings", ["pfd", "pid", "ref"]]];
@@ -1036,7 +1036,9 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     ["mfr", "Valve make"], ["mod", "Valve model"], ["am", "Actuator model"], ["loc", "Location"], ["pid", "P&ID"], ["stg", "Stage"]];
   const CV_G = [["vlv", "Valve", ["ty", "code", "sz", "ls", "cl"]], ["proc", "Process", ["fl", "qmin", "qmax", "pin", "p80", "cw", "sg"]], ["act", "Actuation", ["fail", "act", "pos", "am"]],
     ["sup", "Supply", ["mfr", "mod"]], ["where", "Where", ["loc", "pid", "stg"]]];
-  const cvTable = c => groupTable(c, CV_G, "cv", CV_ROWS);
+  // the valve datasheet from the pipe and valve spec, filled in once spec/index.json has loaded
+  const cvTable = c => groupTable(c, CV_G, "cv", CV_ROWS, /^\d+[A-Z]/.test(c.code || "") ? [{ id: "spec", label: "Valve spec", html: `<div class="cv-spec" data-code="${esc(c.code)}">Loading the spec…</div>` }] : []);
+  const fillCvSpec = root => root.querySelectorAll(".cv-spec").forEach(el => Spec.load().then(() => { el.innerHTML = Spec.forCode(el.dataset.code) || "This valve code has no datasheet in the spec."; Spec.bind(el); }).catch(() => el.textContent = "Couldn't load the spec."));
   const IN_ROWS = [["ty", "Instrument type"], ["desc", "Description"], ["eq", "On equipment"], ["loc", "Location"], ["fl", "Fluid"], ["u", "Range / units"], ["mk", "Make"], ["md", "Model"], ["pid", "P&ID"]];
   const IN_G = [["ins", "Instrument", ["ty", "desc", "u"]], ["where", "Where", ["eq", "loc", "fl", "pid"]], ["sup", "Supply", ["mk", "md"]]];
   const inTable = r => groupTable(r, IN_G, "in", IN_ROWS);
@@ -1248,10 +1250,11 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     $("iBody").querySelectorAll("a[data-i]").forEach(a => a.onclick = e => { const I = INTERLOCKS.find(x => x.id === a.dataset.i); go(e, { k: "ilk", id: I.id }, () => showIlk(I)); });
     $("iBody").querySelectorAll("a[data-find]").forEach(a => a.onclick = e => { e.preventDefault(); openSearch(a.dataset.find, true); });
     $("iBody").querySelectorAll("a[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.load().then(() => { if (!Pid.open(a.dataset.dwg, $("iTag").textContent.split(/[\s/]/)[0])) toast(a.dataset.dwg + " isn't loaded in the app yet."); }).catch(() => toast("Couldn't load the drawing list.")); });
+    fillCvSpec($("iBody"));
     $("iBody").querySelectorAll("a[data-cv]").forEach(a => a.onclick = e => { e.preventDefault(); const c = CV_DATA[a.dataset.cv]; if (!c) return;
       const back = lastPanel; $("iKind").textContent = "Control valve"; $("iName").textContent = c.loc || c.tag; $("iTag").textContent = c.tag;
       $("iBody").innerHTML = `<div class="symm">${feSvg("valve")}<div><b>Control valve list entry</b></div></div>` + cvTable(c) + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;
-      $("cvBack").onclick = () => back && back(); });
+      $("cvBack").onclick = () => back && back(); fillCvSpec($("iBody")); });
   }
   function openInfo(){ $("info").classList.add("on"); }
   function closeInfo(){ $("info").classList.remove("on"); }

@@ -107,6 +107,7 @@
   document.addEventListener("click", e => { const b = e.target.closest && e.target.closest(".pf-b"); if (!b) return; const pf = b.closest(".pf"); pfLast[pf.dataset.g] = b.dataset.p;
     [...pf.children].forEach(c => { if (c.classList.contains("pf-bar")) c.querySelectorAll(".pf-b").forEach(x => x.classList.toggle("on", x === b)); else if (c.classList.contains("pf-sec")) c.hidden = c.dataset.p !== b.dataset.p; }); });
   L.refs = k => refs.get(norm(k)) || [];
+  L.fields = t => DB && DB.types[t] ? DB.types[t].f : null;
   // a line in a list: "from <equipment description> (<tag>) to …", equipment named from the MEL; another line stays a number
   const endText = v => { v = String(v || "").trim().replace(/^(to|from)\s+/i, ""); if (!v) return "not given";
     return v.replace(TAG_RE, m => { const e = (byKey.get(norm(m)) || []).find(x => x.t === "mel"); return e && e.name ? `${e.name} (${m})` : m; }); };
@@ -135,7 +136,7 @@
       // every other field, sorted under property headings, each heading a pill
       const grp = {}; rest.forEach(i => { const g = FGROUPS.find(([, re]) => re.test(f[i])); (grp[g ? g[0] : "Other"] = grp[g ? g[0] : "Other"] || []).push(i); });
       [...FGROUPS.map(g => g[0]), "Other"].filter(g => grp[g]).forEach(g => secs.push({ id: "g-" + g, label: g, n: grp[g].length, html: `<table class="lk-t">${grp[g].map(row).join("")}</table>` }));
-      if (window.Spec && Spec.wanted(it)) secs.push({ id: "spec", label: it.t === "line" ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
+      if (window.Spec && Spec.wanted(it)) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(it.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
     }
     const same = (byKey.get(it.k) || []).filter(x => x !== it);
     if (same.length) secs.push({ id: "also", label: "Also in", n: same.length, html: same.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${ICON[x.t] || ""} ${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("") });
