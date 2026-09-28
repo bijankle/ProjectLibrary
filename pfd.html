@@ -1067,15 +1067,14 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       { id: "eq", label: "Equipment", n: eq.length, html: eq.length ? (eq.length === 1 ? melOne(eq[0], [n.n]) : Lookup.pills(eq.map(r => ({ id: r.tag, label: r.tag, html: `<div style="font-weight:700;margin:2px 0 4px">${esc(r.n || r.tag)}</div>` + melOne(r, [r.n]) })), "node-eq"))
           : `<div>${NS_TXT}: no MEL item for this block (off site or a symbolic block).</div>` },
       { id: "ins", label: "Instruments", n: inst.length + (more ? "+" : ""), html: inst.length ? `<table class="it">${inst.map(insRow).join("")}</table>` + moreNote : `<div>${NS_TXT} in the instrument list for these equipment numbers.</div>` },
-      { id: "vlv", label: "Valves", n: vlv.length + (more ? "+" : ""), html: vlv.length ? `<table class="it">${vlv.map(insRow).join("")}</table><div style="font-size:12px;color:var(--mute);padding:6px 0">Control and actuated valves; tap a tag for its control valve list data.</div>` + moreNote : `<div>${NS_TXT}: no control valves listed on these equipment numbers.</div>` },
-      { id: "lin", label: "Lines", n: ins.length + outs.length, html: (ins.length ? `<h4>In (PFD)</h4><div class="conn">${ins.map(link).join("")}</div>` : "") + (outs.length ? `<h4>Out (PFD)</h4><div class="conn">${outs.map(link).join("")}</div>` : "") +
-          (eqTags.length ? `<h4>Line list lines to or from this equipment</h4><div id="nLines" class="conn"><span style="color:var(--mute)">Loading the line list…</span></div>` : "") || `<div>${NS_TXT}</div>` },
+      { id: "vlv", label: "Valves", n: vlv.length + (more ? "+" : ""), html: vlv.length ? `<table class="it">${vlv.map(insRow).join("")}</table><div style="font-size:12px;color:var(--mute);padding:6px 0">Tap a tag for its valve data.</div>` + moreNote : `<div>${NS_TXT}: no control valves listed on these equipment numbers.</div>` },
+      { id: "lin", label: "Lines", n: ins.length + outs.length, html: (ins.length ? `<h4>In</h4><div class="conn">${ins.map(link).join("")}</div>` : "") + (outs.length ? `<h4>Out</h4><div class="conn">${outs.map(link).join("")}</div>` : "") +
+          (eqTags.length ? `<h4>Pipe lines</h4><div id="nLines" class="conn"><span style="color:var(--mute)">Loading the line list…</span></div>` : "") || `<div>${NS_TXT}</div>` },
     ];
     // the block's own information stays together in Overview
     if (n.hear) secs[0].html += `<h4>What you'll hear</h4><div>${esc(n.hear)}</div>`;
     if (dw.size) secs[0].html += `<h4>Drawings</h4><div class="conn">${[...dw].sort().map(d => `<a data-dwg="${esc(d)}">📐 ${esc(d)}</a>`).join("")}</div>`;
     let h = Lookup.pills(secs, "node");
-    h += `<div class="src">Sources: node description <code>pfd-data.js</code>; MEL 2000-F00-LST-ME-10001 Rev 0 and instrument list rows in <code>pfd-equip.js</code> (built by <code>tools/build_equip.py</code>).</div>`;
     if (eqTags.length) Lookup.load().then(() => { const el = $("nLines"); if (!el) return; const seen = new Set(), out = [];
       eqTags.forEach(t => Lookup.refs(t).forEach(x => { if (x.t === "line" && !seen.has(x.k)){ seen.add(x.k); out.push(x); } }));
       el.innerHTML = out.length ? out.map(x => `<a data-find="${esc(x.key)}"><b style="font-family:ui-monospace,monospace">${esc(x.key)}</b> ${esc(Lookup.lineText(x))}</a>`).join("") : `<span style="color:var(--mute)">None in the line list name these equipment numbers.</span>`;
@@ -1149,7 +1148,6 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       (ilks.length ? `<h4>Interlocks on this line</h4><div class="conn">${ilks.map(ilkLink).join("")}</div>` : "") });
     S.push({ id: "calc", label: "How calculated", html: calcH });
     h += Lookup.pills(S, "stream");
-    h += `<div class="src">Source: Process Design Criteria Stage 2, 2000-F00-DCR-PR-10002 Rev 4, section ${esc(D.sec || "not specified")}. Data lives in <code>pfd-streams.js</code> under key <code>${esc(s.id)}</code>; routing in <code>pfd-data.js</code>.</div>`;
     $("iBody").innerHTML = h;
     drawSym($("symSlot").querySelector("svg"), T, 22, 15, 6);
     bindLinks(); openInfo();
@@ -1204,7 +1202,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     h += Lookup.pills([{ id: "how", label: "How it works", html: `<div>${esc(L.txt)}</div>` + (L.note ? `<div style="margin-top:8px;color:var(--mute);font-size:13px">${esc(L.note)}</div>` : "") },
       { id: "eq", label: "Equipment", n: rn.length, html: rn.length ? `<div class="conn">${rn.map(id => `<a data-n="${id}">${esc(byId[id].n)}${byId[id].tag ? " (" + esc(byId[id].tag) + ")" : ""}</a>`).join("")}</div>` : "" },
       { id: "lin", label: "Lines", n: rs.length, html: rs.length ? `<div class="conn">${rs.map(link).join("")}</div>` : "" }], "loop");
-    h += `<div style="color:var(--mute);font-size:12px;margin-top:10px">Tags from the Master Instrument List and Control Valve List. A controller tag marked (d) is derived from the loop number, because the instrument list holds field devices only. Click the dot or final element symbol for full device data.</div>`;
+    h += `<div style="color:var(--mute);font-size:12px;margin-top:10px">A controller tag marked (d) is derived from the loop number. Click the dot or final element symbol for full device data.</div>`;
     $("iBody").innerHTML = h; bindLinks(); openInfo();
   }
   function showSym(L, which, i){
@@ -1258,7 +1256,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     fillCvSpec($("iBody"));
     $("iBody").querySelectorAll("a[data-cv]").forEach(a => a.onclick = e => { e.preventDefault(); const c = CV_DATA[a.dataset.cv]; if (!c) return;
       const back = lastPanel; $("iKind").textContent = "Control valve"; $("iName").textContent = c.loc || c.tag; $("iTag").textContent = c.tag;
-      $("iBody").innerHTML = `<div class="symm">${feSvg("valve")}<div><b>Control valve list entry</b></div></div>` + cvTable(c, INS_BY_TAG[a.dataset.cv], [c.loc]) + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;
+      $("iBody").innerHTML = cvTable(c, INS_BY_TAG[a.dataset.cv], [c.loc]) + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;
       $("cvBack").onclick = () => back && back(); fillCvSpec($("iBody")); });
   }
   function openInfo(){ $("info").classList.add("on"); }

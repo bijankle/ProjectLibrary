@@ -189,13 +189,12 @@
           (a.length > show.length ? `<div class="lk-ns">and ${a.length - show.length} more; search the tag to see them all.</div>` : "") }); });
     }
     h += L.pills(secs, "item-" + (it.t === "pid" ? "pid" : "rec"));
-    if (DB.types[it.t]) h += `<div class="lk-src">Source: ${esc(DB.types[it.t].n)} list ${esc(DB.types[it.t].doc)} ${esc(DB.types[it.t].rev)}. Tap any underlined code to open it.</div>`;
     return h;
   };
   // spec section (pipe class for a line, datasheet for a valve), filled once spec/index.json is loaded
   L.fillSpec = (root, it) => { const el = root.querySelector(".lk-spec"); if (!el || !window.Spec) return;
     if (el.dataset.k) it = L.find(el.dataset.k, el.dataset.t) || it;   // the spec may come from the same tag in another list
-    Spec.load().then(() => { if (!el.isConnected) return; el.innerHTML = Spec.html(it, it.r && DB.types[it.t] ? DB.types[it.t].f : []) + Spec.note(); Spec.bind(el); })
+    Spec.load().then(() => { if (!el.isConnected) return; el.innerHTML = Spec.html(it, it.r && DB.types[it.t] ? DB.types[it.t].f : []); Spec.bind(el); })
       .catch(e => { el.innerHTML = `<div class="lk-ns">Couldn't load the pipe and valve spec (${esc(e.message)}).</div>`; }); };
   // for the Browse pickers (browse.js): every item, a field by name, the list icons and names
   L.items = () => items;
