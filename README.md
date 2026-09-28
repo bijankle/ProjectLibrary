@@ -54,3 +54,13 @@ Search results for pipe lines, manual valves and control valves now include the 
 
 `python3 tools/build_spec.py <spec pdf>` builds `spec/pvs.pdf` (cover page removed, the names on every revision and sign-off block blacked out, file properties cleared) and `spec/index.json` (28 piping classes, 75 valve datasheets and the fluid services table, with size ranges as numbers).
 
+## Drawings (P&IDs and PFD sheets)
+
+`python3 tools/build_pids.py <pdf or folder> …` splits combined drawing sets into one PDF per drawing number in `drawings/` (named by the number, all sheets of that number together) with `drawings/index.json` (title, revision, date, status, size). The number is read from each title block; sheets whose text is outlined get their number from the sheet order when the gap fits exactly (flagged "inferred"). Initials, names and signature images in the DRAW / CHECK / DESIGN / TECH APP / PROJ APP blocks are blacked out, review stamp annotations removed, file properties cleared. The PFD set is built in too.
+
+In search, a drawing number is a blue underlined link on the drawing's own page (tap to open it), and wherever a record mentions a drawing there is a 📐 open link. Drawings open in the built-in viewer (`pdfview.js`, shared with the spec), fitted to the screen, with the tag you came from marked in red / yellow (‹ › step through several). Opening another search or drawing clears the mark. A drawing is kept on the device the first time it is opened.
+
+## Offline downloads
+
+Settings (phone) or ⬇ Offline (PFD sidebar) lists what can be kept on the device for no signal, each with its size: Everything, the pipe and valve spec, the P&IDs, the PFD sheets, and each source document (tables for the viewer plus its Excel copy). `python3 tools/build_offline.py` writes `offline.json` from what is built; documents live in a separate cache (`kcgm-docs-N` in `sw.js`, bump N when documents are rebuilt) that app updates keep.
+

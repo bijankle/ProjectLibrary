@@ -1,0 +1,336 @@
+{
+ "cache": "kcgm-docs-1",
+ "groups": [
+  {
+   "id": "spec",
+   "name": "Pipe & valve spec",
+   "note": "2000-F00-STS-PP-10001 Rev 3, every piping class and valve datasheet",
+   "files": [
+    "spec/pvs.pdf"
+   ],
+   "size": 9814275
+  },
+  {
+   "id": "pfds",
+   "name": "PFD sheets",
+   "note": "48 drawings",
+   "files": [
+    "drawings/2000-F00-PFD-PR-10001.pdf",
+    "drawings/2000-F00-PFD-PR-10002.pdf",
+    "drawings/2000-F00-PFD-PR-10003.pdf",
+    "drawings/2000-F00-PFD-PR-10004.pdf",
+    "drawings/2000-F00-PFD-PR-10005.pdf",
+    "drawings/2000-F00-PFD-PR-10006.pdf",
+    "drawings/2000-F00-PFD-PR-10007.pdf",
+    "drawings/2000-F00-PFD-PR-10008.pdf",
+    "drawings/2000-F00-PFD-PR-10009.pdf",
+    "drawings/2000-F00-PFD-PR-10010.pdf",
+    "drawings/2000-F00-PFD-PR-10012.pdf",
+    "drawings/2000-F00-PFD-PR-10013.pdf",
+    "drawings/2000-F00-PFD-PR-10014.pdf",
+    "drawings/2000-F00-PFD-PR-10015.pdf",
+    "drawings/2000-F00-PFD-PR-10016.pdf",
+    "drawings/2000-F00-PFD-PR-10017.pdf",
+    "drawings/2000-F00-PFD-PR-10018.pdf",
+    "drawings/2000-F00-PFD-PR-10019.pdf",
+    "drawings/2000-F00-PFD-PR-10020.pdf",
+    "drawings/2000-F00-PFD-PR-10021.pdf",
+    "drawings/2000-F00-PFD-PR-10022.pdf",
+    "drawings/2000-F00-PFD-PR-10023.pdf",
+    "drawings/2000-F00-PFD-PR-10024.pdf",
+    "drawings/2000-F00-PFD-PR-10026.pdf",
+    "drawings/2000-F00-PFD-PR-10027.pdf",
+    "drawings/2000-F00-PFD-PR-10028.pdf",
+    "drawings/2000-F00-PFD-PR-10029.pdf",
+    "drawings/2000-F00-PFD-PR-10030.pdf",
+    "drawings/2000-F00-PFD-PR-10031.pdf",
+    "drawings/2000-F00-PFD-PR-10032.pdf",
+    "drawings/2000-F00-PFD-PR-10033.pdf",
+    "drawings/2000-F00-PFD-PR-10034.pdf",
+    "drawings/2000-F00-PFD-PR-10035.pdf",
+    "drawings/2000-F00-PFD-PR-10036.pdf",
+    "drawings/2000-F00-PFD-PR-10037.pdf",
+    "drawings/2000-F00-PFD-PR-10038.pdf",
+    "drawings/2000-F00-PFD-PR-10039.pdf",
+    "drawings/2000-F00-PFD-PR-10040.pdf",
+    "drawings/2000-F00-PFD-PR-10041.pdf",
+    "drawings/2000-F00-PFD-PR-10042.pdf",
+    "drawings/2000-F00-PFD-PR-10043.pdf",
+    "drawings/2000-F00-PFD-PR-10044.pdf",
+    "drawings/2000-F00-PFD-PR-10045.pdf",
+    "drawings/2000-F00-PFD-PR-10046.pdf",
+    "drawings/2000-F00-PFD-PR-10047.pdf",
+    "drawings/2000-F00-PFD-PR-10048.pdf",
+    "drawings/2000-F00-PFD-PR-10049.pdf",
+    "drawings/2000-F00-PFD-PR-10050.pdf"
+   ],
+   "size": 17526205
+  },
+  {
+   "id": "src-mel",
+   "name": "Mechanical Equipment List",
+   "note": "2000-F00-LST-ME-10001 Rev 0: tables to view offline and the Excel copy",
+   "files": [
+    "sources/mel.xlsx",
+    "sources/mel/0-0.json",
+    "sources/mel/1-0.json"
+   ],
+   "size": 1376795
+  },
+  {
+   "id": "src-ins",
+   "name": "Instrument List",
+   "note": "2000-F00-LST-IC-11011 Rev 1: tables to view offline and the Excel copy",
+   "files": [
+    "sources/ins.xlsx",
+    "sources/ins/0-0.json",
+    "sources/ins/1-0.json",
+    "sources/ins/1-1.json",
+    "sources/ins/10-0.json",
+    "sources/ins/11-0.json",
+    "sources/ins/12-0.json",
+    "sources/ins/13-0.json",
+    "sources/ins/14-0.json",
+    "sources/ins/2-0.json",
+    "sources/ins/3-0.json",
+    "sources/ins/4-0.json",
+    "sources/ins/5-0.json",
+    "sources/ins/6-0.json",
+    "sources/ins/7-0.json",
+    "sources/ins/8-0.json",
+    "sources/ins/9-0.json"
+   ],
+   "size": 4801981
+  },
+  {
+   "id": "src-cv",
+   "name": "Control Valve List",
+   "note": "2000-F00-LST-PP-10003 Rev 0: tables to view offline and the Excel copy",
+   "files": [
+    "sources/cv.xlsx",
+    "sources/cv/0-0.json",
+    "sources/cv/1-0.json",
+    "sources/cv/10-0.json",
+    "sources/cv/11-0.json",
+    "sources/cv/12-0.json",
+    "sources/cv/13-0.json",
+    "sources/cv/14-0.json",
+    "sources/cv/2-0.json",
+    "sources/cv/3-0.json",
+    "sources/cv/4-0.json",
+    "sources/cv/5-0.json",
+    "sources/cv/6-0.json",
+    "sources/cv/7-0.json",
+    "sources/cv/8-0.json",
+    "sources/cv/9-0.json"
+   ],
+   "size": 987061
+  },
+  {
+   "id": "src-line",
+   "name": "Line List",
+   "note": "2000-F00-LST-PP-10001 Rev 1: tables to view offline and the Excel copy",
+   "files": [
+    "sources/line.xlsx",
+    "sources/line/0-0.json",
+    "sources/line/1-0.json",
+    "sources/line/2-0.json",
+    "sources/line/3-0.json",
+    "sources/line/4-0.json",
+    "sources/line/5-0.json",
+    "sources/line/5-1.json",
+    "sources/line/5-10.json",
+    "sources/line/5-11.json",
+    "sources/line/5-12.json",
+    "sources/line/5-13.json",
+    "sources/line/5-14.json",
+    "sources/line/5-15.json",
+    "sources/line/5-16.json",
+    "sources/line/5-17.json",
+    "sources/line/5-18.json",
+    "sources/line/5-19.json",
+    "sources/line/5-2.json",
+    "sources/line/5-20.json",
+    "sources/line/5-21.json",
+    "sources/line/5-22.json",
+    "sources/line/5-23.json",
+    "sources/line/5-24.json",
+    "sources/line/5-25.json",
+    "sources/line/5-26.json",
+    "sources/line/5-27.json",
+    "sources/line/5-3.json",
+    "sources/line/5-4.json",
+    "sources/line/5-5.json",
+    "sources/line/5-6.json",
+    "sources/line/5-7.json",
+    "sources/line/5-8.json",
+    "sources/line/5-9.json",
+    "sources/line/6-0.json"
+   ],
+   "size": 43348696
+  },
+  {
+   "id": "src-mv",
+   "name": "Manual Valve List",
+   "note": "2000-F00-LST-PP-10002 Rev 8: tables to view offline and the Excel copy",
+   "files": [
+    "sources/mv.xlsx",
+    "sources/mv/0-0.json",
+    "sources/mv/1-0.json",
+    "sources/mv/2-0.json"
+   ],
+   "size": 887615
+  },
+  {
+   "id": "src-spi",
+   "name": "Special Piping Items (SPI) List",
+   "note": "2000-F00-LST-PP-10005 Rev 0: tables to view offline and the Excel copy",
+   "files": [
+    "sources/spi.xlsx",
+    "sources/spi/0-0.json",
+    "sources/spi/1-0.json",
+    "sources/spi/2-0.json"
+   ],
+   "size": 362477
+  },
+  {
+   "id": "src-hose1",
+   "name": "Slurry Hose List Stage 1",
+   "note": "2000-F00-LST-PP-10032 Rev 4: tables to view offline and the Excel copy",
+   "files": [
+    "sources/hose1.xlsx",
+    "sources/hose1/0-0.json",
+    "sources/hose1/1-0.json"
+   ],
+   "size": 56383
+  },
+  {
+   "id": "src-hose2",
+   "name": "Slurry Hose List Stage 2",
+   "note": "2000-F00-LST-PP-12032 Rev B: tables to view offline and the Excel copy",
+   "files": [
+    "sources/hose2.xlsx",
+    "sources/hose2/0-0.json",
+    "sources/hose2/1-0.json"
+   ],
+   "size": 39382
+  },
+  {
+   "id": "src-pdc",
+   "name": "Process Design Criteria Stage 2",
+   "note": "2000-F00-DCR-PR-10002 Rev 4: tables to view offline and the Excel copy",
+   "files": [
+    "sources/pdc.xlsx",
+    "sources/pdc/0-0.json",
+    "sources/pdc/1-0.json",
+    "sources/pdc/10-0.json",
+    "sources/pdc/11-0.json",
+    "sources/pdc/12-0.json",
+    "sources/pdc/13-0.json",
+    "sources/pdc/14-0.json",
+    "sources/pdc/15-0.json",
+    "sources/pdc/16-0.json",
+    "sources/pdc/17-0.json",
+    "sources/pdc/18-0.json",
+    "sources/pdc/2-0.json",
+    "sources/pdc/3-0.json",
+    "sources/pdc/4-0.json",
+    "sources/pdc/5-0.json",
+    "sources/pdc/6-0.json",
+    "sources/pdc/7-0.json",
+    "sources/pdc/8-0.json",
+    "sources/pdc/9-0.json"
+   ],
+   "size": 335498
+  },
+  {
+   "id": "src-cp1",
+   "name": "Plant General Process Control Philosophy Stage 1",
+   "note": "2000-F00-REP-PR-10001 Rev 4: tables to view offline and the Excel copy",
+   "files": [
+    "sources/cp1.xlsx",
+    "sources/cp1/0-0.json",
+    "sources/cp1/1-0.json",
+    "sources/cp1/2-0.json",
+    "sources/cp1/3-0.json",
+    "sources/cp1/4-0.json"
+   ],
+   "size": 16667
+  },
+  {
+   "id": "src-cp2",
+   "name": "Plant General Process Control Philosophy Stage 2",
+   "note": "2000-F00-REP-PR-10002 Rev 0: tables to view offline and the Excel copy",
+   "files": [
+    "sources/cp2.xlsx",
+    "sources/cp2/0-0.json",
+    "sources/cp2/1-0.json",
+    "sources/cp2/2-0.json",
+    "sources/cp2/3-0.json",
+    "sources/cp2/4-0.json"
+   ],
+   "size": 13610
+  },
+  {
+   "id": "src-pfd",
+   "name": "Process Flow Diagrams Stage 1",
+   "note": "2000-F00-PFD-PR series Rev 1: tables to view offline and the Excel copy",
+   "files": [
+    "sources/pfd.xlsx",
+    "sources/pfd/0-0.json",
+    "sources/pfd/1-0.json",
+    "sources/pfd/2-0.json"
+   ],
+   "size": 158123
+  },
+  {
+   "id": "src-num",
+   "name": "Plant Numbering Specification",
+   "note": "2000-F00-STS-GE-10003 Rev 3: tables to view offline and the Excel copy",
+   "files": [
+    "sources/num.xlsx",
+    "sources/num/0-0.json",
+    "sources/num/1-0.json",
+    "sources/num/10-0.json",
+    "sources/num/11-0.json",
+    "sources/num/2-0.json",
+    "sources/num/3-0.json",
+    "sources/num/4-0.json",
+    "sources/num/5-0.json",
+    "sources/num/6-0.json",
+    "sources/num/7-0.json",
+    "sources/num/8-0.json",
+    "sources/num/9-0.json"
+   ],
+   "size": 32390
+  },
+  {
+   "id": "src-layout",
+   "name": "Overall Plant Layout Plan",
+   "note": "2000-F00-DRG-GE-20001 Rev 2: tables to view offline and the Excel copy",
+   "files": [
+    "sources/layout.xlsx",
+    "sources/layout/0-0.json"
+   ],
+   "size": 7646
+  },
+  {
+   "id": "src-wbs",
+   "name": "KCGM Growth Work Breakdown Structure",
+   "note": "(no number) Rev : tables to view offline and the Excel copy",
+   "files": [
+    "sources/wbs.xlsx",
+    "sources/wbs/0-0.json",
+    "sources/wbs/1-0.json",
+    "sources/wbs/2-0.json",
+    "sources/wbs/3-0.json",
+    "sources/wbs/4-0.json",
+    "sources/wbs/5-0.json",
+    "sources/wbs/6-0.json",
+    "sources/wbs/7-0.json"
+   ],
+   "size": 40938
+  }
+ ],
+ "total": 79805742
+}

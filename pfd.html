@@ -341,6 +341,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     <button class="hbtn" id="updBtn">⟳ Update app</button>
     <a class="hbtn" href="issues.html">🐞 Checks</a>
     <a class="hbtn" href="issues.html#sources">📄 Sources</a>
+    <button class="hbtn" id="offBtn">⬇ Offline</button>
     <a class="hbtn m-only" href="index.html?cards">🃏 Flashcards</a>
     <button class="hbtn m-only" id="mTheme">◐ Theme</button>
   </div>
@@ -363,7 +364,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <script src="pfd-streams.js"></script>
 <script src="pfd-equip.js"></script>
 <script src="tools/tagutil.js"></script>
+<script src="pdfview.js"></script>
 <script src="spec.js"></script>
+<script src="pid.js"></script>
+<script src="offline.js"></script>
 <script src="lookup.js"></script>
 <script src="app-update.js"></script>
 <script src="pfd-layout-data.js"></script>
@@ -844,6 +848,8 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   $("side").addEventListener("click", e => { if (matchMedia("(max-width: 900px)").matches && e.target.closest(".flow, .lg-item, .lg-li, .step")) setTimeout(() => document.body.classList.remove("menu"), 150); });
   $("mTheme").onclick = () => $("tTheme").click();
   AppUpdate.mount($("updBtn"), $("ver"));
+  $("offBtn").onclick = () => { lastPanel = null; $("iKind").textContent = "Settings"; $("iName").textContent = "Offline downloads"; $("iTag").textContent = "";
+    $("iBody").innerHTML = '<div id="offRoot"></div>'; Offline.mount($("offRoot")); openInfo(); if (matchMedia("(max-width: 900px)").matches) document.body.classList.remove("menu"); };
   // ---------- layout (map) view ----------
   const sById = {}; STREAMS.forEach(s => sById[s.id] = s);
   const gState = g => ({ hidden: !g || g.style.display === "none", ghost: !!g && g.classList.contains("ghost") });

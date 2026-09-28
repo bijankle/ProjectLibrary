@@ -1,8 +1,8 @@
 // Pipe and valve spec for search results and the Smart PFD (2000-F00-STS-PP-10001 Rev 3, Piping Materials and Valves).
 // spec/index.json (built by tools/build_spec.py) holds every piping class and valve datasheet; spec/pvs.pdf is the spec
 // itself (cover and names removed). Spec.html(it) gives the section for a line, manual valve or control valve record;
-// Spec.bind(el) wires its buttons. The PDF opens in a built in viewer (PDF.js, bundled in vendor/pdfjs) at the right page,
-// drawn from the PDF's own vectors at the current zoom so it stays sharp. The first open keeps the PDF on the device.
+// Spec.bind(el) wires its buttons, which open the PDF at the right page in the built in viewer (pdfview.js).
+// The first open keeps the PDF on the device.
 window.Spec = (() => {
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   let IX = null, loading = null;
@@ -95,84 +95,8 @@ window.Spec = (() => {
       ...Object.entries(IX.valve).map(([k, v]) => ({ t: "spec", key: k, code: k, name: "Valve datasheet: " + (v.title || ""), words: "valve spec datasheet" }))];
   }
 
-  // ---------- PDF viewer ----------
-  let V = null, pdfLib = null, pdfDoc = null;
-  const loadLib = () => pdfLib || (pdfLib = new Promise((ok, bad) => { const s = document.createElement("script"); s.src = "vendor/pdfjs/pdf.min.js";
-    s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdfjs/pdf.worker.min.js"; ok(window.pdfjsLib); }; s.onerror = () => { pdfLib = null; bad(new Error("viewer not reachable")); }; document.head.appendChild(s); }));
-  const getDoc = () => pdfDoc || (pdfDoc = loadLib().then(lib => lib.getDocument({ url: IX.meta.file, disableRange: true, disableStream: true }).promise).catch(e => { pdfDoc = null; throw e; }));
-  function ui(){
-    if (V) return V;
-    const el = document.createElement("div"); el.className = "sp-view"; el.hidden = true;
-    el.innerHTML = `<div class="sp-top"><b class="sp-tt"></b><div class="sp-nav"><button data-a="prev" title="Previous page">◀</button><span class="sp-pg"></span><button data-a="next" title="Next page">▶</button></div>
-      <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="fit" title="Fit width">↔</button><button data-a="in" title="Zoom in">+</button></div>
-      <a class="sp-dl" download="2000-F00-STS-PP-10001 Rev 3 Piping Materials and Valves.pdf" title="Download the whole spec">⬇ PDF</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
-      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas></div></div><div class="sp-msg"></div>`;
-    document.body.appendChild(el);
-    V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), msg: el.querySelector(".sp-msg"), page: 1, zoom: 1, pg: null, base: 1 };
-    el.querySelector(".sp-dl").href = IX.meta.file;
-    el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1), close })[b.dataset.a]());
-    addEventListener("keydown", e => { if (el.hidden) return; if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
-    addEventListener("popstate", () => { if (!el.hidden) close(true); });
-    addEventListener("resize", () => { if (!el.hidden) layout(true); });
-    let t; V.body.addEventListener("scroll", () => { clearTimeout(t); t = setTimeout(sharp, 70); });
-    // ctrl + wheel / trackpad pinch zooms about the pointer
-    V.body.addEventListener("wheel", e => { if (!e.ctrlKey) return; e.preventDefault(); zoomTo(V.zoom * Math.exp(-e.deltaY * .01), e.clientX, e.clientY); }, { passive: false });
-    // touch pinch: scale the sheet while pinching, redraw sharp when the fingers lift
-    const pts = new Map(); let pin = null;
-    V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ const [a, b] = [...pts.values()]; pin = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1 }; } });
-    V.body.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e); if (pin && pts.size === 2){ const [a, b] = [...pts.values()]; pin.f = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pin.d;
-      const r = V.body.getBoundingClientRect(); V.sheet.style.transformOrigin = `${pin.cx - r.left + V.body.scrollLeft}px ${pin.cy - r.top + V.body.scrollTop}px`; V.sheet.style.transform = `scale(${pin.f})`; } });
-    const up = e => { pts.delete(e.pointerId); if (pin && pts.size < 2){ const p = pin; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx, p.cy); } };
-    V.body.addEventListener("pointerup", up); V.body.addEventListener("pointercancel", up);
-    V.body.style.touchAction = "pan-x pan-y";
-    return V;
-  }
-  async function open(page, title){
-    await load(); ui();
-    V.el.hidden = false; document.body.classList.add("sp-on"); V.el.querySelector(".sp-tt").textContent = title || IX.meta.title;
-    history.pushState({ sp: 1 }, "");
-    V.msg.textContent = "Loading the spec…"; V.msg.hidden = false;
-    try { await getDoc(); } catch (e) { V.msg.textContent = "Couldn't load the spec PDF (" + e.message + "). Check the connection."; return; }
-    V.msg.hidden = true; V.zoom = 1; go(page);
-  }
-  function close(fromPop){ if (!V || V.el.hidden) return; V.el.hidden = true; document.body.classList.remove("sp-on"); if (!fromPop && history.state && history.state.sp) history.back(); }
-  async function go(n){
-    const d = await getDoc(); n = Math.max(1, Math.min(d.numPages, n)); V.page = n;
-    V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
-    V.pg = await d.getPage(n); V.body.scrollTo(0, 0); layout(true);
-  }
-  // sheet size: page width fits the window at zoom 1
-  function layout(bg){
-    if (!V.pg) return;
-    const vp1 = V.pg.getViewport({ scale: 1 }), W = V.body.clientWidth - 16;
-    V.base = Math.max(.2, W / vp1.width); const s = V.base * V.zoom;
-    V.sheet.style.width = Math.round(vp1.width * s) + "px"; V.sheet.style.height = Math.round(vp1.height * s) + "px";
-    if (bg) drawBg(); sharp();
-  }
-  let bgTask = null, hiTask = null;
-  function drawBg(){   // whole page at fit width: shown (stretched) while scrolling or zooming
-    const dpr = Math.min(2, devicePixelRatio || 1), vp = V.pg.getViewport({ scale: V.base * dpr });
-    V.bg.width = vp.width; V.bg.height = vp.height;
-    if (bgTask) bgTask.cancel(); bgTask = V.pg.render({ canvasContext: V.bg.getContext("2d"), viewport: vp }); bgTask.promise.catch(() => {});
-  }
-  function sharp(){    // the visible part at full resolution, straight from the PDF vectors
-    if (!V.pg) return;
-    const dpr = devicePixelRatio || 1, s = V.base * V.zoom, sw = V.sheet.offsetWidth, sh = V.sheet.offsetHeight;
-    const x0 = Math.max(0, V.body.scrollLeft - 8), y0 = Math.max(0, V.body.scrollTop - 8);
-    const w = Math.min(sw - x0, V.body.clientWidth + 16), h = Math.min(sh - y0, V.body.clientHeight + 16);
-    if (w <= 0 || h <= 0) return;
-    const c = V.hi; c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
-    c.style.left = x0 + "px"; c.style.top = y0 + "px"; c.style.width = w + "px"; c.style.height = h + "px";
-    const vp = V.pg.getViewport({ scale: s * dpr, offsetX: -x0 * dpr, offsetY: -y0 * dpr });
-    if (hiTask) hiTask.cancel(); hiTask = V.pg.render({ canvasContext: c.getContext("2d"), viewport: vp }); hiTask.promise.catch(() => {});
-  }
-  function zoomTo(z, cx, cy){
-    z = Math.max(1, Math.min(10, z)); if (!V.pg || Math.abs(z - V.zoom) < .001) return;
-    const r = V.body.getBoundingClientRect(); cx = cx == null ? r.left + r.width / 2 : cx; cy = cy == null ? r.top + r.height / 2 : cy;
-    const fx = (V.body.scrollLeft + cx - r.left - 8) / V.sheet.offsetWidth, fy = (V.body.scrollTop + cy - r.top - 8) / V.sheet.offsetHeight;
-    V.zoom = z; layout(false);
-    V.body.scrollLeft = fx * V.sheet.offsetWidth - (cx - r.left - 8); V.body.scrollTop = fy * V.sheet.offsetHeight - (cy - r.top - 8); sharp();
-  }
+  // ---------- PDF viewer (pdfview.js) ----------
+  const open = (page, title) => load().then(() => PdfView.open({ url: IX.meta.file, page, title: title || IX.meta.title, fit: "width", download: "2000-F00-STS-PP-10001 Rev 3 Piping Materials and Valves.pdf" }));
   function bind(root){ root.querySelectorAll(".sp-open").forEach(b => b.onclick = e => { e.preventDefault(); open(+b.dataset.page, b.dataset.title); }); }
 
   return { load, ready: () => !!IX, html, wanted, note, extras, bind, open };

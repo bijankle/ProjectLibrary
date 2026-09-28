@@ -19,7 +19,10 @@
 
   L.load = () => loading || (loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => { DB = d; build();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
-    return L; }));
+    // drawings in the app (small index, waited for so records can show their 📐 open buttons straight away);
+    // drawings no list refers to (e.g. PFD sheets) become search results of their own
+    return (window.Pid ? Pid.load().then(() => Pid.all().forEach(d => { const k = norm(d.number); if (byKey.has(k)) return;
+      const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => L); }));
   L.ready = () => !!DB;
   function build(){
     Object.entries(DB.data).forEach(([t, rows]) => rows.forEach(r => { const it = { t, r, key: r[0], k: norm(r[0]), name: nameOf(t, r) }; items.push(it); addKey(it.k, it); }));
@@ -44,7 +47,7 @@
     if (t === "spi" || t === "hose") return g("Description");
     return r[1] || "";
   }
-  const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "P&ID" : t === "spec" ? "Pipe & valve spec" : DB.types[t].n;
+  const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "Drawing (P&ID / PFD)" : t === "spec" ? "Pipe & valve spec" : DB.types[t].n;
   const textOf = it => it.txt || (it.txt = (it.r ? it.r.join(" ") : it.key + " " + it.name).toLowerCase());
 
   L.search = (q, limit = 60) => {
@@ -64,13 +67,19 @@
   L.count = q => { const nq = norm(q); return nq.length < 2 ? 0 : L.search(q, 100000).length; };
 
   // ---------- rendering ----------
-  const linkify = v => esc(v).replace(TAG_RE, m => { const k = norm(m); return byKey.has(k) ? `<a class="lk-a" data-k="${k}">${m}</a>` : m; });
+  const linkify = v => esc(v).replace(TAG_RE, m => { const k = norm(m);
+    const open = /-(PID|PFD)-/.test(m) && window.Pid && Pid.has(m) ? ` <a class="lk-dwgb" data-dwg="${m}" href="#" title="Open this drawing">📐 open</a>` : "";
+    return (byKey.has(k) ? `<a class="lk-a" data-k="${k}">${m}</a>` : m) + open; });
   L.resultsHTML = (hits, q) => {
     if (!hits.length) return `<div class="lk-empty">No match for “${esc(q)}”. Try fewer characters, e.g. the number only.</div>`;
     return hits.map((it, i) => `<button class="lk-hit" data-i="${i}"><span class="lk-ic">${ICON[it.t] || "•"}</span><span class="lk-hb"><b>${esc(it.key)}</b><span>${esc(it.name)}</span><em>${esc(typeName(it.t))}</em></span></button>`).join("");
   };
   L.itemHTML = (it, opts = {}) => {
-    let h = `<div class="lk-kind">${ICON[it.t] || ""} ${esc(typeName(it.t))}</div><div class="lk-key">${esc(it.key)}</div><div class="lk-name">${esc(it.name)}</div>`;
+    const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
+    let h = `<div class="lk-kind">${ICON[it.t] || ""} ${esc(typeName(it.t))}</div>` +
+      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + `<div class="lk-name">${esc(it.name)}</div>`;
+    if (dwg) h += `<div class="lk-dwgnote">${esc([dwg.title, dwg.rev && "Rev " + dwg.rev, dwg.status, dwg.pages > 1 && dwg.pages + " sheets"].filter(Boolean).join(" · "))}${dwg.inferred ? " · number read from the sheet order" : ""}. Tap the number to open the drawing${opts.find ? `; ${esc(opts.find)} is marked on it` : ""}.</div>`;
+    else if (it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
     const pfd = opts.pfd && opts.pfd(it);
     if (pfd) h += `<button class="lk-btn" data-pfd="1">🗺️ ${esc(pfd.label)}</button>`;
     if (it.t === "pfd" || it.t === "gloss"){ h += it.html || `<p>${esc(it.text || "")}</p>`; }
@@ -145,7 +154,10 @@
     const open = (it, push) => {
       if (!it) return; remember(it); showingRecent = false; if (it.go){ it.go(); return; } if (push) stack.push({ q: inp.value, scroll: body.scrollTop, it: cur });
       cur = it;
-      body.innerHTML = `<button class="lk-back">← Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}</button>` + L.itemHTML(it, opts);
+      // the tag to mark on a drawing: the item itself, or on a drawing's own page the item you came from
+      const from = it.t === "pid" ? (stack.length && stack[stack.length - 1].it ? stack[stack.length - 1].it.key : null) : it.key;
+      body.innerHTML = `<button class="lk-back">← Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}</button>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
+      body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
       body.querySelector(".lk-back").onclick = back;
       body.querySelectorAll("a[data-k]").forEach(a => a.onclick = e => { e.preventDefault(); open(L.find(a.dataset.k, a.dataset.t), true); });
@@ -241,13 +253,21 @@
 .sp-view{position:fixed;inset:0;z-index:2000;background:#2b2f36;display:flex;flex-direction:column}.sp-view[hidden]{display:none}
 .sp-top{display:flex;gap:8px;align-items:center;padding:8px 10px;background:#171b21;color:#e9edf2;border-bottom:1px solid #2c343e}
 .sp-tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
-.sp-nav{display:flex;align-items:center;gap:4px}.sp-nav span{font-size:12.5px;min-width:58px;text-align:center;color:#aab4c0}
+.sp-nav{display:flex;align-items:center;gap:4px}.sp-nav[hidden]{display:none}.sp-nav span{font-size:12.5px;min-width:58px;text-align:center;color:#aab4c0}
 .sp-top button,.sp-dl{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;min-width:34px;height:32px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px}
 .sp-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}.sp-sheet{position:relative;background:#fff;margin:0 auto;box-shadow:0 2px 14px #0008;transform-origin:0 0}
 .sp-bg{position:absolute;inset:0;width:100%;height:100%}.sp-hi{position:absolute}
+.sp-marks{position:absolute;inset:0;pointer-events:none}.sp-marks i{position:absolute;box-sizing:content-box;margin:-4px -7px;padding:4px 7px;border:2.5px solid #ff2d55;background:rgba(255,214,10,.35);border-radius:4px;
+  box-shadow:0 0 0 3px rgba(255,45,85,.25)}.sp-marks i.on{animation:spPulse 1.1s ease-out 4}
+@keyframes spPulse{0%{box-shadow:0 0 0 0 rgba(255,45,85,.7)}100%{box-shadow:0 0 0 22px rgba(255,45,85,0)}}
+.sp-body.drag{cursor:grabbing}.sp-fn{min-width:0 !important;padding:0 4px;white-space:nowrap;max-width:210px;overflow:hidden;text-overflow:ellipsis}
+.sp-toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#171b21;color:#e9edf2;border:1px solid #e8b44a;border-radius:10px;padding:8px 12px;font-size:13px;max-width:90vw}.sp-toast[hidden]{display:none}
 .sp-msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font-size:14px}.sp-msg[hidden]{display:none}
 body.sp-on{overflow:hidden}
-@media (max-width:600px){.sp-dl{display:none}.sp-tt{font-size:12.5px}}
+@media (max-width:600px){.sp-dl,.sp-view [data-a=fit]{display:none}.sp-top{flex-wrap:wrap;gap:5px;padding:6px 8px}.sp-tt{flex-basis:100%;font-size:12.5px}.sp-top button{min-width:30px;height:30px;padding:0 6px}.sp-nav span{min-width:0}.sp-x{margin-left:auto}}
+.lk-dwg{display:inline-block;color:#2f7cf6 !important;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.lk-dwg:hover{color:#5b9bff !important}
+.lk-dwgnote{font-size:12.5px;color:var(--mute);margin:-4px 0 8px;line-height:1.4}
+.lk-dwgb{color:#2f7cf6;text-decoration:none;white-space:nowrap;font-size:12.5px;font-weight:700;margin-left:4px;cursor:pointer}
 .lk-ocr{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);font-family:ui-monospace,monospace;font-size:14px;padding:8px}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   window.Lookup = L;

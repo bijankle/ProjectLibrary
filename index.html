@@ -239,6 +239,8 @@ body.searching #homeMain{display:none}
   </div>
   <p class="sub" id="ver" style="font-size:13px;margin:0 0 10px"></p>
   <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">⛶ Full screen</button>
+  <h2>Offline downloads</h2>
+  <div id="offRoot"></div>
   <h2>Free Google AI key</h2>
   <input class="field secret" id="keyIn" type="text" name="kcgm-ai-key" placeholder="Paste key (starts with AIza)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
   <div class="row" style="margin-top:10px">
@@ -271,7 +273,10 @@ body.searching #homeMain{display:none}
 <script src="facts.js"></script>
 <script src="ai.js"></script>
 <script src="glossary.js"></script>
+<script src="pdfview.js"></script>
 <script src="spec.js"></script>
+<script src="pid.js"></script>
+<script src="offline.js"></script>
 <script src="lookup.js"></script>
 <script src="app-update.js"></script>
 <script>
@@ -291,6 +296,7 @@ body.searching #homeMain{display:none}
   const show = id => {
     document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
     $("deck").classList.toggle("on", id === "deck"); window.scrollTo(0, 0);
+    if (id === "settings" && window.Offline) Offline.mount($("offRoot"));
   };
 
   // ---------- HOME ----------

@@ -1,0 +1,137 @@
+// In-app PDF viewer shared by the pipe and valve spec (spec.js) and the P&IDs (pid.js).
+// PdfView.open({ url, page, title, fit: "width" | "page", find, download, name })
+//   The visible part of the page is redrawn from the PDF's own vectors at every zoom, so it stays sharp.
+//   find: a tag to mark on the page (a line number, valve, instrument…). The mark stays until another document or
+//   another search is opened; spaces, hyphens and slashes are ignored and a tag split over several text pieces is found.
+// PDF.js is bundled in vendor/pdfjs and loaded on first use.
+window.PdfView = (() => {
+  const norm = s => String(s || "").toUpperCase().replace(/[\s\-_/.]+/g, "");
+  let V = null, lib = null, cur = null;
+  const docs = new Map();
+  const loadLib = () => lib || (lib = new Promise((ok, bad) => { const s = document.createElement("script"); s.src = "vendor/pdfjs/pdf.min.js";
+    s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdfjs/pdf.worker.min.js"; ok(window.pdfjsLib); }; s.onerror = () => { lib = null; bad(new Error("viewer not reachable")); }; document.head.appendChild(s); }));
+  const getDoc = url => { if (!docs.has(url)) docs.set(url, loadLib().then(L => L.getDocument({ url, disableRange: true, disableStream: true }).promise).catch(e => { docs.delete(url); throw e; })); return docs.get(url); };
+
+  function ui(){
+    if (V) return V;
+    const el = document.createElement("div"); el.className = "sp-view"; el.hidden = true;
+    el.innerHTML = `<div class="sp-top"><b class="sp-tt"></b><div class="sp-nav sp-pages"><button data-a="prev" title="Previous page">◀</button><span class="sp-pg"></span><button data-a="next" title="Next page">▶</button></div>
+      <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
+      <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="fit" title="Fit">⤢</button><button data-a="in" title="Zoom in">+</button></div>
+      <a class="sp-dl" title="Download this PDF">⬇ PDF</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
+      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div></div></div><div class="sp-msg"></div>`;
+    document.body.appendChild(el);
+    V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
+      msg: el.querySelector(".sp-msg"), page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
+    el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
+      fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), close })[b.dataset.a]());
+    addEventListener("keydown", e => { if (el.hidden) return; if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
+    addEventListener("popstate", () => { if (!el.hidden) close(true); });
+    addEventListener("resize", () => { if (!el.hidden) layout(true); });
+    let t; V.body.addEventListener("scroll", () => { clearTimeout(t); t = setTimeout(sharp, 70); });
+    V.body.addEventListener("wheel", e => { if (!e.ctrlKey && cur.fit !== "page") return; e.preventDefault(); zoomTo(V.zoom * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025)), e.clientX, e.clientY); }, { passive: false });
+    // touch pinch: scale the sheet while pinching, redraw sharp when the fingers lift
+    const pts = new Map(); let pin = null;
+    V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ const [a, b] = [...pts.values()]; pin = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1 }; } });
+    V.body.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e); if (pin && pts.size === 2){ const [a, b] = [...pts.values()]; pin.f = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pin.d;
+      const r = V.body.getBoundingClientRect(); V.sheet.style.transformOrigin = `${pin.cx - r.left + V.body.scrollLeft}px ${pin.cy - r.top + V.body.scrollTop}px`; V.sheet.style.transform = `scale(${pin.f})`; } });
+    const up = e => { pts.delete(e.pointerId); if (pin && pts.size < 2){ const p = pin; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx, p.cy); } };
+    V.body.addEventListener("pointerup", up); V.body.addEventListener("pointercancel", up);
+    // mouse drag pans a drawing
+    let dr = null;
+    V.body.addEventListener("mousedown", e => { if (e.button) return; dr = { x: e.clientX, y: e.clientY, l: V.body.scrollLeft, t: V.body.scrollTop }; V.body.classList.add("drag"); });
+    addEventListener("mousemove", e => { if (!dr) return; V.body.scrollLeft = dr.l - (e.clientX - dr.x); V.body.scrollTop = dr.t - (e.clientY - dr.y); });
+    addEventListener("mouseup", () => { dr = null; V.body.classList.remove("drag"); });
+    V.body.style.touchAction = "pan-x pan-y";
+    return V;
+  }
+
+  async function open(o){
+    ui(); cur = Object.assign({ page: 1, fit: "width" }, o);
+    V.el.hidden = false; document.body.classList.add("sp-on"); V.el.querySelector(".sp-tt").textContent = cur.title || "";
+    const dl = V.el.querySelector(".sp-dl"); dl.href = cur.url; dl.download = cur.download || cur.url.split("/").pop();
+    if (!(history.state && history.state.sp)) history.pushState({ sp: 1 }, "");
+    V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true;
+    V.msg.textContent = "Loading…"; V.msg.hidden = false;
+    let d; try { d = await getDoc(cur.url); } catch (e) { V.msg.textContent = "Couldn't load the PDF (" + e.message + "). Check the connection."; return; }
+    V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
+    V.zoom = 1; await go(cur.page);
+  }
+  function close(fromPop){ if (!V || V.el.hidden) return; V.el.hidden = true; document.body.classList.remove("sp-on"); if (!fromPop && history.state && history.state.sp) history.back(); }
+  async function go(n){
+    const d = await getDoc(cur.url); n = Math.max(1, Math.min(d.numPages, n)); V.page = n;
+    V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
+    V.pg = await d.getPage(n); V.body.scrollTo(0, 0); layout(true);
+    if (cur.find) mark(cur.find);
+  }
+  // zoom 1 fits the page width (spec) or the whole sheet (drawings)
+  function layout(bg){
+    if (!V.pg) return;
+    const vp1 = V.pg.getViewport({ scale: 1 }), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16;
+    V.base = Math.max(.05, cur.fit === "page" ? Math.min(W / vp1.width, H / vp1.height) : W / vp1.width); const s = V.base * V.zoom;
+    V.sheet.style.width = Math.round(vp1.width * s) + "px"; V.sheet.style.height = Math.round(vp1.height * s) + "px";
+    if (bg) drawBg(); sharp();
+  }
+  let bgTask = null, hiTask = null;
+  function drawBg(){
+    const dpr = Math.min(2, devicePixelRatio || 1), vp = V.pg.getViewport({ scale: V.base * dpr * (cur.fit === "page" ? 1.5 : 1) });
+    V.bg.width = vp.width; V.bg.height = vp.height;
+    if (bgTask) bgTask.cancel(); bgTask = V.pg.render({ canvasContext: V.bg.getContext("2d"), viewport: vp }); bgTask.promise.catch(() => {});
+  }
+  function sharp(){
+    if (!V.pg) return;
+    const dpr = devicePixelRatio || 1, s = V.base * V.zoom, sw = V.sheet.offsetWidth, sh = V.sheet.offsetHeight;
+    const x0 = Math.max(0, V.body.scrollLeft - 8), y0 = Math.max(0, V.body.scrollTop - 8);
+    const w = Math.min(sw - x0, V.body.clientWidth + 16), h = Math.min(sh - y0, V.body.clientHeight + 16);
+    if (w <= 0 || h <= 0) return;
+    const c = V.hi; c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    c.style.left = x0 + "px"; c.style.top = y0 + "px"; c.style.width = w + "px"; c.style.height = h + "px";
+    const vp = V.pg.getViewport({ scale: s * dpr, offsetX: -x0 * dpr, offsetY: -y0 * dpr });
+    if (hiTask) hiTask.cancel(); hiTask = V.pg.render({ canvasContext: c.getContext("2d"), viewport: vp }); hiTask.promise.catch(() => {});
+  }
+  function zoomTo(z, cx, cy){
+    z = Math.max(1, Math.min(cur.fit === "page" ? 24 : 10, z)); if (!V.pg || Math.abs(z - V.zoom) < .001) return;
+    const r = V.body.getBoundingClientRect(); cx = cx == null ? r.left + r.width / 2 : cx; cy = cy == null ? r.top + r.height / 2 : cy;
+    const fx = (V.body.scrollLeft + cx - r.left - 8) / V.sheet.offsetWidth, fy = (V.body.scrollTop + cy - r.top - 8) / V.sheet.offsetHeight;
+    V.zoom = z; layout(false);
+    V.body.scrollLeft = fx * V.sheet.offsetWidth - (cx - r.left - 8); V.body.scrollTop = fy * V.sheet.offsetHeight - (cy - r.top - 8); sharp();
+  }
+
+  // ---------- mark a tag on the page ----------
+  async function mark(tag){
+    const want = norm(tag); if (want.length < 3) return;
+    const tc = await V.pg.getTextContent(), vp = V.pg.getViewport({ scale: 1 }), W = vp.width, H = vp.height;
+    const items = tc.items.filter(t => t.str && t.str.trim()).map(t => { const [a, b, c, d, e, f] = t.transform, h = Math.hypot(c, d) || Math.hypot(a, b);
+      const x = e, y = f, w = t.width || h * t.str.length * .5, rot = Math.abs(b) > Math.abs(a);
+      // box in PDF units (origin bottom left), vertical text included
+      const box = rot ? [x - h, y, x, y + w] : [x, y - h * .2, x + w, y + h * .9];
+      return { s: norm(t.str), box }; });
+    const hits = [];
+    for (let i = 0; i < items.length; i++){
+      let acc = "", boxes = [];
+      for (let j = i; j < Math.min(items.length, i + 8); j++){
+        acc += items[j].s; boxes.push(items[j].box);
+        if (acc.includes(want)){ hits.push(boxes.reduce((u, b) => [Math.min(u[0], b[0]), Math.min(u[1], b[1]), Math.max(u[2], b[2]), Math.max(u[3], b[3])])); break; }
+        // keep joining only while the end of what we have could still be the start of the tag
+        let go = false; for (let k = 0; k < acc.length && !go; k++) go = want.startsWith(acc.slice(k));
+        if (!go) break;
+      }
+    }
+    // drop duplicates (the same place found from overlapping starts)
+    const uniq = hits.filter((b, k) => !hits.slice(0, k).some(o => Math.abs(o[0] - b[0]) < 2 && Math.abs(o[1] - b[1]) < 2));
+    V.hits = uniq.map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b); return { l: Math.min(x1, x2) / W, t: Math.min(y1, y2) / H, w: Math.abs(x2 - x1) / W, h: Math.abs(y2 - y1) / H }; });
+    V.marks.innerHTML = V.hits.map(h => `<i style="left:${h.l * 100}%;top:${h.t * 100}%;width:${h.w * 100}%;height:${h.h * 100}%"></i>`).join("");
+    const f = V.el.querySelector(".sp-finds"); f.hidden = !V.hits.length;
+    if (V.hits.length){ V.fi = 0; V.el.querySelector(".sp-fn").textContent = `${tag}: 1 / ${V.hits.length}`; pulse(0); }
+    else toast(`${tag} isn't written as searchable text on this drawing.`);
+  }
+  function pulse(k){ [...V.marks.children].forEach((m, i) => m.classList.toggle("on", i === k)); }
+  function showHit(k){   // step through the matches, bringing each into view without changing the zoom
+    if (!V.hits.length) return; V.fi = (k + V.hits.length) % V.hits.length; const h = V.hits[V.fi];
+    V.el.querySelector(".sp-fn").textContent = `${cur.find}: ${V.fi + 1} / ${V.hits.length}`; pulse(V.fi);
+    V.body.scrollTo({ left: (h.l + h.w / 2) * V.sheet.offsetWidth - V.body.clientWidth / 2, top: (h.t + h.h / 2) * V.sheet.offsetHeight - V.body.clientHeight / 2, behavior: "smooth" });
+  }
+  let tt; function toast(m){ let t = V.el.querySelector(".sp-toast"); if (!t){ t = document.createElement("div"); t.className = "sp-toast"; V.el.appendChild(t); } t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 3500); }
+
+  return { open, close, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
+})();
