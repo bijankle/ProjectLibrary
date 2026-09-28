@@ -83,18 +83,20 @@ window.Browse = (() => {
     const crumbs = path.map((p, i) => { const nm = p.f === "t" || p.v == null || p.v === "?" ? "" : nameOf(p.f, t(), p.v);
       const txt = p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : (p.v === "?" ? "Other" : p.v) + (nm ? " - " + nm : "");
       return `<button class="bw-cr" data-i="${i}" title="Remove this and the steps after it"><span>${esc(txt)}${p.n ? ` <i>(${p.n.toLocaleString()})</i>` : ""}</span><b>×</b></button>`; }).join("");
-    let opts = "", az = null;
+    let opts = "", az = null, qw = 1;
     if (st){
       const c = {}; for (const r of list) c[r[st[0]]] = (c[r[st[0]]] || 0) + 1;
       const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => TN[x].localeCompare(TN[y])) : order(st[0], c);
       opts = `<div class="bw-h">${esc(st[1])}${st[0] !== "t" ? `<button class="bw-any">Any</button>` : ""}</div>` +
         vals.map(v => { const n = st[0] === "t" || v === "?" ? "" : shortName(nameOf(st[0], t(), v)), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
           // code (short name); the full name and the count show on the gold chip once picked
-          return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}">${esc(label)}${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
+          // qty × code (short name): the quantities share one right aligned column, so the items line up
+          return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}"><i class="q">${c[v].toLocaleString()}</i><i class="x">×</i><em>${esc(label)}</em>${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
+      qw = Math.max(...vals.map(v => c[v].toLocaleString().length));
       if (st[0] !== "t" && vals.length >= AZ_MIN) az = [...new Set(vals.map(v => azKey(v === "?" ? "Other" : v)))].sort((a, b) => a.localeCompare(b));
     } else opts = `<div class="bw-h">All steps set</div><div class="bw-note">Tap × on a step above to change it.</div>`;
     const hits = list.slice(0, shownN).map(r => r.it);
-    el.innerHTML = `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts">${opts}</div></div></div>
+    el.innerHTML = `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts stack" style="--qw:${qw}ch">${opts}</div></div></div>
       <div class="bw-r"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
       ${hits.map((it, i) => `<button class="bw-it${it.t === "line" ? " ln" : ""}" data-i="${i}"><b>${t() ? "" : (Lookup.ICON[it.t] || "") + " "}${esc(it.key)}</b> <span>(${esc(resDesc(it))})</span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
@@ -123,7 +125,7 @@ window.Browse = (() => {
     el.style.gridTemplateColumns = "";
     // one option per row whenever they all fit without scrolling; flowing side by side only for longer lists
     const l = el.querySelector(".bw-l"), op = el.querySelector(".bw-opts");
-    if (op){ op.classList.add("stack"); if (l.scrollHeight > l.clientHeight + 1) op.classList.remove("stack"); }
+    // (one option per row, always: the quantity column keeps the items aligned)
     fitRows(".bw-o", 11.5);
     const W = el.clientWidth, lw = el.querySelector(".bw-lw"); let need = 0;
     el.querySelectorAll(".bw-o").forEach(b => { need = Math.max(need, b.scrollWidth - b.clientWidth); });
@@ -178,6 +180,8 @@ window.Browse = (() => {
 .bw-cr b{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(0,0,0,.18);font-size:12px;line-height:1}
 .bw-opts{display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;align-content:flex-start}
 .bw-opts.stack{flex-direction:column;align-items:flex-start;flex-wrap:nowrap}
+.bw-o .q{display:inline-block;width:var(--qw,1ch);text-align:right;font-style:normal;font-weight:600;color:var(--mute);font-variant-numeric:tabular-nums;font-size:11.5px}
+.bw-o .x{font-style:normal;color:var(--mute);margin:0 5px 0 4px;font-size:11px}.bw-o em{font-style:normal}
 .bw-opts.stack .bw-h,.bw-opts.stack .bw-note{flex-basis:auto;align-self:stretch}.bw-o{flex:none}.bw-opts .bw-h,.bw-opts .bw-note{flex-basis:100%}
 .bw-h{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:2px 0}
 .bw-any{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:2px 8px;font:inherit;font-size:11px;letter-spacing:0;text-transform:none}
