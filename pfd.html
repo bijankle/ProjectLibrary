@@ -1258,8 +1258,8 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     $("iBody").querySelectorAll("a[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.load().then(() => { if (!Pid.open(a.dataset.dwg, $("iTag").textContent.split(/[\s/]/)[0])) toast(a.dataset.dwg + " isn't loaded in the app yet."); }).catch(() => toast("Couldn't load the drawing list.")); });
     fillCvSpec($("iBody"));
     $("iBody").querySelectorAll("a[data-cv]").forEach(a => a.onclick = e => { e.preventDefault(); const c = CV_DATA[a.dataset.cv]; if (!c) return;
-      const back = lastPanel; $("iKind").textContent = "Control valve"; $("iName").textContent = c.loc || c.tag; $("iTag").textContent = c.tag;
-      $("iBody").innerHTML = cvTable(c, INS_BY_TAG[a.dataset.cv], [c.loc]) + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;
+      const back = lastPanel; $("iKind").textContent = "Control valve"; $("iName").textContent = c.tag; $("iTag").textContent = "";   // the location is in the table
+      $("iBody").innerHTML = cvTable(c, INS_BY_TAG[a.dataset.cv]) + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;
       $("cvBack").onclick = () => back && back(); fillCvSpec($("iBody")); });
   }
   function openInfo(){ $("info").classList.add("on"); }

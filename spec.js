@@ -31,9 +31,8 @@ window.Spec = (() => {
     const comps = P.comps || [], unit = comps.find(c => c.u) ? comps.find(c => c.u).u : "DN";
     const fit = size != null ? comps.filter(c => c.lo != null && size >= c.lo && size <= c.hi) : [];
     const dp = (P.design || []).find(r => /pressure/i.test(r[0])), dt = (P.design || []).find(r => /temperature/i.test(r[0]));
-    const h = `<div class="sp-head"><b>📘 ${esc(cls)}</b> <span>${esc(short(P.title))}</span></div>` +
-      (dp && dt ? `<div class="sp-sub">${esc(dp[1])} kPa(g) at ${esc(dt[1])} °C${P.material ? " · " + esc(short(P.material)) : ""}</div>` : "") +
-      pageBtn(P.page, "Open the " + cls + " datasheet", "Piping class " + cls);
+    // no summary on top: the datasheet button, then the pills (the class title is the first Class row)
+    const h = pageBtn(P.page, "Open the " + cls + " datasheet", "Piping class " + cls);
     const S = [];
     if (size != null)
       S.push(sec("fit", `${unit}${size}`, fit.length, fit.length
@@ -49,7 +48,7 @@ window.Spec = (() => {
         ? `<a class="sp-chip lk-a" href="#" data-k="${esc(v)}" data-t="spec" title="${esc(IX.valve[v].title || "")}">${esc(v)}</a>` : `<span class="sp-chip off" title="No datasheet for this code in the spec">${esc(v)}</span>`).join("")}</div>` +
         tbl([["Fluid design", r.fluid], ["Class rating", r.rating], ["Gasket", r.gasket], ["External finish", r.ext], ["Note", r.notes]].filter(x => x[1] && x[1] !== "N/A"))));
     });
-    let cd = tbl([["Material", P.material], ["Design code", P.codes], ["Corrosion allowance", P.ca && P.ca + " mm"], ["Pressure test", P.test], ["NDT", P.nde]].filter(r => r[1]));
+    let cd = tbl([["Description", P.title], ["Material", P.material], ["Design code", P.codes], ["Corrosion allowance", P.ca && P.ca + " mm"], ["Pressure test", P.test], ["NDT", P.nde]].filter(r => r[1]));
     if (P.design && P.design.length){
       const cols = Math.max(...P.design.map(r => r.length));
       cd += `<div class="sp-sc"><table class="lk-t sp-dt">${P.design.map(r => `<tr><td>${esc(r[0])}</td>${Array.from({ length: cols - 1 }, (_, i) => `<td>${esc(r[i + 1] || "")}</td>`).join("")}</tr>`).join("")}</table></div>`;
@@ -67,7 +66,7 @@ window.Spec = (() => {
     const V = IX.valve[code];
     if (!V) return `<div class="lk-ns">Valve code ${esc(code)} has no datasheet in the spec.</div>`;
     const get = k => ((V.rows || []).find(r => new RegExp("^" + k, "i").test(r[0])) || [])[1];
-    let h = `<div class="sp-head"><b>📘 ${esc(code)}</b> <span>${esc(short(V.title))}</span></div>`;   // size, ends, actuation, pressure are in the table below
+    let h = "";   // no summary on top: the table below says it all
     if (size != null && V.lo != null && (size < V.lo || size > V.hi)) h += `<div class="sp-warn">DN${esc(size)} is outside this datasheet's size range (${esc(V.u)}${V.lo} to ${V.hi}).</div>`;
     h += pageBtn(V.page, "Open the " + code + " datasheet", "Valve " + code);
     // one table, no sub pills: type, materials and ratings first, then the rest of the datasheet, then its notes

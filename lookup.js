@@ -121,8 +121,9 @@
       return segs(O).some(x => x === V || (x.length > V.length && /[A-Z]/.test(x) && (x.startsWith(V) || x.endsWith(V))) || (V.length >= 4 && x.includes(V)));
     }
     if (/^[A-Za-z0-9.]+$/.test(v)){   // a code
-      if (segs(O).includes(V)) return CODEL.test(r.l) || V.length >= 3;
+      if (segs(O).includes(V)) return (CODEL.test(r.l) || V.length >= 3) && (/\d/.test(V) || O.length <= 40);   // a plain word isn't "said" by a long product description
       if (!CODEL.test(r.l) && V.length < 5) return false;
+      if (!/\d/.test(V)) return false;   // a plain word (e.g. "Check") only counts as said when it stands alone, not inside "SUPERCHECK"
       return segs(O).some(x => x.length > V.length && (x.startsWith(V) || x.endsWith(V) || ((V.length >= 4 || (V.length === 3 && CODEL.test(r.l) && /\d/.test(x))) && x.includes(V))));
     }
     return v.length >= 4 && new RegExp("(^|[^A-Za-z0-9])" + reEsc(v) + "([^A-Za-z0-9]|$)", "i").test(O);   // words inside other words
@@ -152,7 +153,7 @@
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
     let h = `<div class="lk-kind">${ICON[it.t] || ""} ${esc(typeName(it.t))}</div>` +
-      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + `<div class="lk-name">${linkify(headName(it))}</div>`;
+      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + (it.r || it.t === "spec" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`);   // records: the table says it (no summary line)
     if (dwg) h += `<div class="lk-dwgnote">${esc([dwg.title, dwg.rev && "Rev " + dwg.rev, dwg.status, dwg.pages > 1 && dwg.pages + " sheets"].filter(Boolean).join(" · "))}${dwg.inferred ? " · number read from the sheet order" : ""}. Tap the number to open the drawing${opts.find ? `; ${esc(opts.find)} is marked on it` : ""}.</div>`;
     else if (it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
     const pfd = opts.pfd && opts.pfd(it);
@@ -173,7 +174,7 @@
       // the manual valve list puts words like "Commissioning" in its line number column: that is a note, not a line
       rows.forEach(r => { if (/^line number$/i.test(r.l) && !/\d{2,3}-[A-Z]?\d{3,4}-/.test(r.v)) r.l = "Note"; });
       twins.forEach(x => { const g = DB.types[x.t].f; g.forEach((n, i) => { if (i > 0 && x.r[i]) rows.push({ l: n, v: x.r[i], h: linkify(x.r[i]) }); }); });
-      const kept = L.dedupe(rows, { heads: [it.key, ...twins.map(x => x.key), headName(it)] });
+      const kept = L.dedupe(rows, { heads: [it.key, ...twins.map(x => x.key)] });
       const filled = new Set(rows.map(r => canon(r.l)));
       // a missing line number isn't worth a mention when the item's P&ID is given (the drawing shows the line)
       const onPid = rows.some(r => /P&ID/i.test(r.l) && /PID/.test(r.v));
