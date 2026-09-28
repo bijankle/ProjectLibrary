@@ -57,6 +57,54 @@ a.hbtn{text-decoration:none;color:var(--ink)}
 .lg-sig svg{width:46px;height:22px;flex:none}
 .note{font-size:12.5px;color:var(--mute);line-height:1.45;background:var(--panel2);border-radius:9px;padding:9px 10px}
 #stage{position:fixed;left:270px;right:0;top:54px;bottom:0}
+/* ---------- layout (map) view ---------- */
+#mapView{position:fixed;left:270px;right:0;top:54px;bottom:0;background:#20242a;z-index:0}
+body.layout #stage{visibility:hidden}
+body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opacity:.45}
+#mapView.dim .leaflet-tile-pane{filter:brightness(.62) saturate(.75)}
+#mapView .leaflet-control-attribution{font-size:9.5px;background:rgba(0,0,0,.45);color:#ccc}
+#mapView .leaflet-control-attribution a{color:#ddd}
+.lo-bar{position:absolute;left:10px;top:10px;z-index:500;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.lo-seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:2px}
+.lo-seg button,.lo-b{border:0;background:transparent;color:var(--mute);font:inherit;font-weight:700;font-size:12px;padding:5px 9px;border-radius:7px;cursor:pointer}
+.lo-seg button.on{background:var(--accent);color:#1a1307}
+.lo-b{background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--ink)}
+.lo-b:disabled{opacity:.45;cursor:default}
+.lo-n{stroke:#f5f7fa;stroke-width:1.4;fill:#f5f7fa;fill-opacity:.1;cursor:pointer}
+.lo-n.dot{fill:#f5f7fa;fill-opacity:.9;stroke:#101418;stroke-width:1.2}
+.lo-n.est{stroke:#ffb347;stroke-dasharray:4 3}
+.lo-n.dot.est{fill:#ffb347;stroke-dasharray:none}
+.lo-s{stroke-linecap:round;stroke-linejoin:round;cursor:pointer}
+.lo-s.svc{stroke-dasharray:5 4}
+#mapView .lo-lab{background:none;border:0;box-shadow:none;padding:0;color:#fff;font:600 10.5px/1.1 system-ui,sans-serif;white-space:nowrap;
+  text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;display:none}
+#mapView .lo-lab::before{display:none}
+#mapView .lo-lab.dc{visibility:hidden}
+#mapView.zl1 .lo-lab.big,#mapView.zl2 .lo-lab{display:block}
+#mapView .lo-tip{font-size:11.5px;padding:3px 7px}
+/* progressive detail: zoomed out = big items and main process lines only */
+#mapView:not(.zl1) .lo-n.dot,#mapView:not(.zl2):not(.svcon) .lo-s.svc{display:none}
+#mapView svg{width:auto;height:auto;cursor:inherit;touch-action:auto}
+#mapView .hide{display:none !important}
+#mapView .ghost{opacity:.35}
+#mapView.focus .lo-n:not(.hl),#mapView.focus .lo-s:not(.hl){opacity:.16}
+#mapView.focus .lo-lab:not(.hl){opacity:.25}
+#mapView .lo-n.hl.dot,#mapView .lo-s.hl.svc{display:block !important}
+#mapView .lo-lab.hl{display:block !important}
+#mapView .lo-s.hl{stroke-width:3}
+#mapView .lo-n.sel{stroke:var(--accent);stroke-width:3}
+#mapView .lo-n.dot.sel{fill:var(--accent)}
+#mapView .lo-lab.sel{color:var(--accent);font-size:12px}
+#mapView .lo-s.sel{stroke-width:4.5}
+.lo-pin{cursor:grab}
+.lo-pin i{display:block;width:30px;height:30px;border-radius:50%;border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 25%,transparent);box-shadow:0 0 0 2px #000a}
+.lo-pin i::after{content:"";position:absolute;left:14px;top:14px;width:2px;height:2px;background:#fff;box-shadow:0 0 0 1px #000}
+.lo-done{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:600;display:none;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:8px 10px;font-size:13px;box-shadow:0 8px 24px #0008}
+#mapView.moving .lo-done{display:flex}
+.lo-done button{border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:inherit;font-weight:700;border-radius:8px;padding:6px 10px;cursor:pointer}
+.lo-done #loDoneB{background:var(--accent);color:#1a1307;border-color:var(--accent)}
+.lo-mv{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--panel2);border-radius:9px;padding:8px 10px;margin:0 0 10px;font-size:12.5px;color:var(--mute)}
+.lo-mv span{flex:1 1 180px}
 svg{width:100%;height:100%;display:block;cursor:grab;user-select:none}
 svg.dragging{cursor:grabbing}
 #info{position:fixed;right:14px;top:68px;bottom:14px;width:460px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
@@ -119,6 +167,10 @@ svg{touch-action:none}
   #scrim{position:fixed;inset:50px 0 0 0;background:rgba(0,0,0,.35);z-index:8;display:none !important}
   body.menu #scrim{display:block !important}
   #stage{left:0;top:50px;bottom:52px}
+  #mapView{left:0;top:50px;bottom:52px}
+  #viewSeg button::after{content:attr(data-l);font-size:12.5px}
+  .lo-bar{left:6px;top:6px;gap:4px}.lo-seg button,.lo-b{font-size:11px;padding:4px 7px}
+  body.flowing .lo-bar{display:none}
   #info{left:0;right:0;top:auto;bottom:52px;width:auto;height:min(58vh,560px);border-radius:16px 16px 0 0;border-bottom:0}
   #info.on ~ #zoom{right:10px}
   #zoom{bottom:62px;right:10px}
@@ -256,6 +308,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <header>
   <button class="hbtn m-only" id="menuBtn" aria-label="Menu" title="Menu">☰</button>
   <h1>KCGM <span>Interactive PFD</span></h1>
+  <div class="seg" id="viewSeg" title="Schematic PFD or the same items on the real plant layout"><button data-v="pfd" data-l="PFD" class="on">Schematic</button><button data-v="map" data-l="Map">🗺 Layout</button></div>
   <div class="seg" id="stageSeg"><button data-s="1">Stage 1</button><button data-s="2" class="on">Stage 2</button></div>
   <select class="hbtn" id="case" title="PDC design case: changes the flow figures on the lines and highlights that column in stream panels"></select>
   <button class="hbtn" id="tLoops" title="Show ISA control loops (tag bubbles and signal lines)">🎛 Control loops</button>
@@ -297,6 +350,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 </aside>
 
 <div id="stage"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+<div id="mapView" hidden></div>
 
 <div id="info"><div class="top"><button class="x" id="infoX">✕</button><div class="kind" id="iKind"></div><h3 id="iName"></h3><div class="tag" id="iTag"></div></div><div class="body" id="iBody"></div></div>
 <div id="zoom"><button id="zInfo" title="Show the properties panel again" style="font-size:15px">ⓘ</button><button id="zIn" title="Zoom in">+</button><button id="zOut" title="Zoom out">−</button><button id="zFit" title="Fit" style="font-size:14px">⤢</button></div>
@@ -311,6 +365,8 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <script src="tools/tagutil.js"></script>
 <script src="lookup.js"></script>
 <script src="app-update.js"></script>
+<script src="pfd-layout-data.js"></script>
+<script src="pfd-layout.js"></script>
 <script>
 (() => {
   const NS = "http://www.w3.org/2000/svg";
@@ -714,6 +770,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     FRAMES.forEach(f => f.g.style.opacity = (f.st && f.st !== stage) ? .25 : "");
     LOOPS.concat(INTERLOCKS).forEach(L => { L.g.style.display = (L.st && L.st !== stage) ? "none" : ""; if (L.li) L.li.classList.toggle("st-hide", !!(L.st && L.st !== stage)); });
     if (focusFlow) showStep(stepIx); else if (sel.length) applySel(false);
+    PFDLayout.sync(false);
   }
   document.querySelectorAll("#stageSeg button").forEach(b => b.onclick = () => {
     document.querySelectorAll("#stageSeg button").forEach(x => x.classList.toggle("on", x === b));
@@ -786,6 +843,22 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   $("side").addEventListener("click", e => { if (matchMedia("(max-width: 900px)").matches && e.target.closest(".flow, .lg-item, .lg-li, .step")) setTimeout(() => document.body.classList.remove("menu"), 150); });
   $("mTheme").onclick = () => $("tTheme").click();
   AppUpdate.mount($("updBtn"), $("ver"));
+  // ---------- layout (map) view ----------
+  const sById = {}; STREAMS.forEach(s => sById[s.id] = s);
+  const gState = g => ({ hidden: !g || g.style.display === "none", ghost: !!g && g.classList.contains("ghost") });
+  PFDLayout.init({ NODES, STREAMS, STREAM_TYPES, byId, pref,
+    pick: (e, it) => pick(e, it), clearSel: k => clearSel(k), closeInfo: () => closeInfo(), infoOpen: () => $("info").classList.contains("on"), toast: m => toast(m),
+    refreshPanel: () => { if (lastPanel && $("info").classList.contains("on")) lastPanel(); },
+    hlIds: () => { const h = new Set(); for (const id in nEls) if (nEls[id].classList.contains("hl")) h.add(id); for (const id in sEls) if (sEls[id].classList.contains("hl")) h.add(id); return h; },
+    selIds: () => new Set(sel.filter(x => x.k === "n" || x.k === "s").map(x => x.id)),
+    nodeState: id => gState(byId[id] && byId[id].g), streamState: id => gState(sById[id] && sById[id].g) });
+  const setView = v => { document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v);
+    PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); });
+    if (v === "map") toast("Layout: the PFD items on the real plant. Zoom in for more detail; select anything as usual. Move an item from its panel if it's in the wrong spot.");
+    else { setVB(); } };
+  document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
+  $("tSvc").addEventListener("click", () => $("mapView").classList.toggle("svcon", $("tSvc").classList.contains("on")));
+  $("mapView").classList.toggle("svcon", pref.get("pfd_svc", "0") === "1");
 
   // ---------- selection ----------
   // sel = [{k, id}] with k: type | loop | ilk | n | s. A plain click replaces the selection, Ctrl/Cmd click toggles.
@@ -832,7 +905,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     Object.entries(STREAM_TYPES).forEach(([k, t]) => { const on = sel.some(x => x.k === "type" && x.id === k); t.item.classList.toggle("on", on); if (t.chip) t.chip.classList.toggle("on", on); });
     LOOPS.forEach(L => L.li.classList.toggle("on", sel.some(x => x.k === "loop" && x.id === L.id)));
     INTERLOCKS.forEach(I => I.li.classList.toggle("on", sel.some(x => x.k === "ilk" && x.id === I.id)));
-    if (!sel.length){ svg.classList.remove("focus"); return; }
+    if (!sel.length){ svg.classList.remove("focus"); PFDLayout.sync(false); return; }
     svg.classList.add("focus");
     const lit = [];
     sel.forEach(it => {
@@ -850,6 +923,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
         bx = bx ? { x1: Math.min(bx.x1, b.x), y1: Math.min(bx.y1, b.y), x2: Math.max(bx.x2, b.x + b.width), y2: Math.max(bx.y2, b.y + b.height) } : { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height }; });
       if (bx) setTimeout(() => flyTo({ x: bx.x1, y: bx.y1, w: bx.x2 - bx.x1, h: bx.y2 - bx.y1 }, 1.18, 700), 0);
     }
+    PFDLayout.sync(zoom);
   }
 
   // ---------- flows ----------
@@ -861,7 +935,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     if (f && sel.length) clearSel(true);
     stopPlay(); focusFlow = f; FLOWS.forEach(x => x.btn.classList.toggle("on", x === f));
     $("steps").classList.toggle("on", !!f);
-    if (!f){ svg.classList.remove("focus"); clearHl(); drawStepbar(); return; }
+    if (!f){ svg.classList.remove("focus"); clearHl(); drawStepbar(); PFDLayout.sync(false); return; }
     $("fdesc").textContent = f.desc;
     $("stepList").innerHTML = "";
     f.steps.forEach((s, i) => { const d = document.createElement("div"); d.className = "step"; d.innerHTML = `<b>${i + 1}</b><span></span>`; d.querySelector("span").textContent = s.t; d.onclick = () => { stopPlay(); showStep(i); }; $("stepList").appendChild(d); });
@@ -881,6 +955,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     document.querySelectorAll(".node.hl, .stream.hl").forEach(g => { if (g.style.display === "none") return; const b = g.getBBox(); if (!b.width && !b.height) return;
       bx = bx ? { x1: Math.min(bx.x1, b.x), y1: Math.min(bx.y1, b.y), x2: Math.max(bx.x2, b.x + b.width), y2: Math.max(bx.y2, b.y + b.height) } : { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height }; });
     if (bx) flyTo({ x: bx.x1, y: bx.y1, w: bx.x2 - bx.x1, h: bx.y2 - bx.y1 }, 1.25);
+    PFDLayout.sync(true);
   }
   // Step strip over the diagram: previous (faded) | current | next (faded); click a side card to move
   function drawStepbar(){
@@ -953,7 +1028,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       } else h += `<h4>Instruments</h4><div>${NS_TXT} in the instrument list for these equipment numbers.</div>`;
     } else h += `<h4>Mechanical equipment list</h4><div>${NS_TXT}: no MEL item for this block (off site or a symbolic block).</div>`;
     h += `<div class="src">Sources: node description <code>pfd-data.js</code>; MEL 2000-F00-LST-ME-10001 Rev 0 and instrument list rows in <code>pfd-equip.js</code> (built by <code>tools/build_equip.py</code>).</div>`;
-    $("iBody").innerHTML = h; bindLinks(); openInfo();
+    $("iBody").innerHTML = PFDLayout.panelHtml(n) + h; bindLinks(); PFDLayout.bindPanel(n); openInfo();
   }
 
   // ----- streams -----
@@ -1174,10 +1249,12 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
   $("bgHit").addEventListener("click", e => { if (moved || e.ctrlKey || e.metaKey) return; closeInfo(); clearSel(); });
   const center = () => [vb.x + vb.w / 2, vb.y + vb.h / 2];
-  $("zIn").onclick = () => zoomAt(0.7, ...center()); $("zOut").onclick = () => zoomAt(1.4, ...center()); $("zFit").onclick = fitAnim; $("zInfo").onclick = () => { if (lastPanel) lastPanel(); else toast("Click any equipment, stream, loop, interlock or symbol to see its properties."); };
-  window.addEventListener("resize", () => { const c = center(); const ar = svg.clientWidth / svg.clientHeight; vb.h = vb.w / ar; vb.x = c[0] - vb.w / 2; vb.y = c[1] - vb.h / 2; setVB(); });
+  $("zIn").onclick = () => PFDLayout.active() ? PFDLayout.zoomBy(1) : zoomAt(0.7, ...center()); $("zOut").onclick = () => PFDLayout.active() ? PFDLayout.zoomBy(-1) : zoomAt(1.4, ...center());
+  $("zFit").onclick = () => PFDLayout.active() ? PFDLayout.home() : fitAnim(); $("zInfo").onclick = () => { if (lastPanel) lastPanel(); else toast("Click any equipment, stream, loop, interlock or symbol to see its properties."); };
+  window.addEventListener("resize", () => { if (PFDLayout.active()) return; const c = center(); const ar = svg.clientWidth / svg.clientHeight; vb.h = vb.w / ar; vb.x = c[0] - vb.w / 2; vb.y = c[1] - vb.h / 2; setVB(); });
   function bboxOf(g){ const b = g.getBBox(); return { x: b.x, y: b.y, w: b.width, h: b.height }; }
   function flyTo(b, pad = 2.5, minW = 900){
+    if (PFDLayout.active()) return;   // the map does its own zooming
     const W = svg.clientWidth, H = svg.clientHeight;
     const phone = matchMedia("(max-width: 900px)").matches, infoOn = $("info").classList.contains("on");
     const right = infoOn && !phone ? Math.min(W * .5, $("info").offsetWidth + 28) : 0;
@@ -1194,7 +1271,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       vb = { x: from.x + (tgt.x - from.x) * e, y: from.y + (tgt.y - from.y) * e, w: from.w + (tgt.w - from.w) * e, h: from.h + (tgt.h - from.h) * e }; setVB(); if (k < 1) requestAnimationFrame(step); };
     requestAnimationFrame(step);
   }
-  function fitAnim(){ const W = svg.clientWidth, H = svg.clientHeight, ar = W / H, pad = 40;
+  function fitAnim(){ if (PFDLayout.active()) return; const W = svg.clientWidth, H = svg.clientHeight, ar = W / H, pad = 40;
     let w = PFD_W + pad * 2, h = PFD_H + pad * 2;
     if (phoneFit()){ w = h * ar; const cx = vb.x + vb.w / 2; animVB({ x: Math.max(-pad, Math.min(PFD_W + pad - w, cx - w / 2)), y: -pad, w, h }); return; }
     if (w / h > ar) h = w / ar; else w = h * ar;
