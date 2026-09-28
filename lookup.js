@@ -77,15 +77,6 @@
     return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><span class="lk-ic1">${ICON[it.t] || "•"}</span><b>${esc(it.key)}</b><span>${esc(it.name)}</span></button>`).join("");
   };
   const PILLN = { mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
-  // property headings for the fields beyond the key facts (first match wins)
-  const FGROUPS = [
-    ["Drawings", /P&ID|PFD|drawing|arrangement|\bGA\b/i],
-    ["Supply", /make|model|vendor|supplier|manufacturer|package|supplied|installed by|supply/i],
-    ["Control & power", /power|voltage|starter|actuat|solenoid|positioner|fail|loop|range|remote io|burnout|limit|feedback|closing|pneumatic|hpu|instrument type|valve type|duty \/ standby/i],
-    ["Process", /pressure|temperature|flow|fluid|\bsg\b|solids|ΔP|duty point|service|p50|p80|medium|test|nde|stress/i],
-    ["Size & material", /size|spec|material|class|code|connection|dimension|length|diameter|insulation|coating|corrosion|bend|standard|qty|quantity|rating|colour/i],
-    ["Notes", /comment|special|note/i],
-    ["Location & status", /area|location|stage|status|brownfield|from|^to$|equipment|sub-system|above|revision|type|description/i]];
   const KEYF = {
     mel: ["Equipment name", "Size / description", "Installed power (kW)", "Status", "Stage", "P&ID"],
     ins: ["Description", "Instrument type", "Equipment number", "Range / units", "Loop number", "P&ID"],
@@ -125,22 +116,29 @@
     // the rest sits under pill filters: Details, Pipe spec, All fields, Also in, then one pill per list that refers to it
     const secs = [];
     if (it.t === "spec") secs.push({ id: "spec", label: "Spec", html: `<div class="lk-spec"></div>` });
-    else if (it.r){
+    // the same tag in other lists (e.g. an instrument that is also in the control valve list) merges into Details
+    const same = (byKey.get(it.k) || []).filter(x => x !== it), twins = same.filter(x => x.r && DB.types[x.t]), others = same.filter(x => !twins.includes(x));
+    if (it.r){
+      // Details: every attribute of the item itself in one table, key fields first, blank fields named once at the end
       const f = DB.types[it.t].f, key = KEYF[it.t] || f.slice(1, 7);
-      const row = i => `<tr><td>${esc(f[i])}</td><td>${linkify(it.r[i])}</td></tr>`;
       const top = key.map(n => f.indexOf(n)).filter(i => i > 0 && it.r[i]);
       const rest = f.map((n, i) => i).filter(i => i > 0 && it.r[i] && !top.includes(i));
-      const empty = f.filter((n, i) => !it.r[i]);
-      secs.push({ id: "det", label: "Key facts", html: `<table class="lk-t">` + top.map(row).join("") + `</table>` +
-        (empty.length ? `<div class="lk-ns">${empty.length} field${empty.length > 1 ? "s" : ""} blank in the list: ${esc(empty.join(", "))}.</div>` : "") });
-      // every other field, sorted under property headings, each heading a pill
-      const grp = {}; rest.forEach(i => { const g = FGROUPS.find(([, re]) => re.test(f[i])); (grp[g ? g[0] : "Other"] = grp[g ? g[0] : "Other"] || []).push(i); });
-      [...FGROUPS.map(g => g[0]), "Other"].filter(g => grp[g]).forEach(g => secs.push({ id: "g-" + g, label: g, n: grp[g].length, html: `<table class="lk-t">${grp[g].map(row).join("")}</table>` }));
-      if (window.Spec && Spec.wanted(it)) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(it.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
+      const seen = new Map(); [...top, ...rest].forEach(i => seen.set(f[i].toLowerCase(), norm(it.r[i])));
+      let t = [...top, ...rest].map(i => `<tr><td>${esc(f[i])}</td><td>${linkify(it.r[i])}</td></tr>`).join("");
+      const blank = new Set(f.filter((n, i) => i > 0 && !it.r[i]));
+      twins.forEach(x => { const g = DB.types[x.t].f;
+        const add = g.map((n, i) => i).filter(i => i > 0 && x.r[i] && seen.get(g[i].toLowerCase()) !== norm(x.r[i]));
+        g.forEach((n, i) => { if (i > 0 && x.r[i]) blank.delete(n); });
+        if (add.length) t += `<tr><td colspan="2" class="lk-sub">${ICON[x.t] || ""} From the ${esc(DB.types[x.t].n.toLowerCase())} list</td></tr>` +
+          add.map(i => `<tr><td>${esc(g[i])}</td><td>${linkify(x.r[i])}</td></tr>`).join(""); });
+      secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${t}</table>` +
+        (blank.size ? `<div class="lk-ns">Blank in the list: ${esc([...blank].join(", "))}.</div>` : "") });
+      const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
+      if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
     }
-    const same = (byKey.get(it.k) || []).filter(x => x !== it);
-    if (same.length) secs.push({ id: "also", label: "Also in", n: same.length, html: same.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${ICON[x.t] || ""} ${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("") });
-    const rf = (refs.get(it.k) || []).filter(x => x !== it);
+    if (others.length) secs.push({ id: "also", label: "Also in", n: others.length, html: others.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${ICON[x.t] || ""} ${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("") });
+    // related items: one pill per list that refers to this tag (or its twin entries)
+    const rf = [...new Set([it, ...twins].flatMap(y => refs.get(y.k) || []))].filter(x => x !== it && !twins.includes(x));
     if (rf.length){
       const g = {}; rf.forEach(x => (g[x.t] = g[x.t] || []).push(x));
       TYPE_ORDER.filter(t => g[t]).forEach(t => { const a = g[t], show = a.slice(0, 60);
@@ -154,6 +152,7 @@
   };
   // spec section (pipe class for a line, datasheet for a valve), filled once spec/index.json is loaded
   L.fillSpec = (root, it) => { const el = root.querySelector(".lk-spec"); if (!el || !window.Spec) return;
+    if (el.dataset.k) it = L.find(el.dataset.k, el.dataset.t) || it;   // the spec may come from the same tag in another list
     Spec.load().then(() => { if (!el.isConnected) return; el.innerHTML = Spec.html(it, it.r && DB.types[it.t] ? DB.types[it.t].f : []) + Spec.note(); Spec.bind(el); })
       .catch(e => { el.innerHTML = `<div class="lk-ns">Couldn't load the pipe and valve spec (${esc(e.message)}).</div>`; }); };
   // for the Browse pickers (browse.js): every item, a field by name, the list icons and names
@@ -327,6 +326,7 @@
 .lk-btn{border:1px solid var(--lk-a);background:none;color:var(--lk-a);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer;margin:6px 0}
 .lk-spec .lk-btn{font-size:13px;padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:13.5px;line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:12px;margin-left:4px}
+.lk-t td.lk-sub{color:var(--lk-a);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}
 .sp-cl{display:flex;flex-direction:column}.sp-p{padding:6px 2px;border-bottom:1px solid var(--lk-l);font-size:13px;line-height:1.4;color:var(--mute)}.sp-p b{color:var(--ink);font-weight:600}
 .sp-sc{overflow-x:auto;-webkit-overflow-scrolling:touch}.sp-dt td,.sp-ct td,.sp-ct th{white-space:nowrap}.sp-dt td:first-child{width:auto}
 .sp-ct th{font-size:11px;text-align:left;color:var(--mute);padding:4px;border-bottom:1px solid var(--lk-l)}.sp-ct td:first-child{color:var(--ink);width:auto;white-space:normal;min-width:120px}

@@ -1022,12 +1022,12 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   const MEL_ROWS = [["n", "Name"], ["sz", "Size / description"], ["nd", "Nominal duty point"], ["dd", "Design duty point"], ["kw", "Installed power (kW)"], ["v", "Voltage"],
     ["stt", "Starter type"], ["ds", "Duty / standby"], ["ep", "Emergency power"], ["moc", "Material of construction"], ["ven", "Vendor"], ["mm", "Make / model"], ["pkg", "Package"],
     ["sta", "Status"], ["stg", "Stage"], ["bg", "Brownfield / greenfield"], ["sup", "Supply type"], ["pfd", "PFD"], ["pid", "P&ID"], ["ref", "Reference drawing"]];
-  // a record's fields under property headings, each heading a pill (Lookup.pills); blank fields listed once at the end
-  const LBL = {}; const groupTable = (r, G, g, rowsDef, extra = []) => { rowsDef.forEach(([k, l]) => LBL[g + k] = l);
-    const blank = rowsDef.filter(([k]) => r[k] == null || r[k] === "").map(([, l]) => l);
-    return Lookup.pills(G.map(([id, label, keys]) => { const ks = keys.filter(k => r[k] != null && r[k] !== "");
-      return { id, label, html: ks.length ? "<table>" + ks.map(k => `<tr><td>${LBL[g + k]}</td><td>${esc(r[k])}</td></tr>`).join("") + "</table>" : "" }; }).concat(extra), g) +
-      (blank.length ? `<div style="font-size:11.5px;color:var(--mute);margin:4px 0 6px">Blank in the list: ${esc(blank.join(", "))}.</div>` : ""); };
+  // a record's own fields in one table (list order, blank ones named once); a spec, when given, is its own pill beside it
+  const groupTable = (r, G, g, rowsDef, extra = [], more = "") => {
+    const ks = rowsDef.filter(([k]) => r[k] != null && r[k] !== ""), blank = rowsDef.filter(([k]) => r[k] == null || r[k] === "").map(([, l]) => l);
+    const t = (ks.length ? "<table>" + ks.map(([k, l]) => `<tr><td>${l}</td><td>${esc(r[k])}</td></tr>`).join("") + "</table>" : "") +
+      (blank.length ? `<div style="font-size:11.5px;color:var(--mute);margin:4px 0 6px">Blank in the list: ${esc(blank.join(", "))}.</div>` : "") + more;
+    return extra.length ? Lookup.pills([{ id: "det", label: "Details", html: t }, ...extra], g) : t; };
   const MEL_G = [["duty", "Duty", ["n", "sz", "nd", "dd", "ds"]], ["elec", "Electrical", ["kw", "v", "stt", "ep"]], ["sup", "Supply", ["moc", "ven", "mm", "pkg", "sup"]],
     ["st", "Status", ["sta", "stg", "bg"]], ["dwg", "Drawings", ["pfd", "pid", "ref"]]];
   const melTable = r => groupTable(r, MEL_G, "mel", MEL_ROWS);
@@ -1037,11 +1037,13 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   const CV_G = [["vlv", "Valve", ["ty", "code", "sz", "ls", "cl"]], ["proc", "Process", ["fl", "qmin", "qmax", "pin", "p80", "cw", "sg"]], ["act", "Actuation", ["fail", "act", "pos", "am"]],
     ["sup", "Supply", ["mfr", "mod"]], ["where", "Where", ["loc", "pid", "stg"]]];
   // the valve datasheet from the pipe and valve spec, filled in once spec/index.json has loaded
-  const cvTable = c => groupTable(c, CV_G, "cv", CV_ROWS, /^\d+[A-Z]/.test(c.code || "") ? [{ id: "spec", label: "Valve spec", html: `<div class="cv-spec" data-code="${esc(c.code)}">Loading the spec…</div>` }] : []);
+  const cvTable = (c, more = "") => groupTable(c, CV_G, "cv", CV_ROWS, /^\d+[A-Z]/.test(c.code || "") ? [{ id: "spec", label: "Valve spec", html: `<div class="cv-spec" data-code="${esc(c.code)}">Loading the spec…</div>` }] : [], more);
   const fillCvSpec = root => root.querySelectorAll(".cv-spec").forEach(el => Spec.load().then(() => { el.innerHTML = Spec.forCode(el.dataset.code) || "This valve code has no datasheet in the spec."; Spec.bind(el); }).catch(() => el.textContent = "Couldn't load the spec."));
   const IN_ROWS = [["ty", "Instrument type"], ["desc", "Description"], ["eq", "On equipment"], ["loc", "Location"], ["fl", "Fluid"], ["u", "Range / units"], ["mk", "Make"], ["md", "Model"], ["pid", "P&ID"]];
   const IN_G = [["ins", "Instrument", ["ty", "desc", "u"]], ["where", "Where", ["eq", "loc", "fl", "pid"]], ["sup", "Supply", ["mk", "md"]]];
   const inTable = r => groupTable(r, IN_G, "in", IN_ROWS);
+  // instrument list rows by tag (loop tags plus every instrument pulled in against a PFD block)
+  const INS_BY_TAG = Object.assign({}, ...Object.values(EQUIP_DATA).map(d => Object.fromEntries(d.ins.map(i => [i.tag, i]))), INSTR_DATA);
 
   const melOne = r => melTable(r) + `<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div>`;
   function showNode(n){
@@ -1068,8 +1070,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       { id: "vlv", label: "Valves", n: vlv.length + (more ? "+" : ""), html: vlv.length ? `<table class="it">${vlv.map(insRow).join("")}</table><div style="font-size:12px;color:var(--mute);padding:6px 0">Control and actuated valves; tap a tag for its control valve list data.</div>` + moreNote : `<div>${NS_TXT}: no control valves listed on these equipment numbers.</div>` },
       { id: "lin", label: "Lines", n: ins.length + outs.length, html: (ins.length ? `<h4>In (PFD)</h4><div class="conn">${ins.map(link).join("")}</div>` : "") + (outs.length ? `<h4>Out (PFD)</h4><div class="conn">${outs.map(link).join("")}</div>` : "") +
           (eqTags.length ? `<h4>Line list lines to or from this equipment</h4><div id="nLines" class="conn"><span style="color:var(--mute)">Loading the line list…</span></div>` : "") || `<div>${NS_TXT}</div>` },
-      { id: "hear", label: "What you'll hear", html: n.hear ? `<div>${esc(n.hear)}</div>` : "" },
-      { id: "dwg", label: "Drawings", n: dw.size, html: dw.size ? `<div class="conn">${[...dw].sort().map(d => `<a data-dwg="${esc(d)}">📐 ${esc(d)}</a>`).join("")}</div>` : `<div>${NS_TXT}: no drawing numbers in the MEL or instrument rows.</div>` } ];
+    ];
+    // the block's own information stays together in Overview
+    if (n.hear) secs[0].html += `<h4>What you'll hear</h4><div>${esc(n.hear)}</div>`;
+    if (dw.size) secs[0].html += `<h4>Drawings</h4><div class="conn">${[...dw].sort().map(d => `<a data-dwg="${esc(d)}">📐 ${esc(d)}</a>`).join("")}</div>`;
     let h = Lookup.pills(secs, "node");
     h += `<div class="src">Sources: node description <code>pfd-data.js</code>; MEL 2000-F00-LST-ME-10001 Rev 0 and instrument list rows in <code>pfd-equip.js</code> (built by <code>tools/build_equip.py</code>).</div>`;
     if (eqTags.length) Lookup.load().then(() => { const el = $("nLines"); if (!el) return; const seen = new Set(), out = [];
@@ -1184,7 +1188,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     let h = ""; const first = ex[0];
     if (ex.length > 1) h += `<div style="font-size:12.5px;color:var(--mute)">${ex.length} devices: ${esc(ex.join(", "))}. Details below are for ${esc(first)}; the others are the same design.</div>`;
     const I = INSTR_DATA[first], V = CV_DATA[first], M = MEL[first];
-    h += Lookup.pills([I && { id: "in", label: "Instrument list", html: inTable(I) }, V && { id: "cv", label: "Control valve list", html: cvTable(V) }, M && { id: "mel", label: "MEL", html: melTable(M) }], "dev");
+    // the same tag's rows from each list, one after the other
+    if (I) h += `<h4>Instrument list</h4>` + inTable(I);
+    if (V) h += `<h4>Control valve list</h4>` + cvTable(V);
+    if (M) h += `<h4>Mechanical equipment list</h4>` + melTable(M);
     if (!I && !V && !M) h += `<div style="margin-top:6px">${esc(first)}: ${NS_TXT} in the instrument, valve or equipment lists supplied.</div>`;
     return h;
   }
@@ -1253,7 +1260,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     fillCvSpec($("iBody"));
     $("iBody").querySelectorAll("a[data-cv]").forEach(a => a.onclick = e => { e.preventDefault(); const c = CV_DATA[a.dataset.cv]; if (!c) return;
       const back = lastPanel; $("iKind").textContent = "Control valve"; $("iName").textContent = c.loc || c.tag; $("iTag").textContent = c.tag;
-      $("iBody").innerHTML = `<div class="symm">${feSvg("valve")}<div><b>Control valve list entry</b></div></div>` + cvTable(c) + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;
+      $("iBody").innerHTML = `<div class="symm">${feSvg("valve")}<div><b>Control valve list entry</b></div></div>` + cvTable(c, INS_BY_TAG[a.dataset.cv] ? `<h4>Instrument list</h4>` + inTable(INS_BY_TAG[a.dataset.cv]) : "") + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;
       $("cvBack").onclick = () => back && back(); fillCvSpec($("iBody")); });
   }
   function openInfo(){ $("info").classList.add("on"); }
