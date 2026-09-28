@@ -67,8 +67,8 @@ window.Browse = (() => {
   const steps = () => t() ? STEPS[t()] : [];
   const match = r => path.every(p => p.v == null || r[p.f] === p.v);
   const nextStep = () => t() ? steps()[path.length - 1] : ["t", "Asset type"];
-  // alphabetical (numbers in number order, so sizes run 15, 25, 50…), "Other" last
-  const order = (f, c) => Object.keys(c).sort((x, y) => (x === "?") - (y === "?") || x.localeCompare(y, undefined, { numeric: true }));
+  // alphabetical by what the chip shows ("?" reads "Other"); numbers in number order, so sizes run 15, 25, 50…
+  const order = (f, c) => Object.keys(c).sort((x, y) => (x === "?" ? "Other" : x).localeCompare(y === "?" ? "Other" : y, undefined, { numeric: true, sensitivity: "base" }));
 
   let el = null, lk = null, resY = 0;
   // a short form of a name for the option chips: the first one or two words, about 14 characters ("Pump Process")
@@ -91,7 +91,7 @@ window.Browse = (() => {
         vals.map(v => { const n = st[0] === "t" || v === "?" ? "" : shortName(nameOf(st[0], t(), v)), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
           // code (short name); the full name and the count show on the gold chip once picked
           return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}">${esc(label)}${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
-      if (st[0] !== "t" && vals.length >= AZ_MIN) az = [...new Set(vals.map(v => azKey(v === "?" ? "Other" : v)))].sort((a, b) => (a === "#") - (b === "#") || a.localeCompare(b));
+      if (st[0] !== "t" && vals.length >= AZ_MIN) az = [...new Set(vals.map(v => azKey(v === "?" ? "Other" : v)))].sort((a, b) => a.localeCompare(b));
     } else opts = `<div class="bw-h">All steps set</div><div class="bw-note">Tap × on a step above to change it.</div>`;
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts">${opts}</div></div></div>
@@ -177,7 +177,8 @@ window.Browse = (() => {
 .bw-cr{border-radius:10px !important;text-align:left}.bw-cr span{white-space:normal;line-height:1.25}.bw-cr i{font-style:normal;font-weight:600;opacity:.75}
 .bw-cr b{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(0,0,0,.18);font-size:12px;line-height:1}
 .bw-opts{display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;align-content:flex-start}
-.bw-opts.stack{flex-direction:column;align-items:flex-start;flex-wrap:nowrap}.bw-opts .bw-h,.bw-opts .bw-note{flex-basis:100%}
+.bw-opts.stack{flex-direction:column;align-items:flex-start;flex-wrap:nowrap}
+.bw-opts.stack .bw-h,.bw-opts.stack .bw-note{flex-basis:auto;align-self:stretch}.bw-o{flex:none}.bw-opts .bw-h,.bw-opts .bw-note{flex-basis:100%}
 .bw-h{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:2px 0}
 .bw-any{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:2px 8px;font:inherit;font-size:11px;letter-spacing:0;text-transform:none}
 .bw-o{display:block;width:auto;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:9px;padding:5px 8px;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.2}
