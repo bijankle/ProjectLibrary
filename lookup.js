@@ -72,7 +72,9 @@
     return (byKey.has(k) ? `<a class="lk-a" data-k="${k}">${m}</a>` : m) + open; });
   L.resultsHTML = (hits, q) => {
     if (!hits.length) return `<div class="lk-empty">No match for “${esc(q)}”. Try fewer characters, e.g. the number only.</div>`;
-    return hits.map((it, i) => `<button class="lk-hit" data-i="${i}"><span class="lk-ic">${ICON[it.t] || "•"}</span><span class="lk-hb"><b>${esc(it.key)}</b><span>${esc(it.name)}</span><em>${esc(typeName(it.t))}</em></span></button>`).join("");
+    // one line per result: icon, code, description (the pill shows the list it comes from)
+    const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
+    return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><span class="lk-ic1">${ICON[it.t] || "•"}</span><b>${esc(it.key)}</b><span>${esc(it.name)}</span></button>`).join("");
   };
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
@@ -144,12 +146,25 @@
     inp.addEventListener("focus", () => { if (!inp.value.trim() && !cur) showRecent(); });
     inp.addEventListener("blur", () => setTimeout(() => { if (!keep && !inp.value.trim() && document.activeElement !== inp) hideRecent(); }, 150));
     const status = m => { stat.innerHTML = m || ""; };
-    const showList = q => {
+    // filter pills: one per list with matches (with counts); the choice is kept while typing
+    let only = "", shownN = 80;
+    const PILL = { pfd: "PFD", mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spec: "Spec", pid: "Drawings", spi: "SPI", hose: "Hoses", gloss: "Glossary" };
+    const showList = (q, keepN) => {
       showingRecent = false; if (!q.trim() && document.activeElement === inp){ showRecent(); return; }
-      hits = L.search(q); const n = hits.length >= 60 ? L.count(q) : hits.length;
-      status(q.trim().length < 2 ? "" : n ? `${n} match${n > 1 ? "es" : ""}${n > hits.length ? ", best " + hits.length + " shown" : ""}` : "");
-      body.innerHTML = q.trim().length < 2 ? (opts.intro || "") : L.resultsHTML(hits, q);
-      body.querySelectorAll(".lk-hit").forEach(b => b.onclick = () => open(hits[+b.dataset.i], true));
+      if (q.trim().length < 2){ status(""); body.innerHTML = opts.intro || ""; return; }
+      if (!keepN) shownN = 80;
+      const all = L.search(q, 100000), counts = {};
+      all.forEach(it => counts[it.t] = (counts[it.t] || 0) + 1);
+      if (only && !counts[only]) only = "";
+      const list = only ? all.filter(it => it.t === only) : all;
+      hits = list.slice(0, shownN);
+      status(all.length ? `${all.length} match${all.length > 1 ? "es" : ""}${only ? `, ${list.length} in ${PILL[only] || typeName(only)}` : ""}` : "");
+      const types = TYPE_ORDER.filter(t => counts[t]);
+      body.innerHTML = (types.length ? `<div class="lk-pills"><button class="lk-pill${only ? "" : " on"}" data-t="">All <i>${all.length}</i></button>${types.map(t => `<button class="lk-pill${only === t ? " on" : ""}" data-t="${t}">${ICON[t] || ""} ${esc(PILL[t] || typeName(t))} <i>${counts[t]}</i></button>`).join("")}</div>` : "") +
+        L.resultsHTML(hits, q) + (list.length > hits.length ? `<button class="lk-more">Show ${Math.min(200, list.length - hits.length)} more (${list.length - hits.length} left)</button>` : "");
+      body.querySelectorAll(".lk-row1").forEach(b => b.onclick = () => open(hits[+b.dataset.i], true));
+      body.querySelectorAll(".lk-pill").forEach(b => b.onclick = () => { only = b.dataset.t; showList(inp.value); });
+      const m = body.querySelector(".lk-more"); if (m) m.onclick = () => { shownN += 200; showList(inp.value, true); };
     };
     const open = (it, push) => {
       if (!it) return; remember(it); showingRecent = false; if (it.go){ it.go(); return; } if (push) stack.push({ q: inp.value, scroll: body.scrollTop, it: cur });
@@ -230,7 +245,16 @@
 .lk-cam{flex:none;width:48px;border-radius:12px;border:1px solid var(--lk-l);background:var(--lk-c);font-size:21px;cursor:pointer}
 .lk-status{font-size:13px;color:var(--mute);min-height:18px;margin:6px 2px}
 .lk-hit{display:flex;gap:10px;width:100%;text-align:left;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:12px;padding:10px 11px;margin-bottom:7px;cursor:pointer;font:inherit}
-.lk-hit:hover{border-color:var(--lk-a)}.lk-ic{font-size:18px;line-height:1.2}.lk-hb{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lk-hit:hover{border-color:var(--lk-a)}
+.lk-pills{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.lk-pills::-webkit-scrollbar{display:none}
+.lk-pill{flex:none;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:99px;padding:5px 10px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.lk-pill i{font-style:normal;font-weight:600;color:var(--mute);margin-left:2px}.lk-pill.on{background:var(--lk-a);border-color:var(--lk-a);color:#1a1307}.lk-pill.on i{color:#1a1307}
+.lk-row1{display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--lk-l);background:none;color:var(--ink);padding:7px 4px;cursor:pointer;font:inherit;font-size:13px;line-height:1.3}
+.lk-row1:hover,.lk-row1:focus{background:var(--lk-c)}.lk-ic1{flex:none;font-size:13px;width:18px;text-align:center}
+.lk-row1 b{flex:none;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--lk-a);max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lk-row1.txt b{font-family:inherit;font-size:13px;max-width:62%}.lk-row1.txt span{color:var(--mute)}
+.lk-row1 span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.lk-more{width:100%;margin:8px 0;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:10px;padding:8px;font:inherit;font-weight:700;cursor:pointer}.lk-ic{font-size:18px;line-height:1.2}.lk-hb{display:flex;flex-direction:column;gap:2px;min-width:0}
 .lk-hb b{font-family:ui-monospace,Consolas,monospace;font-size:14.5px;color:var(--lk-a);word-break:break-all}.lk-hb span{font-size:13.5px;line-height:1.3}.lk-hb em{font-size:11.5px;color:var(--mute);font-style:normal}
 .lk-rh{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mute);margin:2px 2px 8px}
 .lk-rh button{border:0;background:none;color:var(--lk-a);font:inherit;text-transform:none;letter-spacing:0;font-size:13px;cursor:pointer;padding:4px}
