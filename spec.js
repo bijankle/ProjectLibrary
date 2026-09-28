@@ -21,8 +21,8 @@ window.Spec = (() => {
   // HDPE outside diameter (mm) to the nominal size used on valve datasheets
   const OD_DN = { 20: 15, 25: 20, 32: 25, 40: 32, 50: 40, 63: 50, 75: 65, 90: 80, 110: 100, 125: 100, 140: 125, 160: 150, 180: 150, 200: 150, 225: 200, 250: 200, 280: 250,
     315: 300, 355: 300, 400: 350, 450: 400, 500: 450, 560: 500, 630: 600, 710: 700, 800: 800, 900: 900, 1000: 1000, 1200: 1200 };
-  // one component per line, comma separated: "Elbow, 90°: SDR17, plain ends, AS/NZS 4129, PE100"
-  const part = (c, withSize) => `<div class="sp-p"><b>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</b>: ${esc([withSize && c.size, c.type, c.ends, c.dim, c.mat].map(x => String(x || "").trim()).filter(x => x && x !== "-" && x !== "N/A").join(", "))}</div>`;
+  // one component per line, comma separated: item: type / rating, ends, standard ("Elbow, 90°: SDR17, Plain end, AS/NZS 4129")
+  const part = (c, withSize) => `<div class="sp-p"><b>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</b>: ${esc([withSize && c.size, c.type, c.ends, c.dim].map(x => String(x || "").trim()).filter(x => x && x !== "-" && x !== "N/A").join(", "))}</div>`;
   // ---------- piping class ----------
   // one line always visible (class, title, the datasheet button); everything else in tap-to-open sections
   function pipeHTML(cls, size, service, parts){
