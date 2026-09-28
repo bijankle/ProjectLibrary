@@ -73,14 +73,14 @@ window.Browse = (() => {
   let el = null, lk = null, resY = 0;
   function draw(){
     const list = rows.filter(match), st = nextStep();
-    const crumbs = path.map((p, i) => `<button class="bw-cr" data-i="${i}" title="Remove this and the steps after it"><span>${esc(p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : p.v === "?" ? "Other" : p.v)}</span><b>×</b></button>`).join("");
+    const crumbs = path.map((p, i) => `<button class="bw-cr" data-i="${i}" title="Remove this and the steps after it"><span>${esc(p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : p.v === "?" ? "Other" : p.v + (nameOf(p.f, t(), p.v) ? " - " + nameOf(p.f, t(), p.v) : ""))}</span><b>×</b></button>`).join("");
     let opts = "";
     if (st){
       const c = {}; for (const r of list) c[r[st[0]]] = (c[r[st[0]]] || 0) + 1;
       const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]) : order(st[0], c);
       opts = `<div class="bw-h">${esc(st[1])}${st[0] !== "t" ? `<button class="bw-any">Any</button>` : ""}</div>` +
         vals.map(v => { const n = st[0] === "t" ? "" : nameOf(st[0], t(), v), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
-          return `<button class="bw-o" data-v="${esc(v)}"><b>${esc(label)}</b>${n ? ` - ${esc(n)}` : ""} <i>(${c[v].toLocaleString()})</i></button>`; }).join("");
+          return `<button class="bw-o" data-v="${esc(v)}"${n ? ` title="${esc(n)}"` : ""}><b>${esc(label)}</b>${n ? `<span class="bw-nm"> - ${esc(n)}</span>` : ""} <i>(${c[v].toLocaleString()})</i></button>`; }).join("");
     } else opts = `<div class="bw-h">All steps set</div><div class="bw-note">Tap × on a step above to change it.</div>`;
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = `<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts">${opts}</div></div>
@@ -92,13 +92,23 @@ window.Browse = (() => {
     el.querySelectorAll(".bw-cr").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
     el.querySelectorAll(".bw-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i]); });
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
-    fit();
+    fit(); arrange();
+  }
+  // Filters on top (options wrapping left to right, results full width below) when they fit in the top half of the
+  // split area; otherwise the side by side split (e.g. the long list of equipment codes).
+  function arrange(){
+    if (!el || !el.offsetParent) return;
+    // try: on top with names, on top as compact code chips (name shown once picked), else side by side
+    const l = el.querySelector(".bw-l"), fits = () => l && l.scrollHeight <= el.clientHeight / 2;
+    el.classList.remove("compact"); el.classList.add("top"); if (fits()) return;
+    el.classList.add("compact"); if (fits()) return;
+    el.classList.remove("top", "compact");
   }
   const after = () => { shownN = 60; save(); draw(); };
   // the two panes fill the screen below the search bar and scroll on their own
   function fit(){ if (!el || !el.offsetParent) return; const z = window.TextSize ? TextSize.z() : 1;   // inside a zoomed page, CSS pixels are scaled by the text size
     el.style.height = Math.max(260, (window.innerHeight - el.getBoundingClientRect().top - window.scrollY - 6) / z) + "px"; }
-  window.addEventListener("resize", fit);
+  window.addEventListener("resize", () => { fit(); arrange(); });
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(path)); } catch (e) {} };
   function mount(root, box){
     el = root; lk = box; el.classList.add("bw");
@@ -109,8 +119,15 @@ window.Browse = (() => {
       .catch(e => { el.innerHTML = `<div class="bw-note">Couldn't load the lists (${esc(e.message)}). Check the connection and reopen the app.</div>`; });
   }
   // back from an item: the list where it was
-  const restore = () => { fit(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
+  const restore = () => { fit(); arrange(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
   const css = `.bw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;min-height:260px}
+.bw.top{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+.bw.top .bw-l{overflow:visible;padding-right:0}
+.bw.top .bw-opts{flex-direction:row;flex-wrap:wrap}
+.bw.top .bw-h{flex-basis:100%}
+.bw.top .bw-o{width:auto;padding:5px 9px}
+.bw.compact .bw-nm{display:none}.bw.compact .bw-o{padding:4px 8px}
+.bw.top .bw-r{border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:4px}
 .bw-l,.bw-r{overflow-y:auto;overscroll-behavior:contain;min-height:0;-webkit-overflow-scrolling:touch}
 .bw-l{display:flex;flex-direction:column;gap:6px;padding-right:2px}
 .bw-crs{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}
