@@ -144,7 +144,10 @@
   const endText = v => { v = String(v || "").trim().replace(/^(to|from)\s+/i, ""); if (!v) return "not given";
     return v.replace(TAG_RE, m => { const e = (byKey.get(norm(m)) || []).find(x => x.t === "mel"); return e && e.name ? `${e.name} (${m})` : m; }); };
   // a line's two ends as "Name (tag)" (or the other line's number)
-  L.lineEnds = it => { const f = DB.types.line.f; return [endText(it.r[f.indexOf("From")]), endText(it.r[f.indexOf("To")])]; };
+  // names: an equipment end as its MEL name only (no tag); another line's end stays its number
+  const endName = v => { v = String(v || "").trim().replace(/^(to|from)\s+/i, ""); if (!v) return "not given";
+    return v.replace(TAG_RE, m => { const e = (byKey.get(norm(m)) || []).find(x => x.t === "mel"); return e && e.name ? e.name : m; }); };
+  L.lineEnds = (it, names) => { const f = DB.types.line.f, e = names ? endName : endText; return [e(it.r[f.indexOf("From")]), e(it.r[f.indexOf("To")])]; };
   L.lineText = it => { if (it.t !== "line" || !it.r) return it.name; const f = DB.types.line.f;
     return `from ${endText(it.r[f.indexOf("From")])} to ${endText(it.r[f.indexOf("To")])}`; };
   // the line under the tag: a line's service and size (its ends are in Details, tappable); never the tag again

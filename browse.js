@@ -96,7 +96,7 @@ window.Browse = (() => {
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts">${opts}</div></div></div>
       <div class="bw-r"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
-      ${hits.map((it, i) => `<button class="bw-it" data-i="${i}"><b>${t() ? "" : (Lookup.ICON[it.t] || "") + " "}${esc(it.key)}</b> <span>(${esc(resDesc(it))})</span></button>`).join("")}
+      ${hits.map((it, i) => `<button class="bw-it${it.t === "line" ? " ln" : ""}" data-i="${i}"><b>${t() ? "" : (Lookup.ICON[it.t] || "") + " "}${esc(it.key)}</b> <span>(${esc(resDesc(it))})</span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bw-o").forEach(b => b.onclick = () => { path.push({ f: st[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
     const any = el.querySelector(".bw-any"); if (any) any.onclick = () => { path.push({ f: st[0], v: null }); after(); };
@@ -107,14 +107,16 @@ window.Browse = (() => {
     fit(); fitLayout();
   }
   // one row per result: code (description); a line reads code (from Name (tag), to Name (tag))
-  const resDesc = it => { if (it.t === "line" && it.r){ const [a, b] = Lookup.lineEnds(it); return `from ${a}, to ${b}`; } return Lookup.listName(it); };
+  const resDesc = it => { if (it.t === "line" && it.r){ const [a, b] = Lookup.lineEnds(it, true); return `from ${a}, to ${b}`; } return Lookup.listName(it); };
   // the bracket text shrinks until its row fits on one line (never below 8px; then it ends with …);
   // chips that still don't fit at 8px widen the filter column (up to half the screen)
-  function fitRows(sel, max){
+  // (min: the smallest size allowed; lines' "from …, to …" may go as small as it takes)
+  function fitRows(sel, max, min = 8){
     el.querySelectorAll(sel).forEach(b => { const s = b.querySelector("span"); if (!s) return; s.style.fontSize = max + "px";
-      if (b.scrollWidth <= b.clientWidth + 1) return;
-      const over = b.scrollWidth - b.clientWidth, w = s.getBoundingClientRect().width, fs = Math.max(8, max * Math.max(0, w - over - 2) / w);
-      s.style.fontSize = fs.toFixed(1) + "px"; if (b.scrollWidth > b.clientWidth + 1 && fs > 8) s.style.fontSize = "8px"; });
+      const lo = b.classList.contains("ln") ? 3 : min;
+      for (let k = 0; k < 3 && b.scrollWidth > b.clientWidth + 1; k++){   // a couple of passes: padding and spacing don't scale
+        const cur = parseFloat(s.style.fontSize), over = b.scrollWidth - b.clientWidth, w = s.getBoundingClientRect().width;
+        s.style.fontSize = Math.max(lo, cur * Math.max(0, w - over - 2) / w).toFixed(2) + "px"; } });
   }
   function fitLayout(){
     if (!el || !el.offsetParent) return;
@@ -180,7 +182,7 @@ window.Browse = (() => {
 .bw-r{border-left:1px solid var(--line);padding-left:8px}
 .bw-n{font-size:11.5px;color:var(--mute);margin:2px 0 4px}.bw-n b{color:var(--ink)}
 .bw-it{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:7px 0;font:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bw-it b{font-size:12px;color:var(--gold);font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
+.bw-it.ln b{font-size:11px}.bw-it b{font-size:12px;color:var(--gold);font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
 .bw-it span{font-size:11.5px;color:var(--mute)}
 .bw-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-size:12px;font-weight:700}
 .bw-note{font-size:12px;color:var(--mute);line-height:1.4}`;
