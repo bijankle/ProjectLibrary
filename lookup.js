@@ -310,7 +310,7 @@
 .lk-back{border:0;background:none;color:var(--lk-a);font:inherit;font-weight:700;padding:4px 0 10px;cursor:pointer}
 .lk-kind{font-size:11.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--lk-a)}
 .lk-key{font-family:ui-monospace,Consolas,monospace;font-size:20px;font-weight:800;margin:4px 0 2px;word-break:break-all}.lk-name{font-size:15px;line-height:1.35;margin-bottom:8px}
-.lk-t{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}.lk-t td{padding:6px 4px;border-bottom:1px solid var(--lk-l);vertical-align:top;word-break:break-word}.lk-t td:first-child{color:var(--mute);width:42%}
+.lk-t{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}.lk-t td{padding:5px 4px;border-bottom:1px solid var(--lk-l);vertical-align:top;word-break:break-word}.lk-t td:first-child{color:var(--mute);width:1%;min-width:112px;padding-right:10px;font-size:12.5px;word-break:normal;overflow-wrap:normal;hyphens:manual}
 .lk-a{color:var(--lk-a);text-decoration:underline;cursor:pointer}.lk-row{display:block;text-decoration:none;color:var(--ink);background:var(--lk-c);border-radius:8px;padding:6px 8px;margin:4px 0;font-size:13px}
 .lk-row b{font-family:ui-monospace,Consolas,monospace;color:var(--lk-a);margin-right:4px}.lk-h{margin:14px 0 4px;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
 .pf-bar{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 8px}
