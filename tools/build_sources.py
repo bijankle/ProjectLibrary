@@ -221,8 +221,10 @@ def layout_tables(k, f):
 
 # ---------- build ----------
 CHUNK = 5000
-if os.path.isdir(OUT): shutil.rmtree(OUT)
-os.makedirs(OUT)
+os.makedirs(OUT, exist_ok=True)
+for k in FILEKEY:   # remove only what this script made before (other files in sources/ are left alone)
+    if os.path.isdir(os.path.join(OUT, k)): shutil.rmtree(os.path.join(OUT, k))
+    if os.path.exists(os.path.join(OUT, k + ".xlsx")): os.remove(os.path.join(OUT, k + ".xlsx"))
 index = {}
 for k, r in REV.items():
     f = find(k)

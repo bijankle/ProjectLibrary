@@ -10,14 +10,16 @@
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // Things that look like a plant code inside any text
   const TAG_RE = /\b(2000-[A-Z0-9]{3,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}|\d{2}-\d{4}-[A-Z0-9]{1,6}-[A-Z0-9]{2,6}-\d{2,4}(?:-[A-Z]{1,3})?|F\d{2}-[A-Z]{1,4}-\d{2,4}[A-Z]?|F\d{2}-\d{5}|SP-[A-Z]{2}-\d{3}|[A-Z]{1,5} ?\d{5}[A-Z]?)\b/g;
-  const TYPE_ORDER = ["pfd", "mel", "ins", "cv", "mv", "line", "spi", "hose", "gloss", "pid"];
-  const ICON = { mel: "⚙️", ins: "📟", cv: "🎚️", mv: "🔧", line: "〰️", spi: "🔩", hose: "🪢", pfd: "🗺️", gloss: "📖", pid: "📐" };
+  const TYPE_ORDER = ["pfd", "mel", "ins", "cv", "mv", "line", "spec", "spi", "hose", "gloss", "pid"];
+  const ICON = { mel: "⚙️", ins: "📟", cv: "🎚️", mv: "🔧", line: "〰️", spi: "🔩", hose: "🪢", pfd: "🗺️", gloss: "📖", pid: "📐", spec: "📘" };
 
   L.addExtra = list => { extras = extras.concat(list); if (DB) indexExtras(list); };
   function indexExtras(list){ list.forEach(x => { x.k = norm(x.key); x.txt = (x.key + " " + x.name + " " + (x.words || "")).toLowerCase(); items.push(x); addKey(x.k, x); }); }
   function addKey(k, it){ if (!k) return; const a = byKey.get(k); if (a) a.push(it); else byKey.set(k, [it]); }
 
-  L.load = () => loading || (loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => { DB = d; build(); return L; }));
+  L.load = () => loading || (loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => { DB = d; build();
+    if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
+    return L; }));
   L.ready = () => !!DB;
   function build(){
     Object.entries(DB.data).forEach(([t, rows]) => rows.forEach(r => { const it = { t, r, key: r[0], k: norm(r[0]), name: nameOf(t, r) }; items.push(it); addKey(it.k, it); }));
@@ -42,7 +44,7 @@
     if (t === "spi" || t === "hose") return g("Description");
     return r[1] || "";
   }
-  const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "P&ID" : DB.types[t].n;
+  const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "P&ID" : t === "spec" ? "Pipe & valve spec" : DB.types[t].n;
   const textOf = it => it.txt || (it.txt = (it.r ? it.r.join(" ") : it.key + " " + it.name).toLowerCase());
 
   L.search = (q, limit = 60) => {
@@ -72,11 +74,13 @@
     const pfd = opts.pfd && opts.pfd(it);
     if (pfd) h += `<button class="lk-btn" data-pfd="1">🗺️ ${esc(pfd.label)}</button>`;
     if (it.t === "pfd" || it.t === "gloss"){ h += it.html || `<p>${esc(it.text || "")}</p>`; }
+    else if (it.t === "spec"){ h += `<div class="lk-spec"></div>`; }
     else if (it.r){
       const f = DB.types[it.t].f;
       h += `<table class="lk-t">` + f.map((n, i) => it.r[i] ? `<tr><td>${esc(n)}</td><td>${linkify(it.r[i])}</td></tr>` : "").join("") + `</table>`;
       const empty = f.filter((n, i) => !it.r[i]);
       if (empty.length) h += `<div class="lk-ns">Not specified in the list: ${esc(empty.join(", "))}.</div>`;
+      if (window.Spec && Spec.wanted(it)) h += `<div class="lk-spec"><div class="lk-ns">Loading the pipe and valve spec…</div></div>`;
     }
     const same = (byKey.get(it.k) || []).filter(x => x !== it);
     if (same.length) h += `<h4 class="lk-h">Same tag in other lists</h4>` + same.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${ICON[x.t] || ""} ${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("");
@@ -94,6 +98,10 @@
     if (DB.types[it.t]) h += `<div class="lk-src">Source: ${esc(DB.types[it.t].n)} list ${esc(DB.types[it.t].doc)} ${esc(DB.types[it.t].rev)}. Tap any underlined code to open it.</div>`;
     return h;
   };
+  // spec section (pipe class for a line, datasheet for a valve), filled once spec/index.json is loaded
+  L.fillSpec = (root, it) => { const el = root.querySelector(".lk-spec"); if (!el || !window.Spec) return;
+    Spec.load().then(() => { if (!el.isConnected) return; el.innerHTML = Spec.html(it, it.r && DB.types[it.t] ? DB.types[it.t].f : []) + Spec.note(); Spec.bind(el); })
+      .catch(e => { el.innerHTML = `<div class="lk-ns">Couldn't load the pipe and valve spec (${esc(e.message)}).</div>`; }); };
   L.find = (k, t) => { const a = byKey.get(k) || []; return (t && a.find(x => x.t === t)) || a[0] || null; };
 
   // A self contained search box: input, camera, results and item view with back history.
@@ -142,6 +150,7 @@
       body.querySelector(".lk-back").onclick = back;
       body.querySelectorAll("a[data-k]").forEach(a => a.onclick = e => { e.preventDefault(); open(L.find(a.dataset.k, a.dataset.t), true); });
       const pb = body.querySelector("[data-pfd]"); if (pb) pb.onclick = () => opts.pfd(it).go();
+      L.fillSpec(body, it);
       if (opts.onOpen) opts.onOpen(it);
     };
     let cur = null;
@@ -223,6 +232,22 @@
 .lk-d{border:1px solid var(--lk-l);border-radius:10px;margin:6px 0;padding:0 8px}.lk-d summary{cursor:pointer;padding:8px 0;font-weight:700;font-size:13.5px}
 .lk-ns{font-size:12px;color:var(--mute);margin:4px 0;line-height:1.4}.lk-src{font-size:12px;color:var(--mute);margin-top:12px;line-height:1.4}
 .lk-btn{border:1px solid var(--lk-a);background:none;color:var(--lk-a);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer;margin:6px 0}
+.lk-spec .sp-t{font-size:13.5px;line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:12px;margin-left:4px}
+.sp-sc{overflow-x:auto;-webkit-overflow-scrolling:touch}.sp-dt td,.sp-ct td,.sp-ct th{white-space:nowrap}.sp-dt td:first-child{width:auto}
+.sp-ct th{font-size:11px;text-align:left;color:var(--mute);padding:4px;border-bottom:1px solid var(--lk-l)}.sp-ct td:first-child{color:var(--ink);width:auto;white-space:normal;min-width:120px}
+.sp-n{font-size:12.5px;line-height:1.4;margin:6px 0}.sp-n b{color:var(--lk-a);margin-right:4px}
+.sp-v{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.sp-chip{border:1px solid var(--lk-a);background:none;color:var(--lk-a);border-radius:99px;padding:4px 9px;font:inherit;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;font-weight:700;cursor:pointer}
+.sp-chip.off{border-color:var(--lk-l);color:var(--mute);cursor:default}.sp-warn{font-size:12.5px;color:#f59e0b;margin:4px 0}
+.sp-view{position:fixed;inset:0;z-index:2000;background:#2b2f36;display:flex;flex-direction:column}.sp-view[hidden]{display:none}
+.sp-top{display:flex;gap:8px;align-items:center;padding:8px 10px;background:#171b21;color:#e9edf2;border-bottom:1px solid #2c343e}
+.sp-tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.sp-nav{display:flex;align-items:center;gap:4px}.sp-nav span{font-size:12.5px;min-width:58px;text-align:center;color:#aab4c0}
+.sp-top button,.sp-dl{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;min-width:34px;height:32px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px}
+.sp-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}.sp-sheet{position:relative;background:#fff;margin:0 auto;box-shadow:0 2px 14px #0008;transform-origin:0 0}
+.sp-bg{position:absolute;inset:0;width:100%;height:100%}.sp-hi{position:absolute}
+.sp-msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font-size:14px}.sp-msg[hidden]{display:none}
+body.sp-on{overflow:hidden}
+@media (max-width:600px){.sp-dl{display:none}.sp-tt{font-size:12.5px}}
 .lk-ocr{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);font-family:ui-monospace,monospace;font-size:14px;padding:8px}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   window.Lookup = L;

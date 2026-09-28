@@ -46,3 +46,11 @@ The 🗺 Layout switch in the Smart PFD header shows the same equipment and stre
 
 Positions come from the two layout drawings, FIM 2 (2000-F00-DRG-GE-10100 Rev 0, new plant) and FIM 1 (2000-F00-DRG-GE-20001 Rev 2, old plant). `tools/build_layout.py` holds each item's position on a sheet and ties both sheets to the ground through three points surveyed in Google Maps (tails thickener centre, COS 2 dome, Fimiston COS dome); it writes `pfd-layout-data.js`. Residuals are about 3 m. Items drawn with an orange dashed outline are estimated because they are not identifiable on either drawing. Anyone can correct a position: open the item, ✥ Move on layout, drag, ✓ Done. Moves are kept on the device and ⬇ Moves downloads them as a small JSON file to build in.
 
+## Pipe and valve spec
+
+Search results for pipe lines, manual valves and control valves now include the Piping Materials and Valves Specification (2000-F00-STS-PP-10001 Rev 3). A line shows its piping class (material, design code, pressure test, the design pressure / temperature table), what to expect at that line size (every pipe, fitting, flange, gasket and bolt row of the class that covers the size), the class notes, and the valves the spec allows for that fluid service in that class. A valve shows its datasheet (type, service, size range, ends, actuation, materials, design pressure and temperature) and warns when the valve size is outside the datasheet range. Piping classes (PE16, SS3…) and valve codes (VB03S4, VKGD1L1…) can also be searched directly.
+
+📄 Open the … datasheet opens the spec at that page in a built-in viewer (PDF.js, bundled in `vendor/pdfjs`), which draws the visible part of the page from the PDF's vectors at the current zoom so it stays sharp; pinch, Ctrl+wheel or +/− to zoom, ◀ ▶ for pages, ⬇ PDF for the whole file. The first open keeps the PDF on the device (its own offline cache, kept across app updates).
+
+`python3 tools/build_spec.py <spec pdf>` builds `spec/pvs.pdf` (cover page removed, the names on every revision and sign-off block blacked out, file properties cleared) and `spec/index.json` (28 piping classes, 75 valve datasheets and the fluid services table, with size ranges as numbers).
+
