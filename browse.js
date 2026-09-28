@@ -181,7 +181,7 @@ window.Browse = (() => {
 .bw-az i{font-style:normal;font-size:10.5px;font-weight:800;line-height:1;color:var(--mute);transition:transform .1s,color .1s}
 .bw-az i.on{color:var(--gold);transform:scale(1.5)}
 .bw-bub{position:absolute;left:18px;width:54px;height:54px;border-radius:50% 50% 50% 10px;background:var(--gold);color:#1a1307;font-size:28px;font-weight:900;display:none;place-items:center;z-index:5;pointer-events:none;box-shadow:0 6px 18px #0008}
-.bw-l{display:flex;flex-direction:column;gap:6px;padding-right:2px}
+.bw-l{display:flex;flex-direction:column;gap:6px}
 .bw-crs{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .bw-cr{display:flex;align-items:center;gap:5px;max-width:100%;border:1px solid var(--gold);background:var(--gold);color:#1a1307;border-radius:99px;padding:3px 5px 3px 9px;font:inherit;font-size:12px;font-weight:700}
 .bw-cr{border-radius:10px !important;text-align:left}.bw-cr span{white-space:normal;line-height:1.25}.bw-cr i{font-style:normal;font-weight:600;opacity:.75}
@@ -196,7 +196,13 @@ window.Browse = (() => {
 .bw-o{display:block;width:auto;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:9px;padding:5px 8px;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.2}
 .bw-o{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.bw-o span{font-weight:500;color:var(--mute);font-size:11.5px}.bw-o b{color:var(--ink);font-size:12.5px}.bw-o i{font-style:normal;font-variant-numeric:tabular-nums;white-space:nowrap}
 .bw-o:active{border-color:var(--gold)}
-.bw-r{border-left:1px solid var(--line);padding-left:8px}
+.bw-r{border-left:1px solid var(--line);padding-left:8px;padding-right:12px}
+.bw-l{padding-right:10px}
+/* slim scroll bars kept clear of the content */
+.bw-l,.bw-r{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--mute) 45%,transparent) transparent}
+.bw-l::-webkit-scrollbar,.bw-r::-webkit-scrollbar{width:6px}
+.bw-l::-webkit-scrollbar-thumb,.bw-r::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--mute) 45%,transparent);border-radius:3px}
+.bw-l::-webkit-scrollbar-track,.bw-r::-webkit-scrollbar-track{background:transparent}
 .bw-n{font-size:11.5px;color:var(--mute);margin:2px 0 4px}.bw-n b{color:var(--ink)}
 .bw-it{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:7px 0;font:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bw-it.ln b{font-size:11px}.bw-it b{font-size:12px;color:var(--gold);font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
