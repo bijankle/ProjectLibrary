@@ -70,39 +70,38 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 .lo-seg button.on{background:var(--accent);color:#1a1307}
 .lo-b{background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--ink)}
 .lo-b:disabled{opacity:.45;cursor:default}
-.lo-n{stroke:#f5f7fa;stroke-width:1.4;fill:#f5f7fa;fill-opacity:.1;cursor:pointer}
-.lo-n.dot{fill:#f5f7fa;fill-opacity:.9;stroke:#101418;stroke-width:1.2}
-.lo-n.est{stroke:#ffb347;stroke-dasharray:4 3}
-.lo-n.dot.est{fill:#ffb347;stroke-dasharray:none}
 .lo-s{stroke-linecap:round;stroke-linejoin:round;cursor:pointer}
 .lo-s.svc{stroke-dasharray:5 4}
-#mapView .lo-lab{background:none;border:0;box-shadow:none;padding:0;color:#fff;font:600 10.5px/1.1 system-ui,sans-serif;white-space:nowrap;
-  text-shadow:0 0 3px #000,0 0 2px #000,0 0 1px #000;display:none}
-#mapView .lo-lab::before{display:none}
-#mapView .lo-lab.dc{visibility:hidden}
-#mapView.zl1 .lo-lab.big,#mapView.zl2 .lo-lab{display:block}
+/* equipment: plain text boxes (tag + MEL description), centred on the item's position */
+#mapView .lo-bw{background:none;border:0;width:0 !important;height:0 !important}
+.lo-box{position:absolute;left:0;top:0;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;max-width:150px;width:max-content;
+  padding:3px 6px;border:1px solid #f5f7fa;border-radius:5px;background:rgba(16,20,24,.82);color:#fff;font:600 10.5px/1.15 system-ui,sans-serif;text-align:center;
+  cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;transition:box-shadow .15s,transform .15s}
+.lo-box b{font:700 10.5px/1.15 ui-monospace,Consolas,monospace;white-space:nowrap}
+.lo-box span{font-size:9.5px;font-weight:500;color:#d7dde4;display:none}
+.lo-box em{font-style:normal;font-size:9px;font-weight:700;color:#ff8a80;display:none}
+.lo-box.est{border-style:dashed;border-color:#ffb347}
+.lo-box.gap{border-color:#ff5a4f;box-shadow:0 0 0 1px #ff5a4f}
+.lo-box.gap b::after{content:" ⚠";color:#ff8a80}
+#mapView.zl1 .lo-box span,#mapView.zl1 .lo-box em{display:block}
+#mapView:not(.zl1) .lo-box:not(.big):not(.hl):not(.sel){display:none}
+#mapView .lo-box.dc:not(.sel){visibility:hidden}
+.lo-box.press{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 55%,transparent)}
+.lo-box.lift{transform:translate(-50%,-50%) scale(1.12);box-shadow:0 0 0 2px var(--accent),0 10px 24px #000c;cursor:grabbing;visibility:visible !important}
+#mapView.moving{cursor:grabbing}
 #mapView .lo-tip{font-size:11.5px;padding:3px 7px}
-/* progressive detail: zoomed out = big items and main process lines only */
-#mapView:not(.zl1) .lo-n.dot,#mapView:not(.zl2):not(.svcon) .lo-s.svc{display:none}
+#mapView:not(.zl2):not(.svcon) .lo-s.svc{display:none}
 #mapView svg{width:auto;height:auto;cursor:inherit;touch-action:auto}
 #mapView .hide{display:none !important}
 #mapView .ghost{opacity:.35}
-#mapView.focus .lo-n:not(.hl),#mapView.focus .lo-s:not(.hl){opacity:.16}
-#mapView.focus .lo-lab:not(.hl){opacity:.25}
-#mapView .lo-n.hl.dot,#mapView .lo-s.hl.svc{display:block !important}
-#mapView .lo-lab.hl{display:block !important}
+#mapView.focus .lo-box:not(.hl):not(.sel),#mapView.focus .lo-s:not(.hl){opacity:.2}
+#mapView .lo-s.hl.svc{display:block !important}
+#mapView .lo-box.hl{border-color:var(--accent)}
 #mapView .lo-s.hl{stroke-width:3}
-#mapView .lo-n.sel{stroke:var(--accent);stroke-width:3}
-#mapView .lo-n.dot.sel{fill:var(--accent)}
-#mapView .lo-lab.sel{color:var(--accent);font-size:12px}
+#mapView .lo-box.sel{border:2px solid var(--accent);background:rgba(16,20,24,.95);font-size:12px;z-index:5}
+#mapView .lo-box.sel span,#mapView .lo-box.sel em{display:block}
 #mapView .lo-s.sel{stroke-width:4.5}
-.lo-pin{cursor:grab}
-.lo-pin i{display:block;width:30px;height:30px;border-radius:50%;border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 25%,transparent);box-shadow:0 0 0 2px #000a}
-.lo-pin i::after{content:"";position:absolute;left:14px;top:14px;width:2px;height:2px;background:#fff;box-shadow:0 0 0 1px #000}
-.lo-done{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:600;display:none;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:8px 10px;font-size:13px;box-shadow:0 8px 24px #0008}
-#mapView.moving .lo-done{display:flex}
-.lo-done button{border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:inherit;font-weight:700;border-radius:8px;padding:6px 10px;cursor:pointer}
-.lo-done #loDoneB{background:var(--accent);color:#1a1307;border-color:var(--accent)}
+.lo-gap{background:color-mix(in srgb,#ff5a4f 16%,transparent);border:1px solid #ff5a4f;color:var(--ink);border-radius:9px;padding:7px 10px;margin:0 0 10px;font-size:12.5px}
 .lo-mv{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--panel2);border-radius:9px;padding:8px 10px;margin:0 0 10px;font-size:12.5px;color:var(--mute)}
 .lo-mv span{flex:1 1 180px}
 svg{width:100%;height:100%;display:block;cursor:grab;user-select:none}
@@ -875,7 +874,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     nodeState: id => gState(byId[id] && byId[id].g), streamState: id => gState(sById[id] && sById[id].g) });
   const setView = v => { document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v); Tabs.set(v === "map" ? "layout" : "pfd");
     PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); });
-    if (v === "map") toast("Layout: the PFD items on the real plant. Zoom in for more detail; select anything as usual. Move an item from its panel if it's in the wrong spot.");
+    if (v === "map") toast("Layout: the PFD items on the real plant. Zoom in for more detail; select anything as usual. To move an item, press and hold its box for half a second, then drag.");
     else { setVB(); } };
   document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
   // the tab strip: PFD and Layout switch here, Assets and Quiz open the phone app page
@@ -1037,22 +1036,33 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     const ins = STREAMS.filter(s => s.to === n.id && s.f !== n.id && shown(s.g));
     const outs = STREAMS.filter(s => s.f === n.id && shown(s.g));
     const loops = loopsOn(n.id), ilks = ilksOn(n.id), E = EQUIP_DATA[n.id];
-    let h = (pdcCase ? `<div class="casenote">Case selected: ${esc(PDC_CASES[pdcCase])}. The summary rows below are nominal figures; open a stream for this case's values.</div>` : "") + `<div>${esc(n.s)}</div>` + table(n.d) + (n.c ? `<h4>Control</h4><div>${esc(n.c)}</div>` : "");
-    if (loops.length) h += `<h4>Control loops acting on it</h4><div class="conn">${loops.map(loopLink).join("")}</div>`;
-    if (ilks.length) h += `<h4>Interlocks & permissives</h4><div class="conn">${ilks.map(ilkLink).join("")}</div>`;
-    if (n.hear) h += `<details><summary>What you'll hear</summary><div style="padding-bottom:8px">${esc(n.hear)}</div></details>`;
-    if (ins.length) h += `<h4>In</h4><div class="conn">${ins.map(link).join("")}</div>`;
-    if (outs.length) h += `<h4>Out</h4><div class="conn">${outs.map(link).join("")}</div>`;
-    if (E){
-      h += `<h4>Mechanical equipment list (${E.eq.length} item${E.eq.length > 1 ? "s" : ""})</h4>` +
-        E.eq.map((r, i) => `<details><summary>${esc(r.n || r.tag)}<span>${esc(r.tag)}</span></summary>${melTable(r)}<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div></details>`).join("");
-      if (E.ins.length){
-        h += `<details><summary>Instruments on this equipment<span>${E.insN}${E.insN > E.ins.length ? ", first " + E.ins.length + " shown" : ""}</span></summary><table class="it">` +
-          E.ins.map(i => `<tr><td>${i.cv ? `<a data-cv="${esc(i.tag)}" style="color:var(--accent);cursor:pointer">${esc(i.tag)}</a>` : esc(i.tag)}</td><td>${esc(i.ty)}${i.loc ? ` <span class="m">· ${esc(i.loc)}</span>` : ""}${i.u ? ` <span class="m">· ${esc(i.u)}</span>` : ""}</td></tr>`).join("") + "</table>" +
-          `<div style="font-size:12px;color:var(--mute);padding-bottom:8px">Highlighted tags are in the control valve list: click for valve data.</div></details>`;
-      } else h += `<h4>Instruments</h4><div>${NS_TXT} in the instrument list for these equipment numbers.</div>`;
-    } else h += `<h4>Mechanical equipment list</h4><div>${NS_TXT}: no MEL item for this block (off site or a symbolic block).</div>`;
+    // Overview first, then one pill per kind of sub information; one shown at a time
+    let ov = (pdcCase ? `<div class="casenote">Case selected: ${esc(PDC_CASES[pdcCase])}. The summary rows below are nominal figures; open a stream for this case's values.</div>` : "") + `<div>${esc(n.s)}</div>` + table(n.d) + (n.c ? `<h4>Control</h4><div>${esc(n.c)}</div>` : "");
+    if (loops.length) ov += `<h4>Control loops acting on it</h4><div class="conn">${loops.map(loopLink).join("")}</div>`;
+    if (ilks.length) ov += `<h4>Interlocks & permissives</h4><div class="conn">${ilks.map(ilkLink).join("")}</div>`;
+    if (n.hear) ov += `<details><summary>What you'll hear</summary><div style="padding-bottom:8px">${esc(n.hear)}</div></details>`;
+    const eq = E ? E.eq : [], insAll = E ? E.ins : [], inst = insAll.filter(i => !i.cv), vlv = insAll.filter(i => i.cv), more = E && E.insN > insAll.length;
+    const insRow = i => `<tr><td>${i.cv ? `<a data-cv="${esc(i.tag)}" style="color:var(--accent);cursor:pointer">${esc(i.tag)}</a>` : `<a data-find="${esc(i.tag)}" style="cursor:pointer">${esc(i.tag)}</a>`}</td><td>${esc(i.ty)}${i.loc ? ` <span class="m">· ${esc(i.loc)}</span>` : ""}${i.u ? ` <span class="m">· ${esc(i.u)}</span>` : ""}${i.eq && eq.length > 1 ? ` <span class="m">· ${esc(i.eq)}</span>` : ""}</td></tr>`;
+    const moreNote = more ? `<div style="font-size:12px;color:var(--mute);padding:6px 0">First ${insAll.length} of ${E.insN} instruments and valves on this equipment; search an equipment number for the rest.</div>` : "";
+    // drawings named by the MEL rows and the instruments
+    const dw = new Set(); [...eq.map(r => r.pid), ...eq.map(r => r.pfd), ...insAll.map(i => i.pid)].forEach(v => String(v || "").split(/[,;\s]+/).forEach(d => { if (/^2000-F\d\d-(PID|PFD)-/.test(d)) dw.add(d); }));
+    const eqTags = eq.map(r => r.tag);
+    const secs = [
+      { id: "ov", label: "Overview", html: ov },
+      { id: "eq", label: "Equipment", n: eq.length, html: eq.length ? eq.map(r => `<details><summary>${esc(r.n || r.tag)}<span>${esc(r.tag)}</span></summary>${melTable(r)}<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div></details>`).join("")
+          : `<div>${NS_TXT}: no MEL item for this block (off site or a symbolic block).</div>` },
+      { id: "ins", label: "Instruments", n: inst.length + (more ? "+" : ""), html: inst.length ? `<table class="it">${inst.map(insRow).join("")}</table>` + moreNote : `<div>${NS_TXT} in the instrument list for these equipment numbers.</div>` },
+      { id: "vlv", label: "Valves", n: vlv.length + (more ? "+" : ""), html: vlv.length ? `<table class="it">${vlv.map(insRow).join("")}</table><div style="font-size:12px;color:var(--mute);padding:6px 0">Control and actuated valves; tap a tag for its control valve list data.</div>` + moreNote : `<div>${NS_TXT}: no control valves listed on these equipment numbers.</div>` },
+      { id: "lin", label: "Lines", n: ins.length + outs.length, html: (ins.length ? `<h4>In (PFD)</h4><div class="conn">${ins.map(link).join("")}</div>` : "") + (outs.length ? `<h4>Out (PFD)</h4><div class="conn">${outs.map(link).join("")}</div>` : "") +
+          (eqTags.length ? `<h4>Line list lines to or from this equipment</h4><div id="nLines" class="conn"><span style="color:var(--mute)">Loading the line list…</span></div>` : "") || `<div>${NS_TXT}</div>` },
+      { id: "dwg", label: "Drawings", n: dw.size, html: dw.size ? `<div class="conn">${[...dw].sort().map(d => `<a data-dwg="${esc(d)}">📐 ${esc(d)}</a>`).join("")}</div>` : `<div>${NS_TXT}: no drawing numbers in the MEL or instrument rows.</div>` } ];
+    let h = Lookup.pills(secs, "node");
     h += `<div class="src">Sources: node description <code>pfd-data.js</code>; MEL 2000-F00-LST-ME-10001 Rev 0 and instrument list rows in <code>pfd-equip.js</code> (built by <code>tools/build_equip.py</code>).</div>`;
+    if (eqTags.length) Lookup.load().then(() => { const el = $("nLines"); if (!el) return; const seen = new Set(), out = [];
+      eqTags.forEach(t => Lookup.refs(t).forEach(x => { if (x.t === "line" && !seen.has(x.k)){ seen.add(x.k); out.push(x); } }));
+      el.innerHTML = out.length ? out.map(x => `<a data-find="${esc(x.key)}"><b style="font-family:ui-monospace,monospace">${esc(x.key)}</b> ${esc(x.name)}</a>`).join("") : `<span style="color:var(--mute)">None in the line list name these equipment numbers.</span>`;
+      el.querySelectorAll("a[data-find]").forEach(a => a.onclick = e => { e.preventDefault(); openSearch(a.dataset.find, true); });
+      const b = el.closest(".pf").querySelector('.pf-b[data-p="lin"] i'); if (b) b.textContent = ins.length + outs.length + out.length; }).catch(() => { const el = $("nLines"); if (el) el.textContent = "Couldn't load the line list."; });
     $("iBody").innerHTML = PFDLayout.panelHtml(n) + h; bindLinks(); PFDLayout.bindPanel(n); openInfo();
   }
 
@@ -1224,6 +1234,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     $("iBody").querySelectorAll("a[data-l]").forEach(a => a.onclick = e => { const L = LOOPS.find(x => x.id === a.dataset.l); go(e, { k: "loop", id: L.id }, () => showLoop(L)); });
     $("iBody").querySelectorAll("a[data-i]").forEach(a => a.onclick = e => { const I = INTERLOCKS.find(x => x.id === a.dataset.i); go(e, { k: "ilk", id: I.id }, () => showIlk(I)); });
     $("iBody").querySelectorAll("a[data-find]").forEach(a => a.onclick = e => { e.preventDefault(); openSearch(a.dataset.find, true); });
+    $("iBody").querySelectorAll("a[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.load().then(() => { if (!Pid.open(a.dataset.dwg, $("iTag").textContent.split(/[\s/]/)[0])) toast(a.dataset.dwg + " isn't loaded in the app yet."); }).catch(() => toast("Couldn't load the drawing list.")); });
     $("iBody").querySelectorAll("a[data-cv]").forEach(a => a.onclick = e => { e.preventDefault(); const c = CV_DATA[a.dataset.cv]; if (!c) return;
       const back = lastPanel; $("iKind").textContent = "Control valve"; $("iName").textContent = c.loc || c.tag; $("iTag").textContent = c.tag;
       $("iBody").innerHTML = `<div class="symm">${feSvg("valve")}<div><b>Control valve list entry</b></div></div>` + cvTable(c) + `<div class="conn" style="margin-top:10px"><a id="cvBack">◀ Back</a></div>`;

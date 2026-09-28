@@ -2,7 +2,9 @@
 // Positions come from pfd-layout-data.js (built by tools/build_layout.py from the FIM 1 / FIM 2 layout drawings).
 // Selection, flows, stage and the info panel are shared with the schematic: pfd.html hands over an api and calls
 // PFDLayout.sync() whenever what is highlighted changes. Leaflet is loaded the first time the layout is opened.
-// Anyone can correct a position: Move on the item's panel, drag, Done. Moves are kept on the device and can be exported.
+// Equipment shows as plain text boxes: tag and MEL description, flagged when a tag has no MEL row.
+// Anyone can correct a position: press and hold a box for half a second until it lifts, drag it, let go. A shorter
+// tap only selects it, so nothing moves by accident. Moves are kept on the device and can be exported.
 window.PFDLayout = (() => {
   const KEY = "kcgm_layout_pos", SVC = new Set(["water", "cnw", "reag", "air"]);
   const TILES = {
@@ -39,7 +41,7 @@ window.PFDLayout = (() => {
     setBase(api.pref.get("lo_base", "sat"));
     home(false);
     map.on("zoomend", zoomCls); zoomCls(); map.on("moveend", () => setTimeout(declutter, 0));
-    map.on("click", () => { if (moving) return; api.clearSel(true); api.closeInfo(); });
+    map.on("click", () => { if (moving || Date.now() - dropped < 400) return; api.clearSel(true); api.closeInfo(); });
     // corner controls: imagery, dim, home, export
     const bar = L.DomUtil.create("div", "lo-bar"); bar.innerHTML =
       `<div class="lo-seg">${[["sat", "Satellite"], ["hyb", "Hybrid"], ["esri", "Esri"]].map(([k, t]) => `<button data-b="${k}">${t}</button>`).join("")}</div>
@@ -52,10 +54,7 @@ window.PFDLayout = (() => {
     const dim = () => $("mapView").classList.toggle("dim", api.pref.get("lo_dim", "1") === "1");
     $("loDim").onclick = () => { api.pref.set("lo_dim", api.pref.get("lo_dim", "1") === "1" ? "0" : "1"); dim(); }; dim();
     $("loExp").onclick = exportMoves; expLabel();
-    const done = L.DomUtil.create("div", "lo-done"); done.id = "loDone"; done.innerHTML = `<span>Drag the marker to the item's real position</span><button id="loDoneB">✓ Done</button><button id="loCancel">Cancel</button>`;
-    $("mapView").appendChild(done); L.DomEvent.disableClickPropagation(done);
-    $("loDoneB").onclick = () => stopMove(true); $("loCancel").onclick = () => stopMove(false);
-    addEventListener("keydown", e => { if (e.key === "Escape" && moving) stopMove(false); });
+    addEventListener("keydown", e => { if (e.key === "Escape" && moving) moving.cancel(); });
     api.NODES.forEach(drawNode);
     api.STREAMS.forEach(drawStream);
     markers();
@@ -79,7 +78,7 @@ window.PFDLayout = (() => {
   // labels never overlap: selected first, then highlighted, then big items, then the rest
   function declutter(){
     const labs = [];
-    Object.values(N).forEach(o => { const t = o.lay.getTooltip(), e = t && t._container; if (!e) return; e.classList.remove("dc");
+    Object.values(N).forEach(o => { const e = o.el; if (!e) return; e.classList.remove("dc");
       labs.push({ e, pr: e.classList.contains("sel") ? 0 : e.classList.contains("hl") ? 1 : e.classList.contains("big") ? 2 : 3 }); });
     labs.sort((a, b) => a.pr - b.pr);
     const boxes = [];
@@ -94,26 +93,67 @@ window.PFDLayout = (() => {
     svg.insertBefore(d, svg.firstChild);
   }
 
-  // ---------- equipment ----------
-  function shapeLayer(id){
-    const n = LAYOUT.nodes[id], p = pos(id), sh = n.sh, cls = "lo-n" + (n.est ? " est" : "") + (sh ? " big" : " dot");
-    if (!sh) return L.circleMarker(p, { renderer: rend, radius: 4.5, className: cls });
-    if (sh[0] === "c") return L.circle(p, { renderer: rend, radius: sh[1], className: cls });
-    const w = sh[1] / 2, h = sh[2] / 2;
-    const pts = [[-w, -h], [w, -h], [w, h], [-w, h]].map(([a, b]) => toLL([a * ux[0] + b * uy[0], a * ux[1] + b * uy[1]], p));
-    return L.polygon(pts, { renderer: rend, className: cls });
+  // ---------- equipment: text boxes ----------
+  // MEL rows for a node come from pfd-equip.js (EQUIP_DATA). A tag named on the PFD block with no MEL row is a gap.
+  const TAG_RE = /F\d{2}-[A-Z]{1,4}-\d{2,4}[A-Z]?/g, nt = t => String(t || "").toUpperCase().replace(/\s+/g, "");
+  function melInfo(nd){
+    const rows = (typeof EQUIP_DATA !== "undefined" && EQUIP_DATA[nd.id] && EQUIP_DATA[nd.id].eq) || [], have = new Set(rows.map(r => nt(r.tag)));
+    const named = String(nd.tag || "").toUpperCase().match(TAG_RE) || [];
+    const missing = named.filter(t => !have.has(nt(t)) && ![...have].some(h => h.startsWith(nt(t))));
+    const names = [...new Set(rows.map(r => r.n).filter(Boolean))];
+    return { rows, missing, gap: !rows.length || missing.length > 0,
+      tag: nd.tag || (rows[0] && rows[0].tag) || "", desc: names.length ? names.slice(0, 2).join(" / ") + (names.length > 2 ? ` +${names.length - 2}` : "") : (nd.sn || nd.n) };
+  }
+  function boxHtml(nd){
+    const m = N[nd.id].mel, big = !!LAYOUT.nodes[nd.id].sh;
+    const why = !m.rows.length ? "No MEL entry" : "Not in MEL: " + m.missing.join(", ");
+    return `<div class="lo-box${big ? " big" : ""}${LAYOUT.nodes[nd.id].est ? " est" : ""}${m.gap ? " gap" : ""}" title="${esc(m.gap ? why : "")}">` +
+      `<b>${esc(m.tag || nd.n)}</b><span>${esc(m.desc)}</span>${m.gap ? `<em>⚠ ${esc(why)}</em>` : ""}</div>`;
   }
   function drawNode(nd){
     const id = nd.id; if (!LAYOUT.nodes[id]) return;
-    const o = N[id] = { lay: shapeLayer(id) };
-    o.lay.addTo(map).bindTooltip(esc(nd.sn || nd.n), { permanent: true, direction: "top", className: "lo-lab" + (LAYOUT.nodes[id].sh ? " big" : ""), offset: [0, -4], opacity: 1 });
-    o.lay.on("click", e => { L.DomEvent.stopPropagation(e); if (moving) return; api.pick(e.originalEvent, { k: "n", id }); });
+    const o = N[id] = { mel: melInfo(nd) };
+    o.lay = L.marker(pos(id), { icon: L.divIcon({ className: "lo-bw", html: boxHtml(nd), iconSize: null }), keyboard: false }).addTo(map);
+    o.el = o.lay.getElement().querySelector(".lo-box");
+    o.lay.on("click", e => { L.DomEvent.stopPropagation(e); if (moving || Date.now() - dropped < 400) return; api.pick(e.originalEvent, { k: "n", id }); });
+    holdToDrag(id, o);
   }
-  function redrawNode(id){
-    const o = N[id], tip = o.lay.getTooltip(), cls = o.lay._path && o.lay._path.getAttribute("class");
-    map.removeLayer(o.lay); o.lay = shapeLayer(id); o.lay.addTo(map).bindTooltip(tip.getContent(), tip.options);
-    o.lay.on("click", e => { L.DomEvent.stopPropagation(e); if (moving) return; api.pick(e.originalEvent, { k: "n", id }); });
-    if (cls && o.lay._path) o.lay._path.setAttribute("class", cls);
+  function redrawNode(id){ N[id].lay.setLatLng(pos(id)); }
+  // press and hold 0.5 s: the box lifts and follows the finger or mouse; a shorter press is a normal tap (select)
+  let dropped = 0;
+  function holdToDrag(id, o){
+    const el = o.lay.getElement(); let tm = null, st = null;
+    el.addEventListener("contextmenu", e => e.preventDefault());
+    const clear = () => { clearTimeout(tm); tm = null; o.el.classList.remove("press"); };
+    el.addEventListener("pointerdown", e => {
+      if (e.button || moving) return; if (st){ clear(); st = null; return; }   // a second finger: pinch, not a hold
+      st = { x: e.clientX, y: e.clientY, pid: e.pointerId }; o.el.classList.add("press");
+      tm = setTimeout(() => lift(e), 500);
+    });
+    const lift = e => {
+      tm = null; if (!st) return;
+      map.dragging.disable(); if (map.touchZoom) map.touchZoom.disable();
+      try { el.setPointerCapture(st.pid); } catch (x) {}
+      const start = pos(id), p0 = map.latLngToContainerPoint(start), c = map.mouseEventToContainerPoint({ clientX: st.x, clientY: st.y });
+      const off = [c.x - p0.x, c.y - p0.y];
+      o.el.classList.remove("press"); o.el.classList.add("lift"); $("mapView").classList.add("moving");
+      if (navigator.vibrate) try { navigator.vibrate(25); } catch (x) {}
+      const move = ev => { const q = map.mouseEventToContainerPoint(ev), ll = map.containerPointToLatLng([q.x - off[0], q.y - off[1]]);
+        saved[id] = [+ll.lat.toFixed(7), +ll.lng.toFixed(7)]; o.lay.setLatLng(ll); redrawStreamsOf(id); };
+      const end = keep => { el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", cancelEv);
+        try { el.releasePointerCapture(st.pid); } catch (x) {}
+        st = null; moving = null; dropped = Date.now(); o.el.classList.remove("lift"); $("mapView").classList.remove("moving");
+        map.dragging.enable(); if (map.touchZoom) map.touchZoom.enable();
+        if (!keep){ if (LAYOUT.nodes[id].ll[0] === start[0] && LAYOUT.nodes[id].ll[1] === start[1]) delete saved[id]; else saved[id] = start; o.lay.setLatLng(start); redrawStreamsOf(id); }
+        else api.toast("Position saved on this device. Use ⬇ Moves to send it in.");
+        save(); sync(false); expLabel(); if (api.infoOpen()) api.refreshPanel(); };
+      const up = () => end(true), cancelEv = () => end(false);
+      moving = { id, cancel: () => end(false) };
+      el.addEventListener("pointermove", move); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", cancelEv);
+    };
+    el.addEventListener("pointermove", e => { if (!st || !tm || e.pointerId !== st.pid) return; if (Math.hypot(e.clientX - st.x, e.clientY - st.y) > 8){ clear(); st = null; } });
+    const rel = () => { if (tm){ clear(); st = null; } };
+    el.addEventListener("pointerup", rel); el.addEventListener("pointercancel", rel); el.addEventListener("pointerleave", e => { if (tm && e.pointerType === "mouse") rel(); });
   }
 
   // ---------- streams ----------
@@ -163,8 +203,9 @@ window.PFDLayout = (() => {
     if (!map) return;
     const hl = api.hlIds(), sel = api.selIds(), focus = hl.size > 0;
     $("mapView").classList.toggle("focus", focus);
-    api.NODES.forEach(nd => { const o = N[nd.id]; if (!o) return; const st = api.nodeState(nd.id), p = o.lay._path, tip = o.lay.getTooltip() && o.lay.getTooltip()._container;
-      [p, tip].forEach(e => { if (!e) return; e.classList.toggle("hide", st.hidden); e.classList.toggle("ghost", st.ghost); e.classList.toggle("hl", hl.has(nd.id)); e.classList.toggle("sel", sel.has(nd.id)); }); });
+    api.NODES.forEach(nd => { const o = N[nd.id]; if (!o) return; const st = api.nodeState(nd.id), e = o.el;
+      e.classList.toggle("hide", st.hidden); e.classList.toggle("ghost", st.ghost); e.classList.toggle("hl", hl.has(nd.id)); e.classList.toggle("sel", sel.has(nd.id));
+      o.lay.setZIndexOffset(sel.has(nd.id) ? 2000 : hl.has(nd.id) ? 1000 : 0); });
     Object.values(S).forEach(o => { const st = api.streamState(o.s.id), p = o.lay._path; if (!p) return;
       p.classList.toggle("hide", st.hidden); p.classList.toggle("ghost", st.ghost); p.classList.toggle("hl", hl.has(o.s.id)); p.classList.toggle("sel", sel.has(o.s.id)); });
     declutter();
@@ -177,33 +218,15 @@ window.PFDLayout = (() => {
     lastHl = key;
   }
 
-  // ---------- moving an item ----------
+  // ---------- moving an item (hold and drag, above) ----------
   function panelHtml(n){
     if (!on || !LAYOUT.nodes[n.id]) return "";
-    const est = LAYOUT.nodes[n.id].est, mine = !!saved[n.id];
-    return `<div class="lo-mv"><button class="hbtn" id="loMove">✥ Move on layout</button>${mine ? `<button class="hbtn" id="loReset">↺ Reset position</button>` : ""}
-      <span>${mine ? "Position moved on this device." : est ? "Position estimated: not identified on the layout drawings. Please move it if you know where it is." : "Placed from the layout drawings (about ±5 m)."}</span></div>`;
+    const est = LAYOUT.nodes[n.id].est, mine = !!saved[n.id], m = N[n.id] && N[n.id].mel;
+    return `<div class="lo-mv"><span>✥ To move it: press and hold its box on the map for half a second, then drag. ${mine ? "Position moved on this device." : est ? "Position estimated: not identified on the layout drawings. Please move it if you know where it is." : "Placed from the layout drawings (about ±5 m)."}</span>${mine ? `<button class="hbtn" id="loReset">↺ Reset position</button>` : ""}</div>` +
+      (m && m.gap ? `<div class="lo-gap">⚠ ${!m.rows.length ? "This block has no matching MEL entry." : "Tag" + (m.missing.length > 1 ? "s" : "") + " with no MEL row: " + esc(m.missing.join(", ")) + "."}</div>` : "");
   }
   function bindPanel(n){
-    const m = $("loMove"); if (m) m.onclick = () => startMove(n.id);
     const r = $("loReset"); if (r) r.onclick = () => { delete saved[n.id]; save(); redrawNode(n.id); redrawStreamsOf(n.id); sync(false); expLabel(); api.refreshPanel(); };
-  }
-  function startMove(id){
-    if (moving) stopMove(false);
-    const start = pos(id);
-    const mk = L.marker(start, { draggable: true, autoPan: true, icon: L.divIcon({ className: "lo-pin", html: "<i></i>", iconSize: [30, 30], iconAnchor: [15, 15] }), zIndexOffset: 1000 }).addTo(map);
-    moving = { id, start, mk };
-    mk.on("drag", () => { const p = mk.getLatLng(); saved[id] = [+p.lat.toFixed(7), +p.lng.toFixed(7)]; redrawNode(id); redrawStreamsOf(id); sync(false); });
-    $("mapView").classList.add("moving");
-    if (innerWidth <= 900) api.closeInfo();
-    map.panTo(start);
-  }
-  function stopMove(keep){
-    if (!moving) return;
-    const { id, start, mk } = moving; map.removeLayer(mk); moving = null; $("mapView").classList.remove("moving");
-    if (keep){ const p = mk.getLatLng(); saved[id] = [+p.lat.toFixed(7), +p.lng.toFixed(7)]; api.toast("Position saved on this device. Use ⬇ Moves to send it in."); }
-    else if (LAYOUT.nodes[id].ll[0] === start[0] && LAYOUT.nodes[id].ll[1] === start[1]) delete saved[id]; else saved[id] = start;
-    save(); redrawNode(id); redrawStreamsOf(id); sync(false); expLabel(); api.refreshPanel();
   }
   function expLabel(){ const n = Object.keys(saved).length, b = $("loExp"); if (b){ b.textContent = `⬇ Moves (${n})`; b.disabled = !n; } }
   function exportMoves(){
@@ -216,9 +239,10 @@ window.PFDLayout = (() => {
   // ---------- show / hide ----------
   async function show(v){
     on = v; document.body.classList.toggle("layout", v); $("mapView").hidden = !v;
-    if (!v){ if (moving) stopMove(false); return true; }
+    if (!v){ if (moving) moving.cancel(); return true; }
     try { await load(); } catch (e) { api.toast("Couldn't load the map (" + e.message + "). Check the connection."); on = false; document.body.classList.remove("layout"); $("mapView").hidden = true; return false; }
     if (!map){ build(); drawStreams(); markers(); Object.values(S).forEach(o => arrow(o.lay, o.s.ty)); }
+    setTimeout(declutter, 50);
     map.invalidateSize(); sync(false); return true;
   }
   return {

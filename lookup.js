@@ -76,6 +76,7 @@
     const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
     return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><span class="lk-ic1">${ICON[it.t] || "•"}</span><b>${esc(it.key)}</b><span>${esc(it.name)}</span></button>`).join("");
   };
+  const PILLN = { mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
   const KEYF = {
     mel: ["Equipment name", "Size / description", "Installed power (kW)", "Status", "Stage", "P&ID"],
     ins: ["Description", "Instrument type", "Equipment number", "Range / units", "Loop number", "P&ID"],
@@ -84,6 +85,19 @@
     mv: ["Valve type", "Spec", "Size (DN)", "Line number", "Model", "P&ID"],
     spi: ["Description", "Size (DN)", "Pipe spec", "Make / model", "P&IDs"],
     hose: ["Description", "Size (DN)", "Length (m)", "Service", "Stage"] };
+  // Pill filters over a panel's sections: one pill per heading (with its count), one section shown at a time.
+  // secs: [{ id, label, n, html }]; sections without html are left out. The last pill picked in a group is kept
+  // for the next item, when it has one. Clicks are handled once for the whole page (below).
+  const pfLast = {};
+  L.pills = (secs, group = "g") => {
+    secs = secs.filter(x => x && x.html); if (!secs.length) return "";
+    const act = secs.some(x => x.id === pfLast[group]) ? pfLast[group] : secs[0].id;
+    return `<div class="pf" data-g="${esc(group)}"><div class="pf-bar">${secs.map(x => `<button type="button" class="pf-b${x.id === act ? " on" : ""}" data-p="${esc(x.id)}">${esc(x.label)}${x.n != null ? ` <i>${x.n}</i>` : ""}</button>`).join("")}</div>` +
+      secs.map(x => `<div class="pf-sec" data-p="${esc(x.id)}"${x.id === act ? "" : " hidden"}>${x.html}</div>`).join("") + `</div>`;
+  };
+  document.addEventListener("click", e => { const b = e.target.closest && e.target.closest(".pf-b"); if (!b) return; const pf = b.closest(".pf"); pfLast[pf.dataset.g] = b.dataset.p;
+    [...pf.children].forEach(c => { if (c.classList.contains("pf-bar")) c.querySelectorAll(".pf-b").forEach(x => x.classList.toggle("on", x === b)); else if (c.classList.contains("pf-sec")) c.hidden = c.dataset.p !== b.dataset.p; }); });
+  L.refs = k => refs.get(norm(k)) || [];
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
     let h = `<div class="lk-kind">${ICON[it.t] || ""} ${esc(typeName(it.t))}</div>` +
@@ -93,33 +107,31 @@
     const pfd = opts.pfd && opts.pfd(it);
     if (pfd) h += `<button class="lk-btn" data-pfd="1">🗺️ ${esc(pfd.label)}</button>`;
     if (it.t === "pfd" || it.t === "gloss"){ h += it.html || `<p>${esc(it.text || "")}</p>`; }
-    else if (it.t === "spec"){ h += `<div class="lk-spec"></div>`; }
+    // the rest sits under pill filters: Details, Pipe spec, All fields, Also in, then one pill per list that refers to it
+    const secs = [];
+    if (it.t === "spec") secs.push({ id: "spec", label: "Spec", html: `<div class="lk-spec"></div>` });
     else if (it.r){
-      // the fields people look for first; the rest (and the empty ones) behind "All fields"
       const f = DB.types[it.t].f, key = KEYF[it.t] || f.slice(1, 7);
       const row = i => `<tr><td>${esc(f[i])}</td><td>${linkify(it.r[i])}</td></tr>`;
       const top = key.map(n => f.indexOf(n)).filter(i => i > 0 && it.r[i]);
       const rest = f.map((n, i) => i).filter(i => i > 0 && it.r[i] && !top.includes(i));
       const empty = f.filter((n, i) => !it.r[i]);
-      h += `<table class="lk-t">` + top.map(row).join("") + `</table>`;
-      if (rest.length || empty.length) h += `<details class="lk-d"><summary>All fields <span class="sp-c">${rest.length} more</span></summary><table class="lk-t">${rest.map(row).join("")}</table>` +
-        (empty.length ? `<div class="lk-ns">Not specified in the list: ${esc(empty.join(", "))}.</div>` : "") + `</details>`;
-      if (window.Spec && Spec.wanted(it)) h += `<div class="lk-spec"><div class="lk-ns">Loading the pipe and valve spec…</div></div>`;
+      secs.push({ id: "det", label: "Details", html: `<table class="lk-t">` + top.map(row).join("") + `</table>` });
+      if (window.Spec && Spec.wanted(it)) secs.push({ id: "spec", label: it.t === "line" ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
+      if (rest.length || empty.length) secs.push({ id: "all", label: "All fields", n: rest.length + top.length, html: `<table class="lk-t">${[...top, ...rest].sort((a, b) => a - b).map(row).join("")}</table>` +
+        (empty.length ? `<div class="lk-ns">Not specified in the list: ${esc(empty.join(", "))}.</div>` : "") });
     }
     const same = (byKey.get(it.k) || []).filter(x => x !== it);
-    if (same.length) h += `<h4 class="lk-h">Also in</h4>` + same.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${ICON[x.t] || ""} ${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("");
+    if (same.length) secs.push({ id: "also", label: "Also in", n: same.length, html: same.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${ICON[x.t] || ""} ${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("") });
     const rf = (refs.get(it.k) || []).filter(x => x !== it);
     if (rf.length){
-      h += `<h4 class="lk-h">${it.t === "pid" ? "On this P&ID" : "Referenced by"} (${rf.length})</h4>`;
       const g = {}; rf.forEach(x => (g[x.t] = g[x.t] || []).push(x));
-      const few = rf.length <= 4;   // a handful stays open; longer lists are one tap away
-      TYPE_ORDER.filter(t => g[t]).forEach(t => {
-        const a = g[t], show = a.slice(0, 40);
-        h += `<details class="lk-d"${few ? " open" : ""}><summary>${ICON[t] || ""} ${esc(typeName(t))} <span class="sp-c">${a.length}</span></summary>` +
+      TYPE_ORDER.filter(t => g[t]).forEach(t => { const a = g[t], show = a.slice(0, 60);
+        secs.push({ id: "r-" + t, label: (PILLN[t] || typeName(t)), n: a.length, html: `<div class="lk-ns" style="margin:2px 0 4px">${it.t === "pid" ? "On this drawing" : "Referring to " + esc(it.key)}</div>` +
           show.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b> ${esc(x.name)}</a>`).join("") +
-          (a.length > show.length ? `<div class="lk-ns">and ${a.length - show.length} more; search the tag to see them all.</div>` : "") + `</details>`;
-      });
+          (a.length > show.length ? `<div class="lk-ns">and ${a.length - show.length} more; search the tag to see them all.</div>` : "") }); });
     }
+    h += L.pills(secs, "item-" + (it.t === "pid" ? "pid" : "rec"));
     if (DB.types[it.t]) h += `<div class="lk-src">Source: ${esc(DB.types[it.t].n)} list ${esc(DB.types[it.t].doc)} ${esc(DB.types[it.t].rev)}. Tap any underlined code to open it.</div>`;
     return h;
   };
@@ -284,6 +296,11 @@
 .lk-t{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}.lk-t td{padding:6px 4px;border-bottom:1px solid var(--lk-l);vertical-align:top;word-break:break-word}.lk-t td:first-child{color:var(--mute);width:42%}
 .lk-a{color:var(--lk-a);text-decoration:underline;cursor:pointer}.lk-row{display:block;text-decoration:none;color:var(--ink);background:var(--lk-c);border-radius:8px;padding:6px 8px;margin:4px 0;font-size:13px}
 .lk-row b{font-family:ui-monospace,Consolas,monospace;color:var(--lk-a);margin-right:4px}.lk-h{margin:14px 0 4px;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
+.pf-bar{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 8px}
+.pf-b{border:1px solid var(--lk-l,var(--line));background:var(--lk-c,var(--panel2));color:var(--ink);border-radius:99px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.pf-b i{font-style:normal;color:var(--mute);font-weight:600;font-size:11px}
+.pf-b.on{background:var(--lk-a,var(--accent));border-color:var(--lk-a,var(--accent));color:#1a1307}.pf-b.on i{color:#3a2b0c}
+.pf-sec[hidden]{display:none}
 .lk-d{border:1px solid var(--lk-l);border-radius:10px;margin:6px 0;padding:0 8px}.lk-d summary{cursor:pointer;padding:8px 0;font-weight:700;font-size:13.5px}
 .lk-ns{font-size:12px;color:var(--mute);margin:4px 0;line-height:1.4}.lk-src{font-size:12px;color:var(--mute);margin-top:12px;line-height:1.4}
 .lk-btn{border:1px solid var(--lk-a);background:none;color:var(--lk-a);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer;margin:6px 0}
