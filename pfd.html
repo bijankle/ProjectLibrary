@@ -1072,7 +1072,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     h += `<div class="src">Sources: node description <code>pfd-data.js</code>; MEL 2000-F00-LST-ME-10001 Rev 0 and instrument list rows in <code>pfd-equip.js</code> (built by <code>tools/build_equip.py</code>).</div>`;
     if (eqTags.length) Lookup.load().then(() => { const el = $("nLines"); if (!el) return; const seen = new Set(), out = [];
       eqTags.forEach(t => Lookup.refs(t).forEach(x => { if (x.t === "line" && !seen.has(x.k)){ seen.add(x.k); out.push(x); } }));
-      el.innerHTML = out.length ? out.map(x => `<a data-find="${esc(x.key)}"><b style="font-family:ui-monospace,monospace">${esc(x.key)}</b> ${esc(x.name)}</a>`).join("") : `<span style="color:var(--mute)">None in the line list name these equipment numbers.</span>`;
+      el.innerHTML = out.length ? out.map(x => `<a data-find="${esc(x.key)}"><b style="font-family:ui-monospace,monospace">${esc(x.key)}</b> ${esc(Lookup.lineText(x))}</a>`).join("") : `<span style="color:var(--mute)">None in the line list name these equipment numbers.</span>`;
       el.querySelectorAll("a[data-find]").forEach(a => a.onclick = e => { e.preventDefault(); openSearch(a.dataset.find, true); });
       const b = el.closest(".pf").querySelector('.pf-b[data-p="lin"] i'); if (b) b.textContent = ins.length + outs.length + out.length; }).catch(() => { const el = $("nLines"); if (el) el.textContent = "Couldn't load the line list."; });
     $("iBody").innerHTML = PFDLayout.panelHtml(n) + h; bindLinks(); PFDLayout.bindPanel(n); openInfo();
