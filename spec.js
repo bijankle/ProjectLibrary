@@ -46,7 +46,7 @@ window.Spec = (() => {
       const all = String(r.valves || "").split(/[,\s]+/).filter(v => /^V[A-Z0-9]+$/.test(v));
       const vs = dn == null ? all : all.filter(v => !IX.valve[v] || IX.valve[v].lo == null || (dn >= IX.valve[v].lo && dn <= IX.valve[v].hi)), off = all.length - vs.length;
       S.push(sec("vl" + k, sv.length > 1 ? "Valves " + (k + 1) : "Valves", vs.length, `<div class="lk-ns" style="margin:0 0 4px">For ${esc(r.service)}${dn != null ? ` at ${esc(unit)}${esc(size)}` : ""}${off ? `; ${off} more for other sizes are in the datasheet` : ""}</div><div class="sp-v">${vs.map(v => IX.valve[v]
-        ? `<button class="sp-chip sp-open" data-page="${IX.valve[v].page}" data-title="Valve ${esc(v)}" title="${esc(IX.valve[v].title || "")}">${esc(v)}</button>` : `<span class="sp-chip off" title="No datasheet for this code in the spec">${esc(v)}</span>`).join("")}</div>` +
+        ? `<a class="sp-chip lk-a" href="#" data-k="${esc(v)}" data-t="spec" title="${esc(IX.valve[v].title || "")}">${esc(v)}</a>` : `<span class="sp-chip off" title="No datasheet for this code in the spec">${esc(v)}</span>`).join("")}</div>` +
         tbl([["Fluid design", r.fluid], ["Class rating", r.rating], ["Gasket", r.gasket], ["External finish", r.ext], ["Note", r.notes]].filter(x => x[1] && x[1] !== "N/A"))));
     });
     let cd = tbl([["Material", P.material], ["Design code", P.codes], ["Corrosion allowance", P.ca && P.ca + " mm"], ["Pressure test", P.test], ["NDT", P.nde]].filter(r => r[1]));
@@ -67,15 +67,13 @@ window.Spec = (() => {
     const V = IX.valve[code];
     if (!V) return `<div class="lk-ns">Valve code ${esc(code)} has no datasheet in the spec.</div>`;
     const get = k => ((V.rows || []).find(r => new RegExp("^" + k, "i").test(r[0])) || [])[1];
-    let h = `<div class="sp-head"><b>📘 ${esc(code)}</b> <span>${esc(short(V.title))}</span></div>` +
-      `<div class="sp-sub">${esc([get("Size Range"), get("End Connections"), get("Actuation"), get("Design Pressure")].filter(Boolean).join(" · "))}</div>`;
+    let h = `<div class="sp-head"><b>📘 ${esc(code)}</b> <span>${esc(short(V.title))}</span></div>`;   // size, ends, actuation, pressure are in the table below
     if (size != null && V.lo != null && (size < V.lo || size > V.hi)) h += `<div class="sp-warn">DN${esc(size)} is outside this datasheet's size range (${esc(V.u)}${V.lo} to ${V.hi}).</div>`;
     h += pageBtn(V.page, "Open the " + code + " datasheet", "Valve " + code);
-    const rest = (V.rows || []).filter(r => !KEY_ROWS.test(r[0]));
-    const S = [sec("sum", "Materials", null, tbl((V.rows || []).filter(r => KEY_ROWS.test(r[0])))),
-      rest.length ? sec("more", "More", rest.length, tbl(rest)) : null,
-      (V.notes || []).length ? sec("vn", "Notes", V.notes.length, V.notes.map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("")) : null].filter(Boolean);
-    return parts ? { head: h, S } : pills(S, "spec-valve", h);
+    // one table, no sub pills: type, materials and ratings first, then the rest of the datasheet, then its notes
+    const rows = V.rows || [], body = tbl([...rows.filter(r => KEY_ROWS.test(r[0])), ...rows.filter(r => !KEY_ROWS.test(r[0]))]) +
+      (V.notes || []).map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("");
+    return parts ? { head: h, body } : h + body;
   }
 
   // ---------- which record needs what ----------
@@ -102,7 +100,7 @@ window.Spec = (() => {
     }
     if (it.t === "cv"){   // valve datasheet and the line's piping class under one row of sub pills
       const S = [], m = get(it, f, "Valve code").match(/^(\d+)([A-Z][A-Z0-9]+)/);
-      if (m && IX.valve[m[2]]){ const v = valveHTML(m[2], +m[1], true); v.S[0] = sec("sum", "Valve", null, v.head + v.S[0].html); v.S.slice(1).forEach(x => x.label = "Valve " + x.label.toLowerCase()); S.push(...v.S); }
+      if (m && IX.valve[m[2]]){ const v = valveHTML(m[2], +m[1], true); S.push(sec("sum", "Valve", null, v.head + v.body)); }
       const cls = get(it, f, "Line spec"), size = num(get(it, f, "Line size (mm)"));
       if (cls && IX.pipe[cls]){ const p = pipeHTML(cls, size, (get(it, f, "Line number").match(/^\d{2}-\d{4}-([A-Z]+)-/) || [])[1], true);
         S.push(sec("pipe", "Line " + cls, null, p.head), ...p.S.map(x => Object.assign(x, { id: "p-" + x.id }))); }

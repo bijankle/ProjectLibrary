@@ -91,6 +91,7 @@
   const pfLast = {};
   L.pills = (secs, group = "g", mid = "") => {
     secs = secs.filter(x => x && x.html); if (!secs.length) return "";
+    if (secs.length === 1) return mid + secs[0].html;   // one section: no pill bar
     const last = pfLast[group], act = last && !/^(r-|also$)/.test(last) && secs.some(x => x.id === last) ? last : secs[0].id;   // links to other items are not carried over
     return `<div class="pf" data-g="${esc(group)}"><div class="pf-bar">${secs.map(x => `<button type="button" class="pf-b${x.id === act ? " on" : ""}" data-p="${esc(x.id)}">${esc(x.label)}${x.n != null ? ` <i>${x.n}</i>` : ""}</button>`).join("")}</div>` + mid +
       secs.map(x => `<div class="pf-sec" data-p="${esc(x.id)}"${x.id === act ? "" : " hidden"}>${x.html}</div>`).join("") + `</div>`;
@@ -159,7 +160,7 @@
     if (it.t === "pfd" || it.t === "gloss"){ h += it.html || `<p>${esc(it.text || "")}</p>`; }
     // the rest sits under pill filters: Details, Pipe spec, All fields, Also in, then one pill per list that refers to it
     const secs = [];
-    if (it.t === "spec") secs.push({ id: "spec", label: "Spec", html: `<div class="lk-spec"></div>` });
+    if (it.t === "spec") secs.push({ id: "spec", label: "Spec", html: `<div class="lk-spec sp-self"></div>` });   // the heading already names the class / valve
     // the same tag in other lists (e.g. an instrument that is also in the control valve list) merges into Details
     const same = (byKey.get(it.k) || []).filter(x => x !== it), twins = same.filter(x => x.r && DB.types[x.t]), others = same.filter(x => !twins.includes(x));
     if (it.r){
@@ -262,12 +263,15 @@
       body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
       body.querySelector(".lk-back").onclick = back;
-      body.querySelectorAll("a[data-k]").forEach(a => a.onclick = e => { e.preventDefault(); open(L.find(a.dataset.k, a.dataset.t), true); });
+
       const pb = body.querySelector("[data-pfd]"); if (pb) pb.onclick = () => opts.pfd(it).go();
       L.fillSpec(body, it);
       if (opts.onOpen) opts.onOpen(it);
     };
     let cur = null;
+    // any code link in an item (also ones filled in later, like the valve codes in a pipe spec) opens that item
+    body.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a[data-k]"); if (!a || !body.contains(a)) return; e.preventDefault();
+      ensure().then(() => { const x = L.find(a.dataset.k, a.dataset.t); if (x) open(x, true); }); });
     const back = () => { const s = stack.pop(); if (s && s.it){ cur = null; open(s.it, false); } else { cur = null; showList(inp.value); if (s) body.scrollTop = s.scroll; } };
     let tmr; inp.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(() => { stack.length = 0; cur = null; ensure().then(() => showList(inp.value)); }, 120); });
     inp.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); clearTimeout(tmr); stack.length = 0; rememberQ(inp.value); ensure().then(() => { showList(inp.value); if (hits.length && (hits[0].k === norm(inp.value) || hits.length === 1)) open(hits[0], true); }); inp.blur(); } });
@@ -368,6 +372,7 @@
 .lk-spec .lk-btn{font-size:13px;padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:13.5px;line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:12px;margin-left:4px}
 .lk-t td.lk-sub{color:var(--lk-a);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}
+.sp-self .sp-head{display:none}
 .sp-cl{display:flex;flex-direction:column}.sp-p{padding:6px 2px;border-bottom:1px solid var(--lk-l);font-size:13px;line-height:1.4;color:var(--mute)}.sp-p b{color:var(--ink);font-weight:600}
 .sp-sc{overflow-x:auto;-webkit-overflow-scrolling:touch}.sp-dt td,.sp-ct td,.sp-ct th{white-space:nowrap}.sp-dt td:first-child{width:auto}
 .sp-ct th{font-size:11px;text-align:left;color:var(--mute);padding:4px;border-bottom:1px solid var(--lk-l)}.sp-ct td:first-child{color:var(--ink);width:auto;white-space:normal;min-width:120px}
