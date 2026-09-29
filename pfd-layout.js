@@ -43,6 +43,8 @@ window.PFDLayout = (() => {
     map.on("zoomend", () => { zoomCls(); redrawStreamsOf(null); }); zoomCls(); map.on("moveend", () => setTimeout(() => { declutter(); declutterAreas(); }, 0));
     map.on("click", () => { if (moving || Date.now() - dropped < 400) return; api.clearSel(true); api.closeInfo(); });
     // corner controls: imagery, dim, home, export
+    // top left: the map bar, then the WBS filters and Flow filters menus (folded until tapped)
+    const tl = L.DomUtil.create("div", "lo-tl"); tl.id = "loTL"; $("mapView").appendChild(tl); L.DomEvent.disableClickPropagation(tl); L.DomEvent.disableScrollPropagation(tl);
     const bar = L.DomUtil.create("div", "lo-bar"); bar.innerHTML =
       `<div class="lo-seg">${[["sat", "Satellite"], ["hyb", "Hybrid"], ["esri", "Esri"]].map(([k, t]) => `<button data-b="${k}">${t}</button>`).join("")}</div>
        <button class="lo-b" id="loDim" title="Dim the photo so the overlay reads better">◐ Dim</button>
@@ -52,7 +54,11 @@ window.PFDLayout = (() => {
        <button class="lo-b" id="loMinor" title="Items not on the layout drawings, placed beside the equipment they work with (dashed boxes)"></button>
        <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-20001" title="Fimiston process plant overall plant layout (old plant)">Open old layout<small>2000-F00-DRG-GE-20001</small></button>
        <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-10100" title="General Fimiston site general arrangement (new plant)">Open new layout<small>2000-F00-DRG-GE-10100</small></button>`;
-    $("mapView").appendChild(bar); L.DomEvent.disableClickPropagation(bar); L.DomEvent.disableScrollPropagation(bar);
+    tl.appendChild(bar);
+    const pans = L.DomUtil.create("div", "lo-pans", tl);
+    const ff = L.DomUtil.create("div", "lo-pan lo-ff shut", pans); ff.id = "loFF";
+    ff.innerHTML = `<button class="lo-wh" type="button">Flow filters<span>▾</span></button><div class="lo-fb"></div>`;
+    ff.querySelector(".lo-wh").onclick = () => { ff.classList.toggle("shut"); dispatchEvent(new Event("resize")); };
     bar.querySelectorAll("[data-b]").forEach(b => b.onclick = () => setBase(b.dataset.b));
     $("loHome").onclick = () => home(true);
     const dim = () => $("mapView").classList.toggle("dim", api.pref.get("lo_dim", "1") === "1");
@@ -140,7 +146,7 @@ window.PFDLayout = (() => {
     const m = N[nd.id].mel, big = !!LAYOUT.nodes[nd.id].sh;
     const why = !m.rows.length ? "No MEL entry" : "Not in MEL: " + m.missing.join(", ");
     return `<div class="lo-box${big ? " big" : ""}${LAYOUT.nodes[nd.id].est ? " est" : ""}${m.gap ? " gap" : ""}" title="${esc(m.gap ? why : "")}">` +
-      `<b>${esc(m.tag || nd.n)}</b><span>${esc(m.desc)}</span>${m.gap ? `<em>⚠ ${esc(why)}</em>` : ""}</div><i class="lo-lead"></i><s class="lo-dot"></s>`;
+      `<b>${esc(m.desc)}</b>${m.gap ? `<em>⚠ ${esc(why)}</em>` : ""}</div><i class="lo-lead"></i><s class="lo-dot"></s>`;   // the concise name only: tap for tags and MEL rows
   }
   // Zoomed far out the boxes can't be read: the map shows WBS areas instead, a soft zone round each area's equipment
   // (the area is the WBS code most of an item's MEL tags start with) labelled "F12 (Primary crushing)". Items of one
@@ -200,10 +206,9 @@ window.PFDLayout = (() => {
   let wbsOn = null;
   function wbsPanel(){
     let el = $("loWbs");
-    if (!el){ el = document.createElement("div"); el.id = "loWbs"; el.className = "lo-wbs" + (matchMedia("(max-width: 700px)").matches ? " shut" : "");
-      $("mapView").appendChild(el); L.DomEvent.disableClickPropagation(el); L.DomEvent.disableScrollPropagation(el); }
+    if (!el){ el = document.createElement("div"); el.id = "loWbs"; el.className = "lo-pan lo-wbs shut"; $("loTL").querySelector(".lo-pans").prepend(el); }
     const codes = [...new Set(areas.map(a => a.code))].sort();
-    el.innerHTML = `<button class="lo-wh" type="button">WBS areas <i>${codes.length}</i><span>▾</span></button><div class="lo-wl">` +
+    el.innerHTML = `<button class="lo-wh" type="button">WBS filters<span>▾</span></button><div class="lo-wl">` +
       codes.map(c => `<button class="flow${c === wbsOn ? " on" : ""}" data-w="${c}" type="button"><i style="background:hsl(${areas.find(a => a.code === c).hue} 85% 55%)"></i><b>${c}</b><span>${esc(wbsName(c))}</span></button>`).join("") + `</div>`;
     el.querySelector(".lo-wh").onclick = () => el.classList.toggle("shut");
     el.querySelectorAll("[data-w]").forEach(b => b.onclick = () => {
@@ -382,9 +387,11 @@ window.PFDLayout = (() => {
   // ---------- show / hide ----------
   async function show(v){
     on = v; document.body.classList.toggle("layout", v); $("mapView").hidden = !v;
-    if (!v){ if (moving) moving.cancel(); return true; }
+    const mleg = $("mleg");
+    if (!v){ if (moving) moving.cancel(); if (mleg && mleg.closest("#loFF")) { document.body.appendChild(mleg); dispatchEvent(new Event("resize")); } return true; }
     try { await load(); } catch (e) { api.toast("Couldn't load the map (" + e.message + "). Check the connection."); on = false; document.body.classList.remove("layout"); $("mapView").hidden = true; return false; }
     if (!map){ build(); drawStreams(); markers(); Object.values(S).forEach(o => { arrow(o.lay, o.s.ty); arrow(o.mid, o.s.ty); }); }
+    if (mleg) { $("loFF").querySelector(".lo-fb").appendChild(mleg); dispatchEvent(new Event("resize")); }
     setTimeout(declutter, 50);
     map.invalidateSize(); sync(false); return true;
   }
