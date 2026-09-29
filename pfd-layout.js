@@ -47,13 +47,21 @@ window.PFDLayout = (() => {
       `<div class="lo-seg">${[["sat", "Satellite"], ["hyb", "Hybrid"], ["esri", "Esri"]].map(([k, t]) => `<button data-b="${k}">${t}</button>`).join("")}</div>
        <button class="lo-b" id="loDim" title="Dim the photo so the overlay reads better">◐ Dim</button>
        <button class="lo-b" id="loHome" title="Back to the processing plant">⌂ Plant</button>
-       <button class="lo-b" id="loExp" title="Download the positions moved on this device, to send in">⬇ Moves</button>`;
+       <button class="lo-b" id="loExp" title="Download the positions moved on this device, to send in">⬇ Moves</button>
+       <button class="lo-b" id="loMinor" title="Items not on the layout drawings, placed beside the equipment they work with (dashed boxes)"></button>
+       <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-20001" title="Fimiston process plant overall plant layout (old plant)">Open old layout<small>2000-F00-DRG-GE-20001</small></button>
+       <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-10100" title="General Fimiston site general arrangement (new plant)">Open new layout<small>2000-F00-DRG-GE-10100</small></button>`;
     $("mapView").appendChild(bar); L.DomEvent.disableClickPropagation(bar); L.DomEvent.disableScrollPropagation(bar);
     bar.querySelectorAll("[data-b]").forEach(b => b.onclick = () => setBase(b.dataset.b));
     $("loHome").onclick = () => home(true);
     const dim = () => $("mapView").classList.toggle("dim", api.pref.get("lo_dim", "1") === "1");
     $("loDim").onclick = () => { api.pref.set("lo_dim", api.pref.get("lo_dim", "1") === "1" ? "0" : "1"); dim(); }; dim();
     $("loExp").onclick = exportMoves; expLabel();
+    // minor equipment: the items not found on the layout drawings (position estimated), hidden unless asked for
+    const minor = () => { const shown = api.pref.get("lo_minor", "0") === "1"; $("mapView").classList.toggle("nominor", !shown);
+      $("loMinor").textContent = shown ? "Hide minor equipment" : "Show minor equipment"; $("loMinor").classList.toggle("on", shown); setTimeout(declutter, 0); };
+    $("loMinor").onclick = () => { api.pref.set("lo_minor", api.pref.get("lo_minor", "0") === "1" ? "0" : "1"); minor(); }; minor();
+    bar.querySelectorAll(".lo-dwg").forEach(b => b.onclick = () => window.Pid && Pid.load().then(() => { if (!Pid.open(b.dataset.dwg)) api.toast("That drawing isn't in the app yet."); }).catch(() => api.toast("Couldn't load the drawing list.")));
     addEventListener("keydown", e => { if (e.key === "Escape" && moving) moving.cancel(); });
     api.NODES.forEach(drawNode);
     api.STREAMS.forEach(drawStream);
@@ -140,7 +148,13 @@ window.PFDLayout = (() => {
     F28: "Ultra Fine Grinding 2 / 3", F30: "Concentrate Pre-Leach Thickening, CIL2/3 & Concentrate Thickening", F34: "Ultra Fine Grinding - Existing", F35: "Concentrate Handling & Filtration",
     F65: "Concentrate Carbon Treatment & Elution", F66: "Electrowinning & Goldroom", F72: "Reagents Mixing & Storage", F75: "Water Services - Existing", F78: "Carbon Regeneration - Existing",
     F81: "Air Services - Existing"};   // WBS level 2 (KCGM Growth Work Breakdown Structure)
-  const wbsName = c => (WBS[c] || "").replace(/\s+-\s+/g, ", ").toLowerCase().replace(/^./, x => x.toUpperCase()).replace(/\b(cil\d?|ufg)\b/gi, x => x.toUpperCase());
+  // plant shorthand: Concentrate → Con., Flotation → Flot. …
+  const SHORT = [[/\bconcentrate\b/g, "con."], [/\bflotation\b/g, "flot."], [/\bthickening\b/g, "thick."], [/\bclassification\b/g, "class."], [/\bscavenger\b/g, "scav."],
+    [/\bregeneration\b/g, "regen."], [/\btreatment\b/g, "treat."], [/\belectrowinning\b/g, "EW"], [/\bultra fine grinding\b/g, "UFG"], [/\bexisting\b/g, "exist."],
+    [/\bintensive leaching\b/g, "ILR"], [/\bhandling\b/g, "hand."], [/\bfiltration\b/g, "filt."], [/\btailings\b/g, "tails"], [/\bservices\b/g, "svcs"], [/\bgeneral\b/g, "gen."],
+    [/\bprimary\b/g, "prim."], [/\bcircuit\b/g, "circ."], [/\bstorage\b/g, "stor."], [/\breagents\b/g, "reag."], [/\bcarbon\b/g, "carb."]];
+  const wbsName = c => { let t = (WBS[c] || "").replace(/\s+-\s+/g, ", ").toLowerCase(); SHORT.forEach(([r, v]) => t = t.replace(r, v));
+    return t.replace(/^./, x => x.toUpperCase()).replace(/\b(cil\d?|ufg|ew|ilr)\b/gi, x => x.toUpperCase()); };
   const HUE = [42, 200, 140, 330, 20, 265, 95, 180, 0, 300];
   let areas = [];
   function hull(P){   // convex hull, monotone chain
@@ -154,7 +168,7 @@ window.PFDLayout = (() => {
     if (!map) return;
     areas.forEach(a => { map.removeLayer(a.poly); map.removeLayer(a.lab); }); areas = [];
     const ED = typeof EQUIP_DATA !== "undefined" ? EQUIP_DATA : {}, by = {};
-    api.NODES.forEach(nd => { if (!LAYOUT.nodes[nd.id]) return; const c = {};
+    api.NODES.forEach(nd => { if (!LAYOUT.nodes[nd.id] || LAYOUT.nodes[nd.id].est) return; const c = {};   // major equipment only (on the drawings)
       ((ED[nd.id] && ED[nd.id].eq) || []).forEach(r => { const m = /^F\d\d/.exec(r.tag || ""); if (m) c[m[0]] = (c[m[0]] || 0) + 1; });
       const code = Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b))[0]; if (code) (by[code] = by[code] || []).push(nd.id); });
     const o = LAYOUT.home[0];
@@ -273,12 +287,12 @@ window.PFDLayout = (() => {
   }
   function drawStreams(){
     api.STREAMS.forEach(s => { if (!LAYOUT.nodes[s.f] || !LAYOUT.nodes[s.to]) return;
-      const t = api.STREAM_TYPES[s.ty];
-      const lay = L.polyline(pathFor(s), { renderer: rend, color: t.color, weight: 1.6, opacity: .95, smoothFactor: 0, interactive: false, className: "lo-s ty-" + s.ty + (SVC.has(s.ty) ? " svc" : "") });
+      const t = api.STREAM_TYPES[s.ty], mn = LAYOUT.nodes[s.f].est || LAYOUT.nodes[s.to].est ? " minor" : "";
+      const lay = L.polyline(pathFor(s), { renderer: rend, color: t.color, weight: 1.6, opacity: .95, smoothFactor: 0, interactive: false, className: "lo-s ty-" + s.ty + (SVC.has(s.ty) ? " svc" : "") + mn });
       lay.addTo(map); arrow(lay, s.ty);
-      const mid = L.polyline(midSeg(lay.getLatLngs()), { renderer: rend, color: t.color, weight: 1.6, opacity: .95, smoothFactor: 0, interactive: false, className: "lo-s lo-mid ty-" + s.ty + (SVC.has(s.ty) ? " svc" : "") }).addTo(map); arrow(mid, s.ty);
+      const mid = L.polyline(midSeg(lay.getLatLngs()), { renderer: rend, color: t.color, weight: 1.6, opacity: .95, smoothFactor: 0, interactive: false, className: "lo-s lo-mid ty-" + s.ty + (SVC.has(s.ty) ? " svc" : "") + mn }).addTo(map); arrow(mid, s.ty);
       // the thin line is only drawn; a wide invisible line on top of it takes the taps (about a finger wide)
-      const hit = L.polyline(pathFor(s), { renderer: rend, color: "#000", weight: matchMedia("(pointer: coarse)").matches ? 22 : 14, opacity: 0, smoothFactor: 0, interactive: true, className: "lo-hit" + (SVC.has(s.ty) ? " svc" : "") });
+      const hit = L.polyline(pathFor(s), { renderer: rend, color: "#000", weight: matchMedia("(pointer: coarse)").matches ? 22 : 14, opacity: 0, smoothFactor: 0, interactive: true, className: "lo-hit" + (SVC.has(s.ty) ? " svc" : "") + mn });
       hit.addTo(map);
       hit.on("click", e => { L.DomEvent.stopPropagation(e); if (moving) return; api.pick(e.originalEvent, { k: "s", id: s.id }); });
       hit.on("mouseover", () => lay._path && lay._path.classList.add("hov")); hit.on("mouseout", () => lay._path && lay._path.classList.remove("hov"));

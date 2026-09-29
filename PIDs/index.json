@@ -3391,6 +3391,24 @@
    "pages": 20,
    "size": 1221105,
    "doc": true
+  },
+  "2000-F00-DRG-GE-10100": {
+   "file": "PIDs/2000-F00-DRG-GE-10100.pdf",
+   "title": "GENERAL FIMISTON SITE GENERAL ARRANGEMENT (NEW PLANT)",
+   "rev": "0",
+   "pages": 1,
+   "size": 12795175,
+   "doc": true,
+   "layout": true
+  },
+  "2000-F00-DRG-GE-20001": {
+   "file": "PIDs/2000-F00-DRG-GE-20001.pdf",
+   "title": "FIMISTON PROCESS PLANT OVERALL PLANT LAYOUT (OLD PLANT)",
+   "rev": "2",
+   "pages": 1,
+   "size": 9223927,
+   "doc": true,
+   "layout": true
   }
  }
 }

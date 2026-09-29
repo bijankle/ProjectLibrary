@@ -98,6 +98,8 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 .lo-lead{position:absolute;left:0;top:0;height:1px;background:rgba(245,247,250,.7);transform-origin:0 0;display:none;pointer-events:none}
 .lo-dot{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:#f5f7fa;box-shadow:0 0 0 1px #101418;display:none;pointer-events:none}
 #mapView:not(.zl1) .lo-box:not(.big):not(.hl):not(.sel){font-size:9px;padding:1px 4px}#mapView:not(.zl1) .lo-box:not(.big) b{font-size:9px}
+#mapView.nominor .lo-bw:has(.lo-box.est),#mapView.nominor .lo-s.minor,#mapView.nominor .lo-hit.minor{display:none}
+.lo-dwg{display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.15;text-align:left}.lo-dwg small{font:600 9.5px ui-monospace,Consolas,monospace;opacity:.75}
 #mapView:not(.areas) .lo-area,#mapView:not(.areas) .lo-area-lab{display:none}
 #mapView.areas .lo-bw:not(:has(.sel)):not(:has(.hl)){display:none}#mapView.areas .lo-s{opacity:.3}#mapView.areas .lo-hit{pointer-events:none}
 .lo-area{cursor:pointer}.lo-area-lab{cursor:pointer}
@@ -193,7 +195,7 @@ svg{touch-action:none}
   #stage{left:0;top:calc(50px + var(--tb,0px));bottom:52px}
   #mapView{left:0;top:calc(50px + var(--tb,0px));bottom:52px}
   #viewSeg button::after{content:attr(data-l);font-size:12.5px}
-  .lo-bar{left:6px;top:6px;gap:4px}.lo-seg button,.lo-b{font-size:11px;padding:4px 7px}
+  .lo-bar{left:6px;right:6px;top:6px;gap:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.lo-bar>*{flex:none}.lo-seg button,.lo-b{font-size:11px;padding:4px 7px}
   body.flowing .lo-bar{display:none}
   #info{left:0;right:0;top:auto;bottom:52px;width:auto;height:min(58vh,560px);border-radius:16px 16px 0 0;border-bottom:0}
   #info.on ~ #zoom{right:10px}

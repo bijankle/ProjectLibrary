@@ -51,6 +51,7 @@ for t in ("ins", "cv"):
 
 out, stats = {}, {"d": 0}
 for num, d in sorted(ix.items()):
+    if d.get("layout"): continue   # the layout drawings open as plain PDFs
     doc = pymupdf.open(os.path.join(ROOT, d["file"])); own = norm(num); refs = []
     for pno, page in enumerate(doc, 1):
         W, H = page.rect.width, page.rect.height
