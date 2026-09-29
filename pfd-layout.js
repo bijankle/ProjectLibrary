@@ -133,9 +133,8 @@ window.PFDLayout = (() => {
     const rows = (typeof EQUIP_DATA !== "undefined" && EQUIP_DATA[nd.id] && EQUIP_DATA[nd.id].eq) || [], have = new Set(rows.map(r => nt(r.tag)));
     const named = String(nd.tag || "").toUpperCase().match(TAG_RE) || [];
     const missing = named.filter(t => !have.has(nt(t)) && ![...have].some(h => h.startsWith(nt(t))));
-    const names = [...new Set(rows.map(r => r.n).filter(Boolean))];
     return { rows, missing, gap: !rows.length || missing.length > 0,
-      tag: nd.tag || (rows[0] && rows[0].tag) || "", desc: names.length ? names.slice(0, 2).join(" / ") + (names.length > 2 ? ` +${names.length - 2}` : "") : (nd.sn || nd.n) };
+      tag: nd.tag || (rows[0] && rows[0].tag) || "", desc: nd.sn || nd.n };   // the PFD's own short name ("Ball Mill", not every MEL line): tap the box for the full list
   }
   function boxHtml(nd){
     const m = N[nd.id].mel, big = !!LAYOUT.nodes[nd.id].sh;
