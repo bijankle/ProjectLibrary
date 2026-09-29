@@ -75,7 +75,7 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 #mapView.dim .leaflet-tile-pane{filter:brightness(.62) saturate(.75)}
 #mapView .leaflet-control-attribution{font-size:9.5px;background:rgba(0,0,0,.45);color:#ccc}
 #mapView .leaflet-control-attribution a{color:#ddd}
-.lo-bar{position:absolute;left:10px;top:10px;z-index:500;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.lo-bar{position:absolute;left:10px;right:294px;top:10px;z-index:500;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .lo-seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:2px}
 .lo-seg button,.lo-b{border:0;background:transparent;color:var(--mute);font:inherit;font-weight:700;font-size:12px;padding:5px 9px;border-radius:7px;cursor:pointer}
 .lo-seg button.on{background:var(--accent);color:#1a1307}
@@ -100,6 +100,18 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 #mapView:not(.zl1) .lo-box:not(.big):not(.hl):not(.sel){font-size:9px;padding:1px 4px}#mapView:not(.zl1) .lo-box:not(.big) b{font-size:9px}
 #mapView.nominor .lo-bw:has(.lo-box.est),#mapView.nominor .lo-s.minor,#mapView.nominor .lo-hit.minor{display:none}
 .lo-dwg{display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.15;text-align:left}.lo-dwg small{font:600 9.5px ui-monospace,Consolas,monospace;opacity:.75}
+.lo-wbs{position:absolute;right:10px;top:10px;z-index:500;width:272px;max-height:calc(100% - 200px);display:flex;flex-direction:column;background:color-mix(in srgb,var(--panel) 94%,transparent);
+  border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px #0006;overflow:hidden}
+.lo-wh{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--ink);font:inherit;font-weight:800;font-size:12px;letter-spacing:.04em;text-transform:uppercase;padding:8px 10px;cursor:pointer;text-align:left}
+.lo-wh i{font-style:normal;color:var(--mute);font-weight:700}.lo-wh span{margin-left:auto;color:var(--mute);transition:transform .2s}
+.lo-wbs.shut .lo-wh span{transform:rotate(-90deg)}.lo-wbs.shut .lo-wl{display:none}
+.lo-wl{overflow-y:auto;padding:0 8px 8px}
+.lo-wl .flow{font-size:12px;padding:6px 8px;margin-bottom:4px;gap:7px;border-radius:8px;color:var(--ink)}
+.lo-wl .flow i{width:11px;height:11px;border-radius:3px}.lo-wl .flow b{font:800 11.5px ui-monospace,Consolas,monospace;flex:none}
+.lo-wl .flow span{font-weight:600;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lo-wl .flow.on span{color:var(--ink)}
+#mapView:not(.areas) path.lo-area.pick{display:inline}path.lo-area.pick{animation:loPick .65s ease-in-out 4;stroke-width:4px}
+@keyframes loPick{50%{fill-opacity:.6;stroke-opacity:1}}
+@media (max-width:700px){.lo-wbs{right:6px;top:44px;width:220px;max-height:calc(100% - 150px)}}
 #mapView:not(.areas) .lo-area,#mapView:not(.areas) .lo-area-lab{display:none}
 #mapView.areas .lo-bw:not(:has(.sel)):not(:has(.hl)){display:none}#mapView.areas .lo-s{opacity:.3}#mapView.areas .lo-hit{pointer-events:none}
 .lo-area{cursor:pointer}.lo-area-lab{cursor:pointer}

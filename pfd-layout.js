@@ -154,7 +154,7 @@ window.PFDLayout = (() => {
     [/\bintensive leaching\b/g, "ILR"], [/\bhandling\b/g, "hand."], [/\bfiltration\b/g, "filt."], [/\btailings\b/g, "tails"], [/\bservices\b/g, "svcs"], [/\bgeneral\b/g, "gen."],
     [/\bprimary\b/g, "prim."], [/\bcircuit\b/g, "circ."], [/\bstorage\b/g, "stor."], [/\breagents\b/g, "reag."], [/\bcarbon\b/g, "carb."]];
   const wbsName = c => { let t = (WBS[c] || "").replace(/\s+-\s+/g, ", ").toLowerCase(); SHORT.forEach(([r, v]) => t = t.replace(r, v));
-    return t.replace(/^./, x => x.toUpperCase()).replace(/\b(cil\d?|ufg|ew|ilr)\b/gi, x => x.toUpperCase()); };
+    return t.replace(/^./, x => x.toUpperCase()).replace(/\b(cil\d?|ufg|ew|ilr)\b/gi, x => x.toUpperCase()).replace(/\barea ([a-z])\b/, (m, x) => "area " + x.toUpperCase()); };
   const HUE = [42, 200, 140, 330, 20, 265, 95, 180, 0, 300];
   let areas = [];
   function hull(P){   // convex hull, monotone chain
@@ -186,10 +186,30 @@ window.PFDLayout = (() => {
         const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<span style="--h:${hue}"><b>${code}</b><i> (${esc(wbsName(code))})</i></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
         const go = e => { L.DomEvent.stopPropagation(e); const b = poly.getBounds(); map.flyTo(b.getCenter(), Math.min(18.5, Math.max(AREA_Z + 1, map.getBoundsZoom(b, false, [40, 40]))), { duration: .6 }); };
         poly.on("click", go); lab.on("click", go);
-        areas.push({ code, poly, lab, n: g.length });
+        areas.push({ code, poly, lab, n: g.length, hue });
       });
     });
-    declutterAreas();
+    declutterAreas(); wbsPanel();
+  }
+  // WBS buttons in the map's top right corner, A to Z like the Smart PFD's flow list: tap one to fly to that area
+  // (all its zones) and flash it. Folds to one button on a phone.
+  let wbsOn = null;
+  function wbsPanel(){
+    let el = $("loWbs");
+    if (!el){ el = document.createElement("div"); el.id = "loWbs"; el.className = "lo-wbs" + (matchMedia("(max-width: 700px)").matches ? " shut" : "");
+      $("mapView").appendChild(el); L.DomEvent.disableClickPropagation(el); L.DomEvent.disableScrollPropagation(el); }
+    const codes = [...new Set(areas.map(a => a.code))].sort();
+    el.innerHTML = `<button class="lo-wh" type="button">WBS areas <i>${codes.length}</i><span>▾</span></button><div class="lo-wl">` +
+      codes.map(c => `<button class="flow${c === wbsOn ? " on" : ""}" data-w="${c}" type="button"><i style="background:hsl(${areas.find(a => a.code === c).hue} 85% 55%)"></i><b>${c}</b><span>${esc(wbsName(c))}</span></button>`).join("") + `</div>`;
+    el.querySelector(".lo-wh").onclick = () => el.classList.toggle("shut");
+    el.querySelectorAll("[data-w]").forEach(b => b.onclick = () => {
+      const c = b.dataset.w, zs = areas.filter(a => a.code === c); if (!zs.length) return;
+      const bb = zs.reduce((u, a) => u.extend(a.poly.getBounds()), L.latLngBounds(zs[0].poly.getBounds().getSouthWest(), zs[0].poly.getBounds().getNorthEast()));
+      map.flyToBounds(bb, { padding: [50, 50], maxZoom: 18.5, duration: .6 });
+      wbsOn = c; el.querySelectorAll("[data-w]").forEach(x => x.classList.toggle("on", x === b));
+      if (matchMedia("(max-width: 700px)").matches) el.classList.add("shut");
+      zs.forEach(a => { const p = a.poly._path; if (p){ p.classList.remove("pick"); void p.getBoundingClientRect(); p.classList.add("pick"); setTimeout(() => p.classList.remove("pick"), 2600); } });
+    });
   }
   // area labels never overlap: biggest areas first with the full name, then the code alone, else left out until zoomed in
   function declutterAreas(){
