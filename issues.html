@@ -52,7 +52,15 @@ td.num{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:12.
 .hist{margin-top:4px}.hist summary{cursor:pointer;color:var(--gold);font-size:12.5px;font-weight:700}
 .hist table{font-size:12.5px;margin-top:4px;background:var(--card2)}.hist td{padding:4px 6px}
 .dnote{color:var(--mute);font-size:12px;margin-top:4px}
-.tb-btns{display:flex;flex-wrap:wrap;gap:6px}.tb-btns .btn{font-size:12.5px;padding:6px 10px;white-space:nowrap}
+.tb-btns{display:flex;flex-wrap:nowrap;gap:6px}.tb-btns .btn{font-size:12.5px;padding:5px 10px;white-space:nowrap}
+#docRows td{vertical-align:middle;padding-top:7px;padding-bottom:7px}#docRows td.num{white-space:nowrap}
+#docRows .ib{border:1px solid var(--line);background:none;color:var(--mute);border-radius:50%;width:20px;height:20px;padding:0;font-size:12px;line-height:1;cursor:pointer;vertical-align:1px;margin-left:4px}
+#docRows .ib.on,#docRows .ib:hover{border-color:var(--gold);color:var(--gold)}
+#docRows tr.dinfo td{background:var(--card2);padding:10px 14px}
+#docRows table.hist{width:auto;background:none;font-size:12.5px;margin:0}#docRows table.hist td{padding:2px 16px 2px 0;border:0;background:none}
+.dkv{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;font-size:12.5px}
+.dkv span{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.dh{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:10px 0 2px}
 .sv{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column}
 .sv-top{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
 .sv-t{flex:1;min-width:0}.sv-t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sv-t small{color:var(--mute);font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -84,6 +92,12 @@ td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13
   table:not(.sv-tb) td{border:0;padding:4px 8px}
   td[data-l]::before{content:attr(data-l);display:block;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--mute)}
   table:not(.sv-tb){background:none}
+  #docRows tr.drow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 8px;padding:8px 10px}
+  #docRows tr.drow td{padding:0;width:auto}#docRows tr.drow td::before{display:none}
+  #docRows tr.drow td.num{grid-column:1 / -1;font-size:11.5px;color:var(--mute)}
+  #docRows tr.drow td.tb{grid-column:1 / -1;margin-top:4px}
+  #docRows tr.dinfo{margin-top:-8px;padding:0}
+  #docRows table.hist tr{display:flex;gap:14px;border:0;border-radius:0;margin:0;padding:1px 0;background:none}#docRows table.hist td{width:auto}#docRows tr.dinfo td{border-radius:0 0 12px 12px}
   .hist table{background:var(--card2)}.hist tr{display:flex;gap:10px;border:0;border-radius:0;margin:0;padding:2px 6px;background:none}.hist td{width:auto;padding:2px 0}
 }
 </style>
@@ -103,9 +117,8 @@ td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13
   </div>
   <div id="docsPane" hidden>
     <p class="sub" id="docsRule"></p>
-    <div class="bar"><button class="btn primary" id="xlsDocs">⬇ Export to Excel</button></div>
     <table>
-      <thead><tr><th>Document number</th><th>Title</th><th>Type</th><th>Rev</th><th>Revision date</th><th>Status</th><th>Client review</th><th>Used in the app for</th><th>Original tables</th></tr></thead>
+      <thead><tr><th>Document number</th><th>Title</th><th>Rev</th><th>Original tables</th></tr></thead>
       <tbody id="docRows"></tbody>
     </table>
   </div>
@@ -171,18 +184,24 @@ td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13
     DOCS = m.docs || {};
     $("nDocs").textContent = `(${Object.keys(DOCS).length})`;
     $("docsRule").textContent = m.rule + " Each revision and date is read from the document's own revision block (spreadsheet cover page, drawing title block or report cover). Newest first.";
-    $("docRows").innerHTML = docList().map(v => `<tr><td class="num" data-l="Document number">${esc(v.number)}</td>
-      <td data-l="Title"><b>${esc(v.full)}</b>${v.full !== v.title ? `<div class="dnote">Called “${esc(v.title)}” in the checks</div>` : ""}${v.note ? `<div class="dnote">${esc(v.note)}</div>` : ""}${v.sheets ? `<div class="dnote">${v.sheets.length} sheets: ${esc(v.sheets[0].slice(-5))} to ${esc(v.sheets[v.sheets.length - 1].slice(-5))}</div>` : ""}
-        ${v.history && v.history.length > 1 ? `<details class="hist"><summary>Revision history (${v.history.length})</summary><table>${v.history.slice().reverse().map(h => `<tr><td>Rev ${esc(h.rev)}</td><td class="date">${fmt(h.date)}</td><td>${esc(h.status)}</td></tr>`).join("")}</table></details>` : ""}</td>
-      <td data-l="Type"><span class="kind">${esc(v.kind)}</span></td><td data-l="Rev" style="white-space:nowrap"><b>${esc(docRev(v))}</b></td><td class="date" data-l="Revision date">${fmt(v.date) || "–"}</td>
-      <td data-l="Status">${esc(v.status) || "–"}</td><td data-l="Client review">${esc(review(v))}</td><td class="note" data-l="Used in the app for">${esc(v.used)}</td><td data-l="Original tables" class="tb" data-k="${v.k}">–</td></tr>`).join("");
+    // one line per document: number, title with ⓘ, rev, the two table buttons; everything else opens under the ⓘ
+    const kv = (l, v) => v ? `<div><span>${l}</span>${v}</div>` : "";
+    $("docRows").innerHTML = docList().map(v => `<tr class="drow"><td class="num" data-l="Document number">${esc(v.number)}</td>
+      <td data-l="Title"><b>${esc(v.full)}</b> <button class="ib" type="button" aria-expanded="false" title="Details">ⓘ</button></td>
+      <td data-l="Rev" style="white-space:nowrap"><b>${esc(docRev(v))}</b></td><td data-l="Original tables" class="tb" data-k="${v.k}">–</td></tr>
+      <tr class="dinfo" hidden><td colspan="4"><div class="dkv">${kv("Type", esc(v.kind))}${kv("Revision date", fmt(v.date))}${kv("Status", esc(v.status))}${kv("Client review", v.review ? esc(review(v)) : "")}
+        ${kv("Used in the app for", esc(v.used))}${v.full !== v.title ? kv("Called in the checks", "“" + esc(v.title) + "”") : ""}${kv("Note", esc(v.note))}
+        ${v.sheets ? kv("Sheets", `${v.sheets.length}: ${esc(v.sheets[0].slice(-5))} to ${esc(v.sheets[v.sheets.length - 1].slice(-5))}`) : ""}<div class="trows" data-k="${v.k}"></div></div>
+        ${v.history && v.history.length > 1 ? `<div class="dh">Revision history</div><table class="hist">${v.history.slice().reverse().map(h => `<tr><td>Rev ${esc(h.rev)}</td><td class="date">${fmt(h.date)}</td><td>${esc(h.status)}</td></tr>`).join("")}</table>` : ""}</td></tr>`).join("");
+    $("docRows").querySelectorAll(".ib").forEach(b => b.onclick = () => { const r = b.closest("tr").nextElementSibling, open = r.hidden; r.hidden = !open; b.setAttribute("aria-expanded", open); b.classList.toggle("on", open); });
     SourceView.index().then(ix => document.querySelectorAll("#docRows td.tb").forEach(td => tables(td, ix[td.dataset.k], DOCS[td.dataset.k]))).catch(() => {});
   }
   function tables(td, d, v){
     if (!d) return;
     const n = d.sheets.length, rows = d.sheets.reduce((t, s) => t + s.n, 0), kb = d.size > 1e6 ? (d.size / 1e6).toFixed(1) + " MB" : Math.round(d.size / 1e3) + " kB";
-    td.innerHTML = `<div class="tb-btns"><button class="btn" data-open>▦ View ${n} table${n > 1 ? "s" : ""}</button><a class="btn" href="${esc(d.xlsx)}" download="${esc(d.fname)}">⬇ Excel ${kb}</a></div>
-      <div class="dnote">${rows.toLocaleString()} rows. ${d.from === "PDF" ? "Tables pulled from the PDF." : "All sheets except the cover page."}</div>`;
+    td.innerHTML = `<div class="tb-btns"><button class="btn" data-open title="View the original tables">▦ ${n} table${n > 1 ? "s" : ""}</button><a class="btn" href="${esc(d.xlsx)}" download="${esc(d.fname)}" title="Download the tables as Excel">⬇ Excel ${kb}</a></div>`;
+    const tr = document.querySelector(`#docRows .trows[data-k="${td.dataset.k}"]`);
+    if (tr) tr.innerHTML = `<div><span>Tables</span>${rows.toLocaleString()} rows. ${d.from === "PDF" ? "Pulled from the PDF." : "All sheets except the cover page."}</div>`;
     td.querySelector("[data-open]").onclick = () => SourceView.open(td.dataset.k, `${v.number} ${v.full}${v.rev ? " Rev " + v.rev : ""}`);
   }
   function tab(which){
@@ -198,7 +217,7 @@ td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13
       ...docList().map(v => [v.number, v.full, v.kind, v.rev, fmt(v.date), v.status, review(v) === "–" ? "" : review(v), v.used, v.note || ""])] });
   const histSheet = () => ({ name: "Revision history", widths: [30, 50, 6, 14, 50],
     rows: [["Document number", "Title", "Rev", "Date", "Status"], ...docList().flatMap(v => (v.history || []).map(h => [v.number, v.full, h.rev, fmt(h.date), h.status]))] });
-  $("xlsDocs").onclick = () => XLSX.download(`KCGM source documents ${new Date().toISOString().slice(0, 10)}.xlsx`, [docSheet(), histSheet()]);
+  if ($("xlsDocs")) $("xlsDocs").onclick = () => XLSX.download(`KCGM source documents ${new Date().toISOString().slice(0, 10)}.xlsx`, [docSheet(), histSheet()]);
   $("q").oninput = () => { shown = 200; draw(); }; $("cat").onchange = () => { shown = 200; draw(); };
   $("xls").onclick = () => {
     const f = filtered(), head = ["Type", "Category", "Item", "What document 1 says", "Document 1", "Date 1", "What document 2 says", "Document 2", "Date 2", "Comment (which is taken as true and why)"];
