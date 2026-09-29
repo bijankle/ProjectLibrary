@@ -13,6 +13,13 @@ window.kcgmViewport = function(z){ try {
   m.setAttribute("content", "width=" + Math.round(w / z) + ", initial-scale=" + z + ", minimum-scale=" + z + ", maximum-scale=" + z + ", viewport-fit=cover, user-scalable=no");
 } catch (e) {} };
 try { kcgmViewport(parseFloat(localStorage.getItem("kcgm_text_size"))); } catch (e) {}
+// Theme (one for every page, Settings → Theme): "dark", "light" or "device" (follows the computer / phone), set before
+// the first paint as data-theme on <html>
+window.kcgmTheme = function(v){ try { v = v || localStorage.getItem("kcgm_theme") || "device";
+  document.documentElement.dataset.theme = v === "dark" || (v !== "light" && !matchMedia("(prefers-color-scheme: light)").matches) ? "dark" : "light"; } catch (e) {} };
+kcgmTheme();
+try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){ kcgmTheme(); });
+  addEventListener("storage", function(e){ if (e.key === "kcgm_theme") kcgmTheme(); }); } catch (e) {}
 </script>
 <title>KCGM Interactive PFD</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -448,7 +455,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   const pref = { get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } }, set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} } };
 
   let stage = 2, focusFlow = null, stepIx = -1, playing = null, pdcCase = 0, sel = [], lastPanel = null;
-  if (pref.get("pfd_theme", "dark") === "light") document.documentElement.dataset.theme = "light";
+  // theme: the app wide setting (kcgmTheme in the head, Settings → Theme)
 
   // ---------- geometry ----------
   function port(n, side, f = 0){
@@ -870,7 +877,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   const tog = (id, cls, key) => { const b = $(id); const on = pref.get(key, "0") === "1"; b.classList.toggle("on", on); svg.classList.toggle(cls, on);
     b.onclick = () => { const v = !b.classList.contains("on"); b.classList.toggle("on", v); svg.classList.toggle(cls, v); pref.set(key, v ? "1" : "0"); }; };
   tog("tLoops", "showloops", "pfd_loops"); tog("tIlk", "showilk", "pfd_ilk"); tog("tSvc", "showsvc", "pfd_svc"); tog("tAnim", "anim", "pfd_anim");
-  $("tTheme").onclick = () => { const l = document.documentElement.dataset.theme !== "light"; document.documentElement.dataset.theme = l ? "light" : ""; pref.set("pfd_theme", l ? "light" : "dark"); };
+  $("tTheme").onclick = () => { const v = document.documentElement.dataset.theme === "light" ? "dark" : "light"; try { localStorage.setItem("kcgm_theme", v); } catch (e) {} kcgmTheme(v); };
 
   // ---------- legend ----------
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -923,10 +930,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   function showSettings(){
     lastPanel = showSettings; $("iKind").textContent = "Settings"; $("iName").textContent = "App settings"; $("iTag").textContent = "";
     $("iBody").innerHTML = `<div class="set-row"><button class="hbtn" id="updBtn2">⟳ Update app</button><a class="hbtn" href="issues.html">🐞 Checks</a><a class="hbtn" href="issues.html#sources">📄 Sources</a>
-        <a class="hbtn" href="index.html?cards">🃏 Flashcards</a><button class="hbtn" id="thBtn2">◐ Light / dark</button></div><div class="ver" id="ver2"></div>
-      <h4>App size</h4><div id="tsRoot2"></div><h4>Offline downloads</h4><div id="offRoot"></div>`;
+        <a class="hbtn" href="index.html?cards">🃏 Flashcards</a></div><div class="ver" id="ver2"></div>
+      <h4>Theme</h4><div id="thRoot2"></div><h4>App size</h4><div id="tsRoot2"></div><h4>Offline downloads</h4><div id="offRoot"></div>`;
     TextSize.mount($("tsRoot2"));
-    AppUpdate.mount($("updBtn2"), $("ver2")); $("thBtn2").onclick = () => $("tTheme").click();
+    AppUpdate.mount($("updBtn2"), $("ver2")); TextSize.theme($("thRoot2"));
     Offline.mount($("offRoot")); openInfo(); if (matchMedia("(max-width: 900px)").matches) document.body.classList.remove("menu");
   }
   $("setBtn").onclick = showSettings; $("setBtn2").onclick = showSettings; $("offBtn").onclick = showSettings;

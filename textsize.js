@@ -16,6 +16,8 @@ window.TextSize = (() => {
 .ts input{flex:1;accent-color:var(--gold,var(--accent));height:28px}
 .ts b{min-width:46px;text-align:right;font-variant-numeric:tabular-nums}
 .ts span{font-size:13px;color:var(--mute)}.ts span.big{font-size:19px}
+.ts-th{gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:max-content}.ts-th button{border:0;background:none;color:var(--mute);font:inherit;font-weight:700;font-size:13px;padding:7px 16px;cursor:pointer}
+.ts-th button.on{background:var(--gold,var(--accent));color:#111}
 .ts-r{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:4px 9px;font:inherit;font-size:12px;cursor:pointer}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   addEventListener("storage", e => { if (e.key === KEY) apply(get()); });   // changed in the other page
@@ -30,5 +32,12 @@ window.TextSize = (() => {
     r.oninput = () => { b.textContent = r.value + "%"; };
     el.querySelector(".ts-r").onclick = () => { r.value = 100; set(100); };
   }
-  return { mount, z: () => 1 };
+  // Theme: one choice for every page (kept as kcgm_theme, applied by kcgmTheme in each page's head)
+  function theme(el){
+    const cur = () => { try { return localStorage.getItem("kcgm_theme") || "device"; } catch (e) { return "device"; } };
+    const draw = () => { el.innerHTML = `<div class="ts ts-th">${[["dark", "Dark"], ["light", "Light"], ["device", "Device"]].map(([k, t]) => `<button type="button" data-t="${k}" class="${cur() === k ? "on" : ""}">${t}</button>`).join("")}</div>`;
+      el.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { try { localStorage.setItem("kcgm_theme", b.dataset.t); } catch (e) {} if (window.kcgmTheme) kcgmTheme(b.dataset.t); draw(); }); };
+    draw();
+  }
+  return { mount, theme, z: () => 1 };
 })();

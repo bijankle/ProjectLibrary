@@ -13,14 +13,22 @@ window.kcgmViewport = function(z){ try {
   m.setAttribute("content", "width=" + Math.round(w / z) + ", initial-scale=" + z + ", minimum-scale=" + z + ", maximum-scale=" + z + ", viewport-fit=cover, user-scalable=no");
 } catch (e) {} };
 try { kcgmViewport(parseFloat(localStorage.getItem("kcgm_text_size"))); } catch (e) {}
+// Theme (one for every page, Settings → Theme): "dark", "light" or "device" (follows the computer / phone), set before
+// the first paint as data-theme on <html>
+window.kcgmTheme = function(v){ try { v = v || localStorage.getItem("kcgm_theme") || "device";
+  document.documentElement.dataset.theme = v === "dark" || (v !== "light" && !matchMedia("(prefers-color-scheme: light)").matches) ? "dark" : "light"; } catch (e) {} };
+kcgmTheme();
+try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){ kcgmTheme(); });
+  addEventListener("storage", function(e){ if (e.key === "kcgm_theme") kcgmTheme(); }); } catch (e) {}
 </script>
 <title>KCGM Checks</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
-:root{--bg:#14110d;--card:#1f1a14;--card2:#2a241c;--ink:#f3ece1;--mute:#b3a794;--gold:#e8b44a;--line:#3a3226;
+:root{--bg:#0f1216;--card:#171b21;--card2:#1f252d;--ink:#e9edf2;--mute:#95a1ae;--gold:#e8b44a;--line:#2c343e;
   --s-decision:#60a5fa;--s-clash:#f87171;--s-missing:#fbbf24;--s-placeholder:#a78bfa;--s-check:#94a3b8;--s-diagram:#34d399}
-@media (prefers-color-scheme: light){:root{--bg:#f6f1e7;--card:#fff;--card2:#f0e8da;--ink:#241d14;--mute:#6b5f4e;--gold:#b8801c;--line:#e1d6c4;
-  --s-decision:#1d4ed8;--s-clash:#b91c1c;--s-missing:#a16207;--s-placeholder:#6d28d9;--s-check:#475569;--s-diagram:#047857}}
+:root[data-theme="light"]{--bg:#f3f4f6;--card:#fff;--card2:#f0f2f5;--ink:#1d2430;--mute:#5d6875;--gold:#b67d12;--line:#d9dee5;
+  --s-decision:#1d4ed8;--s-clash:#b91c1c;--s-missing:#a16207;--s-placeholder:#6d28d9;--s-check:#475569;--s-diagram:#047857}
+@media (min-width:901px) and (hover:hover){.page{margin-left:24px !important;margin-right:auto !important}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .page{max-width:1500px;margin:0 auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
