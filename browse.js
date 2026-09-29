@@ -60,7 +60,8 @@ window.Browse = (() => {
       const f = facet(it); if (!f) continue;
       rows.push({ it, t: it.t === "pid" && f[1] === "PFD" ? "pfdd" : it.t, a: f[0] || "?", k: f[1] || "?", sp: it.t === "line" ? Lookup.get(it, "Pipe spec") || "?" : "", sz: SIZE[it.t] ? String(Lookup.get(it, SIZE[it.t]) || "?") : "" });
     }
-    rows.sort((x, y) => x.it.key.localeCompare(y.it.key, undefined, { numeric: true }));
+    const col = new Intl.Collator(undefined, { numeric: true });   // one collator: localeCompare with options rebuilds it on every call (about 1.5 s here)
+    rows.sort((x, y) => col.compare(x.it.key, y.it.key));
     names = {
       a: v => B.areas[v] || "", sp: v => (B.spec || {})[v] || "", sz: () => "",
       k: { mel: v => B.equip[v] || "", ins: insName, cv: v => CV[v] || "", mv: () => "", line: v => B.svc[v] || "", hose: v => B.svc[v] || "",
@@ -73,7 +74,8 @@ window.Browse = (() => {
   const nextStep = () => t() ? steps()[path.length - 1] : ["t", "Asset type"];
   // alphabetical by what the chip shows ("?" reads "Other"); numbers in number order, so sizes run 15, 25, 50…
   // most items first (ties alphabetical, by what the chip shows: "?" reads "Other")
-  const alpha = (x, y) => (x === "?" ? "Other" : x).localeCompare(y === "?" ? "Other" : y, undefined, { numeric: true, sensitivity: "base" });
+  const ALPHA = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+  const alpha = (x, y) => ALPHA.compare(x === "?" ? "Other" : x, y === "?" ? "Other" : y);
   const order = (f, c) => Object.keys(c).sort((x, y) => c[y] - c[x] || alpha(x, y));
 
   let el = null, lk = null, resY = 0;

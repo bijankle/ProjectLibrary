@@ -941,7 +941,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     nodeState: id => gState(byId[id] && byId[id].g), streamState: id => gState(sById[id] && sById[id].g) });
   const setView = v => { document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v); Tabs.set(v === "map" ? "layout" : "pfd");
     PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); });
-    else { setVB(); } };
+    if (v !== "map") setVB(); };
   document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
   // the tab strip: PFD and Layout switch here, Assets and Quiz open the phone app page
   Tabs.mount({ active: "pfd", onSettings: () => showSettings(), onTab: t => { if (t !== "pfd" && t !== "layout") return false; setView(t === "layout" ? "map" : "pfd"); return true; } });
