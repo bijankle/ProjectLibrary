@@ -57,6 +57,7 @@ a.hbtn{text-decoration:none;color:var(--ink)}
 .fp.on{background:color-mix(in srgb,var(--c) 28%,var(--panel2));box-shadow:0 0 0 1px var(--c) inset}
 .fp.tg{padding-left:10px}.fp.tg.on{--c:var(--accent)}
 .fhint{margin:0 0 8px;font-size:11.5px}#side [hidden]{display:none !important}
+body.layout #fHead,body.layout #narBtn,body.layout #fluids,body.layout #fHint,body.layout #flows{display:none !important}
 .stream.stub .sym{display:none}
 .flow.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 #steps{margin-top:10px;display:none}
@@ -91,6 +92,9 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 .lo-pan{display:flex;flex-direction:column;background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px #0006;overflow:hidden;max-height:calc(100vh - 260px)}
 .lo-pan.shut .lo-wl,.lo-pan.shut .lo-fb{display:none}.lo-pan.shut .lo-wh span{transform:rotate(-90deg)}
 .lo-fb{overflow-y:auto;padding:0 8px 8px;width:300px;max-width:calc(100vw - 40px)}
+.lo-mo .lo-fb{display:flex;flex-direction:column;align-items:stretch;gap:6px;width:230px}.lo-mo.shut .lo-fb{display:none}
+.lo-mo .lo-seg{display:flex}.lo-mo .lo-seg button{flex:1}.lo-home{align-self:flex-start;padding:8px 11px !important}
+.lo-pan .lo-wh{white-space:nowrap}
 .lo-ff #mleg{position:static;display:flex !important;flex-direction:column;gap:5px;padding:0;border:0;background:none}
 .lo-ff .mrow{display:flex;flex-wrap:wrap;gap:5px}.lo-ff .mrow[hidden]{display:none}
 .lo-ff #mleg .fp{font-size:11.5px;padding:3px 9px 3px 6px;gap:5px}.lo-ff #mleg .fp svg{width:12px;height:12px}
@@ -228,7 +232,7 @@ svg{touch-action:none}
   #viewSeg button::after{content:attr(data-l);font-size:12.5px}
   .lo-tl{left:6px;right:6px;top:6px}
   .lo-bar{gap:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;max-width:100%}.lo-bar>*{flex:none}.lo-seg button,.lo-b{font-size:11px;padding:4px 7px}
-  body.flowing .lo-bar{display:none}
+  body.flowing .lo-tl{display:none}
   #info{left:0;right:0;top:auto;bottom:var(--mlh,52px);width:auto;height:min(58vh,560px);border-radius:16px 16px 0 0;border-bottom:0}
   #info.on ~ #zoom{right:10px}
   #zoom{bottom:calc(var(--mlh,52px) + 10px);right:10px}
@@ -716,7 +720,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     const nm = el("text", { class: "nm", x: 0, y: 0 }, nl);
     const label = n.sn || n.n; const words = label.length > 22 ? wrap(label, 22) : [label];
     words.forEach((wd, i) => { const ts = el("tspan", { x: 0, dy: i ? 16 : 0 }, nm); ts.textContent = wd; });
-    const tg = el("text", { class: "tg", x: 0, y: 2 + words.length * 16 }, nl); tg.textContent = n.tag || "";
+    // names only on the drawing: the tag is in the item's panel (and the hover title)
     el("title", {}, g).textContent = n.n + (n.tag ? " (" + n.tag + ")" : "");
     g.addEventListener("click", e => { if (moved) return; e.stopPropagation(); pick(e, { k: "n", id: n.id }, () => showNode(n)); });
     nEls[n.id] = g; n.g = g;

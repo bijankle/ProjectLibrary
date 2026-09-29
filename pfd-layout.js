@@ -43,22 +43,24 @@ window.PFDLayout = (() => {
     map.on("zoomend", () => { zoomCls(); redrawStreamsOf(null); }); zoomCls(); map.on("moveend", () => setTimeout(() => { declutter(); declutterAreas(); }, 0));
     map.on("click", () => { if (moving || Date.now() - dropped < 400) return; api.clearSel(true); api.closeInfo(); });
     // corner controls: imagery, dim, home, export
-    // top left: the map bar, then the WBS filters and Flow filters menus (folded until tapped)
+    // top left: ⌂ Plant and the WBS filters, Flow filters and Map options menus (folded until tapped)
     const tl = L.DomUtil.create("div", "lo-tl"); tl.id = "loTL"; $("mapView").appendChild(tl); L.DomEvent.disableClickPropagation(tl); L.DomEvent.disableScrollPropagation(tl);
-    const bar = L.DomUtil.create("div", "lo-bar"); bar.innerHTML =
+    // one row: ⌂ Plant, then three folded menus: WBS filters (added by wbsPanel), Flow filters, Map options
+    const pans = L.DomUtil.create("div", "lo-pans", tl);
+    pans.innerHTML = `<button class="lo-b lo-home" id="loHome" title="Back to the processing plant">⌂ Plant</button>`;
+    const menu = (id, cls, title, body) => { const m = L.DomUtil.create("div", "lo-pan shut " + cls, pans); m.id = id;
+      m.innerHTML = `<button class="lo-wh" type="button">${title}<span>▾</span></button><div class="lo-fb">${body}</div>`;
+      m.querySelector(".lo-wh").onclick = () => { m.classList.toggle("shut"); dispatchEvent(new Event("resize")); }; return m; };
+    menu("loFF", "lo-ff", "Flow filters", "");
+    const mo = menu("loMO", "lo-mo", "Map options",
       `<div class="lo-seg">${[["sat", "Satellite"], ["hyb", "Hybrid"], ["esri", "Esri"]].map(([k, t]) => `<button data-b="${k}">${t}</button>`).join("")}</div>
        <button class="lo-b" id="loDim" title="Dim the photo so the overlay reads better">◐ Dim</button>
-       <button class="lo-b" id="loHome" title="Back to the processing plant">⌂ Plant</button>
-       <button class="lo-b" id="loExp" title="Download the positions moved on this device, to send in">⬇ Moves</button>
        <button class="lo-b" id="loFlows" title="The PFD streams drawn on the plant (a flow picked in the list always shows)"></button>
        <button class="lo-b" id="loMinor" title="Items not on the layout drawings, placed beside the equipment they work with (dashed boxes)"></button>
+       <button class="lo-b" id="loExp" title="Download the positions moved on this device, to send in">⬇ Moves</button>
        <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-20001" title="Fimiston process plant overall plant layout (old plant)">Open old layout<small>2000-F00-DRG-GE-20001</small></button>
-       <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-10100" title="General Fimiston site general arrangement (new plant)">Open new layout<small>2000-F00-DRG-GE-10100</small></button>`;
-    tl.appendChild(bar);
-    const pans = L.DomUtil.create("div", "lo-pans", tl);
-    const ff = L.DomUtil.create("div", "lo-pan lo-ff shut", pans); ff.id = "loFF";
-    ff.innerHTML = `<button class="lo-wh" type="button">Flow filters<span>▾</span></button><div class="lo-fb"></div>`;
-    ff.querySelector(".lo-wh").onclick = () => { ff.classList.toggle("shut"); dispatchEvent(new Event("resize")); };
+       <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-10100" title="General Fimiston site general arrangement (new plant)">Open new layout<small>2000-F00-DRG-GE-10100</small></button>`);
+    const bar = mo;
     bar.querySelectorAll("[data-b]").forEach(b => b.onclick = () => setBase(b.dataset.b));
     $("loHome").onclick = () => home(true);
     const dim = () => $("mapView").classList.toggle("dim", api.pref.get("lo_dim", "1") === "1");
@@ -206,7 +208,7 @@ window.PFDLayout = (() => {
   let wbsOn = null;
   function wbsPanel(){
     let el = $("loWbs");
-    if (!el){ el = document.createElement("div"); el.id = "loWbs"; el.className = "lo-pan lo-wbs shut"; $("loTL").querySelector(".lo-pans").prepend(el); }
+    if (!el){ el = document.createElement("div"); el.id = "loWbs"; el.className = "lo-pan lo-wbs shut"; $("loHome").after(el); }
     const codes = [...new Set(areas.map(a => a.code))].sort();
     el.innerHTML = `<button class="lo-wh" type="button">WBS filters<span>▾</span></button><div class="lo-wl">` +
       codes.map(c => `<button class="flow${c === wbsOn ? " on" : ""}" data-w="${c}" type="button"><i style="background:hsl(${areas.find(a => a.code === c).hue} 85% 55%)"></i><b>${c}</b><span>${esc(wbsName(c))}</span></button>`).join("") + `</div>`;
