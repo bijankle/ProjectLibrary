@@ -94,7 +94,7 @@ window.PFDLayout = (() => {
   }
   function zoomCls(){
     const z = map.getZoom(), c = $("mapView").classList;
-    c.toggle("zl1", z >= 17.75); c.toggle("zl2", z >= 19); c.toggle("areas", z < AREA_Z); declutterAreas();
+    c.toggle("zl1", z >= 17.75); c.toggle("zl2", z >= 19); c.toggle("areas", z < AREA_Z); c.toggle("stack", z >= AREA_Z && z < BOX_Z); declutterAreas();
     declutter();
   }
   // labels never overlap: selected first, then highlighted, then big items, then the rest
@@ -106,7 +106,10 @@ window.PFDLayout = (() => {
     const on = !!(dx || dy); o.lead.style.display = o.dot.style.display = on ? "block" : "";
     if (on){ o.lead.style.width = Math.hypot(dx, dy) + "px"; o.lead.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`; }
   }
+  // Three phases by zoom: WBS areas (below AREA_Z), callout stacks (to BOX_Z), name boxes on the equipment (from BOX_Z)
+  const BOX_Z = 18.5;
   function declutter(){
+    if (map && map.getZoom() >= AREA_Z && map.getZoom() < BOX_Z) return stackOut();
     const labs = [];
     Object.values(N).forEach(o => { if (!o.el) return; o.el.classList.remove("dc"); if (!o.el.classList.contains("lift")) setOff(o, 0, 0);
       labs.push({ o, pr: o.el.classList.contains("sel") ? 0 : o.el.classList.contains("hl") ? 1 : o.el.classList.contains("big") ? 2 : 3 }); });
@@ -125,6 +128,39 @@ window.PFDLayout = (() => {
       placed.push({ left: r.left + best[0], right: r.right + best[0], top: r.top + best[1], bottom: r.bottom + best[1] }); });
     const sig = Object.values(N).map(o => (o.dx || 0) + "," + (o.dy || 0)).join(";");
     if (sig !== lastOff){ lastOff = sig; redrawStreamsOf(null); }   // lines to a moved box end at its dot
+  }
+  // Callout stacks: every name in view lines up in tidy columns left and right of the plant, joined by a thin leader to
+  // a dot at the equipment. Each side is ordered top to bottom so the leaders don't cross; a side too tall for the
+  // screen spreads over more columns, outward.
+  function stackOut(){
+    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, BOT = 34, GAP = 2, CG = 8;
+    const tl = $("loTL"), TOP = tl ? Math.max(58, tl.querySelector(".lo-pans").getBoundingClientRect().bottom - box.top + 8) : 58;   // below the menus
+    const items = [];
+    Object.values(N).forEach(o => { if (!o.el) return; o.el.classList.remove("dc"); if (o.el.classList.contains("lift")) return; setOff(o, 0, 0);
+      if (getComputedStyle(o.el).display === "none") return; const r = o.el.getBoundingClientRect(); if (!r.width) return;
+      const p = { x: r.left + r.width / 2 - box.left, y: r.top + r.height / 2 - box.top };
+      if (p.x < -20 || p.x > W + 20 || p.y < -20 || p.y > H + 20) return;   // off screen: stays where it is
+      items.push({ o, p, w: r.width, h: r.height }); });
+    if (!items.length) return;
+    items.sort((a, b) => a.p.x - b.p.x);
+    const half = Math.ceil(items.length / 2), sides = [items.slice(0, half), items.slice(half)];
+    const minX = Math.min(...items.map(i => i.p.x)), maxX = Math.max(...items.map(i => i.p.x)), avail = H - TOP - BOT;
+    sides.forEach((grp, si) => { if (!grp.length) return;
+      grp.sort((a, b) => a.p.y - b.p.y);
+      const tot = grp.reduce((t, i) => t + i.h + GAP, 0), nc = Math.max(1, Math.ceil(tot / avail)), per = Math.ceil(grp.length / nc);
+      const cols = []; for (let c = 0; c < nc; c++) cols.push(grp.slice(c * per, (c + 1) * per));
+      const cw = cols.map(c => Math.max(...c.map(i => i.w), 0)), all = cw.reduce((a, b) => a + b, 0) + CG * (nc - 1);
+      // the stack's inner edge sits just outside the plant, but never off the screen
+      let x0 = si === 0 ? Math.max(8, Math.min(minX - 26 - all, W - all - 8)) : Math.min(W - all - 8, Math.max(maxX + 26, 8));
+      // column 0 (the top part of the side) sits nearest the plant, further columns step outward
+      let acc = 0; const lx = cw.map(w => { const v = si === 0 ? x0 + all - acc - w : x0 + acc; acc += w + CG; return v; });
+      cols.forEach((col, k) => { const cx = lx[k], w = cw[k];
+        const h = col.reduce((t, i) => t + i.h + GAP, 0) - GAP, my = col.reduce((t, i) => t + i.p.y, 0) / col.length;
+        let y = Math.max(TOP, Math.min(H - BOT - h, my - h / 2));
+        col.forEach(i => { const tx = si === 0 ? cx + w - i.w / 2 : cx + i.w / 2, ty = y + i.h / 2; setOff(i.o, tx - i.p.x, ty - i.p.y); y += i.h + GAP; }); });
+    });
+    const sig = Object.values(N).map(o => (o.dx || 0) + "," + (o.dy || 0)).join(";");
+    if (sig !== lastOff){ lastOff = sig; redrawStreamsOf(null); }
   }
   // arrowheads, one per stream colour
   function markers(){
@@ -150,7 +186,7 @@ window.PFDLayout = (() => {
     t = t.replace(/ · /g, " · "); let best = -1, d = 1e9; for (let i = t.indexOf(" "); i > 0; i = t.indexOf(" ", i + 1)){ const k = Math.abs(i - (t.length - i - 1)); if (k < d){ d = k; best = i; } }
     if (best < 0) return esc(t);
     const a = t.slice(0, best).replace(/\s*·$/, ""), b = t.slice(best + 1).replace(/^·\s*/, "");   // the · separator isn't needed at a line break
-    return esc(a) + "<br>" + esc(b);
+    return esc(a) + " <br>" + esc(b);   // (the space keeps the words apart when a stack shows it on one line)
   }
   function boxHtml(nd){
     const m = N[nd.id].mel, big = !!LAYOUT.nodes[nd.id].sh;
