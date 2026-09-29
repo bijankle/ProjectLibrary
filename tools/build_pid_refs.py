@@ -1,7 +1,7 @@
 """Finds every reference printed on the P&IDs and PFD sheets so the drawing viewer can make them tappable.
 
 Usage: python3 tools/build_pid_refs.py            (after build_pids.py and build_search.py)
-Output: pid-refs.json  {drawing number: [[page, left, top, width, height, target, kind], ...]}
+Output: doc-tags.json (see the end) and pid-refs.json  {drawing number: [[page, left, top, width, height, target, kind], ...]}
   box in 1/10000 of the sheet width and height (top left origin); kind "d" = another drawing in the app (continuation
   ribbons, vendor package and reference drawings), "q" = a bubble shared by several list entries (opens a search),
   otherwise the list the tag is in (line, mel, ins, cv, mv, spi, hose).
@@ -90,4 +90,14 @@ for num, d in sorted(ix.items()):
             stats[kind] = stats.get(kind, 0) + 1
     if refs: out[num] = refs
 json.dump(out, open(os.path.join(ROOT, "pid-refs.json"), "w"), separators=(",", ":"))
+# where each tag appears on the PFD sheets and in the documents (the PDC…), for the item pages in lookup.js:
+# doc-tags.json {tag: [[drawing number, page], ...]} (P&IDs left out: the lists already name those)
+seen = {}
+for num, refs in out.items():
+    if "-PID-" in num: continue
+    for r in refs:
+        if r[6] in ("d", "q"): continue
+        a = seen.setdefault(r[5], [])
+        if not any(x[0] == num for x in a): a.append([num, r[0]])
+json.dump(seen, open(os.path.join(ROOT, "doc-tags.json"), "w"), separators=(",", ":"))
 print(len(out), "drawings", stats, os.path.getsize(os.path.join(ROOT, "pid-refs.json")) // 1024, "kB")

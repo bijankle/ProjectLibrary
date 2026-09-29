@@ -17,12 +17,13 @@
   function indexExtras(list){ list.forEach(x => { x.k = norm(x.key); x.txt = (x.key + " " + x.name + " " + (x.words || "")).toLowerCase(); items.push(x); addKey(x.k, x); }); }
   function addKey(k, it){ if (!k) return; const a = byKey.get(k); if (a) a.push(it); else byKey.set(k, [it]); }
 
-  L.load = () => loading || (loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => { DB = d; build();
+  let dtLoad = null;
+  L.load = () => loading || (dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => { DB = d; build();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
     // drawings in the app (small index, waited for so records can show their 📐 open buttons straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
     return (window.Pid ? Pid.load().then(() => Pid.all().forEach(d => { const k = norm(d.number); if (byKey.has(k)) return;
-      const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => { done = true; return L; }); }));
+      const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => dtLoad).then(() => { done = true; return L; }); }));
   L.ready = () => !!DB;
   function build(){
     Object.entries(DB.data).forEach(([t, rows]) => rows.forEach(r => { const it = { t, r, key: r[0], k: norm(r[0]), name: nameOf(t, r) }; items.push(it); addKey(it.k, it); }));
@@ -180,6 +181,7 @@
       rows.forEach(r => { if (/^line number$/i.test(r.l) && !/\d{2,3}-[A-Z]?\d{3,4}-/.test(r.v)) r.l = "Note"; });
       twins.forEach(x => { const g = DB.types[x.t].f; g.forEach((n, i) => { if (i > 0 && x.r[i]) rows.push({ l: n, v: x.r[i], h: linkify(x.r[i]) }); }); });
       const kept = L.dedupe(rows, { heads: [it.key, ...twins.map(x => x.key)] });
+      docRows(it, kept);
       const filled = new Set(rows.map(r => canon(r.l)));
       // a missing line number isn't worth a mention when the item's P&ID is given (the drawing shows the line)
       const onPid = rows.some(r => /P&ID/i.test(r.l) && /PID/.test(r.v));
@@ -228,6 +230,25 @@
   L.items = () => items;
   L.get = (it, n) => { if (!it.r || !DB.types[it.t]) return ""; const i = DB.types[it.t].f.indexOf(n); return i < 0 ? "" : it.r[i] || ""; };
   L.ICON = ICON; L.typeName = t => typeName(t);
+  // PFD sheets and documents a tag is written on (doc-tags.json, tools/build_pid_refs.py): equipment gets a PFD row
+  // just above its P&ID (the list's own PFD plus any sheet it is read on), anything in the PDC a PDC row below it.
+  // Each drawing is a link that opens the sheet (at the page) with the tag marked.
+  let DT = null;
+  const dwgA = (n, pg) => window.Pid && Pid.has(n) ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="${pg || 1}" href="#">${esc(n)}</a>` : esc(n);
+  const dwgTitle = n => { const d = window.Pid && Pid.info(n); return d && d.title ? L.pidTitle(d.title) : ""; };
+  function docRows(it, rows){
+    const seen = (DT && DT[it.key]) || [];
+    const at = () => { const i = rows.findIndex(r => /^P&IDs?$/.test(r.l)); return i < 0 ? rows.length : i; };
+    if (it.t === "mel"){
+      const own = String(L.get(it, "PFD")).match(/2000-[A-Z0-9]{3,6}-PFD-[A-Z]{2}-\d{4,5}/g) || [];
+      const pfds = [...new Set([...own, ...seen.filter(x => /-PFD-/.test(x[0])).map(x => x[0])])];
+      for (let i = rows.length - 1; i >= 0; i--) if (/^PFD$/.test(rows[i].l)) rows.splice(i, 1);
+      if (pfds.length) rows.splice(at(), 0, { l: "PFD", v: pfds.join(", "), h: pfds.map(n => dwgA(n) + (dwgTitle(n) ? ` (${esc(dwgTitle(n))})` : "")).join("<br>") });
+    }
+    const docs = seen.filter(x => !/-P[FI]D-/.test(x[0]));
+    if (docs.length){ const i = at(); rows.splice(i < rows.length ? i + 1 : i, 0, { l: docs.every(x => /-DCR-/.test(x[0])) ? "PDC" : "Documents", v: docs.map(x => x[0]).join(", "),
+      h: docs.map(x => dwgA(x[0], x[1]) + ` (${esc(dwgTitle(x[0]).toLowerCase().replace(/^./, c => c.toUpperCase()))}, page ${x[1]})`).join("<br>") }); }
+  }
   L.find = (k, t) => { const a = byKey.get(k) || []; return (t && a.find(x => x.t === t)) || a[0] || null; };
   // How the P&IDs join up, read from the line list: a line's From / To end names another line or an item (equipment,
   // valve, instrument…) whose own P&ID is known. When that end sits on a different drawing the line crosses between
@@ -312,7 +333,7 @@
       // the tag to mark on a drawing: the item itself, or on a drawing's own page the item you came from
       const from = it.t === "pid" ? (stack.length && stack[stack.length - 1].it ? stack[stack.length - 1].it.key : null) : it.key;
       body.innerHTML = `<button class="lk-back">← Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}</button>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
-      body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from); });
+      body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from, { page: +a.dataset.page || 1 }); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
       body.querySelector(".lk-back").onclick = back;
 
@@ -445,7 +466,7 @@
 .sp-toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#171b21;color:#e9edf2;border:1px solid #e8b44a;border-radius:10px;padding:8px 12px;font-size:13px;max-width:90vw}.sp-toast[hidden]{display:none}
 .sp-msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font-size:14px}.sp-msg[hidden]{display:none}
 body.sp-on{overflow:hidden}
-.sp-refs{position:absolute;inset:0;pointer-events:none}
+.sp-top button[hidden]{display:none}.sp-refs{position:absolute;inset:0;pointer-events:none}
 .sp-ref{position:absolute;pointer-events:auto;cursor:pointer;background:rgba(232,180,74,.13);border-radius:2px;box-shadow:inset 0 0 0 1px rgba(214,158,46,.35)}
 .sp-ref.d{background:rgba(232,180,74,.24);box-shadow:inset 0 0 0 1px rgba(214,158,46,.7)}
 .sp-ref::after{content:"";position:absolute;inset:-5px}.sp-ref:hover,.sp-ref.hit{background:rgba(232,180,74,.45)}

@@ -262,6 +262,11 @@ for num in sorted(groups):
     if num in inferred: index[num]["inferred"] = 1
     if num in OCRED: index[num]["ocr"] = 1
     index[num]["from"] = [f"{os.path.basename(f)}#{i + 1}" for f, i in groups[num]]
+# documents added by tools/build_docs.py (the PDC…) stay in the index
+try:
+    for k, v in json.load(open(os.path.join(ROOT, "PIDs", "index.json")))["pids"].items():
+        if v.get("doc") and k not in index: index[k] = v
+except (OSError, ValueError, KeyError): pass
 json.dump({"meta": {"unread": skipped, "built": "tools/build_pids.py", "sources": [os.path.basename(f) for f in files], "note": "Names and initials in the sign off blocks blacked out."}, "pids": index},
           open(os.path.join(ROOT, "PIDs", "index.json"), "w"), indent=1)
 if OCRED: print("numbers read by OCR from the corner of scanned sheets:", ", ".join(sorted(OCRED)))

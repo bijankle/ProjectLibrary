@@ -18,7 +18,7 @@ window.Pid = (() => {
     const d = info(n); if (!d) return false;
     if (!o.keep) back.length = 0;
     const r = o.restore;
-    PdfView.open({ url: d.file, page: r ? r.page : 1, fit: "page", find: find || null, download: d.number + ".pdf", restore: r || null,
+    PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc ? "width" : "page", find: find || null, download: d.number + ".pdf", restore: r || null,
       title: d.number + (d.rev ? " Rev " + d.rev : "") + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []), back: back.length > 0,
       onBack: () => { const b = back.pop(); if (b) open(b.n, b.find, { keep: true, restore: b.state }); },

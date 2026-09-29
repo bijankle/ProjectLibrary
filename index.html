@@ -583,7 +583,7 @@ body.searching #homeMain{display:none}
   // Search lives in the top bar: type straight in, results replace the home content until the bar is cleared
   Lookup.addExtra(GLOSSARY.map(([k, v]) => ({ t: "gloss", key: k, name: v, text: v })));
   lk = Lookup.mount($("lkRoot"), { placeholder: "Search tags, lines, valves…", intro: "", scrollTop: () => window.scrollTo(0, 0),
-    pfd: it => ["mel", "ins", "cv"].includes(it.t) ? { label: "Find it on the PFD", go: () => location.href = "pfd.html?find=" + encodeURIComponent(it.key) } : null });
+    pfd: it => ["mel", "ins", "cv"].includes(it.t) ? { label: "Show on interactive PFD", go: () => location.href = "pfd.html?find=" + encodeURIComponent(it.key) } : null });
   window.kcgmOpenTag = k => { show("home"); Tabs.set("assets"); lk.openKey(k); };   // a tag tapped on a drawing
   { const st = $("lkRoot").querySelector(".lk-status"), bd = $("lkRoot").querySelector(".lk-body");
     $("lkResults").append(st, bd);
