@@ -48,6 +48,16 @@ a.hbtn{text-decoration:none;color:var(--ink)}
 .flow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--panel2);
   border-radius:10px;padding:9px 10px;margin-bottom:7px;cursor:pointer;font-size:14px;font-weight:600}
 .flow i{width:14px;height:14px;border-radius:4px;flex:none}
+.flow.nar{justify-content:center;font-weight:800;border-style:dashed}.flow.nar.on{border-style:solid}
+.fps{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.fp{--c:var(--line);display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--c);background:var(--panel2);color:var(--ink);border-radius:99px;
+  padding:4px 11px 4px 7px;font:inherit;font-size:12.5px;font-weight:700;white-space:nowrap;cursor:pointer}
+.fp svg{width:14px;height:14px;flex:none}.fp i{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.fp:hover{background:color-mix(in srgb,var(--c) 14%,var(--panel2))}
+.fp.on{background:color-mix(in srgb,var(--c) 28%,var(--panel2));box-shadow:0 0 0 1px var(--c) inset}
+.fp.tg{padding-left:10px}.fp.tg.on{--c:var(--accent)}
+.fhint{margin:0 0 8px;font-size:11.5px}#side [hidden]{display:none !important}
+.stream.stub .sym{display:none}
 .flow.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 #steps{margin-top:10px;display:none}
 #steps.on{display:block}
@@ -205,14 +215,14 @@ svg{touch-action:none}
   body.menu #side{transform:none}
   #scrim{position:fixed;inset:calc(50px + var(--tb,0px)) 0 0 0;background:rgba(0,0,0,.35);z-index:8;display:none !important}
   body.menu #scrim{display:block !important}
-  #stage{left:0;top:calc(50px + var(--tb,0px));bottom:0}
-  #mapView{left:0;top:calc(50px + var(--tb,0px));bottom:0}
+  #stage{left:0;top:calc(50px + var(--tb,0px));bottom:var(--mlh,52px)}
+  #mapView{left:0;top:calc(50px + var(--tb,0px));bottom:var(--mlh,52px)}
   #viewSeg button::after{content:attr(data-l);font-size:12.5px}
   .lo-bar{left:6px;right:6px;top:6px;gap:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.lo-bar>*{flex:none}.lo-seg button,.lo-b{font-size:11px;padding:4px 7px}
   body.flowing .lo-bar{display:none}
-  #info{left:0;right:0;top:auto;bottom:0;width:auto;height:min(58vh,560px);border-radius:16px 16px 0 0;border-bottom:0}
+  #info{left:0;right:0;top:auto;bottom:var(--mlh,52px);width:auto;height:min(58vh,560px);border-radius:16px 16px 0 0;border-bottom:0}
   #info.on ~ #zoom{right:10px}
-  #zoom{bottom:calc(12px + env(safe-area-inset-bottom));right:10px}
+  #zoom{bottom:calc(var(--mlh,52px) + 10px);right:10px}
   #zoom #zIn,#zoom #zOut{display:none}
   #info.on ~ #zoom{display:none}
   #stepbar{left:8px;right:8px;top:calc(56px + var(--tb,0px));gap:6px}
@@ -223,20 +233,11 @@ svg{touch-action:none}
   .sb-cur{flex:1 1 56%;font-size:12.5px}
   #toast{top:calc(56px + var(--tb,0px));max-width:92vw;font-size:12.5px}
   body.flowing #toast{top:calc(150px + var(--tb,0px))}
-  /* filters: a column tucked in the bottom left corner over the drawing / map, folds to its header */
-  #mleg{position:fixed;left:8px;bottom:calc(10px + env(safe-area-inset-bottom));max-height:min(56vh,calc(100vh - 170px));padding:5px;
-    background:color-mix(in srgb,var(--panel) 93%,transparent);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 18px #0006;
-    z-index:7;display:flex !important;flex-direction:column;align-items:stretch;gap:4px;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
-  #mleg.shut>*:not(.mh){display:none}
-  .mc.mh{justify-content:space-between;border:0;background:none;color:var(--mute);font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:3px 6px}
-  .mc.mh span{transition:transform .2s}#mleg.shut .mc.mh span{transform:rotate(-90deg)}
-  #mleg::-webkit-scrollbar{display:none}
-  .mc{flex:none;display:flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:99px;
-    padding:4px 10px 4px 6px;font:inherit;font-size:11.5px;font-weight:700;white-space:nowrap;text-align:left}
-  .mc svg{width:26px;height:12px;flex:none}
-  .mc.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
-  .mc.tg{padding-left:10px}
-  .msep{flex:none;height:1px;background:var(--line);margin:2px 4px}
+  /* filters: rows of pills across the bottom of the screen, no swiping (the first row: narrative and the toggles) */
+  #mleg{position:fixed;left:0;right:0;bottom:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line);
+    z-index:7;display:flex !important;flex-direction:column;gap:5px}
+  .mrow{display:flex;flex-wrap:wrap;gap:5px}.mrow[hidden]{display:none}
+  #mleg .fp{font-size:11.5px;padding:3px 9px 3px 6px;gap:5px}#mleg .fp svg{width:12px;height:12px}#mleg .fp.tg{padding-left:9px}
 }
 /* SVG styling */
 .frame{pointer-events:none}
@@ -379,8 +380,11 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     <button class="hbtn m-only" id="mTheme">◐ Theme</button>
   </div>
   <div class="ver" id="ver"></div>
-  <h2>Process flows</h2>
-  <div id="flows"></div>
+  <h2 id="fHead">Fluids</h2>
+  <button class="flow nar" id="narBtn" type="button">▶ Narrative mode</button>
+  <div class="fps" id="fluids"></div>
+  <div class="note fhint" id="fHint">Tap a fluid to see where it runs; Ctrl+click (⌘ on Mac) adds more.</div>
+  <div id="flows" hidden></div>
   <div id="steps">
     <div class="fdesc" id="fdesc"></div>
     <div class="ctrls">
@@ -857,14 +861,15 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   // ---------- legend ----------
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const lg = $("legend");
-  lg.innerHTML = '<div class="lg-hint">Click to select, Ctrl+click (⌘ on Mac) to add more.</div>';
-  Object.entries(STREAM_TYPES).forEach(([k, t]) => {
-    const it = document.createElement("div"); it.className = "lg-item"; it.dataset.k = k;
-    const sv = document.createElementNS(NS, "svg"); sv.setAttribute("viewBox", "0 0 46 14");
-    el("line", { x1: 2, y1: 7, x2: 44, y2: 7, style: `stroke:${t.color};stroke-width:3` }, sv); drawSym(sv, t, 23, 7, 5);
-    it.appendChild(sv); const sp = document.createElement("span"); sp.textContent = t.name; it.appendChild(sp);
-    it.onclick = e => pick(e, { k: "type", id: k }, null, true); t.item = it; lg.appendChild(it);
-  });
+  const NARR = FLOWS.filter(f => !["water", "reag"].includes(f.id));   // the process stories (utilities join them as stubs)
+  lg.innerHTML = "";
+  // a fluid as a pill: its colour on the border, its line symbol before the name (desktop sidebar and phone strip)
+  function fluidPill(k, t, label){
+    const c = document.createElement("button"); c.type = "button"; c.className = "fp"; c.style.setProperty("--c", t.color); c.title = t.name;
+    const sv = document.createElementNS(NS, "svg"); sv.setAttribute("viewBox", "0 0 16 16"); drawSym(sv, t, 8, 8, 5); c.appendChild(sv);
+    c.appendChild(document.createTextNode(label || t.name)); c.onclick = e => pick(e, { k: "type", id: k }, null, true); return c;
+  }
+  Object.entries(STREAM_TYPES).forEach(([k, t]) => { t.item = fluidPill(k, t); $("fluids").appendChild(t.item); });
   lg.insertAdjacentHTML("beforeend", `<div class="lg-sig" style="margin-top:8px"><svg viewBox="0 0 46 22"><line x1="2" y1="11" x2="30" y2="11" style="stroke:var(--ink);stroke-width:1.7;stroke-dasharray:6 4"/><rect x="28" y="3" width="16" height="16" style="fill:var(--panel);stroke:var(--ink)"/><circle cx="36" cy="11" r="7" style="fill:none;stroke:var(--ink)"/></svg><span>Control loop: DCS tag and signal</span></div>
   <div class="lg-sig"><svg viewBox="0 0 46 22"><line x1="2" y1="11" x2="44" y2="11" style="stroke:#ff3b30;stroke-width:2.2;stroke-dasharray:10 3 2 3"/><path d="M23 2 L32 11 L23 20 L14 11 Z" style="fill:#ff3b30"/></svg><span>Interlock (I, filled) or permissive (P, hollow)</span></div>`);
   const mkList = (title, arr, kind, label) => {
@@ -880,18 +885,19 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 
   // Phone: compact legend and filter strip fixed along the bottom (outside the drawing, so zoom never hides it)
   { const bar = $("mleg"), SHORT = { ore: "Ore", flot: "Flotation", conc: "Concentrate", tails: "Tails", leach: "Leach", carbon: "Carbon", gold: "Gold", water: "Water", cnw: "CN water", reag: "Reagent", air: "Air / O₂" };
+    const top = document.createElement("div"); top.className = "mrow"; bar.appendChild(top);
+    const nar = document.createElement("button"); nar.className = "fp tg nar"; nar.type = "button"; nar.textContent = "▶ Narrative"; nar.onclick = () => $("narBtn").click(); top.appendChild(nar);
     [["tLoops", "🎛 Loops"], ["tIlk", "⛔ Interlocks"], ["tSvc", "💧 Services"]].forEach(([id, label]) => {
-      const c = document.createElement("button"); c.className = "mc tg"; c.textContent = label; const src = $(id);
-      const sync = () => c.classList.toggle("on", src.classList.contains("on")); c.onclick = () => { src.click(); sync(); }; sync(); bar.appendChild(c); });
-    bar.insertAdjacentHTML("afterbegin", '<button class="mc mh" type="button">Filters <span>▾</span></button>');
-    bar.querySelector(".mh").onclick = () => { bar.classList.toggle("shut"); try { localStorage.setItem("kcgm_mleg_shut", bar.classList.contains("shut") ? "1" : "0"); } catch (e) {} };
-    try { if (localStorage.getItem("kcgm_mleg_shut") === "1") bar.classList.add("shut"); } catch (e) {}
-    bar.insertAdjacentHTML("beforeend", '<span class="msep"></span>');
-    Object.entries(STREAM_TYPES).forEach(([k, t]) => {
-      const c = document.createElement("button"); c.className = "mc"; c.title = t.name;
-      const sv = document.createElementNS(NS, "svg"); sv.setAttribute("viewBox", "0 0 26 12"); el("line", { x1: 1, y1: 6, x2: 25, y2: 6, style: `stroke:${t.color};stroke-width:3` }, sv); drawSym(sv, t, 13, 6, 4.2);
-      c.appendChild(sv); c.appendChild(document.createTextNode(SHORT[k] || t.name));
-      c.onclick = e => pick(e, { k: "type", id: k }, null, true); t.chip = c; bar.appendChild(c); });
+      const c = document.createElement("button"); c.className = "fp tg"; c.type = "button"; c.textContent = label; const src = $(id);
+      const sync = () => c.classList.toggle("on", src.classList.contains("on")); c.onclick = () => { src.click(); sync(); }; sync(); top.appendChild(c); });
+    const fl = document.createElement("div"); fl.className = "mrow mfl"; bar.appendChild(fl);
+    Object.entries(STREAM_TYPES).forEach(([k, t]) => { t.chip = fluidPill(k, t, SHORT[k]); fl.appendChild(t.chip); });
+    const st = document.createElement("div"); st.className = "mrow mst"; st.hidden = true; bar.appendChild(st);
+    NARR.forEach(f => { const c = document.createElement("button"); c.type = "button"; c.className = "fp"; c.style.setProperty("--c", f.color); c.innerHTML = `<i></i>${esc(f.name)}`;
+      c.onclick = () => setFlow(focusFlow && focusFlow.id === f.id ? null : f); f.chip = c; st.appendChild(c); });
+    // the strip's height sets where the drawing / map stop
+    const fit = () => document.documentElement.style.setProperty("--mlh", (matchMedia("(max-width: 900px)").matches ? bar.offsetHeight : 0) + "px");
+    new ResizeObserver(fit).observe(bar); addEventListener("resize", fit); fit();
   }
   // Phone: sidebar becomes a drawer
   $("menuBtn").onclick = () => document.body.classList.toggle("menu");
@@ -998,13 +1004,24 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   }
 
   // ---------- flows ----------
-  FLOWS.forEach(f => {
+  // Narrative mode: the fluid filters swap for the process stories (utilities are not stories: they show only where
+  // they join the story's equipment)
+  NARR.forEach(f => {
     const b = document.createElement("button"); b.className = "flow"; b.innerHTML = `<i style="background:${f.color}"></i>${f.name}`;
     b.onclick = () => setFlow(focusFlow && focusFlow.id === f.id ? null : f); f.btn = b; $("flows").appendChild(b);
   });
+  let narr = false;
+  function setNarr(on){
+    narr = on; if (!on && focusFlow) setFlow(null); if (on && sel.length) clearSel(true);
+    $("narBtn").textContent = on ? "✕ Exit narrative mode" : "▶ Narrative mode"; $("narBtn").classList.toggle("on", on);
+    $("fHead").textContent = on ? "Narrative" : "Fluids"; $("fluids").hidden = $("fHint").hidden = on; $("flows").hidden = !on;
+    const m = $("mleg"); m.querySelector(".mfl").hidden = on; m.querySelector(".mst").hidden = !on;
+    const nb = m.querySelector(".nar"); nb.textContent = on ? "✕ Exit narrative" : "▶ Narrative"; nb.classList.toggle("on", on);
+  }
+  $("narBtn").onclick = () => setNarr(!narr);
   function setFlow(f){
     if (f && sel.length) clearSel(true);
-    stopPlay(); focusFlow = f; FLOWS.forEach(x => x.btn.classList.toggle("on", x === f));
+    stopPlay(); focusFlow = f; NARR.forEach(x => { x.btn.classList.toggle("on", x === f); if (x.chip) x.chip.classList.toggle("on", x === f); });
     $("steps").classList.toggle("on", !!f);
     if (!f){ svg.classList.remove("focus"); clearHl(); drawStepbar(); PFDLayout.sync(false); return; }
     $("fdesc").textContent = f.desc;
@@ -1013,17 +1030,27 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     showStep(-1);
     closeInfo();
   }
-  function clearHl(){ document.querySelectorAll(".hl").forEach(x => x.classList.remove("hl")); }
+  function clearHl(){ document.querySelectorAll(".hl").forEach(x => x.classList.remove("hl"));
+    document.querySelectorAll(".stream.stub").forEach(g => { g.classList.remove("stub"); const ln = g.querySelector(".ln"); if (ln) ln.style.strokeDasharray = ""; }); }
+  // utilities feeding the story's equipment: only the last stretch of the line, where it joins
+  const UTIL = new Set(["water", "cnw", "reag", "air"]);
+  function stubs(){
+    const on = new Set(Object.keys(nEls).filter(id => nEls[id].classList.contains("hl")));
+    STREAMS.forEach(s => { if (!UTIL.has(s.ty) || !on.has(s.to) || s.g.classList.contains("hl")) return; const ln = s.g.querySelector(".ln"); if (!ln) return;
+      let L = 0; try { L = ln.getTotalLength(); } catch (e) {} if (!L) return;
+      const k = Math.min(L, 90); ln.style.strokeDasharray = `0 ${L - k} ${k} 0`; s.g.classList.add("hl", "stub"); });
+  }
   function showStep(i){
     stepIx = i; clearHl(); svg.classList.add("focus");
     const ids = i < 0 ? focusFlow.steps.flatMap(s => s.ids) : focusFlow.steps[i].ids;
     ids.forEach(id => { const x = nEls[id] || sEls[id]; if (x) x.classList.add("hl"); });
+    stubs();
     [...$("stepList").children].forEach((d, k) => d.classList.toggle("on", k === i));
     drawStepbar();
     if (i >= 0) $("stepList").children[i].scrollIntoView({ block: "nearest", behavior: "smooth" });
     // zoom to what this step highlights
     let bx = null;
-    document.querySelectorAll(".node.hl, .stream.hl").forEach(g => { if (g.style.display === "none") return; const b = g.getBBox(); if (!b.width && !b.height) return;
+    document.querySelectorAll(".node.hl, .stream.hl:not(.stub)").forEach(g => { if (g.style.display === "none") return; const b = g.getBBox(); if (!b.width && !b.height) return;
       bx = bx ? { x1: Math.min(bx.x1, b.x), y1: Math.min(bx.y1, b.y), x2: Math.max(bx.x2, b.x + b.width), y2: Math.max(bx.y2, b.y + b.height) } : { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height }; });
     if (bx) flyTo({ x: bx.x1, y: bx.y1, w: bx.x2 - bx.x1, h: bx.y2 - bx.y1 }, 1.25);
     PFDLayout.sync(true);
