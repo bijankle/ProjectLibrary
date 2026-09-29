@@ -40,7 +40,7 @@ window.PFDLayout = (() => {
     rend = L.svg({ padding: .6 });
     setBase(api.pref.get("lo_base", "sat"));
     home(false);
-    map.on("zoomend", () => { zoomCls(); redrawStreamsOf(null); }); zoomCls(); map.on("moveend", () => setTimeout(declutter, 0));
+    map.on("zoomend", () => { zoomCls(); redrawStreamsOf(null); }); zoomCls(); map.on("moveend", () => setTimeout(() => { declutter(); declutterAreas(); }, 0));
     map.on("click", () => { if (moving || Date.now() - dropped < 400) return; api.clearSel(true); api.closeInfo(); });
     // corner controls: imagery, dim, home, export
     const bar = L.DomUtil.create("div", "lo-bar"); bar.innerHTML =
@@ -57,6 +57,7 @@ window.PFDLayout = (() => {
     addEventListener("keydown", e => { if (e.key === "Escape" && moving) moving.cancel(); });
     api.NODES.forEach(drawNode);
     api.STREAMS.forEach(drawStream);
+    drawAreas();
     markers();
   }
   function setBase(k){
@@ -72,7 +73,7 @@ window.PFDLayout = (() => {
   }
   function zoomCls(){
     const z = map.getZoom(), c = $("mapView").classList;
-    c.toggle("zl1", z >= 17.75); c.toggle("zl2", z >= 19);
+    c.toggle("zl1", z >= 17.75); c.toggle("zl2", z >= 19); c.toggle("areas", z < AREA_Z); declutterAreas();
     declutter();
   }
   // labels never overlap: selected first, then highlighted, then big items, then the rest
@@ -129,6 +130,63 @@ window.PFDLayout = (() => {
     return `<div class="lo-box${big ? " big" : ""}${LAYOUT.nodes[nd.id].est ? " est" : ""}${m.gap ? " gap" : ""}" title="${esc(m.gap ? why : "")}">` +
       `<b>${esc(m.tag || nd.n)}</b><span>${esc(m.desc)}</span>${m.gap ? `<em>⚠ ${esc(why)}</em>` : ""}</div><i class="lo-lead"></i><s class="lo-dot"></s>`;
   }
+  // Zoomed far out the boxes can't be read: the map shows WBS areas instead, a soft zone round each area's equipment
+  // (the area is the WBS code most of an item's MEL tags start with) labelled "F12 (Primary crushing)". Items of one
+  // area more than 120 m from the rest get a zone of their own. Tapping a zone zooms in until the boxes show.
+  const AREA_Z = 16.75;
+  const WBS = {F00: "General Fimiston Site", F10: "Primary Crushing - Existing", F12: "Primary Crushing", F13: "Milling & Classification", F14: "Gravity Circuit & Intensive Leaching",
+    F16: "Rougher & Scavenger Flotation", F17: "Flotation Tailings Pre-Leach Thickening", F18: "Cleaner & Cleaner Scavenger Flotation", F19: "Milling & Classification - Existing - Area A",
+    F20: "Milling & Classification - Area B", F21: "Flotation Tailings CIL4", F22: "CIL4 - Carbon Treatment & Elution", F23: "Final Tailings Handling & Storage", F24: "Air & Water Services",
+    F28: "Ultra Fine Grinding 2 / 3", F30: "Concentrate Pre-Leach Thickening, CIL2/3 & Concentrate Thickening", F34: "Ultra Fine Grinding - Existing", F35: "Concentrate Handling & Filtration",
+    F65: "Concentrate Carbon Treatment & Elution", F66: "Electrowinning & Goldroom", F72: "Reagents Mixing & Storage", F75: "Water Services - Existing", F78: "Carbon Regeneration - Existing",
+    F81: "Air Services - Existing"};   // WBS level 2 (KCGM Growth Work Breakdown Structure)
+  const wbsName = c => (WBS[c] || "").replace(/\s+-\s+/g, ", ").toLowerCase().replace(/^./, x => x.toUpperCase()).replace(/\b(cil\d?|ufg)\b/gi, x => x.toUpperCase());
+  const HUE = [42, 200, 140, 330, 20, 265, 95, 180, 0, 300];
+  let areas = [];
+  function hull(P){   // convex hull, monotone chain
+    P = P.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]); if (P.length < 3) return P;
+    const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]), lo = [], up = [];
+    P.forEach(p => { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); });
+    P.slice().reverse().forEach(p => { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); });
+    return lo.slice(0, -1).concat(up.slice(0, -1));
+  }
+  function drawAreas(){
+    if (!map) return;
+    areas.forEach(a => { map.removeLayer(a.poly); map.removeLayer(a.lab); }); areas = [];
+    const ED = typeof EQUIP_DATA !== "undefined" ? EQUIP_DATA : {}, by = {};
+    api.NODES.forEach(nd => { if (!LAYOUT.nodes[nd.id]) return; const c = {};
+      ((ED[nd.id] && ED[nd.id].eq) || []).forEach(r => { const m = /^F\d\d/.exec(r.tag || ""); if (m) c[m[0]] = (c[m[0]] || 0) + 1; });
+      const code = Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b))[0]; if (code) (by[code] = by[code] || []).push(nd.id); });
+    const o = LAYOUT.home[0];
+    Object.keys(by).sort().forEach((code, ci) => {
+      // split far apart groups of one area (single linkage, 120 m)
+      const pts = by[code].map(id => ({ id, m: toM(pos(id), o) })), groups = [];
+      pts.forEach(p => { const near = groups.filter(g => g.some(q => Math.hypot(q.m[0] - p.m[0], q.m[1] - p.m[1]) < 120));
+        if (!near.length) return groups.push([p]);
+        near.slice(1).forEach(b => { near[0].push(...b); groups.splice(groups.indexOf(b), 1); }); near[0].push(p); });
+      groups.forEach(g => {
+        const P = []; g.forEach(p => { const r = reach(p.id) + 14; for (let k = 0; k < 12; k++) P.push([p.m[0] + r * Math.cos(k * Math.PI / 6), p.m[1] + r * Math.sin(k * Math.PI / 6)]); });
+        const ll = hull(P).map(m => toLL(m, o)), hue = HUE[ci % HUE.length];
+        const poly = L.polygon(ll, { renderer: rend, className: "lo-area", color: `hsl(${hue} 85% 62%)`, weight: 1.5, fillColor: `hsl(${hue} 85% 55%)`, fillOpacity: .22, smoothFactor: 0 }).addTo(map);
+        const cx = g.reduce((s, p) => s + p.m[0], 0) / g.length, cy = g.reduce((s, p) => s + p.m[1], 0) / g.length;
+        const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<span style="--h:${hue}"><b>${code}</b><i> (${esc(wbsName(code))})</i></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
+        const go = e => { L.DomEvent.stopPropagation(e); const b = poly.getBounds(); map.flyTo(b.getCenter(), Math.min(18.5, Math.max(AREA_Z + 1, map.getBoundsZoom(b, false, [40, 40]))), { duration: .6 }); };
+        poly.on("click", go); lab.on("click", go);
+        areas.push({ code, poly, lab, n: g.length });
+      });
+    });
+    declutterAreas();
+  }
+  // area labels never overlap: biggest areas first with the full name, then the code alone, else left out until zoomed in
+  function declutterAreas(){
+    if (!map || !$("mapView").classList.contains("areas")) return;
+    const placed = [], hit = r => placed.some(b => r.left < b.right + 4 && r.right > b.left - 4 && r.top < b.bottom + 3 && r.bottom > b.top - 3);
+    areas.slice().sort((a, b) => b.n - a.n).forEach(a => { const sp = a.lab.getElement() && a.lab.getElement().querySelector("span"); if (!sp) return;
+      sp.classList.remove("c", "off");
+      let r = sp.getBoundingClientRect(); if (!hit(r)) return placed.push(r);
+      sp.classList.add("c"); r = sp.getBoundingClientRect(); if (!hit(r)) return placed.push(r);
+      sp.classList.add("off"); });
+  }
   function drawNode(nd){
     const id = nd.id; if (!LAYOUT.nodes[id]) return;
     const o = N[id] = { mel: melInfo(nd) };
@@ -165,7 +223,7 @@ window.PFDLayout = (() => {
         map.dragging.enable(); if (map.touchZoom) map.touchZoom.enable();
         if (!keep){ if (LAYOUT.nodes[id].ll[0] === start[0] && LAYOUT.nodes[id].ll[1] === start[1]) delete saved[id]; else saved[id] = start; o.lay.setLatLng(start); redrawStreamsOf(id); }
         else api.toast("Position saved on this device. Use ⬇ Moves to send it in.");
-        save(); sync(false); expLabel(); if (api.infoOpen()) api.refreshPanel(); };
+        save(); sync(false); expLabel(); drawAreas(); if (api.infoOpen()) api.refreshPanel(); };
       const up = () => end(true), cancelEv = () => end(false);
       moving = { id, cancel: () => end(false) };
       el.addEventListener("pointermove", move); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", cancelEv);
@@ -295,7 +353,7 @@ window.PFDLayout = (() => {
   }
   return {
     init(a){ api = a; },
-    show, active: () => on, sync: z => on && sync(z), panelHtml, bindPanel, declutter: () => map && declutter(),
+    show, active: () => on, zoom: z => map && (z == null ? map.getZoom() : map.setZoom(z, { animate: false })), sync: z => on && sync(z), panelHtml, bindPanel, declutter: () => map && declutter(),
     zoomBy: d => map && (d > 0 ? map.zoomIn(.75) : map.zoomOut(.75)), home: () => map && home(true)
   };
 })();
