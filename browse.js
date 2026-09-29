@@ -7,7 +7,7 @@
 window.Browse = (() => {
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const TYPES = [["mel", "Equipment"], ["ins", "Instruments"], ["cv", "Control valves"], ["mv", "Manual valves"], ["line", "Lines"],
-    ["spi", "Pipe specials"], ["hose", "Hoses"], ["pid", "Drawings"]];
+    ["spi", "Pipe specials"], ["hose", "Hoses"], ["pid", "P&IDs"], ["pfdd", "PFDs"]];
   const TN = Object.fromEntries(TYPES);
   const CV = { XV: "On / off valve", PRV: "Pressure relief valve", SV: "Safety / solenoid valve", FCV: "Flow control valve", HV: "Hand actuated valve",
     PCV: "Pressure control valve", LCV: "Level control valve", TCV: "Temperature control valve", DCV: "Density control valve", XCV: "Control valve", SVO: "Solenoid valve" };
@@ -24,6 +24,9 @@ window.Browse = (() => {
     const out = [L[p[0]] ? L[p[0]][0] : p[0]]; let rest = p.slice(1);
     if (rest[0] === "D" && rest.length > 1){ out.push("Differential"); rest = rest.slice(1); }
     return out.concat([...rest].map(c => L[c] ? L[c][1] : c)).filter(Boolean).join(" "); };
+  // no equipment read on a PFD sheet: the WBS area whose name shares the most words with the sheet title
+  const titleArea = n => { const d = window.Pid && Pid.info(n), T = new Set(String(d && d.title || "").toUpperCase().match(/[A-Z]{4,}/g) || []); let best = "", bs = 0;
+    Object.entries(B.areas || {}).forEach(([c, nm]) => { const sc = (String(nm).toUpperCase().match(/[A-Z]{4,}/g) || []).filter(w => T.has(w)).length; if (sc > bs){ bs = sc; best = c; } }); return best; };
   function facet(it){
     const g = n => Lookup.get(it, n), k = it.key;
     switch (it.t){
@@ -34,7 +37,8 @@ window.Browse = (() => {
       case "mv": return [area(k), g("Valve type") || "?"];
       case "spi": return [area((/2000-F\d\d/.exec(g("P&IDs")) || [""])[0].slice(5)), g("Type") || "?"];
       case "hose": return [area(g("Location ref")), g("Service") || "?"];
-      case "pid": { const m = /^2000-F(\d\d)-(PID|PFD)-/.exec(k); return m ? ["F" + m[1], m[2]] : null; }
+      // drawings: a P&ID's area is in its number; PFD sheets are all F00, so theirs is the area of the equipment on them
+      case "pid": { const m = /^2000-F(\d\d)-(PID|PFD)-/.exec(k); return !m ? null : m[2] === "PID" ? ["F" + m[1], "PID"] : [Lookup.pfdArea(k) || titleArea(k) || "?", "PFD"]; }
     }
     return null;
   }
@@ -47,20 +51,20 @@ window.Browse = (() => {
     line: [["k", "Service"], ["a", "Area"], ["sp", "Pipe spec"], ["sz", "Size (DN)"]],
     spi: [["k", "Type"], ["a", "Area"]],
     hose: [["k", "Service"], ["a", "Area"]],
-    pid: [["k", "Drawing"], ["a", "Area"]] };
+    pid: [["a", "Area"]], pfdd: [["a", "Area"]] };
   const SIZE = { cv: "Valve size (mm)", mv: "Size (DN)", line: "Size (DN)" };
   function build(){
     rows = [];
     for (const it of Lookup.items()){
       if (!TN[it.t]) continue;
       const f = facet(it); if (!f) continue;
-      rows.push({ it, t: it.t, a: f[0] || "?", k: f[1] || "?", sp: it.t === "line" ? Lookup.get(it, "Pipe spec") || "?" : "", sz: SIZE[it.t] ? String(Lookup.get(it, SIZE[it.t]) || "?") : "" });
+      rows.push({ it, t: it.t === "pid" && f[1] === "PFD" ? "pfdd" : it.t, a: f[0] || "?", k: f[1] || "?", sp: it.t === "line" ? Lookup.get(it, "Pipe spec") || "?" : "", sz: SIZE[it.t] ? String(Lookup.get(it, SIZE[it.t]) || "?") : "" });
     }
     rows.sort((x, y) => x.it.key.localeCompare(y.it.key, undefined, { numeric: true }));
     names = {
       a: v => B.areas[v] || "", sp: v => (B.spec || {})[v] || "", sz: () => "",
       k: { mel: v => B.equip[v] || "", ins: insName, cv: v => CV[v] || "", mv: () => "", line: v => B.svc[v] || "", hose: v => B.svc[v] || "",
-        pid: v => v === "PID" ? "Piping & instrument diagrams" : "Process flow diagrams", spi: v => SPI[v] || "" } };
+        pid: () => "", pfdd: () => "", spi: v => SPI[v] || "" } };
   }
   const nameOf = (f, t, v) => v === "?" ? (f === "a" ? "No area in the tag" : "Not given") : f === "k" ? names.k[t](v) : names[f](v);
   const t = () => path.length ? path[0].v : "";
@@ -110,7 +114,8 @@ window.Browse = (() => {
     fit(); fitLayout();
   }
   // one row per result: code (description); a line reads code (from Name (tag), to Name (tag))
-  const resDesc = it => { if (it.t === "line" && it.r){ const [a, b] = Lookup.lineEnds(it, true); return `from ${a}, to ${b}`; } return Lookup.listName(it); };
+  const resDesc = it => { if (it.t === "pid"){ const d = window.Pid && Pid.info(it.key); return d && d.title ? Lookup.pidTitle(d.title) : ""; }
+    if (it.t === "line" && it.r){ const [a, b] = Lookup.lineEnds(it, true); return `from ${a}, to ${b}`; } return Lookup.listName(it); };
   // the bracket text shrinks until its row fits on one line (never below 8px; then it ends with …);
   // chips that still don't fit at 8px widen the filter column (up to half the screen)
   // (min: the smallest size allowed; lines' "from …, to …" may go as small as it takes)

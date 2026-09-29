@@ -249,6 +249,15 @@
     if (docs.length){ const i = at(); rows.splice(i < rows.length ? i + 1 : i, 0, { l: docs.every(x => /-DCR-/.test(x[0])) ? "PDC" : "Documents", v: docs.map(x => x[0]).join(", "),
       h: docs.map(x => dwgA(x[0], x[1]) + ` (${esc(dwgTitle(x[0]).toLowerCase().replace(/^./, c => c.toUpperCase()))}, page ${x[1]})`).join("<br>") }); }
   }
+  // a PFD sheet's WBS area: the area code most of its equipment starts with (read on the sheet, doc-tags.json, or the
+  // equipment list's PFD column)
+  let PFDA = null;
+  L.pfdArea = n => { if (!PFDA){ if (!DT) return ""; PFDA = {}; const c = {};
+      Object.entries(DT).forEach(([tag, a]) => { const m = /^F\d\d/.exec(tag); if (!m) return; a.forEach(([d]) => { if (!/-PFD-/.test(d)) return; const x = c[d] = c[d] || {}; x[m[0]] = (x[m[0]] || 0) + 1; }); });
+      items.forEach(it => { if (it.t !== "mel") return; const m = /^F\d\d/.exec(it.key); if (!m) return;   // and the sheet the equipment list names
+        (String(L.get(it, "PFD")).match(/2000-[A-Z0-9]{3,6}-PFD-[A-Z]{2}-\d{4,5}/g) || []).forEach(d => { const x = c[d] = c[d] || {}; x[m[0]] = (x[m[0]] || 0) + 1; }); });
+      Object.entries(c).forEach(([d, x]) => PFDA[d] = Object.keys(x).sort((p, q) => x[q] - x[p] || p.localeCompare(q))[0]); }
+    return PFDA[n] || ""; };
   L.find = (k, t) => { const a = byKey.get(k) || []; return (t && a.find(x => x.t === t)) || a[0] || null; };
   // How the P&IDs join up, read from the line list: a line's From / To end names another line or an item (equipment,
   // valve, instrument…) whose own P&ID is known. When that end sits on a different drawing the line crosses between
