@@ -144,11 +144,19 @@ window.PFDLayout = (() => {
     return { rows, missing, gap: !rows.length || missing.length > 0,
       tag: nd.tag || (rows[0] && rows[0].tag) || "", desc: nd.sn || nd.n };   // the PFD's own short name ("Ball Mill", not every MEL line): tap the box for the full list
   }
+  // a name longer than 12 characters goes on two lines, split at the space that makes the halves closest in length
+  function two(t){
+    t = String(t || ""); if (t.length <= 12) return esc(t);
+    t = t.replace(/ · /g, " · "); let best = -1, d = 1e9; for (let i = t.indexOf(" "); i > 0; i = t.indexOf(" ", i + 1)){ const k = Math.abs(i - (t.length - i - 1)); if (k < d){ d = k; best = i; } }
+    if (best < 0) return esc(t);
+    const a = t.slice(0, best).replace(/\s*·$/, ""), b = t.slice(best + 1).replace(/^·\s*/, "");   // the · separator isn't needed at a line break
+    return esc(a) + "<br>" + esc(b);
+  }
   function boxHtml(nd){
     const m = N[nd.id].mel, big = !!LAYOUT.nodes[nd.id].sh;
     const why = !m.rows.length ? "No MEL entry" : "Not in MEL: " + m.missing.join(", ");
     return `<div class="lo-box${big ? " big" : ""}${LAYOUT.nodes[nd.id].est ? " est" : ""}${m.gap ? " gap" : ""}" title="${esc(m.gap ? why : "")}">` +
-      `<b>${esc(m.desc)}</b>${m.gap ? `<em>⚠ ${esc(why)}</em>` : ""}</div><i class="lo-lead"></i><s class="lo-dot"></s>`;   // the concise name only: tap for tags and MEL rows
+      `<b>${two(m.desc)}</b>${m.gap ? `<em>⚠ ${esc(why)}</em>` : ""}</div><i class="lo-lead"></i><s class="lo-dot"></s>`;   // the concise name only: tap for tags and MEL rows
   }
   // Zoomed far out the boxes can't be read: the map shows WBS areas instead, a soft zone round each area's equipment
   // (the area is the WBS code most of an item's MEL tags start with) labelled "F12 (Primary crushing)". Items of one
