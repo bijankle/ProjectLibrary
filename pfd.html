@@ -205,14 +205,14 @@ svg{touch-action:none}
   body.menu #side{transform:none}
   #scrim{position:fixed;inset:calc(50px + var(--tb,0px)) 0 0 0;background:rgba(0,0,0,.35);z-index:8;display:none !important}
   body.menu #scrim{display:block !important}
-  #stage{left:0;top:calc(50px + var(--tb,0px));bottom:52px}
-  #mapView{left:0;top:calc(50px + var(--tb,0px));bottom:52px}
+  #stage{left:0;top:calc(50px + var(--tb,0px));bottom:0}
+  #mapView{left:0;top:calc(50px + var(--tb,0px));bottom:0}
   #viewSeg button::after{content:attr(data-l);font-size:12.5px}
   .lo-bar{left:6px;right:6px;top:6px;gap:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.lo-bar>*{flex:none}.lo-seg button,.lo-b{font-size:11px;padding:4px 7px}
   body.flowing .lo-bar{display:none}
-  #info{left:0;right:0;top:auto;bottom:52px;width:auto;height:min(58vh,560px);border-radius:16px 16px 0 0;border-bottom:0}
+  #info{left:0;right:0;top:auto;bottom:0;width:auto;height:min(58vh,560px);border-radius:16px 16px 0 0;border-bottom:0}
   #info.on ~ #zoom{right:10px}
-  #zoom{bottom:62px;right:10px}
+  #zoom{bottom:calc(12px + env(safe-area-inset-bottom));right:10px}
   #zoom #zIn,#zoom #zOut{display:none}
   #info.on ~ #zoom{display:none}
   #stepbar{left:8px;right:8px;top:calc(56px + var(--tb,0px));gap:6px}
@@ -223,15 +223,20 @@ svg{touch-action:none}
   .sb-cur{flex:1 1 56%;font-size:12.5px}
   #toast{top:calc(56px + var(--tb,0px));max-width:92vw;font-size:12.5px}
   body.flowing #toast{top:calc(150px + var(--tb,0px))}
-  #mleg{position:fixed;left:0;right:0;bottom:0;height:52px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--panel);
-    border-top:1px solid var(--line);z-index:7;display:flex !important;gap:6px;overflow-x:auto;scrollbar-width:none;align-items:center}
+  /* filters: a column tucked in the bottom left corner over the drawing / map, folds to its header */
+  #mleg{position:fixed;left:8px;bottom:calc(10px + env(safe-area-inset-bottom));max-height:min(56vh,calc(100vh - 170px));padding:5px;
+    background:color-mix(in srgb,var(--panel) 93%,transparent);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 18px #0006;
+    z-index:7;display:flex !important;flex-direction:column;align-items:stretch;gap:4px;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+  #mleg.shut>*:not(.mh){display:none}
+  .mc.mh{justify-content:space-between;border:0;background:none;color:var(--mute);font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:3px 6px}
+  .mc.mh span{transition:transform .2s}#mleg.shut .mc.mh span{transform:rotate(-90deg)}
   #mleg::-webkit-scrollbar{display:none}
   .mc{flex:none;display:flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:99px;
-    padding:5px 10px 5px 6px;font:inherit;font-size:12px;font-weight:700;white-space:nowrap}
+    padding:4px 10px 4px 6px;font:inherit;font-size:11.5px;font-weight:700;white-space:nowrap;text-align:left}
   .mc svg{width:26px;height:12px;flex:none}
   .mc.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
   .mc.tg{padding-left:10px}
-  .msep{flex:none;width:1px;height:26px;background:var(--line);margin:0 2px}
+  .msep{flex:none;height:1px;background:var(--line);margin:2px 4px}
 }
 /* SVG styling */
 .frame{pointer-events:none}
@@ -878,6 +883,9 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     [["tLoops", "🎛 Loops"], ["tIlk", "⛔ Interlocks"], ["tSvc", "💧 Services"]].forEach(([id, label]) => {
       const c = document.createElement("button"); c.className = "mc tg"; c.textContent = label; const src = $(id);
       const sync = () => c.classList.toggle("on", src.classList.contains("on")); c.onclick = () => { src.click(); sync(); }; sync(); bar.appendChild(c); });
+    bar.insertAdjacentHTML("afterbegin", '<button class="mc mh" type="button">Filters <span>▾</span></button>');
+    bar.querySelector(".mh").onclick = () => { bar.classList.toggle("shut"); try { localStorage.setItem("kcgm_mleg_shut", bar.classList.contains("shut") ? "1" : "0"); } catch (e) {} };
+    try { if (localStorage.getItem("kcgm_mleg_shut") === "1") bar.classList.add("shut"); } catch (e) {}
     bar.insertAdjacentHTML("beforeend", '<span class="msep"></span>');
     Object.entries(STREAM_TYPES).forEach(([k, t]) => {
       const c = document.createElement("button"); c.className = "mc"; c.title = t.name;
