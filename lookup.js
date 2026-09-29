@@ -199,6 +199,23 @@
           show.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b> ${esc(L.lineText(x))}</a>`).join("") +
           (a.length > show.length ? `<div class="lk-ns">and ${a.length - show.length} more; search the tag to see them all.</div>` : "") }); });
     }
+    // a P&ID: the drawings it joins (P&IDs pill first) and the lines that cross, each split From / To one row below
+    const pl = it.t === "pid" && /-PID-/.test(it.key) && L.pidLinks(it.key);
+    if (pl){
+      const lineRow = x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b> ${esc(L.lineText(x))}</a>`;
+      const pidRow = p => { const d = window.Pid && Pid.info(p.n), t = d && d.title ? ` (${esc(L.pidTitle(d.title))})` : "", c = ` <span class="lk-ns">(x${p.lines.length} line${p.lines.length > 1 ? "s" : ""})</span>`;
+        return L.find(p.k, "pid") ? `<a class="lk-a lk-row" data-k="${p.k}" data-t="pid"><b>${esc(p.n)}</b>${t}${c}</a>` : `<div class="lk-row"><b>${esc(p.n)}</b>${t}${c}</div>`; };
+      const none = w => `<div class="lk-ns">No line in the line list ${w}.</div>`;
+      const sub = (g, a, b) => L.pills([{ id: "from", label: "From", n: a.n, html: a.html }, { id: "to", label: "To", n: b.n, html: b.html }], g);
+      const P = sub("pid-p", { n: pl.from.length, html: pl.from.length ? pl.from.map(pidRow).join("") : none("comes in from another P&ID") },
+        { n: pl.to.length, html: pl.to.length ? pl.to.map(pidRow).join("") : none("goes out to another P&ID") });
+      secs.unshift({ id: "pids", label: "P&IDs", n: new Set([...pl.from, ...pl.to].map(p => p.k)).size, html: P });
+      const ln = secs.find(x => x.id === "r-line"), all = ln ? ln.html : "";
+      const Ls = L.pills([{ id: "from", label: "From", n: pl.lin.length, html: pl.lin.length ? `<div class="lk-ns" style="margin:2px 0 4px">Coming in from other P&IDs</div>` + pl.lin.map(lineRow).join("") : none("comes in from another P&ID") },
+        { id: "to", label: "To", n: pl.lout.length, html: pl.lout.length ? `<div class="lk-ns" style="margin:2px 0 4px">Going out to other P&IDs</div>` + pl.lout.map(lineRow).join("") : none("goes out to another P&ID") },
+        all && { id: "all", label: "On this drawing", n: ln.n, html: all }], "pid-l");
+      if (ln) Object.assign(ln, { id: "lines", html: Ls }); else if (pl.lin.length + pl.lout.length) secs.splice(1, 0, { id: "lines", label: "Lines", html: Ls });
+    }
     h += L.pills(secs, "item-" + (it.t === "pid" ? "pid" : "rec"));
     return h;
   };
@@ -212,6 +229,31 @@
   L.get = (it, n) => { if (!it.r || !DB.types[it.t]) return ""; const i = DB.types[it.t].f.indexOf(n); return i < 0 ? "" : it.r[i] || ""; };
   L.ICON = ICON; L.typeName = t => typeName(t);
   L.find = (k, t) => { const a = byKey.get(k) || []; return (t && a.find(x => x.t === t)) || a[0] || null; };
+  // How the P&IDs join up, read from the line list: a line's From / To end names another line or an item (equipment,
+  // valve, instrument…) whose own P&ID is known. When that end sits on a different drawing the line crosses between
+  // the two. L.pidLinks(number) → { from: [{ n, lines }], to: [{ n, lines }], lin: [line items], lout: [line items] }
+  // (from = drawings feeding this one, lin = the lines that bring it in; to / lout the same leaving it).
+  let LINKS = null;
+  const pidsOf = it => { if (!it.r || !DB.types[it.t]) return []; const f = DB.types[it.t].f;   // "P&ID" / "P&IDs", not "Air P&ID"
+    return [...new Set(f.flatMap((n, i) => /^P&IDs?$/.test(n) && it.r[i] ? String(it.r[i]).split(/[,;\n]+/) : []).map(x => { const k = norm(x); if (k && !RAW.has(k)) RAW.set(k, x.trim()); return k; }).filter(Boolean))]; };
+  const RAW = new Map();   // a drawing number as written, by its normalised key
+  // a drawing title without the words every P&ID title carries
+  L.pidTitle = t => String(t || "").replace(/^.*\bTI?TLE\.?\s+/i, "").replace(/[\s\-–]*(STAGE\s*\d+\s*)?(PIPING|PROCESS) AND INSTRUMENTATION DIAGRAM.*$/i, "").replace(/(\b[A-Z]) (?=[A-Z]\b)/g, "$1").trim();
+  function buildLinks(){
+    LINKS = new Map(); const f = DB.types.line.f, iF = f.indexOf("From"), iT = f.indexOf("To");
+    const get = k => { let m = LINKS.get(k); if (!m) LINKS.set(k, m = { from: new Map(), to: new Map(), lin: new Set(), lout: new Set() }); return m; };
+    const endPids = v => { for (const c of String(v || "").match(TAG_RE) || []){ for (const x of byKey.get(norm(c)) || []){ const p = pidsOf(x); if (p.length) return p; } } return []; };
+    const add = (m, k, line) => { let a = m.get(k); if (!a) m.set(k, a = []); if (!a.includes(line)) a.push(line); };
+    items.forEach(it => { if (it.t !== "line" || !it.r) return; const own = pidsOf(it); if (!own.length) return; const a = own[0];
+      const pf = endPids(it.r[iF]), pt = endPids(it.r[iT]);
+      if (pf.length && !pf.includes(a)){ const b = pf[0]; add(get(a).from, b, it); get(a).lin.add(it); add(get(b).to, a, it); get(b).lout.add(it); }
+      if (pt.length && !pt.includes(a)){ const b = pt[0]; add(get(a).to, b, it); get(a).lout.add(it); add(get(b).from, a, it); get(b).lin.add(it); } });
+  }
+  L.pidLinks = n => { if (!DB) return null; if (!LINKS) buildLinks(); const m = LINKS.get(norm(n)) || { from: new Map(), to: new Map(), lin: new Set(), lout: new Set() };
+    const nm = k => { const p = (byKey.get(k) || []).find(y => y.t === "pid"); return p ? p.key : (window.Pid && Pid.info(k) || {}).number || RAW.get(k) || k; };
+    const side = s => [...s].map(([k, lines]) => ({ n: nm(k), k, lines })).sort((x, y) => y.lines.length - x.lines.length || x.n.localeCompare(y.n));
+    const byTag = s => [...s].sort((x, y) => String(x.key).localeCompare(String(y.key)));
+    return { from: side(m.from), to: side(m.to), lin: byTag(m.lin), lout: byTag(m.lout) }; };
 
   // A self contained search box: input, camera, results and item view with back history.
   L.mount = (root, opts = {}) => {
@@ -403,6 +445,11 @@
 .sp-toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#171b21;color:#e9edf2;border:1px solid #e8b44a;border-radius:10px;padding:8px 12px;font-size:13px;max-width:90vw}.sp-toast[hidden]{display:none}
 .sp-msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font-size:14px}.sp-msg[hidden]{display:none}
 body.sp-on{overflow:hidden}
+.sp-lks{display:flex;gap:10px;padding:8px 10px;background:#1d222a;color:#e9edf2;border-bottom:1px solid #2c343e;max-height:40vh;overflow:auto}
+.sp-lks[hidden]{display:none}.sp-lkc{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.sp-lkc b{font-size:12px;color:#aab4c0;text-transform:uppercase;letter-spacing:.04em}
+.sp-lkc b i{font-style:normal;color:#e8b44a}.sp-lkc span{font-size:12.5px;color:#8a95a3}
+.sp-lkc button{text-align:left;border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;padding:6px 8px;font:inherit;font-size:12.5px;cursor:pointer;overflow-wrap:anywhere}
+.sp-lkc button:hover{border-color:#e8b44a}
 @media (min-width:901px) and (hover:hover){.sp-rot{display:none !important}}
 @media (max-width:600px){.sp-dl,.sp-view [data-a=fit]{display:none}.sp-top{flex-wrap:wrap;gap:5px;padding:6px 8px}.sp-tt{flex-basis:100%;font-size:12.5px}.sp-top button{min-width:30px;height:30px;padding:0 6px}.sp-nav span{min-width:0}.sp-x{margin-left:auto}}
 .lk-dwg{display:inline-block;color:#2f7cf6 !important;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.lk-dwg:hover{color:#5b9bff !important}

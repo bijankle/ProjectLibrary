@@ -8,6 +8,7 @@ window.PdfView = (() => {
   // OCR'd sheets: , ; : read for - or ., $ for S, O for 0 in numbers, so both sides are folded the same way
   const norm = s => String(s || "").toUpperCase().replace(/\$/g, "S").replace(/[\s\-_/.,;:|]+/g, "").replace(/(?<=\d)O|O(?=\d)/g, "0");
   let V = null, lib = null, cur = null;
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const docs = new Map();
   const loadLib = () => lib || (lib = new Promise((ok, bad) => { const s = document.createElement("script"); s.src = "vendor/pdfjs/pdf.min.js";
     s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdfjs/pdf.worker.min.js"; ok(window.pdfjsLib); }; s.onerror = () => { lib = null; bad(new Error("viewer not reachable")); }; document.head.appendChild(s); }));
@@ -19,13 +20,13 @@ window.PdfView = (() => {
     el.innerHTML = `<div class="sp-top"><b class="sp-tt"></b><div class="sp-nav sp-pages"><button data-a="prev" title="Previous page">◀</button><span class="sp-pg"></span><button data-a="next" title="Next page">▶</button></div>
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="fit" title="Fit">⤢</button><button data-a="in" title="Zoom in">+</button></div>
-      <button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">⬇ PDF</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
-      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div></div></div><div class="sp-msg"></div>`;
+      <button class="sp-lk" data-a="links" title="P&IDs this drawing joins" hidden>⇄ P&IDs</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">⬇ PDF</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
+      <div class="sp-lks" hidden></div><div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div></div></div><div class="sp-msg"></div>`;
     document.body.appendChild(el);
     V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
-      msg: el.querySelector(".sp-msg"), page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
+      msg: el.querySelector(".sp-msg"), lks: el.querySelector(".sp-lks"), page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
-      fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close })[b.dataset.a]());
+      fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close, links: () => { V.lks.hidden = !V.lks.hidden; } })[b.dataset.a]());
     addEventListener("keydown", e => { if (el.hidden) return; if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
     addEventListener("popstate", () => { if (!el.hidden) close(true); });
     // rotating the phone: refit the sheet once the new size has settled (keeps the zoom level)
@@ -61,6 +62,13 @@ window.PdfView = (() => {
     V.el.hidden = false; document.body.classList.add("sp-on"); V.el.querySelector(".sp-tt").textContent = cur.title || "";
     const dl = V.el.querySelector(".sp-dl"); dl.href = cur.url; dl.download = cur.download || cur.url.split("/").pop();
     if (!(history.state && history.state.sp)) history.pushState({ sp: 1 }, "");
+    // links: the drawings this one joins, { from: [{ n, label, find }], to: [...] }; tapping one opens it (cur.onLink)
+    const lk = cur.links, lb = V.el.querySelector(".sp-lk"); V.lks.hidden = true; lb.hidden = !(lk && (lk.from.length || lk.to.length));
+    if (!lb.hidden){
+      const col = (h, a) => `<div class="sp-lkc"><b>${h} <i>${a.length}</i></b>${a.length ? a.map((x, i) => `<button type="button" data-i="${i}">${esc(x.label)}</button>`).join("") : `<span>None in the line list</span>`}</div>`;
+      V.lks.innerHTML = col("From", lk.from) + col("To", lk.to);
+      V.lks.querySelectorAll(".sp-lkc").forEach((c, j) => c.querySelectorAll("button").forEach(b => b.onclick = () => { const x = (j ? lk.to : lk.from)[+b.dataset.i]; V.lks.hidden = true; cur.onLink && cur.onLink(x); }));
+    }
     V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true;
     V.msg.textContent = "Loading…"; V.msg.hidden = false;
     let d; try { d = await getDoc(cur.url); } catch (e) { V.msg.textContent = "Couldn't load the PDF (" + e.message + "). Check the connection."; return; }

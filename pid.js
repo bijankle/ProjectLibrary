@@ -13,8 +13,16 @@ window.Pid = (() => {
   function open(n, find){
     const d = info(n); if (!d) return false;
     PdfView.open({ url: d.file, page: 1, fit: "page", find: find || null, download: d.number + ".pdf",
-      title: d.number + (d.rev ? " Rev " + d.rev : "") + (d.title ? " · " + d.title : "") });
+      title: d.number + (d.rev ? " Rev " + d.rev : "") + (d.title ? " · " + d.title : ""), links: links(d.number),
+      onLink: x => open(x.n, x.find) });
     return true;
+  }
+  // the P&IDs this drawing joins through the line list (lookup.js): each opens with its first joining line marked
+  function links(n){
+    const L = window.Lookup, pl = /-PID-/.test(n) && L && L.ready() && L.pidLinks(n); if (!pl) return null;
+    const side = a => a.filter(p => key(p.n)).map(p => { const t = (info(p.n) || {}).title;
+      return { n: p.n, find: p.lines[0].key, label: p.n + (t ? " (" + L.pidTitle(t) + ")" : "") + " (x" + p.lines.length + ")" }; });
+    return { from: side(pl.from), to: side(pl.to) };
   }
   const kind = n => /-PFD-/.test(n) ? "PFD" : "P&ID";
   return { load, ready: () => !!IX, has: n => !!(IX && key(n)), info, open, kind, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
