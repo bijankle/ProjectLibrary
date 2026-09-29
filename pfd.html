@@ -1373,6 +1373,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     if (it.r) for (const v of it.r) { const m = String(v || "").match(/F\d{2}-[A-Z]{1,4}-\d{2,4}[A-Z]?|\b[A-Z]{1,5} ?\d{5}[A-Z]?\b/g); if (m) for (const t of m) { const e = onPfd.get(Lookup.norm(t)); if (e) return e; } }
     return null; };
   let lkUI = null;
+  window.kcgmOpenTag = k => { openSearch(""); setTimeout(() => lkUI && lkUI.openKey(k), 30); };   // a tag tapped on a drawing
   function openSearch(q, enter){
     const draw = () => {
       $("iKind").textContent = "Search · plant lists"; $("iName").textContent = "Look up any code"; $("iTag").textContent = "MEL, instruments, valves, lines, SPI, hoses, PFD";

@@ -1,5 +1,5 @@
 // In-app PDF viewer shared by the pipe and valve spec (spec.js) and the P&IDs (pid.js).
-// PdfView.open({ url, page, title, fit: "width" | "page", find, download, name })
+// PdfView.open({ url, page, title, fit: "width" | "page", find, download, name, refs, onRef, back, onBack, restore })
 //   The visible part of the page is redrawn from the PDF's own vectors at every zoom, so it stays sharp.
 //   find: a tag to mark on the page (a line number, valve, instrument…). The mark stays until another document or
 //   another search is opened; spaces, hyphens and slashes are ignored and a tag split over several text pieces is found.
@@ -17,16 +17,16 @@ window.PdfView = (() => {
   function ui(){
     if (V) return V;
     const el = document.createElement("div"); el.className = "sp-view"; el.hidden = true;
-    el.innerHTML = `<div class="sp-top"><b class="sp-tt"></b><div class="sp-nav sp-pages"><button data-a="prev" title="Previous page">◀</button><span class="sp-pg"></span><button data-a="next" title="Next page">▶</button></div>
+    el.innerHTML = `<div class="sp-top"><button class="sp-back" data-a="back" title="Back to the last drawing" hidden>←</button><b class="sp-tt"></b><div class="sp-nav sp-pages"><button data-a="prev" title="Previous page">◀</button><span class="sp-pg"></span><button data-a="next" title="Next page">▶</button></div>
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="fit" title="Fit">⤢</button><button data-a="in" title="Zoom in">+</button></div>
-      <button class="sp-lk" data-a="links" title="P&IDs this drawing joins" hidden>⇄ P&IDs</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">⬇ PDF</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
-      <div class="sp-lks" hidden></div><div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div></div></div><div class="sp-msg"></div>`;
+      <button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">⬇ PDF</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
+      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div><div class="sp-refs"></div></div></div><div class="sp-msg"></div>`;
     document.body.appendChild(el);
     V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
-      msg: el.querySelector(".sp-msg"), lks: el.querySelector(".sp-lks"), page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
+      msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
-      fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close, links: () => { V.lks.hidden = !V.lks.hidden; } })[b.dataset.a]());
+      fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close, back: () => cur.onBack && cur.onBack() })[b.dataset.a]());
     addEventListener("keydown", e => { if (el.hidden) return; if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
     addEventListener("popstate", () => { if (!el.hidden) close(true); });
     // rotating the phone: refit the sheet once the new size has settled (keeps the zoom level)
@@ -50,6 +50,14 @@ window.PdfView = (() => {
     addEventListener("mousemove", e => { if (!dr) return; V.body.scrollLeft = dr.l - (e.clientX - dr.x); V.body.scrollTop = dr.t - (e.clientY - dr.y); });
     addEventListener("mouseup", () => { dr = null; V.body.classList.remove("drag"); });
     V.body.style.touchAction = "pan-x pan-y";
+    let down = null; V.body.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; }, true);
+    V.body.addEventListener("click", e => {
+      const a = e.target.closest && e.target.closest(".sp-ref"); if (!e.target.closest || !e.target.closest(".sp-pick")) pickClose();
+      if (!a || (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8)) return;
+      const r = V.pageRefs[+a.dataset.i]; if (!r || !cur.onRef) return;
+      a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
+      if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : "tag");
+    });
     return V;
   }
 
@@ -62,18 +70,34 @@ window.PdfView = (() => {
     V.el.hidden = false; document.body.classList.add("sp-on"); V.el.querySelector(".sp-tt").textContent = cur.title || "";
     const dl = V.el.querySelector(".sp-dl"); dl.href = cur.url; dl.download = cur.download || cur.url.split("/").pop();
     if (!(history.state && history.state.sp)) history.pushState({ sp: 1 }, "");
-    // links: the drawings this one joins, { from: [{ n, label, find }], to: [...] }; tapping one opens it (cur.onLink)
-    const lk = cur.links, lb = V.el.querySelector(".sp-lk"); V.lks.hidden = true; lb.hidden = !(lk && (lk.from.length || lk.to.length));
-    if (!lb.hidden){
-      const col = (h, a) => `<div class="sp-lkc"><b>${h} <i>${a.length}</i></b>${a.length ? a.map((x, i) => `<button type="button" data-i="${i}">${esc(x.label)}</button>`).join("") : `<span>None in the line list</span>`}</div>`;
-      V.lks.innerHTML = col("From", lk.from) + col("To", lk.to);
-      V.lks.querySelectorAll(".sp-lkc").forEach((c, j) => c.querySelectorAll("button").forEach(b => b.onclick = () => { const x = (j ? lk.to : lk.from)[+b.dataset.i]; V.lks.hidden = true; cur.onLink && cur.onLink(x); }));
-    }
+    // refs: the references printed on the sheet ([page, left, top, width, height, target, kind] in 1/10000 of the sheet,
+    // a promise), each a tappable box; onRef(target, kind) acts on a tap. back: show ← (onBack returns to the last sheet).
+    V.el.querySelector(".sp-back").hidden = !cur.back; V.refs = []; V.refsEl.innerHTML = ""; pickClose();
+    const me = cur; if (cur.refs) Promise.resolve(cur.refs).then(a => { if (cur !== me) return; V.refs = a || []; drawRefs(); });
     V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true;
     V.msg.textContent = "Loading…"; V.msg.hidden = false;
     let d; try { d = await getDoc(cur.url); } catch (e) { V.msg.textContent = "Couldn't load the PDF (" + e.message + "). Check the connection."; return; }
     V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
     V.zoom = 1; await go(cur.page);
+    const r = cur.restore; if (r && cur === me){ V.zoom = r.zoom; layout(false); V.body.scrollLeft = r.sl; V.body.scrollTop = r.st; sharp(); }
+  }
+  // where the reader is on the sheet, to come back to it (Back)
+  const state = () => V && V.pg ? { page: V.page, zoom: V.zoom, sl: V.body.scrollLeft, st: V.body.scrollTop } : null;
+  function drawRefs(){
+    if (!V.pg) return;
+    V.pageRefs = V.refs.filter(r => r[0] === V.page);
+    V.refsEl.innerHTML = V.pageRefs.map((r, i) => { let [, l, t, w, h] = r; if (V.rot) [l, t, w, h] = [1e4 - t - h, l, h, w];   // sheet turned a quarter
+      return `<a class="sp-ref${r[6] === "d" ? " d" : ""}" data-i="${i}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%" title="${esc(r[5].replace(/\|/g, ", "))}"></a>`; }).join("");
+  }
+  // a bubble that stands for several tags (YI12000A and B): a small list to pick from
+  function pickClose(){ const p = V && V.el.querySelector(".sp-pick"); if (p) p.remove(); }
+  function pick(tags, x, y){
+    pickClose(); const p = document.createElement("div"); p.className = "sp-pick";
+    p.innerHTML = tags.map(t => `<button type="button">${esc(t)}</button>`).join("");
+    V.el.appendChild(p); const r = V.el.getBoundingClientRect();
+    p.style.left = Math.max(6, Math.min(r.width - p.offsetWidth - 6, x - r.left - p.offsetWidth / 2)) + "px";
+    p.style.top = Math.max(50, Math.min(r.height - p.offsetHeight - 6, y - r.top + 14)) + "px";
+    p.querySelectorAll("button").forEach((b, i) => b.onclick = () => { pickClose(); cur.onRef && cur.onRef(tags[i], "tag"); });
   }
   // Rotate: phones can only switch orientation by script in full screen. Landscape is forced (whatever the installed
   // app's own setting says); tapping again returns to portrait. Closing the viewer puts everything back.
@@ -105,7 +129,7 @@ window.PdfView = (() => {
     const w = Math.round(vp1.width * s) + "px", h = Math.round(vp1.height * s) + "px";
     // the sharp layer no longer matches a new size: hide it (the background layer stretches) until its redraw is ready
     if (V.sheet.style.width !== w || V.sheet.style.height !== h || bg){ V.hi.style.visibility = "hidden"; V.sheet.style.width = w; V.sheet.style.height = h; }
-    if (bg) drawBg(); sharp();
+    if (bg){ drawBg(); drawRefs(); } sharp();
   }
   // Both layers draw off screen and are swapped in whole when finished, so nothing blanks or jumps while panning.
   let bgTask = null, hiTask = null, bgGen = 0, hiGen = 0;
@@ -172,5 +196,5 @@ window.PdfView = (() => {
   }
   let tt; function toast(m){ let t = V.el.querySelector(".sp-toast"); if (!t){ t = document.createElement("div"); t.className = "sp-toast"; V.el.appendChild(t); } t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 3500); }
 
-  return { open, close, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
+  return { open, close, state, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
 })();

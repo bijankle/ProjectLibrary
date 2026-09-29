@@ -10,19 +10,23 @@ window.Pid = (() => {
     .then(d => { IX = d; Object.keys(d.pids).forEach(k => byN.set(norm(k), k)); return d; }).catch(e => { loading = null; throw e; }));
   const key = n => byN.get(norm(n));
   const info = n => { const k = key(n); return k ? Object.assign({ number: k }, IX.pids[k]) : null; };
-  function open(n, find){
+  // references printed on the sheets (pid-refs.json, tools/build_pid_refs.py): tapping another drawing opens it with the
+  // way back marked, tapping a tag opens it in the lookup (window.kcgmOpenTag, set by the page). ← steps back.
+  let REFS = null; const back = [];
+  const refs = () => REFS || (REFS = fetch("pid-refs.json").then(r => r.ok ? r.json() : {}).catch(() => { REFS = null; return {}; }));
+  function open(n, find, o = {}){
     const d = info(n); if (!d) return false;
-    PdfView.open({ url: d.file, page: 1, fit: "page", find: find || null, download: d.number + ".pdf",
-      title: d.number + (d.rev ? " Rev " + d.rev : "") + (d.title ? " · " + d.title : ""), links: links(d.number),
-      onLink: x => open(x.n, x.find) });
+    if (!o.keep) back.length = 0;
+    const r = o.restore;
+    PdfView.open({ url: d.file, page: r ? r.page : 1, fit: "page", find: find || null, download: d.number + ".pdf", restore: r || null,
+      title: d.number + (d.rev ? " Rev " + d.rev : "") + (d.title ? " · " + d.title : ""),
+      refs: refs().then(R => R[d.number] || []), back: back.length > 0,
+      onBack: () => { const b = back.pop(); if (b) open(b.n, b.find, { keep: true, restore: b.state }); },
+      onRef: (t, k) => {
+        if (k === "dwg"){ if (!key(t)) return; back.push({ n: d.number, find, state: PdfView.state() }); open(t, d.number, { keep: true }); return; }
+        if (window.kcgmOpenTag){ PdfView.close(); setTimeout(() => kcgmOpenTag(t), 60); }
+      } });
     return true;
-  }
-  // the P&IDs this drawing joins through the line list (lookup.js): each opens with its first joining line marked
-  function links(n){
-    const L = window.Lookup, pl = /-PID-/.test(n) && L && L.ready() && L.pidLinks(n); if (!pl) return null;
-    const side = a => a.filter(p => key(p.n)).map(p => { const t = (info(p.n) || {}).title;
-      return { n: p.n, find: p.lines[0].key, label: p.n + (t ? " (" + L.pidTitle(t) + ")" : "") + " (x" + p.lines.length + ")" }; });
-    return { from: side(pl.from), to: side(pl.to) };
   }
   const kind = n => /-PFD-/.test(n) ? "PFD" : "P&ID";
   return { load, ready: () => !!IX, has: n => !!(IX && key(n)), info, open, kind, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
