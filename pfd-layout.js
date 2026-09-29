@@ -48,6 +48,7 @@ window.PFDLayout = (() => {
        <button class="lo-b" id="loDim" title="Dim the photo so the overlay reads better">◐ Dim</button>
        <button class="lo-b" id="loHome" title="Back to the processing plant">⌂ Plant</button>
        <button class="lo-b" id="loExp" title="Download the positions moved on this device, to send in">⬇ Moves</button>
+       <button class="lo-b" id="loFlows" title="The PFD streams drawn on the plant (a flow picked in the list always shows)"></button>
        <button class="lo-b" id="loMinor" title="Items not on the layout drawings, placed beside the equipment they work with (dashed boxes)"></button>
        <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-20001" title="Fimiston process plant overall plant layout (old plant)">Open old layout<small>2000-F00-DRG-GE-20001</small></button>
        <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-10100" title="General Fimiston site general arrangement (new plant)">Open new layout<small>2000-F00-DRG-GE-10100</small></button>`;
@@ -60,6 +61,10 @@ window.PFDLayout = (() => {
     // minor equipment: the items not found on the layout drawings (position estimated), hidden unless asked for
     const minor = () => { const shown = api.pref.get("lo_minor", "0") === "1"; $("mapView").classList.toggle("nominor", !shown);
       $("loMinor").textContent = shown ? "Hide minor equipment" : "Show minor equipment"; $("loMinor").classList.toggle("on", shown); setTimeout(declutter, 0); };
+    // flow lines: off unless asked for; a highlighted flow still shows
+    const flows = () => { const shown = api.pref.get("lo_flows", "0") === "1"; $("mapView").classList.toggle("noflows", !shown);
+      $("loFlows").textContent = shown ? "Hide flow lines" : "Show flow lines"; $("loFlows").classList.toggle("on", shown); };
+    $("loFlows").onclick = () => { api.pref.set("lo_flows", api.pref.get("lo_flows", "0") === "1" ? "0" : "1"); flows(); }; flows();
     $("loMinor").onclick = () => { api.pref.set("lo_minor", api.pref.get("lo_minor", "0") === "1" ? "0" : "1"); minor(); }; minor();
     bar.querySelectorAll(".lo-dwg").forEach(b => b.onclick = () => window.Pid && Pid.load().then(() => { if (!Pid.open(b.dataset.dwg)) api.toast("That drawing isn't in the app yet."); }).catch(() => api.toast("Couldn't load the drawing list.")));
     addEventListener("keydown", e => { if (e.key === "Escape" && moving) moving.cancel(); });
@@ -183,7 +188,7 @@ window.PFDLayout = (() => {
         const ll = hull(P).map(m => toLL(m, o)), hue = HUE[ci % HUE.length];
         const poly = L.polygon(ll, { renderer: rend, className: "lo-area", color: `hsl(${hue} 85% 62%)`, weight: 1.5, fillColor: `hsl(${hue} 85% 55%)`, fillOpacity: .22, smoothFactor: 0 }).addTo(map);
         const cx = g.reduce((s, p) => s + p.m[0], 0) / g.length, cy = g.reduce((s, p) => s + p.m[1], 0) / g.length;
-        const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<span style="--h:${hue}"><b>${code}</b><i> (${esc(wbsName(code))})</i></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
+        const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<span style="--h:${hue}" title="${esc(code + " (" + wbsName(code) + ")")}"><b>${code}</b></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
         const go = e => { L.DomEvent.stopPropagation(e); const b = poly.getBounds(); map.flyTo(b.getCenter(), Math.min(18.5, Math.max(AREA_Z + 1, map.getBoundsZoom(b, false, [40, 40]))), { duration: .6 }); };
         poly.on("click", go); lab.on("click", go);
         areas.push({ code, poly, lab, n: g.length, hue });
@@ -211,14 +216,13 @@ window.PFDLayout = (() => {
       zs.forEach(a => { const p = a.poly._path; if (p){ p.classList.remove("pick"); void p.getBoundingClientRect(); p.classList.add("pick"); setTimeout(() => p.classList.remove("pick"), 2600); } });
     });
   }
-  // area labels never overlap: biggest areas first with the full name, then the code alone, else left out until zoomed in
+  // area labels (the code; the name is in the WBS panel) never overlap: biggest areas first, the rest wait for a closer zoom
   function declutterAreas(){
     if (!map || !$("mapView").classList.contains("areas")) return;
     const placed = [], hit = r => placed.some(b => r.left < b.right + 4 && r.right > b.left - 4 && r.top < b.bottom + 3 && r.bottom > b.top - 3);
     areas.slice().sort((a, b) => b.n - a.n).forEach(a => { const sp = a.lab.getElement() && a.lab.getElement().querySelector("span"); if (!sp) return;
-      sp.classList.remove("c", "off");
-      let r = sp.getBoundingClientRect(); if (!hit(r)) return placed.push(r);
-      sp.classList.add("c"); r = sp.getBoundingClientRect(); if (!hit(r)) return placed.push(r);
+      sp.classList.remove("off");
+      const r = sp.getBoundingClientRect(); if (!hit(r)) return placed.push(r);
       sp.classList.add("off"); });
   }
   function drawNode(nd){
