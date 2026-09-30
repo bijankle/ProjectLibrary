@@ -76,14 +76,20 @@ window.AssetViz = (() => {
         `<span class="vz-l" title="${esc(r.label)}">${esc(r.label)}</span><span class="vz-t"><i style="width:${(r.v / max * 100).toFixed(1)}%"></i></span><span class="vz-v">${fmt(r.v)}</span></div>`; }).join("") + `</div>`;
   }
   // donut for ≤5 parts, 2px gaps between segments, the legend carries the values
+  // a count as a pie: the top 5 of ranked rows ({ k, label, v }), the total still counts everything; with f, a legend
+  // entry picks that value as a filter, like the bars did
+  function pie(rows, unit, f){
+    rows = rows.filter(r => r.v > 0).sort((a, b) => b.v - a.v); const out = rows.slice(0, 5);
+    out.total = rows.reduce((t, r) => t + r.v, 0); out.f = f; return donut(out, unit); }
   function donut(parts, unit){
-    const all = parts.total; parts = parts.filter(p => p.v > 0); const tot = all || parts.reduce((s, p) => s + p.v, 0); if (!tot) return `<p class="vz-note">Nothing to show.</p>`;
+    const all = parts.total, f = parts.f; parts = parts.filter(p => p.v > 0); const tot = all || parts.reduce((s, p) => s + p.v, 0); if (!tot) return `<p class="vz-note">Nothing to show.</p>`;
     const R = 38, C = 2 * Math.PI * R; let at = 0;
     const segs = parts.map((p, i) => { const len = p.v / tot * C, gap = parts.length > 1 ? Math.min(2, len / 2) : 0;
       const s = `<circle r="${R}" cx="50" cy="50" fill="none" stroke="var(--vz-${i + 1})" stroke-width="16" stroke-dasharray="${Math.max(0, len - gap).toFixed(2)} ${(C - len + gap).toFixed(2)}" stroke-dashoffset="${(-at).toFixed(2)}" transform="rotate(-90 50 50)" data-tip="<b>${esc(p.label)}</b><br>${fmt(p.v)} ${unit} (${Math.round(p.v / tot * 100)}%)"/>`;
-      at += len; return s; }).join("");
+      at += len; return s; }).join("") +
+      (C - at > 1 ? `<circle r="${R}" cx="50" cy="50" fill="none" stroke="var(--line)" stroke-width="16" stroke-dasharray="${(C - at).toFixed(2)} ${at.toFixed(2)}" stroke-dashoffset="${(-at).toFixed(2)}" transform="rotate(-90 50 50)"/>` : "");   // the rest (not in the top 5) as a faint grey arc
     return `<div class="vz-don"><svg viewBox="0 0 100 100" role="img" aria-label="${esc(parts.map(p => p.label + " " + fmt(p.v)).join(", "))}">${segs}<text x="50" y="48" class="vz-dt">${fmt(tot)}</text><text x="50" y="60" class="vz-du">${esc(unit)}</text></svg>` +
-      `<ul>${parts.map((p, i) => `<li data-tip="<b>${esc(p.label)}</b><br>${fmt(p.v)} ${unit}"><i style="background:var(--vz-${i + 1})"></i><span>${esc(p.label)}</span><b>${fmt(p.v)}</b><em>${Math.round(p.v / tot * 100)}%</em></li>`).join("")}</ul></div>`;
+      `<ul>${parts.map((p, i) => `<li${f && p.k != null && p.k !== "" ? ` class="act" data-f="${f}" data-v="${esc(p.k)}"` : ""} data-tip="<b>${esc(p.label)}</b><br>${fmt(p.v)} ${unit}"><i style="background:var(--vz-${i + 1})"></i><span>${esc(p.label)}</span><b>${fmt(p.v)}</b><em>${Math.round(p.v / tot * 100)}%</em></li>`).join("")}</ul></div>`;
   }
   // fold a count map into ≤5 parts (the rest as Other)
   function five(m, names = {}){
@@ -115,13 +121,12 @@ window.AssetViz = (() => {
     // asset mix (before a type is picked): ranked bars, tap one to pick that type
     if (!ctx.type){
       const m = count(L, r => r.t);
-      h += card("Asset mix [qty]", bars(Object.entries(m).map(([k, v]) => ({ k, label: TN[k] || k, v })), "items", "t", 5));
+      h += card("Asset mix [qty]", pie(Object.entries(m).map(([k, v]) => ({ k, label: TN[k] || k, v })), "items", "t"));
     }
     // where the assets are (any type): by WBS area
     if (L.length){
       const m = count(L, r => r.a);
-      h += card((ctx.type ? `${TN[ctx.type] || "Assets"} by area` : "Assets by area") + " [qty]", bars(Object.entries(m).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "items", next === "a" ? "a" : null, 5),
-        "");
+      h += card((ctx.type ? `${TN[ctx.type] || "Assets"} by area` : "Assets by area") + " [qty]", pie(Object.entries(m).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "items", next === "a" ? "a" : null));
     }
     if (mel.length){
       // top power users: the biggest single drives (tap to open the item)
@@ -133,8 +138,7 @@ window.AssetViz = (() => {
       if (totKw) h += card("Installed power by area [kW]", bars(Object.entries(count(live, r => r.a, kw)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v, tip: `<b>${esc(k)} ${esc(areaName(k))}</b><br>${fmt(v)} kW (${Math.round(v / totKw * 100)}%)` })), "kW", next === "a" ? "a" : null, 5), "kW, decommissioned left out.");
       if (ctx.type === "mel" || !ctx.type){
         const m = count(mel, r => r.k);
-        h += card("Equipment by type [qty]", bars(Object.entries(m).map(([k, v]) => ({ k, label: `${k} ${ctx.codeName ? ctx.codeName(k) : ""}`.trim(), v })), "items", ctx.type === "mel" && next === "k" ? "k" : null, 5),
-          "");
+        h += card("Equipment by type [qty]", pie(Object.entries(m).map(([k, v]) => ({ k, label: `${k} ${ctx.codeName ? ctx.codeName(k) : ""}`.trim(), v })), "items", ctx.type === "mel" && next === "k" ? "k" : null));
       }
       // splits: ≤5 parts each
       h += card("Stage [qty]", donut(five(count(mel, r => get(r, "Stage"))), "items"));
@@ -148,9 +152,9 @@ window.AssetViz = (() => {
       }
     }
     if (lines.length){
-      h += card("Lines by service [qty]", bars(Object.entries(count(lines, r => r.k)).map(([k, v]) => ({ k, label: `${k} ${ctx.svcName ? ctx.svcName(k) : ""}`.trim(), v })), "lines", ctx.type === "line" && next === "k" ? "k" : null, 5));
+      h += card("Lines by service [qty]", pie(Object.entries(count(lines, r => r.k)).map(([k, v]) => ({ k, label: `${k} ${ctx.svcName ? ctx.svcName(k) : ""}`.trim(), v })), "lines", ctx.type === "line" && next === "k" ? "k" : null));
       // sizes: ranked bars like the others (most common first), tap one to filter when size is the next step
-      h += card("Line sizes [qty]", bars(Object.entries(count(lines, r => r.sz)).filter(([k]) => k !== "?" && +k > 0).map(([k, v]) => ({ k, label: "DN" + k, v })), "lines", ctx.type === "line" && next === "sz" ? "sz" : null, 5), "Lines per nominal size.");
+      h += card("Line sizes [qty]", pie(Object.entries(count(lines, r => r.sz)).filter(([k]) => k !== "?" && +k > 0).map(([k, v]) => ({ k, label: "DN" + k, v })), "lines", ctx.type === "line" && next === "sz" ? "sz" : null));
       if (totLen) h += card("Pipe length by area [m]", bars(Object.entries(count(lines, r => r.a, len)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "m", null, 5), "Metres of pipe.");
     }
     el.innerHTML = h + `</div>`;
@@ -187,6 +191,7 @@ window.AssetViz = (() => {
 .vz-don circle{cursor:default}.vz-don circle:hover{stroke-width:19}
 .vz-dt{text-anchor:middle;font-size:14px;font-weight:800;fill:var(--ink)}.vz-du{text-anchor:middle;font-size:8px;fill:var(--mute)}
 .vz-don ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.vz-don li.act{cursor:pointer}.vz-don li.act:hover span{color:var(--gold)}
 .vz-don li{display:grid;grid-template-columns:10px minmax(0,1fr) auto auto;gap:7px;align-items:center;font-size:var(--fb,15px)}
 .vz-don li i{width:10px;height:10px;border-radius:3px}.vz-don li span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vz-don li b{font-variant-numeric:tabular-nums;font-weight:700}.vz-don li em{font-style:normal;color:var(--mute);min-width:32px;text-align:right}
 .vz-tip{position:fixed;z-index:200;pointer-events:none;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:var(--fb,15px);line-height:1.35;box-shadow:0 6px 18px #0006;max-width:260px}
