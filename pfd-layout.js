@@ -165,6 +165,7 @@ window.PFDLayout = (() => {
       const cw = cols.map(c => Math.max(...c.map(i => i.w), 0)), all = cw.reduce((a, b) => a + b, 0) + CG * (nc - 1);
       // the stack's inner edge sits just outside the plant, but never off the screen
       let x0 = si === 0 ? Math.max(8, Math.min(minX - 26 - all, W - all - 8)) : Math.min(W - all - 8, Math.max(maxX + 26, 8));
+      if (si === 0) gapL = x0 + all; else gapR = x0;   // the WBS codes sit centred between the two columns
       // column 0 (the top part of the side) sits nearest the plant, further columns step outward
       let acc = 0; const lx = cw.map(w => { const v = si === 0 ? x0 + all - acc - w : x0 + acc; acc += w + CG; return v; });
       cols.forEach((col, k) => { const cx = lx[k], w = cw[k];
@@ -337,13 +338,15 @@ window.PFDLayout = (() => {
   // the codes in view, split into the top and bottom rows; a row too wide for the screen (a phone) wraps onto more lines,
   // every other code on the next line so each line still spans the plant and the leaders stay short
   const RB = 52;   // the bottom row stays clear of the map's corner buttons (info, full screen)
+  let gapL = 0, gapR = 0;   // inner edges of the name columns (stackOut)
+  const gap = W => gapR - gapL > 160 && gapL >= 0 && gapR <= W ? [gapL + 8, gapR - 8] : [12, W - 12];
   function planAreas(){
     const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, G = 8, rows = [[], []];
     areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span");
       const p = map.latLngToContainerPoint(a.lab.getLatLng()); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) return;
       rows[0].push({ a, e, sp, p, w: sp.offsetWidth }); });   // every code along the top (as many rows as it takes)
     const lines = rows.map(row => { row.sort((x, y) => x.p.x - y.p.x);
-      const nl = Math.max(1, Math.ceil((row.reduce((t, r) => t + r.w + G, 0) - G) / (W - 24 - (row === rows[1] ? RB : 0))));
+      const [gl, gr] = gap(W), nl = Math.max(1, Math.ceil((row.reduce((t, r) => t + r.w + G, 0) - G) / (gr - gl)));
       row.forEach((r, k) => r.ln = k % nl); return nl; });
     return { W, H, G, rows, lines };
   }
@@ -352,9 +355,10 @@ window.PFDLayout = (() => {
     const tl = $("loTL"), top = (tl ? tl.querySelector(".lo-pans").getBoundingClientRect().bottom - $("mapView").getBoundingClientRect().top : 50) + ROWH / 2 + 4, bot = H - ROWH / 2 - 6;
     areas.forEach(a => { const e = a.lab.getElement(); if (e) e.querySelector("span").classList.add("off"); });
     rows.forEach((row, ri) => { const nl = Math.max(0, ...row.map(r => r.ln)) + 1;
-      for (let ln = 0; ln < nl; ln++){ const line = row.filter(r => r.ln === ln); let cur = 12;
-        line.forEach(r => { r.sp.classList.remove("off"); r.x = Math.max(r.p.x - r.w / 2, cur); cur = r.x + r.w + G; });
-        const R = W - 12 - (ri ? RB : 0), over = cur - G - R; if (over > 0) for (let i = line.length - 1, lim = R; i >= 0; i--){ const r = line[i]; r.x = Math.min(r.x, lim - r.w); lim = r.x - G; }
+      for (let ln = 0; ln < nl; ln++){ const line = row.filter(r => r.ln === ln);
+        // side by side, left to right in plant order, the row centred between the two name columns
+        const [gl, gr] = gap(W), tw = line.reduce((t, r) => t + r.w + G, 0) - G; let cur = Math.max(gl, (gl + gr) / 2 - tw / 2);
+        line.forEach(r => { r.sp.classList.remove("off"); r.x = cur; cur += r.w + G; });
         // the first line sits at the edge of the map, further lines step in towards the plant
         line.forEach(r => { const tx = r.x + r.w / 2, ty = ri ? bot - ln * ROWH : top + ln * ROWH, dx = tx - r.p.x, dy = ty - r.p.y;
           r.sp.style.setProperty("--dx", dx + "px"); r.sp.style.setProperty("--dy", dy + "px");
