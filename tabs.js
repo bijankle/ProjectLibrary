@@ -8,8 +8,8 @@
 window.Tabs = (() => {
   const TABS = [["assets", "Assets", "index.html?cards#assets"], ["pfd", "PFD", "pfd.html#pfd"],
     ["layout", "Layout", "pfd.html#layout"], ["quiz", "Quiz", "index.html?cards#quiz"]];
-  // the app's mark (K and L either side of a diagonal on the yellow tile, as the app icon) for the logo at the top left
-  const mark = s => `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#e8b44a"/><rect x="6" y="6" width="52" height="52" rx="13" fill="none" stroke="#111418" stroke-width="2.5"/><path d="M10.5 53.5 53.5 10.5" stroke="#111418" stroke-width="2.5" stroke-linecap="round"/><text x="22" y="33" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-weight="800" font-size="23" fill="#111418">K</text><text x="42.5" y="52" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-weight="800" font-size="23" fill="#111418">L</text></svg>`;
+  // the app's mark (P and L either side of a diagonal on the yellow tile, as the app icon) for the logo at the top left
+  const mark = s => `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#e8b44a"/><rect x="6" y="6" width="52" height="52" rx="13" fill="none" stroke="#111418" stroke-width="2.5"/><path d="M10.5 53.5 53.5 10.5" stroke="#111418" stroke-width="2.5" stroke-linecap="round"/><text x="22" y="33" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-weight="800" font-size="23" fill="#111418">P</text><text x="42.5" y="52" text-anchor="middle" font-family="system-ui,Segoe UI,Arial,sans-serif" font-weight="800" font-size="23" fill="#111418">L</text></svg>`;
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const desk = () => matchMedia("(min-width: 901px) and (hover: hover)").matches;
   let el = null, O = {}, openM = null;
@@ -92,7 +92,7 @@ window.Tabs = (() => {
       w.addEventListener("click", e => { if (e.target === w) w.hidden = true; }); addEventListener("keydown", e => { if (e.key === "Escape") w.hidden = true; }); }
     w.innerHTML = `<div class="hw-b" role="dialog" aria-label="Help"><div class="hw-top"><b>Help</b><input type="search" placeholder="Search help…" aria-label="Search help"><button type="button" class="hw-x" aria-label="Close">✕</button></div>
       <div class="hw-l">${TOPICS.map(x => `<section data-k="${esc((x.t + " " + x.k + " " + x.h).toLowerCase())}"><h4>${esc(x.t)}</h4><p>${esc(x.h)}</p></section>`).join("")}
-      <section id="hwAbout" data-k="about version data sources"><h4>About this app</h4><p>A study companion for the KCGM Fimiston plant: the plant lists (equipment, instruments, valves, lines, specials, hoses), the P&amp;IDs and PFD sheets, the pipe and valve spec and the Stage 2 PDC, with a smart PFD, the layout on the real plant, asset charts and a quiz. Everything is read from the project documents listed under File → Sources: design values, not live plant data. It works offline once opened.</p><p class="hw-ver"></p></section></div></div>`;
+      <section id="hwAbout" data-k="about version data sources"><h4>About this app</h4><p>Project Library is a study companion for the KCGM Fimiston plant: the plant lists (equipment, instruments, valves, lines, specials, hoses), the P&amp;IDs and PFD sheets, the pipe and valve spec and the Stage 2 PDC, with a smart PFD, the layout on the real plant, asset charts and a quiz. Everything is read from the project documents listed under File → Sources: design values, not live plant data. It works offline once opened.</p><p class="hw-ver"></p></section></div></div>`;
     w.hidden = false;
     w.querySelector(".hw-x").onclick = () => w.hidden = true;
     const inp = w.querySelector("input"), secs = [...w.querySelectorAll("section")];
@@ -106,8 +106,8 @@ window.Tabs = (() => {
     O = o;
     el = document.createElement("div"); el.className = "tbw";
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
-    el.innerHTML = (desk() ? `<nav class="mb" aria-label="Menu"><div class="lg" title="KCGM">${mark(17)}<b>KCGM</b></div><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` : "") +
-      `<nav class="tb" aria-label="App sections">${desk() ? "" : `<div class="lg lg-m" title="KCGM">${mark(20)}</div>`}${tabs}${desk() ? "" : `<div class="mn mn-one"><button type="button" class="tb-s mn-b" aria-label="Menu" title="Menu">☰</button><div class="mn-d mn-dr"></div></div>`}</nav>`;
+    el.innerHTML = (desk() ? `<nav class="mb" aria-label="Menu"><div class="lg" title="Project Library">${mark(17)}<b>Project Library</b></div><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` : "") +
+      `<nav class="tb" aria-label="App sections">${desk() ? "" : `<div class="lg lg-m" title="Project Library">${mark(20)}</div>`}${tabs}${desk() ? "" : `<div class="mn mn-one"><button type="button" class="tb-s mn-b" aria-label="Menu" title="Menu">☰</button><div class="mn-d mn-dr"></div></div>`}</nav>`;
     document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", desk());
     el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (o.onTab && o.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
     el.querySelectorAll(".mn").forEach(m => { const b = m.querySelector(".mn-b");

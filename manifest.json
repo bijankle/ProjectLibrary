@@ -1,7 +1,7 @@
 {
-  "name": "KCGM Flashcards",
-  "short_name": "KCGM Cards",
-  "description": "Swipe flashcards on the KCGM Fimiston processing plant.",
+  "name": "Project Library",
+  "short_name": "Project Library",
+  "description": "Plant lists, drawings, PFD, layout and quiz for the KCGM Fimiston processing plant.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
