@@ -259,6 +259,16 @@
         (String(L.get(it, "PFD")).match(/2000-[A-Z0-9]{3,6}-PFD-[A-Z]{2}-\d{4,5}/g) || []).forEach(d => { const x = c[d] = c[d] || {}; x[m[0]] = (x[m[0]] || 0) + 1; }); });
       Object.entries(c).forEach(([d, x]) => PFDA[d] = Object.keys(x).sort((p, q) => x[q] - x[p] || p.localeCompare(q))[0]); }
     return PFDA[n] || ""; };
+  // the drawings to preview for an item: its P&IDs (every number named in its row), else for equipment its PFD sheets
+  const DRE = /2000-[A-Z0-9]{3,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g;
+  L.drawingsOf = it => { if (!it) return [];
+    if (it.t === "pid") return window.Pid && Pid.has(it.key) ? [it.key] : [];
+    const has = n => window.Pid && Pid.has(n);
+    const pids = [...new Set((it.r || []).join(" ").match(DRE) || [])].filter(n => /-PID-/.test(n) && has(n));
+    if (pids.length) return pids;
+    if (it.t !== "mel") return [];
+    const seen = (DT && DT[it.key]) || [];
+    return [...new Set([...(String(L.get(it, "PFD")).match(DRE) || []), ...seen.map(x => x[0])])].filter(n => /-PFD-/.test(n) && has(n)); };
   L.find = (k, t) => { const a = byKey.get(k) || []; return (t && a.find(x => x.t === t)) || a[0] || null; };
   // How the P&IDs join up, read from the line list: a line's From / To end names another line or an item (equipment,
   // valve, instrument…) whose own P&ID is known. When that end sits on a different drawing the line crosses between
@@ -321,6 +331,7 @@
     let only = "", shownN = 80;
     const PILL = { pfd: "PFD", mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spec: "Spec", pid: "Drawings", spi: "SPI", hose: "Hoses", gloss: "Glossary" };
     const showList = (q, keepN) => {
+      if (opts.onList) opts.onList();
       // opts.within(q): a page can take the typing for itself (Assets: with Browse filters set, the search narrows that list)
       if (opts.within && opts.within(q)){ status(""); body.innerHTML = ""; return; }
       showingRecent = false; if (!q.trim() && document.activeElement === inp){ showRecent(); return; }

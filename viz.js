@@ -26,10 +26,48 @@ window.AssetViz = (() => {
   }
   function update(list, c){ ctx = Object.assign({ list }, c); draw(); }
 
+  // ---------- an open item: its P&ID (or PFD sheet) instead of the charts ----------
+  // the whole sheet fits the space with the item marked; drawing number tabs above when there are several; a click on
+  // the sheet opens it full screen in the drawing viewer
+  let cur = null, curIx = 0, gen = 0;
+  const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  function item(it){ cur = it; curIx = 0; lastSig = ""; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
+  function list(){ if (!cur) return; cur = null; lastSig = ""; draw(true); }
+  function drawItem(){
+    const g = ++gen, ds = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(cur) : [];
+    if (!ds.length || !window.Pid || !window.PdfView){ el.innerHTML = ""; return; }
+    if (curIx >= ds.length) curIx = 0;
+    const n = ds[curIx], d = Pid.info(n) || {};
+    el.innerHTML = `<div class="vz-pv">` + (ds.length > 1 ? `<div class="vz-tabs">${ds.map((x, i) => `<button type="button" class="vz-tab${i === curIx ? " on" : ""}" data-i="${i}">${esc(x.replace(/^2000-/, ""))}</button>`).join("")}</div>` : "") +
+      `<div class="vz-pt"><b>${esc(n)}</b> ${esc(d.title || "")}</div><div class="vz-sheet" title="Open full screen"><canvas></canvas><div class="vz-mk"></div><p class="vz-note">Loading the drawing…</p></div></div>`;
+    el.querySelectorAll(".vz-tab").forEach(b => b.onclick = () => { curIx = +b.dataset.i; drawItem(); });
+    const box = el.querySelector(".vz-sheet"), key = cur.key;
+    box.onclick = () => Pid.open(n, key);
+    PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
+      if (g !== gen) return;
+      const v1 = pg.getViewport({ scale: 1 }), W = box.clientWidth, H = Math.max(200, innerHeight - box.getBoundingClientRect().top - 24);
+      const sc = Math.min(W / v1.width, H / v1.height), vp = pg.getViewport({ scale: sc }), dpr = devicePixelRatio || 1;
+      const cv = box.querySelector("canvas"); cv.width = Math.round(vp.width * dpr); cv.height = Math.round(vp.height * dpr); cv.style.width = vp.width + "px"; cv.style.height = vp.height + "px";
+      await pg.render({ canvasContext: cv.getContext("2d"), viewport: pg.getViewport({ scale: sc * dpr }) }).promise;
+      if (g !== gen) return; box.querySelector(".vz-note").remove();
+      // mark the tag: a text piece holding it, or two neighbouring pieces that together do
+      const want = nk(key); if (want.length < 3 || cur.t === "pid") return;
+      const tc = await pg.getTextContent(), it = tc.items.filter(t => t.str && t.str.trim()), hits = [];
+      const rect = t => { const [a, b, c, dd, e, f] = t.transform, h = Math.hypot(c, dd) || Math.hypot(a, b), w = t.width || h * t.str.length * .5, rot = Math.abs(b) > Math.abs(a);
+        return rot ? [e - h, f, e, f + w] : [e, f - h * .2, e + w, f + h * .9]; };
+      it.forEach((t, i) => { const s1 = nk(t.str); if (s1.includes(want)) hits.push(rect(t));
+        else if (i + 1 < it.length && (s1 + nk(it[i + 1].str)).includes(want) && !nk(it[i + 1].str).includes(want)){ const r1 = rect(t), r2 = rect(it[i + 1]);
+          if (Math.abs(r1[1] - r2[1]) < 20) hits.push([Math.min(r1[0], r2[0]), Math.min(r1[1], r2[1]), Math.max(r1[2], r2[2]), Math.max(r1[3], r2[3])]); } });
+      const mk = box.querySelector(".vz-mk"); mk.style.width = vp.width + "px"; mk.style.height = vp.height + "px";
+      mk.innerHTML = hits.slice(0, 20).map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b);
+        return `<i style="left:${Math.min(x1, x2) - 3}px;top:${Math.min(y1, y2) - 3}px;width:${Math.abs(x2 - x1) + 6}px;height:${Math.abs(y2 - y1) + 6}px"></i>`; }).join("");
+    }).catch(e => { if (g === gen){ const p = box.querySelector(".vz-note"); if (p) p.textContent = "Couldn't load the drawing (" + (e.message || e) + ")."; } });
+  }
+
   // ---------- pieces ----------
   const card = (title, body, note, span) => `<section class="vz-card${span ? " span" : ""}"><h3>${esc(title)}</h3>${body}${note ? `<p class="vz-note">${note}</p>` : ""}</section>`;
   // ranked bars: [{ k, label, v, tip, f }] biggest first; the value is written at the bar end
-  function bars(rows, unit, f, top = 10){
+  function bars(rows, unit, f, top = 5){
     rows = rows.filter(r => r.v > 0).sort((a, b) => b.v - a.v); const rest = rows.slice(top); rows = rows.slice(0, top);
     // (no "Other" bar: the rest would dwarf the ones shown)
     const max = Math.max(...rows.map(r => r.v), 1);
@@ -58,6 +96,8 @@ window.AssetViz = (() => {
   function draw(force){
     if (!el) return;
     if (!wide()){ el.hidden = true; return; } el.hidden = false;
+    if (cur) return drawItem();
+    if (!ctx) return;
     const L = ctx.list, sig = L.length + "|" + (L[0] && L[0].it.key) + "|" + ctx.type + "|" + ctx.step + "|" + innerWidth;
     if (!force && sig === lastSig) return; lastSig = sig;
     const get = (r, n) => Lookup.get(r.it, n), areaName = ctx.areaName || (a => a), next = ctx.step;
@@ -79,17 +119,17 @@ window.AssetViz = (() => {
     // where the assets are (any type): by WBS area
     if (L.length){
       const m = count(L, r => r.a);
-      h += card(ctx.type ? `${TN[ctx.type] || "Assets"} by area` : "Assets by area", bars(Object.entries(m).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "items", next === "a" ? "a" : null, 10),
+      h += card(ctx.type ? `${TN[ctx.type] || "Assets"} by area` : "Assets by area", bars(Object.entries(m).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "items", next === "a" ? "a" : null, 5),
         "");
     }
     if (mel.length){
       // top power users: the biggest single drives (tap to open the item)
-      const top = live.filter(r => kw(r) > 0).sort((a, b) => kw(b) - kw(a)).slice(0, 10);
+      const top = live.filter(r => kw(r) > 0).sort((a, b) => kw(b) - kw(a)).slice(0, 5);
       if (top.length) h += card("Top power users", `<div class="vz-bars">` + (() => { const max = kw(top[0]);
         return top.map(r => `<div class="vz-row act" data-f="open" data-v="${esc(r.it.key)}" data-tip="<b>${esc(r.it.key)}</b><br>${esc(r.it.name)}<br>${fmt(kw(r))} kW · ${esc(get(r, "Duty / standby") || "duty not given")}">` +
           `<span class="vz-l" title="${esc(r.it.name)}">${esc(nice(r.it.name))}</span><span class="vz-t"><i style="width:${(kw(r) / max * 100).toFixed(1)}%"></i></span><span class="vz-v">${fmt(kw(r))}</span></div>`).join(""); })() + `</div>`,
         "kW per item, decommissioned left out.", false);
-      if (totKw) h += card("Installed power by area", bars(Object.entries(count(live, r => r.a, kw)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v, tip: `<b>${esc(k)} ${esc(areaName(k))}</b><br>${fmt(v)} kW (${Math.round(v / totKw * 100)}%)` })), "kW", next === "a" ? "a" : null, 10), "kW, decommissioned left out.");
+      if (totKw) h += card("Installed power by area", bars(Object.entries(count(live, r => r.a, kw)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v, tip: `<b>${esc(k)} ${esc(areaName(k))}</b><br>${fmt(v)} kW (${Math.round(v / totKw * 100)}%)` })), "kW", next === "a" ? "a" : null, 5), "kW, decommissioned left out.");
       if (ctx.type === "mel" || !ctx.type){
         const m = count(mel, r => r.k);
         h += card("Equipment by type", bars(Object.entries(m).map(([k, v]) => ({ k, label: `${k} ${ctx.codeName ? ctx.codeName(k) : ""}`.trim(), v })), "items", ctx.type === "mel" && next === "k" ? "k" : null, 5),
@@ -107,10 +147,10 @@ window.AssetViz = (() => {
       }
     }
     if (lines.length){
-      h += card("Lines by service", bars(Object.entries(count(lines, r => r.k)).map(([k, v]) => ({ k, label: `${k} ${ctx.svcName ? ctx.svcName(k) : ""}`.trim(), v })), "lines", ctx.type === "line" && next === "k" ? "k" : null, 10));
+      h += card("Lines by service", bars(Object.entries(count(lines, r => r.k)).map(([k, v]) => ({ k, label: `${k} ${ctx.svcName ? ctx.svcName(k) : ""}`.trim(), v })), "lines", ctx.type === "line" && next === "k" ? "k" : null, 5));
       // sizes: ranked bars like the others (most common first), tap one to filter when size is the next step
-      h += card("Line sizes", bars(Object.entries(count(lines, r => r.sz)).filter(([k]) => k !== "?" && +k > 0).map(([k, v]) => ({ k, label: "DN" + k, v })), "lines", ctx.type === "line" && next === "sz" ? "sz" : null, 10), "Lines per nominal size.");
-      if (totLen) h += card("Pipe length by area", bars(Object.entries(count(lines, r => r.a, len)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "m", null, 10), "Metres of pipe.");
+      h += card("Line sizes", bars(Object.entries(count(lines, r => r.sz)).filter(([k]) => k !== "?" && +k > 0).map(([k, v]) => ({ k, label: "DN" + k, v })), "lines", ctx.type === "line" && next === "sz" ? "sz" : null, 5), "Lines per nominal size.");
+      if (totLen) h += card("Pipe length by area", bars(Object.entries(count(lines, r => r.a, len)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "m", null, 5), "Metres of pipe.");
     }
     el.innerHTML = h + `</div>`;
   }
@@ -120,6 +160,14 @@ window.AssetViz = (() => {
   const css = `.vz{--vz-1:#3987e5;--vz-2:#d95926;--vz-3:#199e70;--vz-4:#c98500;--vz-5:#d55181;--vz-bar:var(--gold);min-width:0}
 :root[data-theme="light"] .vz{--vz-1:#2a78d6;--vz-2:#eb6834;--vz-3:#1baf7a;--vz-4:#eda100;--vz-5:#e87ba4}
 .vz[hidden]{display:none}
+.vz-pv{display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.vz-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.vz-tab{border:1px solid var(--line);background:var(--card,var(--panel));color:var(--mute);border-radius:8px;padding:5px 10px;font:inherit;font-size:var(--fb,15px);cursor:pointer}
+.vz-tab.on{border-color:var(--gold);color:var(--ink);font-weight:700}
+.vz-pt{font-size:var(--fb,15px);color:var(--mute)}.vz-pt b{color:var(--ink)}
+.vz-sheet{position:relative;cursor:zoom-in;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0;overflow:hidden;align-self:flex-start;max-width:100%;min-width:100%}
+.vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
+.vz-mk{position:absolute;left:0;top:0;pointer-events:none}.vz-mk i{position:absolute;border:2px solid #e8b44a;background:rgba(232,180,74,.35);border-radius:3px}
 .vz-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
 .vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}
 .vz-tile span{font-size:var(--fl,13px);color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}.vz-tile b{font-size:var(--fh,22px);line-height:1.15;font-variant-numeric:tabular-nums}.vz-tile em{font-style:normal;font-size:var(--fb,15px);color:var(--mute)}
@@ -143,5 +191,5 @@ window.AssetViz = (() => {
 .vz-tip{position:fixed;z-index:200;pointer-events:none;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:var(--fb,15px);line-height:1.35;box-shadow:0 6px 18px #0006;max-width:260px}
 .vz-tip[hidden]{display:none}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  return { mount, update };
+  return { mount, update, item, list };
 })();

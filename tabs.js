@@ -149,7 +149,7 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .mn.open>.mn-d{display:block}.mn-dr{left:auto;right:0}.mn-dh{min-width:330px}
 .mn-i{display:block;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:7px 10px;border-radius:6px;cursor:pointer}
 .mn-i:hover,.mn-i:focus-visible{background:var(--panel2,var(--card2))}.mn-i:disabled{opacity:.6}
-.mn-i small{display:none;color:var(--mute);font-size:var(--fb,15px);margin-top:1px}.mn-i:hover small,.mn-i:focus-visible small{display:block}   /* the hint shows on mouse over */
+.mn-i small{display:none}   /* no hover hints in the menus */
 .mn-d hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
 .mn-h{font-size:var(--fl,13px);font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:6px 10px 2px}
 .mn-th{display:flex;align-items:center;padding:5px 10px}.mn-th span{flex:1;font-size:var(--fb,15px)}
