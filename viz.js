@@ -65,7 +65,7 @@ window.AssetViz = (() => {
   }
 
   // ---------- pieces ----------
-  const card = (title, body, note, span) => `<section class="vz-card${span ? " span" : ""}"><h3>${esc(title)}</h3>${body}${note ? `<p class="vz-note">${note}</p>` : ""}</section>`;
+  const card = (title, body, note, span) => `<section class="vz-card${span ? " span" : ""}"><h3>${esc(title)}</h3>${body}</section>`;   // (no notes under the charts)
   // ranked bars: [{ k, label, v, tip, f }] biggest first; the value is written at the bar end
   function bars(rows, unit, f, top = 5){
     rows = rows.filter(r => r.v > 0).sort((a, b) => b.v - a.v); const rest = rows.slice(top); rows = rows.slice(0, top);
@@ -77,7 +77,7 @@ window.AssetViz = (() => {
   }
   // donut for ≤5 parts, 2px gaps between segments, the legend carries the values
   function donut(parts, unit){
-    parts = parts.filter(p => p.v > 0); const tot = parts.reduce((s, p) => s + p.v, 0); if (!tot) return `<p class="vz-note">Nothing to show.</p>`;
+    const all = parts.total; parts = parts.filter(p => p.v > 0); const tot = all || parts.reduce((s, p) => s + p.v, 0); if (!tot) return `<p class="vz-note">Nothing to show.</p>`;
     const R = 38, C = 2 * Math.PI * R; let at = 0;
     const segs = parts.map((p, i) => { const len = p.v / tot * C, gap = parts.length > 1 ? Math.min(2, len / 2) : 0;
       const s = `<circle r="${R}" cx="50" cy="50" fill="none" stroke="var(--vz-${i + 1})" stroke-width="16" stroke-dasharray="${Math.max(0, len - gap).toFixed(2)} ${(C - len + gap).toFixed(2)}" stroke-dashoffset="${(-at).toFixed(2)}" transform="rotate(-90 50 50)" data-tip="<b>${esc(p.label)}</b><br>${fmt(p.v)} ${unit} (${Math.round(p.v / tot * 100)}%)"/>`;
@@ -87,8 +87,9 @@ window.AssetViz = (() => {
   }
   // fold a count map into ≤5 parts (the rest as Other)
   function five(m, names = {}){
-    const e = Object.entries(m).sort((a, b) => b[1] - a[1]); const out = e.slice(0, e.length > 5 ? 4 : 5).map(([k, v]) => ({ label: names[k] || k || "Not given", v }));
-    if (e.length > 5) out.push({ label: `Other (${e.length - 4})`, v: e.slice(4).reduce((s, x) => s + x[1], 0) }); return out;
+    // the top 5 only (no "Other"); the total and the percentages still count everything
+    const e = Object.entries(m).sort((a, b) => b[1] - a[1]); const out = e.slice(0, 5).map(([k, v]) => ({ label: names[k] || k || "Not given", v }));
+    out.total = e.reduce((s, x) => s + x[1], 0); return out;
   }
   const count = (arr, key, w = () => 1) => { const m = {}; arr.forEach(r => { const k = key(r); m[k] = (m[k] || 0) + w(r); }); return m; };
 
@@ -114,7 +115,7 @@ window.AssetViz = (() => {
     // asset mix (before a type is picked): ranked bars, tap one to pick that type
     if (!ctx.type){
       const m = count(L, r => r.t);
-      h += card("Asset mix", bars(Object.entries(m).map(([k, v]) => ({ k, label: TN[k] || k, v })), "items", "t", 9));
+      h += card("Asset mix", bars(Object.entries(m).map(([k, v]) => ({ k, label: TN[k] || k, v })), "items", "t", 5));
     }
     // where the assets are (any type): by WBS area
     if (L.length){
@@ -143,7 +144,7 @@ window.AssetViz = (() => {
       const drv = live.filter(r => kw(r) > 0);
       if (drv.length){
         h += card("Starter type", donut(five(count(drv, r => ({ DOL: "DOL", VSD: "VSD", FE: "FE (field equipment)" })[get(r, "Starter type")] || (get(r, "Starter type") ? get(r, "Starter type").replace(/^.*DOL.*$/, "DOL (other)") : ""))), "drives"), "Items with a power rating.");
-        h += card("Power by voltage", bars(Object.entries(count(drv, r => get(r, "Voltage") || "Not given", kw)).map(([k, v]) => ({ k: "", label: k, v })), "kW", null, 8), "kW per supply voltage.");
+        h += card("Power by voltage", bars(Object.entries(count(drv, r => get(r, "Voltage") || "Not given", kw)).map(([k, v]) => ({ k: "", label: k, v })), "kW", null, 5));
       }
     }
     if (lines.length){
