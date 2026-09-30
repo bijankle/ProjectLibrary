@@ -133,8 +133,8 @@ window.PFDLayout = (() => {
   // a dot at the equipment. Each side is ordered top to bottom so the leaders don't cross; a side too tall for the
   // screen spreads over more columns, outward.
   function stackOut(){
-    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, BOT = 34, GAP = 2, CG = 8;
-    const tl = $("loTL"), TOP = tl ? Math.max(58, tl.querySelector(".lo-pans").getBoundingClientRect().bottom - box.top + 8) : 58;   // below the menus
+    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, BOT = 34 + ROWH, GAP = 2, CG = 8;
+    const tl = $("loTL"), TOP = (tl ? Math.max(58, tl.querySelector(".lo-pans").getBoundingClientRect().bottom - box.top + 8) : 58) + ROWH;   // below the menus and the zone codes
     const items = [];
     Object.values(N).forEach(o => { if (!o.el) return; o.el.classList.remove("dc"); if (o.el.classList.contains("lift")) return; setOff(o, 0, 0);
       if (getComputedStyle(o.el).display === "none") return; const r = o.el.getBoundingClientRect(); if (!r.width) return;
@@ -239,7 +239,7 @@ window.PFDLayout = (() => {
         const ll = hull(P).map(m => toLL(m, o)), hue = HUE[ci % HUE.length];
         const poly = L.polygon(ll, { renderer: rend, className: "lo-area", color: `hsl(${hue} 85% 62%)`, weight: 1.5, fillColor: `hsl(${hue} 85% 55%)`, fillOpacity: .22, smoothFactor: 0 }).addTo(map);
         const cx = g.reduce((s, p) => s + p.m[0], 0) / g.length, cy = g.reduce((s, p) => s + p.m[1], 0) / g.length;
-        const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<span style="--h:${hue}" title="${esc(code + " (" + wbsName(code) + ")")}"><b>${code}</b></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
+        const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<i class="la-ld" style="--h:${hue}"></i><span style="--h:${hue}" title="${esc(code + " (" + wbsName(code) + ")")}"><b>${code}</b></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
         const go = e => { L.DomEvent.stopPropagation(e); const b = poly.getBounds(); map.flyTo(b.getCenter(), Math.min(18.5, Math.max(AREA_Z + 1, map.getBoundsZoom(b, false, [40, 40]))), { duration: .6 }); };
         poly.on("click", go); lab.on("click", go);
         areas.push({ code, poly, lab, n: g.length, hue });
@@ -268,12 +268,34 @@ window.PFDLayout = (() => {
   }
   // area labels (the code; the name is in the WBS panel) never overlap: biggest areas first, the rest wait for a closer zoom
   function declutterAreas(){
-    if (!map || !$("mapView").classList.contains("areas")) return;
+    if (!map) return;
+    const mv = $("mapView").classList;
+    areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span"), ld = e.querySelector(".la-ld");
+      sp.style.removeProperty("--dx"); sp.style.removeProperty("--dy"); ld.style.display = ""; });
+    if (mv.contains("stack")) return stackAreas();
+    if (!mv.contains("areas")) return;
     const placed = [], hit = r => placed.some(b => r.left < b.right + 4 && r.right > b.left - 4 && r.top < b.bottom + 3 && r.bottom > b.top - 3);
     areas.slice().sort((a, b) => b.n - a.n).forEach(a => { const sp = a.lab.getElement() && a.lab.getElement().querySelector("span"); if (!sp) return;
       sp.classList.remove("off");
       const r = sp.getBoundingClientRect(); if (!hit(r)) return placed.push(r);
       sp.classList.add("off"); });
+  }
+  // Plant view (callout stacks): the zones show as outlines and their codes line up in a row along the top and the
+  // bottom of the map (a zone in the upper half labels at the top), each joined to its zone by a leader
+  const ROWH = 30;
+  function stackAreas(){
+    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height;
+    const tl = $("loTL"), top = (tl ? tl.querySelector(".lo-pans").getBoundingClientRect().bottom - box.top : 50) + ROWH / 2 + 4, bot = H - ROWH / 2 - 6;
+    const rows = [[], []];
+    areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span"); sp.classList.remove("off");
+      const p = map.latLngToContainerPoint(a.lab.getLatLng()); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40){ sp.classList.add("off"); return; }
+      rows[p.y < H / 2 ? 0 : 1].push({ a, e, sp, p, w: sp.offsetWidth }); });
+    rows.forEach((row, ri) => { row.sort((x, y) => x.p.x - y.p.x); const G = 8; let cur = 12;
+      row.forEach(r => { r.x = Math.max(r.p.x - r.w / 2, cur); cur = r.x + r.w + G; });
+      const over = cur - G - (W - 12); if (over > 0) for (let i = row.length - 1, lim = W - 12; i >= 0; i--){ const r = row[i]; r.x = Math.min(r.x, lim - r.w); lim = r.x - G; }
+      row.forEach(r => { const tx = r.x + r.w / 2, ty = ri ? bot : top, dx = tx - r.p.x, dy = ty - r.p.y;
+        r.sp.style.setProperty("--dx", dx + "px"); r.sp.style.setProperty("--dy", dy + "px");
+        const ld = r.e.querySelector(".la-ld"); ld.style.display = "block"; ld.style.width = Math.hypot(dx, dy) + "px"; ld.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`; }); });
   }
   function drawNode(nd){
     const id = nd.id; if (!LAYOUT.nodes[id]) return;
