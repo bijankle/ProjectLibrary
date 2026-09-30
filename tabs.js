@@ -107,7 +107,7 @@ window.Tabs = (() => {
     el = document.createElement("div"); el.className = "tbw";
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
     el.innerHTML = (desk() ? `<nav class="mb" aria-label="Menu"><div class="lg" title="Project Library">${mark(17)}<b>Project Library</b></div><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` : "") +
-      `<nav class="tb" aria-label="App sections">${desk() ? "" : `<div class="lg lg-m" title="Project Library">${mark(20)}</div>`}${tabs}${desk() ? "" : `<div class="mn mn-one"><button type="button" class="tb-s mn-b" aria-label="Menu" title="Menu">☰</button><div class="mn-d mn-dr"></div></div>`}</nav>`;
+      `<nav class="tb" aria-label="App sections">${desk() ? "" : `<div class="lg lg-m" title="Project Library">${mark(20)}</div>`}<div class="tb-seg">${tabs}</div>${desk() ? "" : `<div class="mn mn-one"><button type="button" class="tb-s mn-b" aria-label="Menu" title="Menu">☰</button><div class="mn-d mn-dr"></div></div>`}</nav>`;
     document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", desk());
     el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (o.onTab && o.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
     el.querySelectorAll(".mn").forEach(m => { const b = m.querySelector(".mn-b");
@@ -125,9 +125,14 @@ body,button,input,select,textarea,code,kbd,pre,svg,.leaflet-container{font-famil
 .tbw{position:fixed;left:0;right:0;top:0;z-index:60;background:var(--panel,var(--card));border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
 .mb{height:30px;display:flex;align-items:stretch;gap:2px;padding:0 max(6px,env(safe-area-inset-right)) 0 max(6px,env(safe-area-inset-left));border-bottom:1px solid var(--line);font-size:var(--fb,15px)}
 .tb{height:44px;padding:0 max(6px,env(safe-area-inset-right)) 0 max(6px,env(safe-area-inset-left));display:flex;align-items:stretch;gap:2px}
-.tb-t{flex:0 1 auto;min-width:0;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--mute);text-decoration:none;font-weight:700;font-size:var(--fb,15px);
-  border-bottom:3px solid transparent;padding-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tb-t.on{color:var(--ink);border-bottom-color:var(--gold,var(--accent))}
+/* the sections as a segmented control: one grey track, the open one a raised chip */
+.tb{align-items:center}
+.tb-seg{display:flex;flex:0 1 auto;min-width:0;gap:2px;padding:3px;border-radius:10px;background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.tb-t{flex:0 1 auto;min-width:0;padding:5px 14px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--mute);text-decoration:none;font-weight:700;font-size:var(--fb,15px);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-t:hover{color:var(--ink)}
+.tb-t.on{color:var(--ink);background:color-mix(in srgb,var(--ink) 18%,var(--panel,var(--card)));box-shadow:0 1px 3px rgba(0,0,0,.25)}
+html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.16)}
 .tb-i{font-size:var(--fb,15px)}
 .mn{position:relative;display:flex}
 .lg{display:flex;align-items:center;gap:6px;padding:0 12px 0 4px;margin-right:4px;border-right:1px solid var(--line);color:var(--ink)}
@@ -164,7 +169,7 @@ body,button,input,select,textarea,code,kbd,pre,svg,.leaflet-container{font-famil
 ::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--mute) 75%,transparent);border-width:2px}
 ::-webkit-scrollbar-thumb:active{background-color:var(--gold,var(--accent));border-width:2px}
 @supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:transparent transparent}*:hover{scrollbar-color:color-mix(in srgb,var(--mute) 45%,transparent) transparent}}
-@media (max-width:380px){.tb-t{flex-direction:column;gap:0;font-size:var(--fb,15px);padding:4px 9px 0;line-height:1.1}.tb-i{font-size:var(--fb,15px)}.tb-s{width:34px}}`;
+@media (max-width:380px){.tb-t{flex-direction:column;gap:0;font-size:var(--fb,15px);padding:5px 9px;line-height:1.1}.tb-i{font-size:var(--fb,15px)}.tb-s{width:34px}}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   return { mount, set, help };
 })();
