@@ -1357,6 +1357,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     let w = PFD_W + pad * 2, h = PFD_H + pad * 2; if (w / h > ar && !phoneFit()) h = w / ar; else w = h * ar;
     if (phoneFit()){ vb = { x: -pad, y: -pad, w, h }; setVB(); return; }   // phone portrait: full height, start at the left (crushing)
     vb = { x: (PFD_W - w) / 2, y: (PFD_H - h) / 2, w, h }; setVB(); }
+  // first view: close up on the top left, where the process starts (ROM trucks, crushing); the fit button shows it all
+  function startView(){ const W = svg.clientWidth, H = svg.clientHeight, pad = 40;
+    if (phoneFit() || !W || !H) return fit();
+    const s = Math.max(0.8, W / (PFD_W + pad * 2)); vb = { x: -pad, y: -pad, w: W / s, h: H / s }; setVB(); }
   function zoomAt(f, px, py){
     const minW = 12, maxW = PFD_W * 6;   // effectively unlimited zoom
     const nw = Math.min(maxW, Math.max(minW, vb.w * f)), k = nw / vb.w;
@@ -1557,7 +1561,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       if (Math.abs(ca[0] - cb[0]) > Math.abs(ca[1] - cb[1])) out.needs.push(["x", (ca[0] + cb[0]) / 2, w + 16]); else out.needs.push(["y", (ca[1] + cb[1]) / 2, h + 16]); }
     return out;
   };
-  applyStage(); fit();
+  applyStage(); startView();
 })();
 </script>
 </body>
