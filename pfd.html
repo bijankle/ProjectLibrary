@@ -1360,7 +1360,8 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   // first view: close up on the top left, where the process starts (ROM trucks, crushing); the fit button shows it all
   function startView(){ const W = svg.clientWidth, H = svg.clientHeight, pad = 40;
     if (phoneFit() || !W || !H) return fit();
-    const s = Math.max(0.8, W / (PFD_W + pad * 2)); vb = { x: -pad, y: -pad, w: W / s, h: H / s }; setVB(); }
+    // equipment names (14 units) open at about the page's own text size, 13.5 px; zooming still scales freely
+    const s = Math.max(13.5 / 14, W / (PFD_W + pad * 2)); vb = { x: -pad, y: -pad, w: W / s, h: H / s }; setVB(); }
   function zoomAt(f, px, py){
     const minW = 12, maxW = PFD_W * 6;   // effectively unlimited zoom
     const nw = Math.min(maxW, Math.max(minW, vb.w * f)), k = nw / vb.w;
