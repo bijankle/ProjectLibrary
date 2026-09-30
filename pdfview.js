@@ -61,7 +61,9 @@ window.PdfView = (() => {
     V.body.style.touchAction = "pan-x pan-y";
     let down = null; V.body.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; }, true);
     V.body.addEventListener("click", e => {
-      const a = e.target.closest && e.target.closest(".sp-ref"); if (!e.target.closest || !e.target.closest(".sp-pick")) pickClose();
+      let a = e.target.closest && e.target.closest(".sp-ref"); if (!e.target.closest || !e.target.closest(".sp-pick")) pickClose();
+      if (a && V.boxes){ const q = V.refsEl.getBoundingClientRect(), i = PdfView.nearest(V.boxes, (e.clientX - q.left) / q.width * 1e4, (e.clientY - q.top) / q.height * 1e4);
+        if (i >= 0) a = V.refsEl.children[i] || a; }
       if (!a || (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8)) return;
       const r = V.pageRefs[+a.dataset.i]; if (!r || !cur.onRef) return;
       a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
@@ -96,7 +98,10 @@ window.PdfView = (() => {
   function drawRefs(){
     if (!V.pg) return;
     V.pageRefs = V.refs.filter(r => r[0] === V.page);
+    const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), A = vp.width / vp.height;
+    V.boxes = [];
     V.refsEl.innerHTML = V.pageRefs.map((r, i) => { let [, l, t, w, h] = r; if (V.rot) [l, t, w, h] = [1e4 - t - h, l, h, w];   // sheet turned a quarter
+      [l, t, w, h] = PdfView.grow(l, t, w, h, A); V.boxes.push([l, t, w, h]);
       return `<a class="sp-ref${r[6] === "d" ? " d" : ""}" data-i="${i}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%" title="${esc(r[5].replace(/\|/g, ", "))}"></a>`; }).join("");
   }
   // a bubble that stands for several tags (YI12000A and B): a small list to pick from
@@ -228,5 +233,11 @@ window.PdfView = (() => {
   }
   let tt; function toast(m){ let t = V.el.querySelector(".sp-toast"); if (!t){ t = document.createElement("div"); t.className = "sp-toast"; V.el.appendChild(t); } t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 3500); }
 
-  return { open, close, state, getDoc, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
+  // a reference's tap box, grown: 25% of the text height added on every side (height +50%), the same margin (in
+  // screen terms) on the width. Boxes in 1/10000 of the sheet; A = sheet width / height.
+  const grow = (l, t, w, h, A) => { const m = .25 * Math.min(h, w * A); return [l - m / A, t - m, w + 2 * m / A, h + 2 * m]; };
+  // of the boxes holding a point, the one whose centre is nearest (-1: none)
+  const nearest = (B, x, y) => { let k = -1, d = 1e18; B.forEach(([l, t, w, h], i) => { if (x < l || x > l + w || y < t || y > t + h) return;
+      const e = (x - l - w / 2) ** 2 + (y - t - h / 2) ** 2; if (e < d){ d = e; k = i; } }); return k; };
+  return { open, close, state, getDoc, grow, nearest, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
 })();

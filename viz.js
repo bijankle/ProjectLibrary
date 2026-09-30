@@ -81,7 +81,10 @@ window.AssetViz = (() => {
     const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; setTimeout(() => box.classList.remove("drag"), 0); };
     box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
     // references printed on the sheet (other drawings, tags): tap to follow
-    box.querySelector(".vz-rf").addEventListener("click", e => { const a = e.target.closest("[data-t]"); if (!a || moved > 4) return; e.stopPropagation();
+    let boxes = [];
+    box.querySelector(".vz-rf").addEventListener("click", e => { let a = e.target.closest("[data-t]"); if (!a || moved > 4) return; e.stopPropagation();
+      const q = e.currentTarget.getBoundingClientRect(), i = PdfView.nearest(boxes, (e.clientX - q.left) / q.width * 1e4, (e.clientY - q.top) / q.height * 1e4);
+      if (i >= 0) a = e.currentTarget.children[i] || a;   // overlapping boxes: the nearest centre wins
       const t = a.dataset.t, k = a.dataset.k;
       if (k === "d"){ if (Pid.has(t)) go(t); return; }
       const tag = t.split("|")[0]; if (window.kcgmOpenTag) kcgmOpenTag(tag); });
@@ -92,7 +95,9 @@ window.AssetViz = (() => {
       box.style.height = H + "px"; stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
       rz = 0; await sharp(); if (g !== gen) return; const nt = box.querySelector(".vz-note"); if (nt) nt.remove();
       Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
-        rf.innerHTML = (R[d.number] || []).filter(r => r[0] === 1).map(r => `<i data-t="${esc(r[5])}" data-k="${esc(r[6])}" title="${esc(String(r[5]).split("|").join(", "))}" style="left:${r[1] / 100}%;top:${r[2] / 100}%;width:${r[3] / 100}%;height:${r[4] / 100}%"></i>`).join(""); });
+        const A = W / H; boxes = [];
+        rf.innerHTML = (R[d.number] || []).filter(r => r[0] === 1).map(r => { const [l, t, w, h] = PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
+          return `<i data-t="${esc(r[5])}" data-k="${esc(r[6])}" title="${esc(String(r[5]).split("|").join(", "))}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%"></i>`; }).join(""); });
       // mark the tag: a text piece holding it, or two neighbouring pieces that together do
       const want = nk(key); if (want.length < 3 || cur.t === "pid" || !own.includes(n)) return;
       const tc = await pg.getTextContent(), it = tc.items.filter(t => t.str && t.str.trim()), hits = [];
