@@ -106,7 +106,7 @@ window.Tabs = (() => {
     O = o;
     el = document.createElement("div"); el.className = "tbw";
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
-    el.innerHTML = (desk() ? `<nav class="mb" aria-label="Menu"><div class="lg" title="Project Library">${mark(17)}<b>Project Library</b></div><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` : "") +
+    el.innerHTML = (desk() ? `<div class="lg lg-big" title="Project Library">${mark(60)}</div><nav class="mb" aria-label="Menu"><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` : "") +
       `<nav class="tb" aria-label="App sections">${desk() ? "" : `<div class="lg lg-m" title="Project Library">${mark(20)}</div>`}<div class="tb-seg">${tabs}</div>${desk() ? "" : `<div class="mn mn-one"><button type="button" class="tb-s mn-b" aria-label="Menu" title="Menu">☰</button><div class="mn-d mn-dr"></div></div>`}</nav>`;
     document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", desk());
     el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (o.onTab && o.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
@@ -136,6 +136,10 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .tb-i{font-size:var(--fb,15px)}
 .mn{position:relative;display:flex}
 .lg{display:flex;align-items:center;gap:6px;padding:0 12px 0 4px;margin-right:4px;border-right:1px solid var(--line);color:var(--ink)}
+/* desktop: the app tile spans both rows (menu and sections), left of them */
+.lg-big{position:absolute;left:max(8px,env(safe-area-inset-left));top:calc(env(safe-area-inset-top) + 7px);bottom:7px;width:60px;border:0!important;padding:0!important;margin:0!important;z-index:1}
+.lg-big svg{width:60px;height:60px}
+:root.has-mb .mb{margin-left:calc(max(8px,env(safe-area-inset-left)) + 70px);padding-left:4px}:root.has-mb .tb{padding-left:calc(max(8px,env(safe-area-inset-left)) + 72px)}
 .lg b{font:900 var(--fl,13px)/1 var(--ff);letter-spacing:.08em;white-space:nowrap}.mb .lg{margin:6px 4px 6px 0}.lg-m{border:0;padding:0 4px 0 2px;margin:0}
 .mb .mn-b{border:0;background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:0 10px;border-radius:5px;margin:3px 0;cursor:pointer}
 .mb .mn-b:hover,.mn.open>.mn-b{background:var(--panel2,var(--card2))}

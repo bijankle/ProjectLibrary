@@ -31,7 +31,7 @@ window.AssetViz = (() => {
   // ranked bars: [{ k, label, v, tip, f }] biggest first; the value is written at the bar end
   function bars(rows, unit, f, top = 10){
     rows = rows.filter(r => r.v > 0).sort((a, b) => b.v - a.v); const rest = rows.slice(top); rows = rows.slice(0, top);
-    if (rest.length) rows.push({ k: "", label: `Other (${rest.length})`, v: rest.reduce((s, r) => s + r.v, 0), other: 1 });
+    // (no "Other" bar: the rest would dwarf the ones shown)
     const max = Math.max(...rows.map(r => r.v), 1);
     return `<div class="vz-bars">` + rows.map(r => { const act = !r.other && f && r.k != null && r.k !== "" ? ` data-f="${f}" data-v="${esc(r.k)}"` : "";
       return `<div class="vz-row${act ? " act" : ""}${r.other ? " oth" : ""}"${act} data-tip="${esc(r.tip || `<b>${esc(r.label)}</b><br>${fmt(r.v)} ${unit}`)}">` +
@@ -92,7 +92,7 @@ window.AssetViz = (() => {
       if (totKw) h += card("Installed power by area", bars(Object.entries(count(live, r => r.a, kw)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v, tip: `<b>${esc(k)} ${esc(areaName(k))}</b><br>${fmt(v)} kW (${Math.round(v / totKw * 100)}%)` })), "kW", next === "a" ? "a" : null, 10), "kW, decommissioned left out.");
       if (ctx.type === "mel" || !ctx.type){
         const m = count(mel, r => r.k);
-        h += card("Equipment by type", bars(Object.entries(m).map(([k, v]) => ({ k, label: `${k} ${ctx.codeName ? ctx.codeName(k) : ""}`.trim(), v })), "items", ctx.type === "mel" && next === "k" ? "k" : null, 10),
+        h += card("Equipment by type", bars(Object.entries(m).map(([k, v]) => ({ k, label: `${k} ${ctx.codeName ? ctx.codeName(k) : ""}`.trim(), v })), "items", ctx.type === "mel" && next === "k" ? "k" : null, 5),
           "");
       }
       // splits: ≤5 parts each
