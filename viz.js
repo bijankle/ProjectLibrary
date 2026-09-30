@@ -108,10 +108,8 @@ window.AssetViz = (() => {
     }
     if (lines.length){
       h += card("Lines by service", bars(Object.entries(count(lines, r => r.k)).map(([k, v]) => ({ k, label: `${k} ${ctx.svcName ? ctx.svcName(k) : ""}`.trim(), v })), "lines", ctx.type === "line" && next === "k" ? "k" : null, 10));
-      // size spread: DN in size order (a column per size), the common sizes only
-      const sz = count(lines, r => r.sz), keys = Object.keys(sz).filter(k => k !== "?" && +k > 0).sort((a, b) => a - b), mx = Math.max(...keys.map(k => sz[k]), 1);
-      const shown = keys.filter(k => sz[k] >= Math.max(2, mx * .02));
-      if (shown.length > 1) h += card("Line sizes", `<div class="vz-cols">${shown.map(k => `<div class="vz-col${ctx.type === "line" && next === "sz" ? " act" : ""}"${ctx.type === "line" && next === "sz" ? ` data-f="sz" data-v="${k}"` : ""} data-tip="<b>DN${k}</b><br>${fmt(sz[k])} lines"><i style="height:${(sz[k] / mx * 100).toFixed(1)}%"></i><span>${k}</span></div>`).join("")}</div>`, "Lines per nominal size (DN); rare sizes left out.", true);
+      // sizes: ranked bars like the others (most common first), tap one to filter when size is the next step
+      h += card("Line sizes", bars(Object.entries(count(lines, r => r.sz)).filter(([k]) => k !== "?" && +k > 0).map(([k, v]) => ({ k, label: "DN" + k, v })), "lines", ctx.type === "line" && next === "sz" ? "sz" : null, 10), "Lines per nominal size.");
       if (totLen) h += card("Pipe length by area", bars(Object.entries(count(lines, r => r.a, len)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "m", null, 10), "Metres of pipe.");
     }
     el.innerHTML = h + `</div>`;
@@ -142,10 +140,6 @@ window.AssetViz = (() => {
 .vz-don ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
 .vz-don li{display:grid;grid-template-columns:10px minmax(0,1fr) auto auto;gap:7px;align-items:center;font-size:12.5px}
 .vz-don li i{width:10px;height:10px;border-radius:3px}.vz-don li span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vz-don li b{font-variant-numeric:tabular-nums;font-weight:700}.vz-don li em{font-style:normal;color:var(--mute);min-width:32px;text-align:right}
-.vz-cols{display:flex;align-items:flex-end;gap:3px;height:130px;padding-top:6px}
-.vz-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}.vz-col.act{cursor:pointer}
-.vz-col i{display:block;width:100%;background:var(--vz-bar);border-radius:4px 4px 0 0;min-height:2px}.vz-col:hover i{filter:brightness(1.15)}
-.vz-col span{font-size:10px;color:var(--mute);margin-top:3px;font-variant-numeric:tabular-nums}
 .vz-tip{position:fixed;z-index:200;pointer-events:none;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12.5px;line-height:1.35;box-shadow:0 6px 18px #0006;max-width:260px}
 .vz-tip[hidden]{display:none}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);

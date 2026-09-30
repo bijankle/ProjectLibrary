@@ -25,14 +25,7 @@ try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", fun
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>KCGM Flashcards</title>
-<script>
-// Desktop (mouse + wide screen) opens the interactive PFD; ?cards forces the flashcards.
-try {
-  if (!/[?&]cards/.test(location.search) && matchMedia("(pointer: fine) and (min-width: 1024px)").matches &&
-      !matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches) location.replace("pfd.html");
-} catch (e) {}
-</script>
+<title>KCGM</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
