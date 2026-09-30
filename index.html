@@ -100,6 +100,7 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute
 .lktop{flex:1;min-width:0}
 .lktop .lk-in{height:42px;padding:0 12px 0 40px;border-radius:14px;font-family:inherit;font-size:16px;
   background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") 12px 50%/20px no-repeat}
+#glossBtn{display:none}
 .lktop .lk-cam{width:42px;height:42px;border-radius:14px;font-size:19px}
 .lktop .lk-bar{gap:8px}
 #lkResults{margin-bottom:8px}
@@ -649,13 +650,14 @@ body.searching #homeMain{display:none}
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   renderHome();
   // the tab strip: Assets and Quiz switch here, PFD and Layout open pfd.html; a quiz left half way resumes
-  Tabs.mount({ active: "assets", onSettings: openSettings, onTab: t => {
+  Tabs.mount({ active: "assets", onSettings: openSettings, onGlossary: () => openGloss(), onTab: t => {
     if (t === "assets"){ show("home"); Browse.reset(); return true; }
     if (t === "quiz"){ openQuiz(); return true; }
     return false; } });
   // the Quiz tab opens on a card: the deck in progress, or a fresh one with the last choices
   function openQuiz(){ if (run && !run.finished) show("deck"); else start(pick()); }
-  const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); };
+  const openGloss = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
+  const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#gloss") openGloss(); };
   openHash(); window.addEventListener("hashchange", openHash);
 })();
 </script>

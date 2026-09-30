@@ -45,6 +45,7 @@ window.Tabs = (() => {
     { t: "Layout", k: "layout map plant satellite", run: tab("layout") },
     { t: "Quiz", k: "quiz flashcards", run: tab("quiz") },
     { t: "How to use", k: "help how to tutorial notes", run: () => help() },
+    { t: "Glossary", k: "glossary terms abbreviations words meaning", run: () => glossary() },
     { t: "About this app", k: "about version sources data", run: () => help("about") }
   ];
   const find = q => { const w = q.trim().toLowerCase().split(/\s+/).filter(Boolean); if (!w.length) return [];
@@ -56,7 +57,7 @@ window.Tabs = (() => {
   const fileItems = () => item("settings", "Settings…", "Theme, app size, offline downloads, AI key") +
     `<hr>` + item("checks", "🐞 Checks") + item("sources", "📄 Sources");
   const helpItems = () => `<div class="mn-s"><input type="search" placeholder="Search the app: settings, features, how to…" aria-label="Search the app"><div class="mn-r"></div></div>` +
-    item("howto", "How to use…") + `<hr><button type="button" class="mn-i" data-a="update">⟳ Update app<small class="mn-ver">Checking the version…</small></button>` + item("about", "About this app");
+    item("howto", "How to use…") + item("gloss", "📖 Glossary", "Plant terms and abbreviations") + `<hr><button type="button" class="mn-i" data-a="update">⟳ Update app<small class="mn-ver">Checking the version…</small></button>` + item("about", "About this app");
   function drawMenus(){
     if (!el) return;
     const f = el.querySelector(".mn-f .mn-d"); if (f) f.innerHTML = fileItems();
@@ -68,7 +69,7 @@ window.Tabs = (() => {
     el.querySelectorAll("[data-th]").forEach(b => b.onclick = () => theme(b.dataset.th));
     el.querySelectorAll(".mn-i[data-a]").forEach(b => b.onclick = () => { close(); ({
       settings: () => O.onSettings && O.onSettings(), checks: () => location.href = "issues.html", sources: () => location.href = "issues.html#sources",
-      howto: () => help(), about: () => help("about"), update: () => { b.disabled = true; window.AppUpdate && AppUpdate.update(); } })[b.dataset.a](); });
+      howto: () => help(), about: () => help("about"), gloss: glossary, update: () => { b.disabled = true; window.AppUpdate && AppUpdate.update(); } })[b.dataset.a](); });
     if (window.AppUpdate) Promise.all([AppUpdate.installed(), AppUpdate.latest()]).then(([a, l]) => el.querySelectorAll(".mn-ver").forEach(v => {
       v.textContent = l && a && a !== l ? `Installed ${a}, latest ${l}: update available` : l ? `${l}: up to date` : a ? `${a} (offline)` : ""; }));
     el.querySelectorAll(".mn-s input").forEach(inp => { const out = inp.nextElementSibling;
@@ -77,6 +78,8 @@ window.Tabs = (() => {
         out.querySelectorAll("[data-r]").forEach(b => b.onclick = () => { const x = r[+b.dataset.r]; close(); if (x.run) x.run(); else help(x.t); }); };
       inp.onkeydown = e => { if (e.key === "Enter"){ const f = out.querySelector("[data-r]"); if (f) f.click(); } }; });
   }
+  // the glossary lives on the Assets page: open it there (from the PFD page, go there)
+  const glossary = () => { close(); if (O.onGlossary) O.onGlossary(); else location.href = "index.html?cards#gloss"; };
   function open(m){ close(); openM = m; m.classList.add("open"); const i = m.querySelector(".mn-s input"); if (i && desk()) setTimeout(() => i.focus(), 0); }
   function close(){ if (openM) openM.classList.remove("open"); openM = null; }
 
