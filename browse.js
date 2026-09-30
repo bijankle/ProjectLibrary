@@ -87,6 +87,11 @@ window.Browse = (() => {
     return s === s.toUpperCase() && /[A-Z]{3}/.test(s) ? s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : s; };
   function draw(){
     const list = rows.filter(match), st = nextStep();
+    // the charts on the right (desktop) follow the same filter; a bar can apply the next step or open an item
+    if (window.AssetViz) AssetViz.update(list, { type: t(), step: st && st[0], filtered: path.length > 0,
+      areaName: v => shortName((B.areas || {})[v] || ""), codeName: v => shortName((B.equip || {})[v] || ""), svcName: v => shortName((B.svc || {})[v] || ""),
+      open: k => { const it = Lookup.find(Lookup.norm(k)); if (it) lk.openItem(it); },
+      choose: (f, v) => { const s2 = nextStep(); if (!s2 || s2[0] !== f) return; path.push({ f, v, n: list.filter(r => String(r[f]) === String(v)).length }); after(); } });
     const crumbs = path.map((p, i) => { const nm = p.f === "t" || p.v == null || p.v === "?" ? "" : nameOf(p.f, t(), p.v);
       const txt = p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : (p.v === "?" ? "Other" : p.v) + (nm ? " - " + nm : "");
       return `<button class="bw-cr" data-i="${i}" title="Remove this and the steps after it"><span>${esc(txt)}${p.n ? ` <i>(${p.n.toLocaleString()})</i>` : ""}</span><b>×</b></button>`; }).join("");
@@ -168,10 +173,10 @@ window.Browse = (() => {
   function fit(){ if (!el || !el.offsetParent) return; const z = window.TextSize ? TextSize.z() : 1;   // inside a zoomed page, CSS pixels are scaled by the text size
     el.style.height = Math.max(260, (window.innerHeight - el.getBoundingClientRect().top - window.scrollY - 6) / z) + "px"; }
   window.addEventListener("resize", () => { fit(); fitLayout(); });
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(path)); } catch (e) {} };
+  const save = () => {};   // the filter is not kept between visits
   function mount(root, box){
     el = root; lk = box; el.classList.add("bw");
-    try { const p = JSON.parse(localStorage.getItem(KEY) || "[]"); if (Array.isArray(p)) path = p; } catch (e) {}
+    path = [];   // every visit starts unfiltered (the search box keeps its own history)
     el.innerHTML = `<div class="bw-note">Loading the plant lists…</div>`;
     Promise.all([Lookup.load(), fetch("browse.json").then(r => { if (!r.ok) throw new Error("browse.json " + r.status); return r.json(); })])
       .then(([, b]) => { B = b; build(); if (path.length && (path[0].f !== "t" || !TN[path[0].v] || path.length > STEPS[path[0].v].length + 1)) path = []; draw(); })
@@ -212,5 +217,7 @@ window.Browse = (() => {
 .bw-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-size:12px;font-weight:700}
 .bw-note{font-size:12px;color:var(--mute);line-height:1.4}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  return { mount, restore, fit: () => fit() };
+  // back to no filter (the Assets tab calls this each time it opens)
+  const reset = () => { if (!path.length) return; path = []; if (B) after(); };
+  return { reset, mount, restore, fit: () => fit() };
 })();
