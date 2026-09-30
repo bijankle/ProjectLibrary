@@ -163,7 +163,7 @@
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
     let h = `<div class="lk-head"><div class="lk-kind">${esc(typeName(it.t))}</div>` +
-      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + (it.r && !PHONE() || it.t === "spec" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
+      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + (it.r && !PHONE() || it.t === "spec" || it.t === "line" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
       (PHONE() ? figs(it) : "") + `</div>`;
     if (dwg) h += `<div class="lk-dwgnote">${esc([dwg.title, dwg.rev && "Rev " + dwg.rev, dwg.status, dwg.pages > 1 && dwg.pages + " sheets"].filter(Boolean).join(" · "))}${dwg.inferred ? " · number read from the sheet order" : ""}${opts.find ? `. ${esc(opts.find)} is marked on it` : ""}.</div>`;
     else if (it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
@@ -185,7 +185,8 @@
       // the manual valve list puts words like "Commissioning" in its line number column: that is a note, not a line
       rows.forEach(r => { if (/^line number$/i.test(r.l) && !/\d{2,3}-[A-Z]?\d{3,4}-/.test(r.v)) r.l = "Note"; });
       twins.forEach(x => { const g = DB.types[x.t].f; g.forEach((n, i) => { if (i > 0 && x.r[i]) rows.push({ l: n, v: x.r[i], h: linkify(x.r[i]) }); }); });
-      const kept = L.dedupe(rows, { heads: [it.key, ...twins.map(x => x.key)] });
+      const NAMEF = { mel: "Equipment name", ins: "Description", cv: "Location", spi: "Description", hose: "Description" };   // the phone's header card names it
+      const kept = L.dedupe(rows.filter(r => !inTag(it, r.l) && !(PHONE() && r.l === NAMEF[it.t])), { heads: [it.key, ...twins.map(x => x.key)] });
       docRows(it, kept);
       const filled = new Set(rows.map(r => canon(r.l)));
       // a missing line number isn't worth a mention when the item's P&ID is given (the drawing shows the line)
@@ -226,6 +227,12 @@
     h += L.pills(secs, "item-" + (it.t === "pid" ? "pid" : "rec"));
     return h;
   };
+  // properties the tag's own nomenclature already says, never repeated: a line number carries its area, service (fluid),
+  // pipe spec and size (13-0051-PW-SS1-300); equipment its area (F12-…); an instrument its type letters and loop number;
+  // a control valve its type letters; a manual valve its area; a pipe special its type (SP-HS-001)
+  const NOMEN = { line: /^(area|service|service description|size \(dn\)|pipe spec)$/i, mel: /^area$/i, ins: /^(instrument type|loop number)$/i,
+    cv: /^valve type$/i, mv: /^area$/i, spi: /^type$/i };
+  const inTag = (it, l) => !!(NOMEN[it.t] && NOMEN[it.t].test(String(l).trim()) && (it.t !== "ins" || /^[A-Z]{1,5}\s*\d/.test(it.key)));
   // phone header card: up to three key figures for the item's kind, never one its tag or name already says
   const FIG = { mel: ["Installed power (kW)", "Design duty point", "Nominal duty point", "Size / description", "Duty / standby", "Status"],
     ins: ["Instrument type", "Range / units", "Process fluid", "Loop number", "Make"], cv: ["Valve size (mm)", "Fail position", "Actuator type", "Fluid", "Flow max (m³/h)"],
@@ -233,7 +240,7 @@
     spi: ["Size (DN)", "Total qty", "Pipe spec", "Make / model"], hose: ["Size (DN)", "Length (m)", "Internal diameter (mm)", "Pipe spec", "Service"] };
   function figs(it){
     const want = FIG[it.t]; if (!it.r || !want) return "";
-    const rows = want.map(n => ({ l: n, v: L.get(it, n) })).filter(r => r.v && String(r.v).trim() && String(r.v).length <= 22);
+    const rows = want.map(n => ({ l: n, v: L.get(it, n) })).filter(r => r.v && String(r.v).trim() && String(r.v).length <= 22 && !inTag(it, r.l));
     const kept = L.dedupe(rows, { heads: [it.key, headName(it)] }).slice(0, 3); if (!kept.length) return "";
     const show = r => { const u = (/\(([^)]+)\)\s*$/.exec(r.l) || [])[1], l = r.l.replace(/\s*\([^)]*\)\s*$/, "");
       return [u === "DN" ? "DN" + r.v : u && /^[\d.,\s]+$/.test(r.v) ? r.v + " " + u : r.v, l]; };
