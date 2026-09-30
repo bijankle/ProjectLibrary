@@ -321,6 +321,8 @@
     let only = "", shownN = 80;
     const PILL = { pfd: "PFD", mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spec: "Spec", pid: "Drawings", spi: "SPI", hose: "Hoses", gloss: "Glossary" };
     const showList = (q, keepN) => {
+      // opts.within(q): a page can take the typing for itself (Assets: with Browse filters set, the search narrows that list)
+      if (opts.within && opts.within(q)){ status(""); body.innerHTML = ""; return; }
       showingRecent = false; if (!q.trim() && document.activeElement === inp){ showRecent(); return; }
       if (q.trim().length < 2){ status(""); body.innerHTML = opts.intro || ""; return; }
       if (!keepN) shownN = 80;

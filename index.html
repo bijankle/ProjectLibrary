@@ -584,6 +584,7 @@ body.searching #homeMain{display:none}
   // Search lives in the top bar: type straight in, results replace the home content until the bar is cleared
   Lookup.addExtra(GLOSSARY.map(([k, v]) => ({ t: "gloss", key: k, name: v, text: v })));
   lk = Lookup.mount($("lkRoot"), { placeholder: "Search tags, lines, valves…", intro: "", scrollTop: () => window.scrollTo(0, 0),
+    within: v => window.Browse ? Browse.query(v) : false,   // with Browse filters set, typing narrows the filtered list
     pfd: it => ["mel", "ins", "cv"].includes(it.t) ? { label: "Show on interactive PFD", go: () => location.href = "pfd.html?find=" + encodeURIComponent(it.key) } : null });
   window.kcgmOpenTag = k => { show("home"); Tabs.set("assets"); lk.openKey(k); };   // a tag tapped on a drawing
   { const st = $("lkRoot").querySelector(".lk-status"), bd = $("lkRoot").querySelector(".lk-body");

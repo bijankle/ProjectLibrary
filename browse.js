@@ -14,7 +14,7 @@ window.Browse = (() => {
   const SPI = { EB: "Blower header", FR: "Not used", FS: "Deluge system", HS: "Slurry hose", MC: "Service / flushing coupling", MS: "Filter, trap, breather",
     MV: "Gland water valve", OP: "Orifice plate", SC: "Straub coupling", SP: "Spray nozzle / bar", SS: "Special spool / injector", ST: "Strainer", VC: "Victaulic coupling" };
   const KEY = "kcgm_browse2";
-  let B = null, rows = [], path = [], shownN = 60, names = {};
+  let B = null, rows = [], path = [], shownN = 60, names = {}, q = "", ph0 = "";
 
   const area = s => { const m = /\bF(\d{2})\b/.exec(s || ""); return m ? "F" + m[1] : ""; };
   // instrument letters, e.g. PIT = Pressure Indicating Transmitter (ISA style; later letters use their second meaning)
@@ -86,7 +86,13 @@ window.Browse = (() => {
     if (w[1]) s += (s + " " + w[1]).length <= 14 ? " " + w[1] : " " + w[1].slice(0, Math.max(3, 12 - s.length)) + ".";   // "Analysis Elem."
     return s === s.toUpperCase() && /[A-Z]{3}/.test(s) ? s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : s; };
   function draw(){
-    const list = rows.filter(match), st = nextStep();
+    // typed text with filters set: the same search as the search box, only among the filtered assets
+    let list = rows.filter(match); const st = nextStep();
+    if (path.length && q.trim().length >= 2){ const hit = new Set(Lookup.search(q, 100000)); list = list.filter(r => hit.has(r.it)); }
+    if (lk){ if (!ph0) ph0 = lk.input.placeholder;
+      lk.input.placeholder = path.length ? "Search in " + path.filter(p => p.v != null).map(p => p.f === "t" ? TN[p.v] : p.v === "?" ? "Other" : p.v).join(" › ") + "…" : ph0; }
+    // filters cleared with text still typed: back to the whole app search
+    if (!path.length && q.trim() && lk){ const v = q; q = ""; setTimeout(() => lk.search(v), 0); }
     // the charts on the right (desktop) follow the same filter; a bar can apply the next step or open an item
     if (window.AssetViz) AssetViz.update(list, { type: t(), step: st && st[0], filtered: path.length > 0,
       areaName: v => shortName((B.areas || {})[v] || ""), codeName: v => shortName((B.equip || {})[v] || ""), svcName: v => shortName((B.svc || {})[v] || ""),
@@ -218,6 +224,8 @@ window.Browse = (() => {
 .bw-note{font-size:12px;color:var(--mute);line-height:1.4}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   // back to no filter (the Assets tab calls this each time it opens)
-  const reset = () => { if (!path.length) return; path = []; if (B) after(); };
-  return { reset, mount, restore, fit: () => fit() };
+  const reset = () => { if (!path.length) return; path = []; q = ""; if (lk) lk.input.value = ""; if (B) after(); };
+  // the search box's text while filters are set (index.html hands it over); returns true when Browse took it
+  const query = v => { q = v || ""; if (!path.length) return false; if (B){ shownN = 60; draw(); } return q.trim().length >= 2; };
+  return { reset, query, mount, restore, fit: () => fit() };
 })();
