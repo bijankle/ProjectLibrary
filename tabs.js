@@ -8,6 +8,8 @@
 window.Tabs = (() => {
   const TABS = [["assets", "Assets", "index.html?cards#assets"], ["pfd", "PFD", "pfd.html#pfd"],
     ["layout", "Layout", "pfd.html#layout"], ["quiz", "Quiz", "index.html?cards#quiz"]];
+  // the app's mark (the bubbles of the app icon) for the logo at the top left
+  const mark = s => `<svg viewBox="0 0 512 512" width="${s}" height="${s}" aria-hidden="true"><circle cx="256" cy="256" r="150" fill="none" stroke="var(--gold,var(--accent))" stroke-width="40"/><g fill="var(--gold,var(--accent))"><circle cx="220" cy="300" r="34"/><circle cx="290" cy="250" r="27"/><circle cx="245" cy="206" r="19"/><circle cx="305" cy="322" r="16"/></g></svg>`;
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const desk = () => matchMedia("(min-width: 901px) and (hover: hover)").matches;
   let el = null, O = {}, openM = null;
@@ -104,8 +106,8 @@ window.Tabs = (() => {
     O = o;
     el = document.createElement("div"); el.className = "tbw";
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
-    el.innerHTML = (desk() ? `<nav class="mb" aria-label="Menu"><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` : "") +
-      `<nav class="tb" aria-label="App sections">${tabs}${desk() ? "" : `<div class="mn mn-one"><button type="button" class="tb-s mn-b" aria-label="Menu" title="Menu">☰</button><div class="mn-d mn-dr"></div></div>`}</nav>`;
+    el.innerHTML = (desk() ? `<nav class="mb" aria-label="Menu"><div class="lg" title="KCGM">${mark(17)}<b>KCGM</b></div><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` : "") +
+      `<nav class="tb" aria-label="App sections">${desk() ? "" : `<div class="lg lg-m" title="KCGM">${mark(20)}</div>`}${tabs}${desk() ? "" : `<div class="mn mn-one"><button type="button" class="tb-s mn-b" aria-label="Menu" title="Menu">☰</button><div class="mn-d mn-dr"></div></div>`}</nav>`;
     document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", desk());
     el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (o.onTab && o.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
     el.querySelectorAll(".mn").forEach(m => { const b = m.querySelector(".mn-b");
@@ -124,6 +126,8 @@ window.Tabs = (() => {
 .tb-t.on{color:var(--ink);border-bottom-color:var(--gold,var(--accent))}
 .tb-i{font-size:15px}
 .mn{position:relative;display:flex}
+.lg{display:flex;align-items:center;gap:6px;padding:0 12px 0 4px;margin-right:4px;border-right:1px solid var(--line);color:var(--ink)}
+.lg b{font:900 13.5px/1 system-ui,sans-serif;letter-spacing:.08em}.mb .lg{margin:6px 4px 6px 0}.lg-m{border:0;padding:0 4px 0 2px;margin:0}
 .mb .mn-b{border:0;background:none;color:var(--ink);font:inherit;font-size:13px;padding:0 10px;border-radius:5px;margin:3px 0;cursor:pointer}
 .mb .mn-b:hover,.mn.open>.mn-b{background:var(--panel2,var(--card2))}
 .mn-one{margin-left:auto}.tb-s{flex:none;width:42px;border:0;background:none;color:var(--mute);font-size:21px;cursor:pointer}
