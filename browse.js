@@ -88,7 +88,14 @@ window.Browse = (() => {
   const shortName = n => { const w = String(n || "").replace(/\(.*?\)/g, " ").replace(/[·&/,;:]+|\s[-–]\s/g, " ").split(/\s+/).filter(x => x && !SKIP.test(x));
     if (!w.length) return ""; let s = w[0];
     if (w[1]) s += (s + " " + w[1]).length <= 14 ? " " + w[1] : " " + w[1].slice(0, Math.max(3, 12 - s.length)) + ".";   // "Analysis Elem."
+    const tag = w.slice(2).find(x => /\d/.test(x) || /^[A-Z]$/.test(x)); if (tag) s += " " + tag;   // "Primary Crush. 2", "Milling Classif. A"
     return s === s.toUpperCase() && /[A-Z]{3}/.test(s) ? s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : s; };
+  // short names for a set of options; any two that would still read the same get the next word that differs ("Exist.")
+  const shortAll = (vals, full) => { const m = new Map(vals.map(v => [v, shortName(full(v))]));
+    const seen = {}; m.forEach((n, v) => { if (n) (seen[n] = seen[n] || []).push(v); });
+    Object.values(seen).filter(a => a.length > 1).forEach(a => a.forEach(v => { const sn = m.get(v), words = String(full(v) || "").replace(/\(.*?\)/g, " ").split(/[\s·&/,;:]+/).filter(x => x && !SKIP.test(x));
+      const x = words.find(y => !sn.toLowerCase().includes(y.toLowerCase().slice(0, 4))); if (x) m.set(v, sn + " " + (x.length > 6 ? x.slice(0, 5) + "." : x)); }));
+    return v => m.get(v) || ""; };
   function draw(){
     // typed text with filters set: the same search as the search box, only among the filtered assets
     let list = rows.filter(match); const st = nextStep();
@@ -110,8 +117,9 @@ window.Browse = (() => {
     if (st){
       const c = {}; for (const r of list) c[r[st[0]]] = (c[r[st[0]]] || 0) + 1;
       const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => ALPHA.compare(TN[x], TN[y])) : order(st[0], c);
+      const sn = shortAll(vals.filter(v => v !== "?"), v => nameOf(st[0], t(), v));
       opts = `<div class="bw-h">${esc(st[1])}${st[0] !== "t" ? `<button class="bw-any">Any</button>` : ""}</div>` +
-        vals.map(v => { const n = st[0] === "t" || v === "?" ? "" : shortName(nameOf(st[0], t(), v)), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
+        vals.map(v => { const n = st[0] === "t" || v === "?" ? "" : sn(v), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
           // code (short name); the full name and the count show on the gold chip once picked
           // qty × code (short name): the quantities share one right aligned column, so the items line up
           return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}"><em>${esc(label)}</em>${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
@@ -175,8 +183,9 @@ window.Browse = (() => {
           if (i > path.length) return `<div class="bp-st off"><span>${esc(l)}</span></div>`;
           const c = {}; for (const r of list) c[r[f]] = (c[r[f]] || 0) + 1;
           const vals = f === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => ALPHA.compare(TN[x], TN[y])) : order(f, c);
+          const sn = shortAll(vals.filter(v => v !== "?"), v => nameOf(f, t(), v));
           return `<div class="bp-st open"><span>${esc(l)}</span>${f !== "t" ? `<button class="bp-any">Any</button>` : ""}</div><div class="bp-opts">` +
-            vals.map(v => { const n = f === "t" || v === "?" ? "" : shortName(nameOf(f, t(), v)); return `<button class="bp-o" data-v="${esc(v)}" data-n="${c[v]}"><b>${esc(f === "t" ? TN[v] : v === "?" ? "Other" : v)}</b>${n ? ` <span>${esc(n)}</span>` : ""}</button>`; }).join("") + `</div>`; }).join("") +
+            vals.map(v => { const n = f === "t" || v === "?" ? "" : sn(v); return `<button class="bp-o" data-v="${esc(v)}" data-n="${c[v]}"><b>${esc(f === "t" ? TN[v] : v === "?" ? "Other" : v)}</b>${n ? ` <span>${esc(n)}</span>` : ""}</button>`; }).join("") + `</div>`; }).join("") +
         `</div><button class="bp-go">Show ${list.length.toLocaleString()} ${list.length === 1 ? "item" : "items"}</button></div>`;
     }
     el.innerHTML = `<div class="bp-bar"><button class="bp-c bp-f${nSet ? " set" : ""}">⚲ Filter${nSet ? " " + nSet : ""}</button>${chips}${rec ? `<i class="bp-sep"></i>${rec}` : ""}</div>

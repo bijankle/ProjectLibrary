@@ -27,6 +27,8 @@ for i, sh in enumerate(ix):
             for L, t, k in ((r[0], r[2], 0), (r[4] if len(r) > 4 else "", r[6] if len(r) > 6 else "", 1)):
                 if L and t: out["inst"].setdefault(L, ["", ""])[k] = str(t)
 out["areas"].setdefault("F00", "General Fimiston Site")
+# the two primary crushers: F10 is the existing one (crusher 1), F12 the new one (every item in it is "Primary Crusher 2")
+out["areas"]["F10"] = "Primary Crushing 1 · FIM Existing"; out["areas"]["F12"] = "Primary Crushing 2"
 # the spec's letter table is only partly readable; standard ISA 5.1 meanings fill the gaps
 ISA = {"A": ["Analysis", "Alarm"], "B": ["Burner / Flame", ""], "C": ["Conductivity", "Control"], "D": ["Density", "Differential"],
        "E": ["Voltage", "Element"], "F": ["Flow", "Ratio"], "G": ["", "Gauge / Glass"], "H": ["Hand", "High"], "I": ["Current", "Indicating"],

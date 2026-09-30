@@ -212,7 +212,7 @@ window.PFDLayout = (() => {
   // (the area is the WBS code most of an item's MEL tags start with) labelled "F12 (Primary crushing)". Items of one
   // area more than 120 m from the rest get a zone of their own. Tapping a zone zooms in until the boxes show.
   const AREA_Z = 16.75;
-  const WBS = {F00: "General FIM Site", F10: "Primary Crushing - Existing", F12: "Primary Crushing", F13: "Milling & Classification", F14: "Gravity Circuit & Intensive Leaching",
+  const WBS = {F00: "General FIM Site", F10: "Primary Crushing 1 - Existing", F12: "Primary Crushing 2", F13: "Milling & Classification", F14: "Gravity Circuit & Intensive Leaching",
     F16: "Rougher & Scavenger Flotation", F17: "Flotation Tailings Pre-Leach Thickening", F18: "Cleaner & Cleaner Scavenger Flotation", F19: "Milling & Classification - Existing - Area A",
     F20: "Milling & Classification - Area B", F21: "Flotation Tailings CIL4", F22: "CIL4 - Carbon Treatment & Elution", F23: "Final Tailings Handling & Storage", F24: "Air & Water Services",
     F28: "Ultra Fine Grinding 2 / 3", F30: "Concentrate Pre-Leach Thickening, CIL2/3 & Concentrate Thickening", F34: "Ultra Fine Grinding - Existing", F35: "Concentrate Handling & Filtration",
