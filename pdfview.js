@@ -190,13 +190,23 @@ window.PdfView = (() => {
       const x = e, y = f, w = t.width || h * t.str.length * .5, rot = Math.abs(b) > Math.abs(a);
       // box in PDF units (origin bottom left), vertical text included
       const box = rot ? [x - h, y, x, y + w] : [x, y - h * .2, x + w, y + h * .9];
-      return { s: norm(t.str), box }; });
+      return { s: norm(t.str), box, rot, h }; });
+    // two text pieces join only when they sit next to each other on the sheet (a gap under about 1.5 letter heights),
+    // so a tag split over two pieces doesn't pull in text from across the drawing
+    const near = (p, q) => { const h = Math.min(p.h, q.h) || 1, gx = Math.max(0, q.box[0] - p.box[2], p.box[0] - q.box[2]), gy = Math.max(0, q.box[1] - p.box[3], p.box[1] - q.box[3]); return gx + gy < h * 1.5; };
+    // a piece holding more than the tag: its box is cut down to the tag's share of the characters
+    const part = (it, k, n) => { const b = it.box, L = it.s.length || 1, a = k / L, z = Math.min(1, (k + n) / L);
+      return it.rot ? [b[0], b[1] + (b[3] - b[1]) * a, b[2], b[1] + (b[3] - b[1]) * z] : [b[0] + (b[2] - b[0]) * a, b[1], b[0] + (b[2] - b[0]) * z, b[3]]; };
     const hits = [];
     for (let i = 0; i < items.length; i++){
       let acc = "", boxes = [];
       for (let j = i; j < Math.min(items.length, i + 8); j++){
-        acc += items[j].s; boxes.push(items[j].box);
-        if (acc.includes(want)){ hits.push(boxes.reduce((u, b) => [Math.min(u[0], b[0]), Math.min(u[1], b[1]), Math.max(u[2], b[2]), Math.max(u[3], b[3])])); break; }
+        if (j > i && !near(items[j - 1], items[j])) break;
+        acc += items[j].s; boxes.push(j === i ? items[j].box : items[j].box);
+        if (acc.includes(want)){ const k = acc.indexOf(want);
+          if (j === i) boxes = [part(items[i], k, want.length)];
+          else { boxes[0] = part(items[i], Math.min(k, items[i].s.length - 1), items[i].s.length); const e = k + want.length - (acc.length - items[j].s.length); boxes[boxes.length - 1] = part(items[j], 0, Math.max(1, e)); }
+          hits.push(boxes.reduce((u, b) => [Math.min(u[0], b[0]), Math.min(u[1], b[1]), Math.max(u[2], b[2]), Math.max(u[3], b[3])])); break; }
         // keep joining only while the end of what we have could still be the start of the tag
         let go = false; for (let k = 0; k < acc.length && !go; k++) go = want.startsWith(acc.slice(k));
         if (!go) break;

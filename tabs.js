@@ -136,7 +136,7 @@ window.Tabs = (() => {
 .mn.open>.mn-d{display:block}.mn-dr{left:auto;right:0}.mn-dh{min-width:330px}
 .mn-i{display:block;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-size:13.5px;padding:7px 10px;border-radius:6px;cursor:pointer}
 .mn-i:hover,.mn-i:focus-visible{background:var(--panel2,var(--card2))}.mn-i:disabled{opacity:.6}
-.mn-i small{display:block;color:var(--mute);font-size:11.5px;margin-top:1px}
+.mn-i small{display:none;color:var(--mute);font-size:11.5px;margin-top:1px}.mn-i:hover small,.mn-i:focus-visible small{display:block}   /* the hint shows on mouse over */
 .mn-d hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
 .mn-h{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:6px 10px 2px}
 .mn-th{display:flex;align-items:center;padding:5px 10px}.mn-th span{flex:1;font-size:13.5px}
