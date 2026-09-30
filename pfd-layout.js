@@ -146,6 +146,10 @@ window.PFDLayout = (() => {
       items.push({ o, p, w: r.width, h: r.height }); });
     if (!items.length) return;
     items.sort((a, b) => a.p.x - b.p.x);
+    // one column a side: when a side is taller than the room, the names get smaller (down to 60%) to fit
+    const mv = $("mapView"), room = H - TOP - BOT, hs0 = items.map(i => i.h + GAP), tot = hs0.reduce((t, v) => t + v, 0) / 2;
+    const k = Math.max(.6, Math.min(1, room / Math.max(1, tot))), k0 = parseFloat(mv.style.getPropertyValue("--sk")) || 1;
+    if (Math.abs(k - k0) > .02){ mv.style.setProperty("--sk", k.toFixed(3)); items.forEach(i => { const r = i.o.el.getBoundingClientRect(); i.w = r.width; i.h = r.height; }); }
     const minX = Math.min(...items.map(i => i.p.x)), maxX = Math.max(...items.map(i => i.p.x)), avail = H - TOP - BOT;
     // split left / right near the middle, moved so neither side needs more columns than it must (a narrow phone has
     // room for about one column a side)
@@ -156,7 +160,7 @@ window.PFDLayout = (() => {
     half = bestK; const sides = [items.slice(0, half), items.slice(half)];
     sides.forEach((grp, si) => { if (!grp.length) return;
       grp.sort((a, b) => a.p.y - b.p.y);
-      const tot = grp.reduce((t, i) => t + i.h + GAP, 0), nc = Math.max(1, Math.ceil(tot / avail)), per = Math.ceil(grp.length / nc);
+      const nc = 1, per = grp.length;
       const cols = []; for (let c = 0; c < nc; c++) cols.push(grp.slice(c * per, (c + 1) * per));
       const cw = cols.map(c => Math.max(...c.map(i => i.w), 0)), all = cw.reduce((a, b) => a + b, 0) + CG * (nc - 1);
       // the stack's inner edge sits just outside the plant, but never off the screen
@@ -337,7 +341,7 @@ window.PFDLayout = (() => {
     const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, G = 8, rows = [[], []];
     areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span");
       const p = map.latLngToContainerPoint(a.lab.getLatLng()); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) return;
-      rows[p.y < H / 2 ? 0 : 1].push({ a, e, sp, p, w: sp.offsetWidth }); });
+      rows[0].push({ a, e, sp, p, w: sp.offsetWidth }); });   // every code along the top (as many rows as it takes)
     const lines = rows.map(row => { row.sort((x, y) => x.p.x - y.p.x);
       const nl = Math.max(1, Math.ceil((row.reduce((t, r) => t + r.w + G, 0) - G) / (W - 24 - (row === rows[1] ? RB : 0))));
       row.forEach((r, k) => r.ln = k % nl); return nl; });
