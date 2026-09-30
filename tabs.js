@@ -50,6 +50,7 @@ window.Tabs = (() => {
     { t: "Settings", k: "settings preferences app size text zoom ai key full screen", run: () => O.onSettings && O.onSettings() },
     { t: "Theme: dark", k: "theme dark mode colours colors", run: () => theme("dark") },
     { t: "Theme: light", k: "theme light mode colours colors", run: () => theme("light") },
+    { t: "Text size", k: "text size font bigger smaller larger small large", run: () => O.onSettings ? O.onSettings() : location.href = "index.html?cards#settings" },
     { t: "Theme: follow device", k: "theme device system auto", run: () => theme("device") },
     { t: "Offline downloads", k: "offline download documents pids spec", run: () => O.onSettings && O.onSettings() },
     { t: "Update app", k: "update version refresh latest", run: () => window.AppUpdate && AppUpdate.update() },
@@ -285,5 +286,5 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
   const ro = new ResizeObserver(es => es.forEach(e => fit(e.target))), seen = new WeakSet();
   const scan = () => document.querySelectorAll(SEL).forEach(t => { if (!seen.has(t)){ seen.add(t); ro.observe(t); fit(t); } });   // (new tables; the observer refits on a width change)
   let q = 0; new MutationObserver(() => { if (!q) q = requestAnimationFrame(() => { q = 0; scan(); }); }).observe(document.documentElement, { childList: true, subtree: true });
-  scan();
+  scan(); addEventListener("resize", () => document.querySelectorAll(SEL).forEach(fit));   // (a text size change)
 })();

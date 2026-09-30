@@ -157,7 +157,7 @@ window.Browse = (() => {
       const max = parseFloat(getComputedStyle(s).fontSize);
       for (let k = 0; k < 3 && b.scrollWidth > b.clientWidth + 1; k++){
         const cur = parseFloat(s.style.fontSize) || max, over = b.scrollWidth - b.clientWidth, w = s.getBoundingClientRect().width;
-        s.style.fontSize = Math.max(11, cur * Math.max(0, w - over - 2) / w).toFixed(2) + "px"; } });
+        s.style.fontSize = Math.max(Math.min(11, max), cur * Math.max(0, w - over - 2) / w).toFixed(2) + "px"; } });
   }
   const recents = () => { try { return JSON.parse(localStorage.getItem("kcgm_recent_lookups") || "[]"); } catch (e) { return []; } };
   function drawPhone(list, st){

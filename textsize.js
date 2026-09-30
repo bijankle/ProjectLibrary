@@ -18,6 +18,7 @@ window.TextSize = (() => {
 .ts span{font-size:13px;color:var(--mute)}.ts span.big{font-size:19px}
 .ts-th{gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:max-content}.ts-th button{border:0;background:none;color:var(--mute);font:inherit;font-weight:700;font-size:var(--fb,15px);padding:7px 16px;cursor:pointer}
 .ts-th button.on{background:var(--gold,var(--accent));color:#111}
+.ts-tx{width:100%}.ts-tx button{flex:1;padding:7px 4px}.ts-p{font-size:var(--fb,15px);color:var(--mute);margin-top:6px}
 .ts-r{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:4px 9px;font:inherit;font-size:var(--fb,15px);cursor:pointer}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   addEventListener("storage", e => { if (e.key === KEY) apply(get()); });   // changed in the other page
@@ -39,5 +40,15 @@ window.TextSize = (() => {
       el.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { try { localStorage.setItem("kcgm_theme", b.dataset.t); } catch (e) {} if (window.kcgmTheme) kcgmTheme(b.dataset.t); draw(); }); };
     draw();
   }
-  return { mount, theme, z: () => 1 };
+  // Text size: five steps of the app's text (kept as kcgm_text, applied by kcgmText in each page's head)
+  function text(el){
+    const L = [["xs", "XS", "Extra small"], ["s", "S", "Small"], ["n", "Normal", "Normal"], ["l", "L", "Large"], ["xl", "XL", "Extra large"]];
+    const cur = () => { try { return localStorage.getItem("kcgm_text") || "n"; } catch (e) { return "n"; } };
+    const draw = () => { const c = cur();
+      el.innerHTML = `<div class="ts ts-th ts-tx">${L.map(([k, t, n]) => `<button type="button" data-x="${k}" class="${c === k ? "on" : ""}" title="${n}">${t}</button>`).join("")}</div><div class="ts-p">${(L.find(x => x[0] === c) || L[2])[2]}: this is how text reads.</div>`;
+      el.querySelectorAll("[data-x]").forEach(b => b.onclick = () => { try { localStorage.setItem("kcgm_text", b.dataset.x); } catch (e) {} if (window.kcgmText) kcgmText(b.dataset.x);
+        dispatchEvent(new Event("resize")); draw(); }); };
+    draw();
+  }
+  return { mount, theme, text, z: () => 1 };
 })();

@@ -18,6 +18,12 @@ try { kcgmViewport(parseFloat(localStorage.getItem("kcgm_text_size"))); } catch 
 window.kcgmTheme = function(v){ try { v = v || localStorage.getItem("kcgm_theme") || "device";
   document.documentElement.dataset.theme = v === "dark" || (v !== "light" && !matchMedia("(prefers-color-scheme: light)").matches) ? "dark" : "light"; } catch (e) {} };
 kcgmTheme();
+// Text size (Settings → Text size): the app's three text sizes (titles, labels, body) scaled together, 65, 75, 90, 100
+// or 115 percent; set before the first paint as the size variables on <html>
+window.kcgmText = function(v){ try { v = v || localStorage.getItem("kcgm_text") || "n"; var k = { xs: .65, s: .75, n: .9, l: 1, xl: 1.15 }[v] || .9, s = document.documentElement.style;
+  s.setProperty("--fh", 22 * k + "px"); s.setProperty("--fl", 13 * k + "px"); s.setProperty("--fb", 15 * k + "px"); } catch (e) {} };
+kcgmText();
+try { addEventListener("storage", function(e){ if (e.key === "kcgm_text") { kcgmText(); dispatchEvent(new Event("resize")); } }); } catch (e) {}
 try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){ kcgmTheme(); });
   addEventListener("storage", function(e){ if (e.key === "kcgm_theme") kcgmTheme(); }); } catch (e) {}
 </script>
@@ -298,6 +304,8 @@ body.searching #homeMain{display:none}
   <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">Full screen</button>
   <h2>Theme</h2>
   <div class="sgc" id="thRoot"></div>
+  <h2>Text size</h2>
+  <div class="sgc" id="txRoot"></div>
   <h2>App size</h2>
   <div class="sgc" id="tsRoot"></div>
   <h2>Offline downloads</h2>
@@ -660,7 +668,7 @@ body.searching #homeMain{display:none}
     $("modelWrap").style.display = AI.ready() && AI.model() ? "block" : "none";
     if (AI.model()) $("modelSel").innerHTML = `<option>${AI.model()}</option>`;
   }
-  const openSettings = () => { renderSettings(); TextSize.theme($("thRoot")); TextSize.mount($("tsRoot")); show("settings"); };
+  const openSettings = () => { renderSettings(); TextSize.theme($("thRoot")); TextSize.text($("txRoot")); TextSize.mount($("tsRoot")); show("settings"); };
   $("setBack").onclick = () => { renderHome(); show(cur); };
   $("keyTest").onclick = async () => {
     const k = $("keyIn").value.trim();
