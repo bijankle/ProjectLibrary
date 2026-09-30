@@ -31,38 +31,72 @@ window.AssetViz = (() => {
   // the sheet opens it full screen in the drawing viewer
   let cur = null, curIx = 0, gen = 0;
   const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
-  function item(it){ cur = it; curIx = 0; lastSig = ""; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
+  function item(it){ cur = it; curIx = 0; over = null; lastSig = ""; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
   function list(){ if (!cur) return; cur = null; lastSig = ""; draw(true); }
+  let over = null;   // a drawing opened from a reference on the preview (in place of the item's own)
   function drawItem(){
-    const g = ++gen, ds = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(cur) : [];
-    if (!ds.length || !window.Pid || !window.PdfView){ el.innerHTML = ""; return; }
-    if (curIx >= ds.length) curIx = 0;
-    const n = ds[curIx], d = Pid.info(n) || {};
-    el.innerHTML = `<div class="vz-pv">` + (ds.length > 1 ? `<div class="vz-tabs">${ds.map((x, i) => `<button type="button" class="vz-tab${i === curIx ? " on" : ""}" data-i="${i}">${esc(x.replace(/^2000-/, ""))}</button>`).join("")}</div>` : "") +
-      `<div class="vz-pt"><b>${esc(n)}</b> ${esc(d.title || "")}</div><div class="vz-sheet" title="Open full screen"><canvas></canvas><div class="vz-mk"></div><p class="vz-note">Loading the drawing…</p></div></div>`;
-    el.querySelectorAll(".vz-tab").forEach(b => b.onclick = () => { curIx = +b.dataset.i; drawItem(); });
-    const box = el.querySelector(".vz-sheet"), key = cur.key;
-    box.onclick = () => Pid.open(n, key);
+    const g = ++gen, own = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(cur) : [];
+    if ((!own.length && !over) || !window.Pid || !window.PdfView){ el.innerHTML = ""; return; }
+    if (curIx >= own.length) curIx = 0;
+    const n = over || own[curIx], d = Pid.info(n) || {};
+    el.innerHTML = `<div class="vz-pv">` + (own.length > 1 || over ? `<div class="vz-tabs">${own.map((x, i) => `<button type="button" class="vz-tab${!over && i === curIx ? " on" : ""}" data-i="${i}">${esc(x.replace(/^2000-/, ""))}</button>`).join("")}${over ? `<button type="button" class="vz-tab on">${esc(over.replace(/^2000-/, ""))}</button>` : ""}</div>` : "") +
+      `<div class="vz-pt"><b>${esc(n)}</b> ${esc(d.title || "")}</div>` +
+      `<div class="vz-sheet"><div class="vz-stage"><canvas></canvas><div class="vz-mk"></div><div class="vz-rf"></div></div>` +
+      `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="fit" title="Fit">⤢</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Full screen">⛶</button></div>` +
+      `<p class="vz-note">Loading the drawing…</p></div></div>`;
+    el.querySelectorAll(".vz-tab[data-i]").forEach(b => b.onclick = () => { over = null; curIx = +b.dataset.i; drawItem(); });
+    const box = el.querySelector(".vz-sheet"), stage = box.querySelector(".vz-stage"), cv = box.querySelector("canvas"), key = cur.key;
+    let z = 1, tx = 0, ty = 0, W = 0, H = 0, page = null, sc = 1, rz = 0, rt = null;
+    const apply = () => { z = Math.max(1, Math.min(10, z)); tx = Math.min(0, Math.max(W - W * z, tx)); ty = Math.min(0, Math.max(H - H * z, ty));
+      stage.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; clearTimeout(rt); rt = setTimeout(sharp, 180); };
+    const zoomAt = (f, x, y) => { const z0 = z; z = Math.max(1, Math.min(10, z * f)); tx = x - (x - tx) * z / z0; ty = y - (y - ty) * z / z0; apply(); };
+    async function sharp(){ if (!page) return; const q = Math.min(4, Math.ceil(z)), dpr = devicePixelRatio || 1; if (q === rz) return; rz = q;
+      const vp = page.getViewport({ scale: sc * q * dpr }), off = document.createElement("canvas"); off.width = Math.round(vp.width); off.height = Math.round(vp.height);
+      await page.render({ canvasContext: off.getContext("2d"), viewport: vp }).promise; if (g !== gen || rz !== q) return;
+      cv.width = off.width; cv.height = off.height; cv.getContext("2d").drawImage(off, 0, 0); }
+    box.querySelector(".vz-zb").onclick = e => { const b = e.target.closest("button"); if (!b) return; e.stopPropagation();
+      if (b.dataset.z === "full") return Pid.open(n, cur.t === "pid" ? null : key);
+      if (b.dataset.z === "fit"){ z = 1; tx = ty = 0; apply(); return; }
+      zoomAt(b.dataset.z === "in" ? 1.6 : 1 / 1.6, W / 2, H / 2); };
+    box.addEventListener("wheel", e => { e.preventDefault(); const r = box.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * .001), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+    box.addEventListener("dblclick", e => { const r = box.getBoundingClientRect(); zoomAt(2, e.clientX - r.left, e.clientY - r.top); });
+    // drag to pan (a press that doesn't move is a tap: references still work); two fingers pinch
+    const pts = new Map(); let moved = 0, pinch = null;
+    box.addEventListener("pointerdown", e => { if (e.target.closest(".vz-zb")) return; pts.set(e.pointerId, [e.clientX, e.clientY]); moved = 0;
+      if (pts.size === 2){ const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z }; } });
+    box.addEventListener("pointermove", e => { const p = pts.get(e.pointerId); if (!p) return;
+      if (pts.size === 2 && pinch){ pts.set(e.pointerId, [e.clientX, e.clientY]); const [a, b] = [...pts.values()], r = box.getBoundingClientRect();
+        zoomAt(pinch.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d / z, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top); moved = 9; return; }
+      const dx = e.clientX - p[0], dy = e.clientY - p[1]; moved += Math.abs(dx) + Math.abs(dy); pts.set(e.pointerId, [e.clientX, e.clientY]);
+      if (moved > 4){ box.classList.add("drag"); try { box.setPointerCapture(e.pointerId); } catch (x) {} tx += dx; ty += dy; apply(); } });
+    const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; setTimeout(() => box.classList.remove("drag"), 0); };
+    box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
+    // references printed on the sheet (other drawings, tags): tap to follow
+    box.querySelector(".vz-rf").addEventListener("click", e => { const a = e.target.closest("[data-t]"); if (!a || moved > 4) return; e.stopPropagation();
+      const t = a.dataset.t, k = a.dataset.k;
+      if (k === "d"){ if (Pid.has(t)){ const i = own.indexOf(t); if (i >= 0){ over = null; curIx = i; } else over = t; drawItem(); } return; }
+      const tag = t.split("|")[0]; if (window.kcgmOpenTag) kcgmOpenTag(tag); });
     PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
-      if (g !== gen) return;
-      const v1 = pg.getViewport({ scale: 1 }), W = box.clientWidth, H = Math.max(200, innerHeight - box.getBoundingClientRect().top - 24);
-      const sc = Math.min(W / v1.width, H / v1.height), vp = pg.getViewport({ scale: sc }), dpr = devicePixelRatio || 1;
-      const cv = box.querySelector("canvas"); cv.width = Math.round(vp.width * dpr); cv.height = Math.round(vp.height * dpr); cv.style.width = vp.width + "px"; cv.style.height = vp.height + "px";
-      await pg.render({ canvasContext: cv.getContext("2d"), viewport: pg.getViewport({ scale: sc * dpr }) }).promise;
-      if (g !== gen) return; box.querySelector(".vz-note").remove();
+      if (g !== gen) return; page = pg;
+      const v1 = pg.getViewport({ scale: 1 }), bw = box.clientWidth, bh = Math.max(200, innerHeight - box.getBoundingClientRect().top - 24);
+      sc = Math.min(bw / v1.width, bh / v1.height); const vp = pg.getViewport({ scale: sc }); W = vp.width; H = vp.height;
+      box.style.height = H + "px"; stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
+      rz = 0; await sharp(); if (g !== gen) return; const nt = box.querySelector(".vz-note"); if (nt) nt.remove();
+      Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
+        rf.innerHTML = (R[d.number] || []).filter(r => r[0] === 1).map(r => `<i data-t="${esc(r[5])}" data-k="${esc(r[6])}" title="${esc(String(r[5]).split("|").join(", "))}" style="left:${r[1] / 100}%;top:${r[2] / 100}%;width:${r[3] / 100}%;height:${r[4] / 100}%"></i>`).join(""); });
       // mark the tag: a text piece holding it, or two neighbouring pieces that together do
-      const want = nk(key); if (want.length < 3 || cur.t === "pid") return;
+      const want = nk(key); if (want.length < 3 || cur.t === "pid" || over) return;
       const tc = await pg.getTextContent(), it = tc.items.filter(t => t.str && t.str.trim()), hits = [];
       const rect = t => { const [a, b, c, dd, e, f] = t.transform, h = Math.hypot(c, dd) || Math.hypot(a, b), w = t.width || h * t.str.length * .5, rot = Math.abs(b) > Math.abs(a);
         return rot ? [e - h, f, e, f + w] : [e, f - h * .2, e + w, f + h * .9]; };
       it.forEach((t, i) => { const s1 = nk(t.str); if (s1.includes(want)) hits.push(rect(t));
         else if (i + 1 < it.length && (s1 + nk(it[i + 1].str)).includes(want) && !nk(it[i + 1].str).includes(want)){ const r1 = rect(t), r2 = rect(it[i + 1]);
           if (Math.abs(r1[1] - r2[1]) < 20) hits.push([Math.min(r1[0], r2[0]), Math.min(r1[1], r2[1]), Math.max(r1[2], r2[2]), Math.max(r1[3], r2[3])]); } });
-      const mk = box.querySelector(".vz-mk"); mk.style.width = vp.width + "px"; mk.style.height = vp.height + "px";
-      mk.innerHTML = hits.slice(0, 20).map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b);
+      box.querySelector(".vz-mk").innerHTML = hits.slice(0, 20).map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b);
         return `<i style="left:${Math.min(x1, x2) - 3}px;top:${Math.min(y1, y2) - 3}px;width:${Math.abs(x2 - x1) + 6}px;height:${Math.abs(y2 - y1) + 6}px"></i>`; }).join("");
     }).catch(e => { if (g === gen){ const p = box.querySelector(".vz-note"); if (p) p.textContent = "Couldn't load the drawing (" + (e.message || e) + ")."; } });
   }
+
 
   // ---------- pieces ----------
   // the charts in four groups, each under a heading, in this order
@@ -178,8 +212,12 @@ window.AssetViz = (() => {
 .vz-tab{border:1px solid var(--line);background:var(--card,var(--panel));color:var(--mute);border-radius:8px;padding:5px 10px;font:inherit;font-size:var(--fb,15px);cursor:pointer}
 .vz-tab.on{border-color:var(--gold);color:var(--ink);font-weight:700}
 .vz-pt{font-size:var(--fb,15px);color:var(--mute)}.vz-pt b{color:var(--ink)}
-.vz-sheet{position:relative;cursor:zoom-in;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0;overflow:hidden;align-self:flex-start;max-width:100%;min-width:100%}
+.vz-sheet{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;touch-action:none;cursor:grab;user-select:none}
+.vz-sheet.drag{cursor:grabbing}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
+.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:2px}.vz-rf i:hover{background:rgba(232,180,74,.3);outline:1px solid #e8b44a}
+.vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.vz-zb button:hover{border-color:#b67d12}
 .vz-mk{position:absolute;left:0;top:0;pointer-events:none}.vz-mk i{position:absolute;border:2px solid #e8b44a;background:rgba(232,180,74,.35);border-radius:3px}
 .vz-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
 .vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}

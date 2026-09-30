@@ -29,5 +29,5 @@ window.Pid = (() => {
     return true;
   }
   const kind = n => /-PFD-/.test(n) ? "PFD" : "P&ID";
-  return { load, ready: () => !!IX, has: n => !!(IX && key(n)), info, open, kind, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
+  return { load, ready: () => !!IX, has: n => !!(IX && key(n)), info, open, kind, refs, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
 })();
