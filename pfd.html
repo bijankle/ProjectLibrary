@@ -333,7 +333,7 @@ svg.focus .ctl, svg.focus .ilk{opacity:.12}
 /* PDC case colour (red = highest flow ... blue = lowest) is the border of every tph box; the dropdown text is the legend */
 :root{--cc:#eab308}
 .lab rect{stroke:var(--cc) !important}
-#case{font-weight:600;color:var(--ink);border-color:var(--cc);border-width:2px}   /* plain text; the border carries the case colour */
+#case{font-weight:600;color:var(--ink)!important;opacity:1;border-color:var(--cc);border-width:2px}   /* plain text; the border carries the case colour */
 #case option{font-weight:700;background:#fff}
 #info .sc .cur{background:color-mix(in srgb,var(--cc) 35%,transparent)}
 #info .sc th.cur{color:var(--ink)}
@@ -856,7 +856,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   // ---------- PDC case ----------
   // order of PDC_CASES: nominal, design grade (24.0, lowest), achievable (25.5, higher grade), high throughput (28.35)
   const CASE_COL = ["#eab308", "#2563eb", "#f97316", "#dc2626"], CASE_TXT = ["#a16207", "#1d4ed8", "#c2410c", "#b91c1c"];
-  PDC_CASES.forEach((c, i) => { const o = document.createElement("option"); o.value = i; o.textContent = "PDC: " + c; o.style.color = CASE_TXT[i]; $("case").appendChild(o); });
+  PDC_CASES.forEach((c, i) => { const o = document.createElement("option"); o.value = i; o.textContent = c; o.style.color = CASE_TXT[i]; $("case").appendChild(o); });
   $("case").onchange = e => setCase(+e.target.value);
   function setCase(ci){
     pdcCase = ci; $("case").classList.toggle("on", ci !== 0); document.documentElement.style.setProperty("--cc", CASE_COL[ci]);
