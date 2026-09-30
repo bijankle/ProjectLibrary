@@ -199,7 +199,7 @@ svg.dragging{cursor:grabbing}
 #info .pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
 #zoom{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:5}
 #info.on ~ #zoom{right:488px}
-#zoom button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:18px;cursor:pointer}
+#zoom button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:25px;line-height:1;padding:0;cursor:pointer}
 #stepbar{position:fixed;top:calc(64px + var(--tb,0px));left:284px;right:14px;display:none;gap:10px;align-items:stretch;justify-content:center;z-index:5;pointer-events:none}
 #stepbar.on{display:flex}
 #info.on ~ #stepbar{right:488px}
@@ -420,7 +420,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <div id="mapView" hidden></div>
 
 <div id="info"><div class="top"><button class="x" id="infoX">✕</button><div class="kind" id="iKind"></div><h3 id="iName"></h3><div class="tag" id="iTag"></div></div><div class="body" id="iBody"></div></div>
-<div id="zoom"><button id="zInfo" title="Show the properties panel again" style="font-size:15px">ⓘ</button><button id="zIn" title="Zoom in">+</button><button id="zOut" title="Zoom out">−</button><button id="zFit" title="Fit" style="font-size:14px">⤢</button></div>
+<div id="zoom"><button id="zInfo" title="Show the properties panel again" style="font-size:21px">ⓘ</button><button id="zIn" title="Zoom in">+</button><button id="zOut" title="Zoom out">−</button><button id="zFit" title="Fit" style="font-size:20px">⤢</button></div>
 <div id="stepbar"><button class="sb-card sb-prev" id="sbPrev"></button><div class="sb-card sb-cur" id="sbCur"></div><button class="sb-card sb-next" id="sbNext"></button></div>
 <div id="toast"></div>
 <div id="mleg" class="m-only" aria-label="Legend and filters"></div>
