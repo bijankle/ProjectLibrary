@@ -1,4 +1,5 @@
 {
+  "id": "./?app=project-library",
   "name": "Project Library",
   "short_name": "Project Library",
   "description": "Plant lists, drawings, PFD, layout and quiz for a processing plant project.",

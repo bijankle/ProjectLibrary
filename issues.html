@@ -21,6 +21,7 @@ kcgmTheme();
 try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){ kcgmTheme(); });
   addEventListener("storage", function(e){ if (e.key === "kcgm_theme") kcgmTheme(); }); } catch (e) {}
 </script>
+<link rel="manifest" href="manifest.json?v=2">
 <title>Project Library Checks</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
