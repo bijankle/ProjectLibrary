@@ -29,22 +29,31 @@ window.AssetViz = (() => {
   // ---------- an open item: its P&ID (or PFD sheet) instead of the charts ----------
   // the whole sheet fits the space with the item marked; drawing number tabs above when there are several; a click on
   // the sheet opens it full screen in the drawing viewer
-  let cur = null, curIx = 0, gen = 0;
+  let cur = null, shown = null, hist = [], gen = 0;
   const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
-  function item(it){ cur = it; curIx = 0; over = null; lastSig = ""; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
+  function item(it){ cur = it; shown = null; hist = []; lastSig = ""; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
   function list(){ if (!cur) return; cur = null; lastSig = ""; draw(true); }
-  let over = null;   // a drawing opened from a reference on the preview (in place of the item's own)
+  // a drawing's series: the sheets whose title differs only by the sheet number ("Plant air, sheet 3" → "Plant air"),
+  // P&IDs with P&IDs, PFDs with PFDs, in sheet order
+  const SH = /,?\s*sheet\s+(\d+)(\s+of\s+\d+)?/i;
+  const series = n => { const d = Pid.info(n); if (!d || !SH.test(d.title || "")) return [n];
+    const base = t => String(t || "").replace(SH, "").trim().toLowerCase(), b = base(d.title), k = /-PFD-/.test(n);
+    return Pid.all().filter(x => x && SH.test(x.title || "") && base(x.title) === b && /-PFD-/.test(x.number) === k)
+      .map(x => [x.number, +SH.exec(x.title)[1]]).sort((a, c) => a[1] - c[1] || a[0].localeCompare(c[0])).map(x => x[0]); };
+  const sheetOf = n => { const m = SH.exec((Pid.info(n) || {}).title || ""); return m ? +m[1] : null; };
   function drawItem(){
     const g = ++gen, own = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(cur) : [];
-    if ((!own.length && !over) || !window.Pid || !window.PdfView){ el.innerHTML = ""; return; }
-    if (curIx >= own.length) curIx = 0;
-    const n = over || own[curIx], d = Pid.info(n) || {};
-    el.innerHTML = `<div class="vz-pv">` + (own.length > 1 || over ? `<div class="vz-tabs">${own.map((x, i) => `<button type="button" class="vz-tab${!over && i === curIx ? " on" : ""}" data-i="${i}">${esc(x.replace(/^2000-/, ""))}</button>`).join("")}${over ? `<button type="button" class="vz-tab on">${esc(over.replace(/^2000-/, ""))}</button>` : ""}</div>` : "") +
+    if ((!own.length && !shown) || !window.Pid || !window.PdfView){ el.innerHTML = ""; return; }
+    if (!shown) shown = own[0];
+    const n = shown, d = Pid.info(n) || {}, ser = series(n), go = x => { if (x === shown) return; hist.push(shown); shown = x; drawItem(); };
+    el.innerHTML = `<div class="vz-pv">` + (ser.length > 1 || hist.length ? `<div class="vz-tabs">${hist.length ? `<button type="button" class="vz-tab vz-bk" title="Back to ${esc(hist[hist.length - 1])}">‹</button>` : ""}` +
+      (ser.length > 1 ? ser.map(x => `<button type="button" class="vz-tab${x === n ? " on" : ""}" data-n="${esc(x)}" title="${esc(x)}">Sheet ${sheetOf(x)}</button>`).join("") : "") + `</div>` : "") +
       `<div class="vz-pt"><b>${esc(n)}</b> ${esc(d.title || "")}</div>` +
       `<div class="vz-sheet"><div class="vz-stage"><canvas></canvas><div class="vz-mk"></div><div class="vz-rf"></div></div>` +
       `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="fit" title="Fit">⤢</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Full screen">⛶</button></div>` +
       `<p class="vz-note">Loading the drawing…</p></div></div>`;
-    el.querySelectorAll(".vz-tab[data-i]").forEach(b => b.onclick = () => { over = null; curIx = +b.dataset.i; drawItem(); });
+    el.querySelectorAll(".vz-tab[data-n]").forEach(b => b.onclick = () => go(b.dataset.n));
+    const bk = el.querySelector(".vz-bk"); if (bk) bk.onclick = () => { shown = hist.pop(); drawItem(); };
     const box = el.querySelector(".vz-sheet"), stage = box.querySelector(".vz-stage"), cv = box.querySelector("canvas"), key = cur.key;
     let z = 1, tx = 0, ty = 0, W = 0, H = 0, page = null, sc = 1, rz = 0, rt = null;
     const apply = () => { z = Math.max(1, Math.min(10, z)); tx = Math.min(0, Math.max(W - W * z, tx)); ty = Math.min(0, Math.max(H - H * z, ty));
@@ -74,7 +83,7 @@ window.AssetViz = (() => {
     // references printed on the sheet (other drawings, tags): tap to follow
     box.querySelector(".vz-rf").addEventListener("click", e => { const a = e.target.closest("[data-t]"); if (!a || moved > 4) return; e.stopPropagation();
       const t = a.dataset.t, k = a.dataset.k;
-      if (k === "d"){ if (Pid.has(t)){ const i = own.indexOf(t); if (i >= 0){ over = null; curIx = i; } else over = t; drawItem(); } return; }
+      if (k === "d"){ if (Pid.has(t)) go(t); return; }
       const tag = t.split("|")[0]; if (window.kcgmOpenTag) kcgmOpenTag(tag); });
     PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
       if (g !== gen) return; page = pg;
@@ -85,7 +94,7 @@ window.AssetViz = (() => {
       Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
         rf.innerHTML = (R[d.number] || []).filter(r => r[0] === 1).map(r => `<i data-t="${esc(r[5])}" data-k="${esc(r[6])}" title="${esc(String(r[5]).split("|").join(", "))}" style="left:${r[1] / 100}%;top:${r[2] / 100}%;width:${r[3] / 100}%;height:${r[4] / 100}%"></i>`).join(""); });
       // mark the tag: a text piece holding it, or two neighbouring pieces that together do
-      const want = nk(key); if (want.length < 3 || cur.t === "pid" || over) return;
+      const want = nk(key); if (want.length < 3 || cur.t === "pid" || !own.includes(n)) return;
       const tc = await pg.getTextContent(), it = tc.items.filter(t => t.str && t.str.trim()), hits = [];
       const rect = t => { const [a, b, c, dd, e, f] = t.transform, h = Math.hypot(c, dd) || Math.hypot(a, b), w = t.width || h * t.str.length * .5, rot = Math.abs(b) > Math.abs(a);
         return rot ? [e - h, f, e, f + w] : [e, f - h * .2, e + w, f + h * .9]; };
