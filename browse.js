@@ -73,10 +73,10 @@ window.Browse = (() => {
   const match = r => path.every(p => p.v == null || r[p.f] === p.v);
   const nextStep = () => t() ? steps()[path.length - 1] : ["t", "Asset type"];
   // alphabetical by what the chip shows ("?" reads "Other"); numbers in number order, so sizes run 15, 25, 50…
-  // most items first (ties alphabetical, by what the chip shows: "?" reads "Other")
+  // A to Z by what the chip shows ("?" reads "Other" and goes last)
   const ALPHA = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
   const alpha = (x, y) => ALPHA.compare(x === "?" ? "Other" : x, y === "?" ? "Other" : y);
-  const order = (f, c) => Object.keys(c).sort((x, y) => c[y] - c[x] || alpha(x, y));
+  const order = (f, c) => Object.keys(c).sort((x, y) => (x === "?") - (y === "?") || alpha(x, y));   // A to Z (numbers in order), "Other" last
 
   let el = null, lk = null, resY = 0;
   // a short form of a name for the option chips: the first one or two words, about 14 characters ("Pump Process")
@@ -104,12 +104,12 @@ window.Browse = (() => {
     let opts = "", az = null, qw = 1;
     if (st){
       const c = {}; for (const r of list) c[r[st[0]]] = (c[r[st[0]]] || 0) + 1;
-      const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => c[y] - c[x] || TN[x].localeCompare(TN[y])) : order(st[0], c);
+      const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => ALPHA.compare(TN[x], TN[y])) : order(st[0], c);
       opts = `<div class="bw-h">${esc(st[1])}${st[0] !== "t" ? `<button class="bw-any">Any</button>` : ""}</div>` +
         vals.map(v => { const n = st[0] === "t" || v === "?" ? "" : shortName(nameOf(st[0], t(), v)), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
           // code (short name); the full name and the count show on the gold chip once picked
           // qty × code (short name): the quantities share one right aligned column, so the items line up
-          return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}"><i class="q">(x${c[v].toLocaleString()})</i><em>${esc(label)}</em>${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
+          return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}"><em>${esc(label)}</em>${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
       qw = Math.max(...vals.map(v => c[v].toLocaleString().length)) + 3;   // "(x" and ")"
       az = [...new Set(vals.map(v => azKey(st[0] === "t" ? TN[v] : v === "?" ? "Other" : v)))].sort((a, b) => a.localeCompare(b));   // shown only if the list runs off the screen
     } else opts = "";   // every step set (how to change one is in Help)
