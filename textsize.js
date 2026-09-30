@@ -16,9 +16,9 @@ window.TextSize = (() => {
 .ts input{flex:1;accent-color:var(--gold,var(--accent));height:28px}
 .ts b{min-width:46px;text-align:right;font-variant-numeric:tabular-nums}
 .ts span{font-size:13px;color:var(--mute)}.ts span.big{font-size:19px}
-.ts-th{gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:max-content}.ts-th button{border:0;background:none;color:var(--mute);font:inherit;font-weight:700;font-size:13px;padding:7px 16px;cursor:pointer}
+.ts-th{gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:max-content}.ts-th button{border:0;background:none;color:var(--mute);font:inherit;font-weight:700;font-size:var(--fb,15px);padding:7px 16px;cursor:pointer}
 .ts-th button.on{background:var(--gold,var(--accent));color:#111}
-.ts-r{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:4px 9px;font:inherit;font-size:12px;cursor:pointer}`;
+.ts-r{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:4px 9px;font:inherit;font-size:var(--fb,15px);cursor:pointer}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   addEventListener("storage", e => { if (e.key === KEY) apply(get()); });   // changed in the other page
   if (screen.orientation) screen.orientation.addEventListener("change", () => apply(get()));

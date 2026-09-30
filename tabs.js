@@ -117,41 +117,43 @@ window.Tabs = (() => {
     document.addEventListener("click", close); addEventListener("keydown", e => { if (e.key === "Escape") close(); });
     drawMenus(); set(o.active);
   }
-  const css = `:root{--tb:calc(44px + env(safe-area-inset-top))}:root.has-mb{--tb:calc(75px + env(safe-area-inset-top))}
+  const css = `:root{--tb:calc(44px + env(safe-area-inset-top));--fh:22px;--fl:13px;--fb:15px}   /* the three text sizes: titles, section labels, body */
+@media (pointer:coarse){input,select,textarea{font-size:16px}}   /* (a phone zooms in on a smaller text box) */
+:root.has-mb{--tb:calc(75px + env(safe-area-inset-top))}
 .tbw{position:fixed;left:0;right:0;top:0;z-index:60;background:var(--panel,var(--card));border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
-.mb{height:30px;display:flex;align-items:stretch;gap:2px;padding:0 max(6px,env(safe-area-inset-right)) 0 max(6px,env(safe-area-inset-left));border-bottom:1px solid var(--line);font-size:13px}
+.mb{height:30px;display:flex;align-items:stretch;gap:2px;padding:0 max(6px,env(safe-area-inset-right)) 0 max(6px,env(safe-area-inset-left));border-bottom:1px solid var(--line);font-size:var(--fb,15px)}
 .tb{height:44px;padding:0 max(6px,env(safe-area-inset-right)) 0 max(6px,env(safe-area-inset-left));display:flex;align-items:stretch;gap:2px}
-.tb-t{flex:0 1 auto;min-width:0;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--mute);text-decoration:none;font-weight:700;font-size:14px;
+.tb-t{flex:0 1 auto;min-width:0;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--mute);text-decoration:none;font-weight:700;font-size:var(--fb,15px);
   border-bottom:3px solid transparent;padding-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tb-t.on{color:var(--ink);border-bottom-color:var(--gold,var(--accent))}
-.tb-i{font-size:15px}
+.tb-i{font-size:var(--fb,15px)}
 .mn{position:relative;display:flex}
 .lg{display:flex;align-items:center;gap:6px;padding:0 12px 0 4px;margin-right:4px;border-right:1px solid var(--line);color:var(--ink)}
-.lg b{font:900 13.5px/1 system-ui,sans-serif;letter-spacing:.08em;white-space:nowrap}.mb .lg{margin:6px 4px 6px 0}.lg-m{border:0;padding:0 4px 0 2px;margin:0}
-.mb .mn-b{border:0;background:none;color:var(--ink);font:inherit;font-size:13px;padding:0 10px;border-radius:5px;margin:3px 0;cursor:pointer}
+.lg b{font:900 var(--fl,13px)/1 system-ui,sans-serif;letter-spacing:.08em;white-space:nowrap}.mb .lg{margin:6px 4px 6px 0}.lg-m{border:0;padding:0 4px 0 2px;margin:0}
+.mb .mn-b{border:0;background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:0 10px;border-radius:5px;margin:3px 0;cursor:pointer}
 .mb .mn-b:hover,.mn.open>.mn-b{background:var(--panel2,var(--card2))}
 .mn-one{margin-left:auto}.tb-s{flex:none;width:42px;border:0;background:none;color:var(--mute);font-size:21px;cursor:pointer}
 .mn-d{display:none;position:absolute;left:0;top:100%;min-width:250px;max-width:min(360px,calc(100vw - 16px));background:var(--panel,var(--card));border:1px solid var(--line);border-radius:10px;
   box-shadow:0 10px 30px #0008;padding:5px;z-index:70;max-height:calc(100vh - 90px);overflow-y:auto}
 .mn.open>.mn-d{display:block}.mn-dr{left:auto;right:0}.mn-dh{min-width:330px}
-.mn-i{display:block;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-size:13.5px;padding:7px 10px;border-radius:6px;cursor:pointer}
+.mn-i{display:block;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:7px 10px;border-radius:6px;cursor:pointer}
 .mn-i:hover,.mn-i:focus-visible{background:var(--panel2,var(--card2))}.mn-i:disabled{opacity:.6}
-.mn-i small{display:none;color:var(--mute);font-size:11.5px;margin-top:1px}.mn-i:hover small,.mn-i:focus-visible small{display:block}   /* the hint shows on mouse over */
+.mn-i small{display:none;color:var(--mute);font-size:var(--fb,15px);margin-top:1px}.mn-i:hover small,.mn-i:focus-visible small{display:block}   /* the hint shows on mouse over */
 .mn-d hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
-.mn-h{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:6px 10px 2px}
-.mn-th{display:flex;align-items:center;padding:5px 10px}.mn-th span{flex:1;font-size:13.5px}
-.mn-th button{border:1px solid var(--line);background:none;color:var(--mute);font:inherit;font-size:12px;font-weight:700;padding:3px 9px;cursor:pointer}
+.mn-h{font-size:var(--fl,13px);font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:6px 10px 2px}
+.mn-th{display:flex;align-items:center;padding:5px 10px}.mn-th span{flex:1;font-size:var(--fb,15px)}
+.mn-th button{border:1px solid var(--line);background:none;color:var(--mute);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:3px 9px;cursor:pointer}
 .mn-th button:first-of-type{border-radius:7px 0 0 7px}.mn-th button:last-of-type{border-radius:0 7px 7px 0}.mn-th button+button{border-left:0}
 .mn-th button.on{background:var(--gold,var(--accent));color:#111;border-color:var(--gold,var(--accent))}
-.mn-s{padding:5px 5px 3px}.mn-s input{width:100%;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 9px;font:inherit;font-size:13px}
-.mn-r:not(:empty){margin-top:4px;border-bottom:1px solid var(--line);padding-bottom:4px}.mn-no{color:var(--mute);font-size:12.5px;padding:6px 10px}
+.mn-s{padding:5px 5px 3px}.mn-s input{width:100%;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 9px;font:inherit;font-size:var(--fb,15px)}
+.mn-r:not(:empty){margin-top:4px;border-bottom:1px solid var(--line);padding-bottom:4px}.mn-no{color:var(--mute);font-size:var(--fb,15px);padding:6px 10px}
 .hw{position:fixed;inset:0;z-index:300;background:#0008;display:flex;align-items:flex-start;justify-content:center;padding:60px 12px 12px}.hw[hidden]{display:none}
 .hw-b{background:var(--panel,var(--card));color:var(--ink);border:1px solid var(--line);border-radius:14px;width:min(640px,100%);max-height:calc(100vh - 80px);display:flex;flex-direction:column;box-shadow:0 20px 50px #000a}
-.hw-top{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}.hw-top b{font-size:16px}
-.hw-top input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 9px;font:inherit;font-size:13.5px}
+.hw-top{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}.hw-top b{font-size:var(--fb,15px)}
+.hw-top input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 9px;font:inherit;font-size:var(--fb,15px)}
 .hw-x{border:0;background:none;color:var(--mute);font-size:18px;cursor:pointer}
 .hw-l{overflow-y:auto;padding:6px 16px 16px}.hw-l section{padding:8px 0;border-bottom:1px solid var(--line)}.hw-l section[hidden]{display:none}.hw-l section.hl h4{color:var(--gold,var(--accent))}
-.hw-l h4{margin:4px 0;font-size:14px}.hw-l p{margin:4px 0;font-size:13.5px;line-height:1.5;color:var(--ink)}.hw-ver{color:var(--mute) !important}
+.hw-l h4{margin:4px 0;font-size:var(--fb,15px)}.hw-l p{margin:4px 0;font-size:var(--fb,15px);line-height:1.5;color:var(--ink)}.hw-ver{color:var(--mute) !important}
 /* scroll bars across the app: barely there until you hover the area, clearer on the bar itself, gold while dragging */
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}
@@ -160,7 +162,7 @@ window.Tabs = (() => {
 ::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--mute) 75%,transparent);border-width:2px}
 ::-webkit-scrollbar-thumb:active{background-color:var(--gold,var(--accent));border-width:2px}
 @supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:transparent transparent}*:hover{scrollbar-color:color-mix(in srgb,var(--mute) 45%,transparent) transparent}}
-@media (max-width:380px){.tb-t{flex-direction:column;gap:0;font-size:11.5px;padding:4px 9px 0;line-height:1.1}.tb-i{font-size:14px}.tb-s{width:34px}}`;
+@media (max-width:380px){.tb-t{flex-direction:column;gap:0;font-size:var(--fb,15px);padding:4px 9px 0;line-height:1.1}.tb-i{font-size:var(--fb,15px)}.tb-s{width:34px}}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   return { mount, set, help };
 })();

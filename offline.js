@@ -81,11 +81,11 @@ window.Offline = (() => {
 .off-list{display:flex;flex-direction:column;gap:6px}
 .off-row{position:relative;display:flex;gap:10px;align-items:center;border:1px solid var(--line);background:var(--card,var(--panel2));border-radius:12px;padding:9px 11px;overflow:hidden}
 .off-row.all{border-color:var(--gold,var(--accent))}
-.off-t{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:2px}.off-t b{font-size:14px}.off-t span{font-size:12px;color:var(--mute);line-height:1.3}
-.off-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}.off-sz{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.off-st{font-size:11.5px;color:var(--mute);text-align:right}.off-row.have .off-st{color:#22c55e}.off-row.part .off-st{color:#f59e0b}
+.off-t{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:2px}.off-t b{font-size:var(--fb,15px)}.off-t span{font-size:var(--fb,15px);color:var(--mute);line-height:1.3}
+.off-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}.off-sz{font-size:var(--fb,15px);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.off-st{font-size:var(--fb,15px);color:var(--mute);text-align:right}.off-row.have .off-st{color:#22c55e}.off-row.part .off-st{color:#f59e0b}
 .off-row.have{border-color:#22c55e}.off-row.have.all{border-color:#22c55e}.off-row.have .off-bar i{background:#22c55e}
-.off-b{border:1px solid var(--gold,var(--accent));background:none;color:var(--gold,var(--accent));border-radius:9px;padding:6px 10px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.off-b{border:1px solid var(--gold,var(--accent));background:none;color:var(--gold,var(--accent));border-radius:9px;padding:6px 10px;font:inherit;font-weight:700;font-size:var(--fb,15px);cursor:pointer;white-space:nowrap}
 .off-b:disabled{opacity:.4;cursor:default}.off-row.have .off-b{border-color:var(--line);color:var(--mute)}
 .off-bar{position:absolute;left:0;right:0;bottom:0;height:3px}.off-bar i{display:block;height:100%;width:0;background:var(--gold,var(--accent));transition:width .2s}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
