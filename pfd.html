@@ -213,6 +213,7 @@ body.flowing #toast{top:calc(190px + var(--tb,0px))}
 #toast{position:fixed;left:50%;top:calc(66px + var(--tb,0px));transform:translateX(-50%);background:var(--panel);border:1px solid var(--accent);border-radius:10px;
   padding:8px 14px;font-size:13.5px;z-index:7;display:none;max-width:620px;text-align:center}
 .appbox{display:flex;flex-wrap:wrap;gap:6px}
+#setBtn,#tTheme{display:none !important}   /* File → Settings and File → Theme do these now */
 .set-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}.set-row .hbtn{text-decoration:none;color:var(--ink)}
 .appbox .hbtn{text-decoration:none;color:var(--ink)}
 .hbtn.upd-new{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
@@ -390,21 +391,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 </header>
 
 <aside id="side">
-  <h2 style="margin-top:0">App</h2>
-  <div class="appbox">
-    <button class="hbtn" id="updBtn">⟳ Update app</button>
-    <a class="hbtn" href="issues.html">🐞 Checks</a>
-    <a class="hbtn" href="issues.html#sources">📄 Sources</a>
-    <button class="hbtn" id="offBtn">⬇ Offline</button>
-    <button class="hbtn" id="setBtn2">⚙ Settings</button>
-    <a class="hbtn m-only" href="index.html?cards">🃏 Flashcards</a>
-    <button class="hbtn m-only" id="mTheme">◐ Theme</button>
-  </div>
-  <div class="ver" id="ver"></div>
-  <h2 id="fHead">Fluids</h2>
+  <h2 id="fHead" style="margin-top:0">Fluids</h2>
   <button class="flow nar" id="narBtn" type="button">▶ Narrative mode</button>
   <div class="fps" id="fluids"></div>
-  <div class="note fhint" id="fHint">Tap a fluid to see where it runs; Ctrl+click (⌘ on Mac) adds more.</div>
+  <div id="fHint" hidden></div>
   <div id="flows" hidden></div>
   <div id="steps">
     <div class="fdesc" id="fdesc"></div>
@@ -417,8 +407,6 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   </div>
   <h2>Legend</h2>
   <div class="legend" id="legend"></div>
-  <h2>How to use</h2>
-  <div class="note">Scroll to zoom, drag to pan. Click anything (equipment, stream, loop, interlock, symbol or legend item) to select it: everything else fades and the view zooms to fit. Ctrl+click (⌘+click on Mac) adds or removes items so several can be selected at once. Click empty space or press Esc to clear and zoom back out. Pick a flow to animate it and step through it. Control loops shows ISA tag bubbles with dashed signal lines from measurement to final element; Interlocks shows red cause → effect lines (I interlock, P permissive).<br><br>Design values from the Stage 2 PDC and control philosophies, not live plant data.</div>
 </aside>
 
 <div id="stage"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
@@ -924,19 +912,16 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   $("menuBtn").onclick = () => document.body.classList.toggle("menu");
   $("scrim").onclick = () => document.body.classList.remove("menu");
   $("side").addEventListener("click", e => { if (matchMedia("(max-width: 900px)").matches && e.target.closest(".flow, .lg-item, .lg-li, .step")) setTimeout(() => document.body.classList.remove("menu"), 150); });
-  $("mTheme").onclick = () => $("tTheme").click();
-  AppUpdate.mount($("updBtn"), $("ver"));
   // ---------- settings (header ⚙ and the sidebar): update, offline downloads, checks, sources, theme ----------
   function showSettings(){
     lastPanel = showSettings; $("iKind").textContent = "Settings"; $("iName").textContent = "App settings"; $("iTag").textContent = "";
-    $("iBody").innerHTML = `<div class="set-row"><button class="hbtn" id="updBtn2">⟳ Update app</button><a class="hbtn" href="issues.html">🐞 Checks</a><a class="hbtn" href="issues.html#sources">📄 Sources</a>
-        <a class="hbtn" href="index.html?cards">🃏 Flashcards</a></div><div class="ver" id="ver2"></div>
+    $("iBody").innerHTML = `
       <h4>Theme</h4><div id="thRoot2"></div><h4>App size</h4><div id="tsRoot2"></div><h4>Offline downloads</h4><div id="offRoot"></div>`;
     TextSize.mount($("tsRoot2"));
-    AppUpdate.mount($("updBtn2"), $("ver2")); TextSize.theme($("thRoot2"));
+    TextSize.theme($("thRoot2"));
     Offline.mount($("offRoot")); openInfo(); if (matchMedia("(max-width: 900px)").matches) document.body.classList.remove("menu");
   }
-  $("setBtn").onclick = showSettings; $("setBtn2").onclick = showSettings; $("offBtn").onclick = showSettings;
+  $("setBtn").onclick = showSettings;
   // ---------- layout (map) view ----------
   const sById = {}; STREAMS.forEach(s => sById[s.id] = s);
   const gState = g => ({ hidden: !g || g.style.display === "none", ghost: !!g && g.classList.contains("ghost") });

@@ -270,12 +270,6 @@ body.searching #homeMain{display:none}
     <button class="x" id="setBack" aria-label="Back">←</button>
     <h1 style="margin:0;font-size:22px">Settings</h1>
   </div>
-  <div class="row" style="margin-bottom:6px">
-    <button class="btn" id="updBtn" style="flex:1">⟳ Update app</button>
-    <a class="btn" href="issues.html" style="flex:1;text-align:center;text-decoration:none;color:var(--ink)">🐞 Checks</a>
-    <a class="btn" href="issues.html#sources" style="flex:1;text-align:center;text-decoration:none;color:var(--ink)">📄 Sources</a>
-  </div>
-  <p class="sub" id="ver" style="font-size:13px;margin:0 0 10px"></p>
   <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">⛶ Full screen</button>
   <h2>Theme</h2>
   <div id="thRoot"></div>
@@ -619,7 +613,6 @@ body.searching #homeMain{display:none}
     if (AI.model()) $("modelSel").innerHTML = `<option>${AI.model()}</option>`;
   }
   const openSettings = () => { renderSettings(); TextSize.theme($("thRoot")); TextSize.mount($("tsRoot")); show("settings"); };
-  AppUpdate.mount($("updBtn"), $("ver"));
   $("setBack").onclick = () => { renderHome(); show(cur); };
   $("keyTest").onclick = async () => {
     const k = $("keyIn").value.trim();

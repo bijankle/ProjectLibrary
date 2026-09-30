@@ -106,7 +106,7 @@ window.Browse = (() => {
           return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}"><i class="q">(x${c[v].toLocaleString()})</i><em>${esc(label)}</em>${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
       qw = Math.max(...vals.map(v => c[v].toLocaleString().length)) + 3;   // "(x" and ")"
       az = [...new Set(vals.map(v => azKey(st[0] === "t" ? TN[v] : v === "?" ? "Other" : v)))].sort((a, b) => a.localeCompare(b));   // shown only if the list runs off the screen
-    } else opts = `<div class="bw-h">All steps set</div><div class="bw-note">Tap × on a step above to change it.</div>`;
+    } else opts = "";   // every step set (how to change one is in Help)
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts stack" style="--qw:${qw}ch">${opts}</div></div></div>
       <div class="bw-r"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>

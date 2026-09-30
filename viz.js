@@ -74,13 +74,13 @@ window.AssetViz = (() => {
     // asset mix (before a type is picked): ranked bars, tap one to pick that type
     if (!ctx.type){
       const m = count(L, r => r.t);
-      h += card("Asset mix", bars(Object.entries(m).map(([k, v]) => ({ k, label: TN[k] || k, v })), "items", "t", 9), "Tap a bar to browse that type.");
+      h += card("Asset mix", bars(Object.entries(m).map(([k, v]) => ({ k, label: TN[k] || k, v })), "items", "t", 9));
     }
     // where the assets are (any type): by WBS area
     if (L.length){
       const m = count(L, r => r.a);
       h += card(ctx.type ? `${TN[ctx.type] || "Assets"} by area` : "Assets by area", bars(Object.entries(m).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "items", next === "a" ? "a" : null, 10),
-        next === "a" ? "Tap a bar to filter to that area." : "");
+        "");
     }
     if (mel.length){
       // top power users: the biggest single drives (tap to open the item)
@@ -88,12 +88,12 @@ window.AssetViz = (() => {
       if (top.length) h += card("Top power users", `<div class="vz-bars">` + (() => { const max = kw(top[0]);
         return top.map(r => `<div class="vz-row act" data-f="open" data-v="${esc(r.it.key)}" data-tip="<b>${esc(r.it.key)}</b><br>${esc(r.it.name)}<br>${fmt(kw(r))} kW · ${esc(get(r, "Duty / standby") || "duty not given")}">` +
           `<span class="vz-l" title="${esc(r.it.name)}">${esc(nice(r.it.name))}</span><span class="vz-t"><i style="width:${(kw(r) / max * 100).toFixed(1)}%"></i></span><span class="vz-v">${fmt(kw(r))}</span></div>`).join(""); })() + `</div>`,
-        "kW per item, decommissioned left out. Tap to open it.", false);
+        "kW per item, decommissioned left out.", false);
       if (totKw) h += card("Installed power by area", bars(Object.entries(count(live, r => r.a, kw)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v, tip: `<b>${esc(k)} ${esc(areaName(k))}</b><br>${fmt(v)} kW (${Math.round(v / totKw * 100)}%)` })), "kW", next === "a" ? "a" : null, 10), "kW, decommissioned left out.");
       if (ctx.type === "mel" || !ctx.type){
         const m = count(mel, r => r.k);
         h += card("Equipment by type", bars(Object.entries(m).map(([k, v]) => ({ k, label: `${k} ${ctx.codeName ? ctx.codeName(k) : ""}`.trim(), v })), "items", ctx.type === "mel" && next === "k" ? "k" : null, 10),
-          ctx.type === "mel" && next === "k" ? "Tap a bar to filter to that code." : "Equipment codes (PP pump, CV conveyor…).");
+          "");
       }
       // splits: ≤5 parts each
       h += card("Stage", donut(five(count(mel, r => get(r, "Stage"))), "items"));
