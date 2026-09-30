@@ -215,7 +215,8 @@ window.AssetViz = (() => {
 .vz-sheet{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;touch-action:none;cursor:default;user-select:none}
 .vz-sheet.drag{cursor:default}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
-.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:2px}.vz-rf i:hover{background:rgba(232,180,74,.3);outline:1px solid #e8b44a}
+.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:2px;background:rgba(232,180,74,.13);box-shadow:inset 0 0 0 1px rgba(214,158,46,.35)}   /* as in the full screen viewer */
+.vz-rf i[data-k="d"]{background:rgba(232,180,74,.24);box-shadow:inset 0 0 0 1px rgba(214,158,46,.7)}.vz-rf i:hover{background:rgba(232,180,74,.45)}
 .vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
 .vz-zb button:hover{border-color:#b67d12}
 .vz-mk{position:absolute;left:0;top:0;pointer-events:none}.vz-mk i{position:absolute;border:2px solid #e8b44a;background:rgba(232,180,74,.35);border-radius:3px}
