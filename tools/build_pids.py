@@ -125,7 +125,7 @@ def margins(p):
     return n
 def redact(p, L):
     m = margins(p)
-    if "primero.com.au" not in p.get_text().lower().replace(" ", ""):   # an older (KCGM, Minproc, Worley…) title block
+    if "primero.com.au" not in p.get_text().lower().replace(" ", ""):   # an older (client, Minproc, Worley…) title block
         n = legacy(p) + m
         if n: p.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_PIXELS, graphics=pymupdf.PDF_REDACT_LINE_ART_REMOVE_IF_COVERED)
         return n
@@ -253,7 +253,7 @@ for num in sorted(groups):
         seen_pages.append(px); keep.insert(0, pymupdf.open("pdf", src.tobytes(garbage=4, deflate=True)))
     for k in keep: out.insert_pdf(k)
     for p in out: marks += redact(p, lines(p))
-    out.set_metadata({"title": num, "author": "", "subject": "KCGM Growth Project P&ID", "keywords": "", "creator": "", "producer": ""})
+    out.set_metadata({"title": num, "author": "", "subject": "Growth Project P&ID", "keywords": "", "creator": "", "producer": ""})
     out.del_xml_metadata()
     rel = f"{FOLDER['PFD' if '-PFD-' in num else 'PID']}/{num}.pdf"; path = os.path.join(ROOT, rel)
     out.save(path, garbage=4, deflate=True, clean=True)

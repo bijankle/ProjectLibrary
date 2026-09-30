@@ -91,7 +91,7 @@ DOCS = [  # key, document number, file key, kind, what the app uses it for
 ]
 TITLES = {"pdc": "PROCESS DESIGN CRITERIA STAGE 2", "cp1": "PLANT GENERAL PROCESS CONTROL PHILOSOPHY STAGE 1", "cp2": "PLANT GENERAL PROCESS CONTROL PHILOSOPHY STAGE 2",
           "num": "PLANT NUMBERING SPECIFICATION", "pfd": "PROCESS FLOW DIAGRAMS STAGE 1", "line": "LINE LIST", "mv": "MANUAL VALVE LIST", "spi": "SPECIAL PIPING ITEMS (SPI) LIST", "cv": "CONTROL VALVE LIST", "ins": "INSTRUMENT LIST",
-          "hose1": "SLURRY HOSE LIST STAGE 1", "hose2": "SLURRY HOSE LIST STAGE 2", "layout": "OVERALL PLANT LAYOUT PLAN", "wbs": "KCGM GROWTH WORK BREAKDOWN STRUCTURE"}
+          "hose1": "SLURRY HOSE LIST STAGE 1", "hose2": "SLURRY HOSE LIST STAGE 2", "layout": "OVERALL PLANT LAYOUT PLAN", "wbs": "GROWTH WORK BREAKDOWN STRUCTURE"}
 SHORT = {"mel": "MEL", "ins": "Instrument List", "cv": "Control Valve List", "line": "Line List", "mv": "Manual Valve List", "spi": "SPI List",
          "hose1": "Slurry Hose List Stage 1", "hose2": "Slurry Hose List Stage 2", "pdc": "PDC", "cp1": "Control Philosophy Stage 1",
          "cp2": "Control Philosophy Stage 2", "pfd": "Stage 1 PFDs", "num": "Plant Numbering Specification", "layout": "Overall Plant Layout", "wbs": "WBS"}
@@ -116,7 +116,7 @@ for key, num, fkey, kind, used in DOCS:
     if not hist and fr: hist = [(None, fr[1], "Revision from the file name; no readable revision date")]
     if not hist: hist = [(None, "", "No revision block")]
     last = hist[-1] if hist else (None, "", "")
-    out[key] = dict(title=SHORT[key], full=re.sub(r"\b(Mel|Pfd|Spi|Wbs|Kcgm)\b", lambda m: m[0].upper(), (TITLES.get(key) or title or SHORT[key]).title()),
+    out[key] = dict(title=SHORT[key], full=re.sub(r"\b(Mel|Pfd|Spi|Wbs|Kcgm)\b", lambda m: m[0].upper(), re.sub(r"KCGM[_ -]*", "", TITLES.get(key) or title or SHORT[key]).title()),
                     number=num or "(no number)", kind=kind, rev=last[1], date=iso(last[0]), status=last[2], used=used,
                     history=[{"rev": r, "date": iso(d), "status": s} for d, r, s in hist if d], note=NOTES.get(key, ""), **extra)
     if key == "pfd": out[key]["number"] = "2000-F00-PFD-PR series"

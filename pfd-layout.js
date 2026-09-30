@@ -206,7 +206,7 @@ window.PFDLayout = (() => {
     F20: "Milling & Classification - Area B", F21: "Flotation Tailings CIL4", F22: "CIL4 - Carbon Treatment & Elution", F23: "Final Tailings Handling & Storage", F24: "Air & Water Services",
     F28: "Ultra Fine Grinding 2 / 3", F30: "Concentrate Pre-Leach Thickening, CIL2/3 & Concentrate Thickening", F34: "Ultra Fine Grinding - Existing", F35: "Concentrate Handling & Filtration",
     F65: "Concentrate Carbon Treatment & Elution", F66: "Electrowinning & Goldroom", F72: "Reagents Mixing & Storage", F75: "Water Services - Existing", F78: "Carbon Regeneration - Existing",
-    F81: "Air Services - Existing"};   // WBS level 2 (KCGM Growth Work Breakdown Structure)
+    F81: "Air Services - Existing"};   // WBS level 2 (Growth Work Breakdown Structure)
   // plant shorthand: Concentrate → Con., Flotation → Flot. …
   const SHORT = [[/\bconcentrate\b/g, "con."], [/\bflotation\b/g, "flot."], [/\bthickening\b/g, "thick."], [/\bclassification\b/g, "class."], [/\bscavenger\b/g, "scav."],
     [/\bregeneration\b/g, "regen."], [/\btreatment\b/g, "treat."], [/\belectrowinning\b/g, "EW"], [/\bultra fine grinding\b/g, "UFG"], [/\bexisting\b/g, "exist."],

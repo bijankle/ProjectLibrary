@@ -831,7 +831,7 @@
  "wbs": {
   "chunk": 5000,
   "xlsx": "sources/wbs.xlsx",
-  "fname": "(no number) KCGM Growth Work Breakdown Structure (tables).xlsx",
+  "fname": "(no number) Growth Work Breakdown Structure (tables).xlsx",
   "how": "Every data table in the PDF (cover page and sign off tables left out), one sheet each",
   "from": "PDF",
   "sheets": [

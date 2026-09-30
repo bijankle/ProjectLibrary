@@ -1352,7 +1352,7 @@
   },
   {
    "id": "src-wbs",
-   "name": "KCGM Growth Work Breakdown Structure",
+   "name": "Growth Work Breakdown Structure",
    "note": "(no number) Rev : tables to view offline and the Excel copy",
    "files": [
     "sources/wbs.xlsx",

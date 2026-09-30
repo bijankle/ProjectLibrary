@@ -1,4 +1,4 @@
-// KCGM plant flashcards.
+// Plant flashcards.
 // Each card: t = topic key, q = question, a = short answer, e = the why / detail.
 // Sources: Plant Numbering Spec 2000-F00-STS-GE-10003, Growth Project WBS, Stage 2 Process Design Criteria
 // 2000-F00-DCR-PR-10002, Stage 1 as built PFDs, Plant General Process Control Philosophy Stage 1 (2000-F00-REP-PR-10001)
@@ -25,15 +25,15 @@ const TOPICS = {
 const CARDS = [
 
 // BIG PICTURE
-{t:"big", q:"Why can't KCGM simply grind the ore and put it all straight into cyanide leach?",
+{t:"big", q:"Why can't the plant simply grind the ore and put it all straight into cyanide leach?",
  a:"Much of the gold is locked inside sulphide minerals (mainly pyrite), so cyanide can't reach it",
- e:"KCGM ore is refractory. A large share of the gold is locked inside pyrite and tellurides. Think of it like a bolt seized inside a housing: the solvent (cyanide) can't get to it until you break the housing. That is why the flowsheet splits ore into a sulphide concentrate for extra treatment.",
+ e:"This ore is refractory. A large share of the gold is locked inside pyrite and tellurides. Think of it like a bolt seized inside a housing: the solvent (cyanide) can't get to it until you break the housing. That is why the flowsheet splits ore into a sulphide concentrate for extra treatment.",
  f:["Why does cyanide fail to reach gold trapped inside pyrite grains?","What would low gold recovery from refractory ore look like in the assays?","How does the plant decide how much ore needs the sulphide concentrate route?"]},
 {t:"big", q:"In one sentence, what are the two gold 'paths' through the plant?",
  a:"Free gold is leached from the bulk tails (CIL4), while sulphide concentrate is floated off, ultra fine ground and leached hard (CIL2/3)",
  e:"Almost every conversation maps to one of these two streams. The big, low grade stream (about 96% of the mass) is flotation tails leached in CIL4. The small, rich stream (about 4% of the mass) is the sulphide concentrate that gets UFG treatment then an aggressive leach in CIL2/3. Gravity skims off coarse free gold early.",
  f:["Why is concentrate leached separately instead of blending it into the tails?","What would a handover note say if flotation missed cutting concentrate?","Which piece of equipment marks the split point between the two gold paths?"]},
-{t:"big", q:"What does flotation actually separate at KCGM?",
+{t:"big", q:"What does flotation actually separate on this plant?",
  a:"Sulphide minerals (pyrite carrying locked gold) from the non sulphide gangue",
  e:"Flotation makes sulphide particles water repellent so they stick to air bubbles and rise into the froth. The design sulphur recovery to concentrate is about 85%. Gold follows the sulphur because it is locked inside it.",
  f:["Why does making sulphide particles hydrophobic work better than sizing them?","What does it look like on shift when sulphur recovery falls below target?","What reagents or conditions control how selective the flotation is?"]},
@@ -41,10 +41,10 @@ const CARDS = [
  a:"To physically break open the pyrite and expose locked gold to cyanide",
  e:"UFG (IsaMills) replaces the old roasting route. Instead of burning the sulphide off, you grind so fine that the gold bearing pyrite grains are cracked open. It costs a lot of energy per tonne (around 116 kWh/t) but only on the small concentrate mass.",
  f:["Why does grinding this fine expose gold that normal ball milling can't?","What symptoms show up if UFG product isn't fine enough before CIL2/3?","What wears fastest in an IsaMill running that fine, and how is it maintained?"]},
-{t:"big", q:"Historically, where was the KCGM concentrate treated before the Growth Project consolidated it at Fimiston?",
+{t:"big", q:"Historically, where was the concentrate treated before the Growth Project consolidated it at Fimiston?",
  a:"Gidji, first through a roaster and later through ultra fine grinding",
  e:"Concentrate used to be hauled to Gidji. Stage 2 consolidates processing into a single hub at Fimiston, removing the concentrate haulage and targeting a 1 to 2% recovery uplift.",
- f:["Why did KCGM choose UFG over continuing to roast concentrate at Gidji?","What handover issues used to come from trucking concentrate to Gidji?","What new equipment at Fimiston replaced the Gidji roaster function?"]},
+ f:["Why did the project choose UFG over continuing to roast concentrate at Gidji?","What handover issues used to come from trucking concentrate to Gidji?","What new equipment at Fimiston replaced the Gidji roaster function?"]},
 {t:"big", q:"What does gravity recovery (Knelsons + ILR) catch that flotation and CIL would struggle with?",
  a:"Coarse free gold that is heavy, recirculates in the mill circuit and leaches slowly",
  e:"Coarse gold is so dense it tends to sit in the cyclone underflow and cycle through the ball mill again and again. Gravity pulls it out early. Design gravity recovery is about 14% of feed gold nominal, up to 20%.",
@@ -326,7 +326,7 @@ const CARDS = [
  f:["Why does a tighter CSS increase power draw and wear so much?","What would you see on the plant if the CSS drifts wider than spec?","How do operators check or adjust CSS during a shift?"]},
 {t:"acro", q:"'CIL'?",
  a:"Carbon in Leach: leaching and carbon adsorption happen in the same tank train",
- e:"KCGM talks about CIL2/3 (concentrate) and CIL4 (flotation tails). In the Stage 2 concentrate circuit, CIL2 is used for leach duty and CIL3 for adsorption.",
+ e:"Site talks about CIL2/3 (concentrate) and CIL4 (flotation tails). In the Stage 2 concentrate circuit, CIL2 is used for leach duty and CIL3 for adsorption.",
  f:["Why are leach and adsorption combined in the same tanks instead of separate?","What would a handover mention if a CIL tank was adsorbing gold poorly?","How is carbon moved between the CIL tanks in the train?"]},
 {t:"acro", q:"'ILR'?",
  a:"Intensive Leach Reactor",
@@ -696,7 +696,7 @@ const CARDS = [
  a:"An automatic sampler that measures carbon concentration in each CIL4 tank",
  e:"Gekko Carbon Scout samples all CIL4 tanks. Carbon concentration target is about 12.5 g/L. It tells operators when to advance carbon and whether carbon is distributed evenly.",
  f:["Why does even carbon distribution matter for adsorption efficiency?","What would an uneven Carbon Scout reading across tanks suggest?","How often does Carbon Scout data trigger a carbon advance?"]},
-{t:"cil4", q:"CIL4 leach pH is about 8.8 to 9.3, much lower than CIL2. Why is that typical at KCGM?",
+{t:"cil4", q:"CIL4 leach pH is about 8.8 to 9.3, much lower than CIL2. Why is that typical on this plant?",
  a:"The hypersaline process water buffers pH; pushing it higher costs a lot of lime due to magnesium precipitation",
  e:"Process water SG is about 1.07 because it's saline bore water. Magnesium in the water consumes lime, so the bulk tails leach runs lower pH to control reagent cost, with safety controls for HCN.",
  f:["Why does magnesium in the water consume so much lime at higher pH?","What HCN safety symptom would you watch for at this lower pH?","How is lime dosing balanced against reagent cost here?"]},
@@ -760,7 +760,7 @@ const CARDS = [
  f:["Why does reusing lean eluate save both reagents and water?","What would you flag if lean eluate volume didn't match the next strip's needs?","How is lean eluate stored and tracked between strips?"]},
 
 // WATER, AIR & REAGENTS
-{t:"util", q:"Process water at KCGM has an SG of about 1.07. Why?",
+{t:"util", q:"Process water on this plant has an SG of about 1.07. Why?",
  a:"It's hypersaline bore water (very high dissolved salts)",
  e:"Fresh water is scarce in the Goldfields, so the plant runs on saline bore water from borefields like Kaltails. That's why corrosion resistant materials and specific reagent behaviour matter.",
  f:["Why does high salinity affect corrosion and reagent chemistry so much?","What would you check if process water SG suddenly changed?","What materials selection choices respond to this salinity on plant?"]},
@@ -804,7 +804,7 @@ const CARDS = [
  a:"Elution pre-soak solution and pH control in elution/EW",
  e:"The pre-soak is a caustic cyanide solution. Caustic also keeps electrowinning solution alkaline.",
  f:["Why does elution pre-soak need an alkaline cyanide solution?","What would low caustic dosing do to electrowinning solution stability?","How is caustic delivered and stored safely on site?"]},
-{t:"util", q:"Why is oxygen a key 'reagent' at KCGM?",
+{t:"util", q:"Why is oxygen a key 'reagent' on this plant?",
  a:"Gold cyanidation needs dissolved oxygen, and sulphide rich slurries consume it quickly",
  e:"Oxygen is supplied from a PSA plant with liquid oxygen backup, fed to leach tanks, ILR and CIL4.",
  f:["Why do sulphide rich slurries consume oxygen so quickly?","What would a handover mean if the PSA oxygen plant went offline?","How does liquid oxygen backup kick in if PSA output falls short?"]},
@@ -924,8 +924,8 @@ const CARDS = [
 // CONTROLS & DCS  (from the Stage 1 and Stage 2 Plant General Process Control Philosophies)
 {t:"ctrl", q:"What control system runs the Fimiston plant?",
  a:"A Yokogawa Centum VP DCS, with Field Control Stations spread around the plant",
- e:"New and old plant are configured to the same KCGM templates so it looks and operates as one plant. Data is logged to a PI historian, which is where trends come from.",
- f:["Why did KCGM standardise both plants on one DCS platform?","What would you see on the OIS if a Field Control Station lost comms?","How far back can you pull trend data from the PI historian?"]},
+ e:"New and old plant are configured to the same site templates so it looks and operates as one plant. Data is logged to a PI historian, which is where trends come from.",
+ f:["Why did site standardise both plants on one DCS platform?","What would you see on the OIS if a Field Control Station lost comms?","How far back can you pull trend data from the PI historian?"]},
 {t:"ctrl", q:"What are the two main control rooms?",
  a:"The Fimiston Crusher control room and the Main Mill control building",
  e:"The new primary crusher (PC2) is run remotely from the existing crusher control room using CCTV. Acronyms: CRO = Control Room Operator, OIS = Operator Interface System (the screens), CCR = Central Control Room, CrCR = Crusher Control Room.",

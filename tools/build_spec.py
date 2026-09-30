@@ -172,7 +172,7 @@ for p in out:
         for r in p.search_for(n):
             p.add_redact_annot(r, fill=(0, 0, 0)); hits += 1
     p.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE, graphics=pymupdf.PDF_REDACT_LINE_ART_NONE)
-out.set_metadata({"title": "Piping Materials and Valves Specification 2000-F00-STS-PP-10001 Rev 3 (names removed)", "author": "", "subject": "KCGM Growth Project", "keywords": "", "creator": "", "producer": ""})
+out.set_metadata({"title": "Piping Materials and Valves Specification 2000-F00-STS-PP-10001 Rev 3 (names removed)", "author": "", "subject": "Growth Project", "keywords": "", "creator": "", "producer": ""})
 out.del_xml_metadata()
 out.save(os.path.join(OUT, "pvs.pdf"), garbage=4, deflate=True, clean=True)
 

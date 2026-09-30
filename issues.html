@@ -113,7 +113,7 @@ td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13
 <body>
 <div class="page">
   <header>
-    <h1>KCGM <span>Checks</span></h1>
+    <h1>Project <span>Checks</span></h1>
     <a class="btn" href="index.html?cards">Flashcards</a>
     <a class="btn" href="pfd.html">Smart PFD</a>
     <button class="btn" id="updBtn">Update app</button>
@@ -225,11 +225,11 @@ td.item{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:13
       ...docList().map(v => [v.number, v.full, v.kind, v.rev, fmt(v.date), v.status, review(v) === "–" ? "" : review(v), v.used, v.note || ""])] });
   const histSheet = () => ({ name: "Revision history", widths: [30, 50, 6, 14, 50],
     rows: [["Document number", "Title", "Rev", "Date", "Status"], ...docList().flatMap(v => (v.history || []).map(h => [v.number, v.full, h.rev, fmt(h.date), h.status]))] });
-  if ($("xlsDocs")) $("xlsDocs").onclick = () => XLSX.download(`KCGM source documents ${new Date().toISOString().slice(0, 10)}.xlsx`, [docSheet(), histSheet()]);
+  if ($("xlsDocs")) $("xlsDocs").onclick = () => XLSX.download(`Project source documents ${new Date().toISOString().slice(0, 10)}.xlsx`, [docSheet(), histSheet()]);
   $("q").oninput = () => { shown = 200; draw(); }; $("cat").onchange = () => { shown = 200; draw(); };
   $("xls").onclick = () => {
     const f = filtered(), head = ["Type", "Category", "Item", "What document 1 says", "Document 1", "Date 1", "What document 2 says", "Document 2", "Date 2", "Comment (which is taken as true and why)"];
-    XLSX.download(`KCGM checks ${new Date().toISOString().slice(0, 10)}.xlsx`, [
+    XLSX.download(`Project checks ${new Date().toISOString().slice(0, 10)}.xlsx`, [
       { name: "Checks", widths: [12, 16, 26, 45, 34, 12, 45, 34, 12, 60], rows: [head, ...f.map(r => [r.sev, r.cat, r.item, r.v1, r.d1, fmt(r.date1), r.v2, r.d2, fmt(r.date2), r.note])] },
       docSheet(),
       { name: "Types", widths: [14, 60, 10], rows: [["Type", "Meaning", "Count"], ...SEV.map(s => [s, SEVTIP[s], all.filter(r => r.sev === s).length])] }]);

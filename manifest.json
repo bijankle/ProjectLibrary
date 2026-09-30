@@ -1,7 +1,7 @@
 {
   "name": "Project Library",
   "short_name": "Project Library",
-  "description": "Plant lists, drawings, PFD, layout and quiz for the KCGM Fimiston processing plant.",
+  "description": "Plant lists, drawings, PFD, layout and quiz for a processing plant project.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
