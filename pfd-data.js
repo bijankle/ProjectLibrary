@@ -546,7 +546,7 @@ const INTERLOCKS = [
 
 // Flow walkthroughs. ids = streams/nodes to highlight for each step.
 const FLOWS = [
-{ id:"main", name:"Ore & slurry main line", color:"#c9a06a", desc:"The bulk tonnage path from haul truck to tailings dam.",
+{ id:"main", name:"Ore & slurry main line", color:"#c9a06a", desc:"Follows the bulk of the ore from the haul truck to the tailings dam: crushing, SAG and ball milling, flotation, tails thickening, CIL4 leach and final tails. Think of it as the main process line that every other loop hangs off.",
   steps:[
    { t:"ROM ore is tipped into Primary Crusher 2 (and PC1 for the Fimiston SAG). The gyratory breaks it to about 130 mm.", ids:["rom","s_rom1","s_rom2","pc1","pc2"] },
    { t:"Crushed ore builds the coarse ore stockpiles, the surge buffer between 65% crusher availability and 93% mill availability.", ids:["s_pc1","s_pc2","cos1","cos2"] },
@@ -558,14 +558,14 @@ const FLOWS = [
    { t:"Stage 2: thickened tails are leached in CIL4 (2 leach + 6 adsorption tanks). Stage 1: part went to the old CIL2/3, the rest straight to final tails.", ids:["s_ttu","c4fb","s_c40","t411","s_c41","t412","s_c42","t413","s_c43","t414","s_c44","t415","s_c45","t416","s_c46","t417","s_c47","t418","s_ttc","s_ttf"] },
    { t:"CIL4 tails go to the final tails tank and are pumped to the Fim III TSF.", ids:["s_c4t","ftk","s_tsf","tsf"] }
   ] },
-{ id:"grind", name:"Grinding recycle loops", color:"#e08a4a", desc:"The loops that make an SABC circuit work, and why they matter.",
+{ id:"grind", name:"Grinding recycle loops", color:"#e08a4a", desc:"The four recycle loops inside grinding: pebble crushing, the cyclone and ball mill loop, the gravity gold loop and the Fimiston SAG loop. Each sends oversize or unfinished material back for another pass, which is what keeps the mills loaded and the grind on size.",
   steps:[
    { t:"Pebble loop: SAG discharge screen oversize (critical size rock) goes to the cone crushers and returns to SAG feed. Pebble crushers down = SAG load builds.", ids:["sag","s_sagd","dscr","s_dso","peb","s_pebr"] },
    { t:"Cyclone loop: coarse underflow goes to the ball mill and its discharge comes back to the hopper. Circulating load is about 358%, like a pump recirculation loop that keeps the mill full of near sized material.", ids:["cfh","s_cf","cyc","s_cuf","bm","s_bmd"] },
    { t:"Gravity loop: two cyclones feed the scalping screens and Knelsons; Knelson tails return to the hopper, so coarse gold gets many chances to be caught.", ids:["s_gcf","gcyc","s_guf","gscr","s_gso","s_gsu","kn","s_knt"] },
    { t:"Fimiston loop: the old SAG has its own pebble crushers, then sends its discharge to the shared hopper.", ids:["fimsag","s_fpeb","fimpeb","s_fpebr","s_ftr"] }
   ] },
-{ id:"flot", name:"Flotation circuit", color:"#b9b08f", desc:"How concentrate is pulled from the slurry and upgraded, including the Jameson recycles.",
+{ id:"flot", name:"Flotation circuit", color:"#b9b08f", desc:"How the gold bearing sulphides are floated out of the slurry. Rougher and scavenger cells pull a low grade concentrate, the Jameson cleaners upgrade it and recycle their middlings, and the result is about 72% of the gold in about 4% of the mass.",
   steps:[
    { t:"Rougher 1 floats the fastest, richest sulphides (about 15% S). Its normal route is to the Jameson cleaner with the rest of the rougher concentrate (PDC and the as built PFD agree). The as built PFD also shows a dashed bypass straight to the final concentrate hopper.", ids:["r1","s_r1c","jc"] },
    { t:"Roughers 2 and 3 and the scavengers float slower, lower grade material. It goes to the Jameson cleaner for upgrading.", ids:["r2","r3","s1","s2","s3","s4","s_r23c","s_sc","jc"] },
@@ -573,7 +573,7 @@ const FLOWS = [
    { t:"Cleaner-scavenger concentrate returns to cleaner feed. Its tails join the scavenger tails at the thickener.", ids:["s_jsc","s_jst","ftt"] },
    { t:"Cleaner concentrate is the only feed to the final concentrate hopper (PDC 8.1). That's about 72% of the gold in about 4% of the mass.", ids:["s_jcc","fch"] }
   ] },
-{ id:"conc", name:"Concentrate & gold path", color:"#e8a93a", desc:"Where the small, rich stream goes, and every route gold takes to the goldroom.",
+{ id:"conc", name:"Concentrate & gold path", color:"#e8a93a", desc:"Follows the small, rich concentrate stream: thickening, ultra fine grinding in the IsaMills, intensive leaching in CIL2 and adsorption in CIL3. It also covers gravity gold from the Knelsons and every route that ends as doré in the goldroom.",
   steps:[
    { t:"Final concentrate is thickened in the old 30-TH-61 and stored in filter feed tanks A and B.", ids:["fch","s_fc","ct","s_ctu","fft"] },
    { t:"IsaMills grind it to P80 9 µm. Stage 2 runs UFG 2 and 3, with UFG 1 taking any excess. Beyond that, concentrate is filtered and stockpiled (Stage 1: to Gidji).", ids:["s_u2","s_u3","s_u1","ufg2","ufg3","ufg1","s_uf","filt","s_gj","gidji"] },
@@ -582,7 +582,7 @@ const FLOWS = [
    { t:"Gravity gold: Knelson concentrate is leached in the ILR and electrowon directly.", ids:["kn","s_knc","ilr","s_ilp","gew","s_gg"] },
    { t:"All EW circuits (gravity, concentrate, CIL4) send cathode product to the goldroom for smelting into doré.", ids:["k_3p","ew3","k_3g","k_4p","eu4","k_4w","ew4","k_4g","gold"] }
   ] },
-{ id:"carbon", name:"Carbon loop", color:"#9fb0c2", desc:"Carbon moves against the slurry, is stripped, regenerated and returned.",
+{ id:"carbon", name:"Carbon loop", color:"#9fb0c2", desc:"Activated carbon soaks up dissolved gold. It is pumped against the slurry flow from tank to tank, like a counterflow heat exchanger, then stripped of its gold, reactivated in the kiln and returned to the last tank.",
   steps:[
    { t:"Regenerated carbon enters the LAST CIL4 tank, where solution gold is lowest.", ids:["sz4","k_4s","t418"] },
    { t:"Carbon is pumped upstream tank by tank, counter current to the slurry, loading more gold each step. Like a counterflow heat exchanger. The Carbon Scout checks g/L in every tank.", ids:["k_48","k_47","k_46","k_45","k_44","t417","t416","t415","t414","t413"] },
@@ -591,7 +591,7 @@ const FLOWS = [
    { t:"Barren carbon is regenerated in the kiln (with mercury abatement), quenched and sized, then goes back to the last tank.", ids:["k_4b","kiln4","k_4k","sz4"] },
    { t:"CIL3 has the same idea: loaded carbon to the new linear screen and the existing elution circuits, barren carbon through the existing kilns and new sizing screen back to CIL3.", ids:["k_3l","lcs3","k_3e","el3","k_3b","kiln3","k_3k","sz3","k_3s","cil3"] }
   ] },
-{ id:"water", name:"Water circuits", color:"#4aa3df", desc:"Saline process water, fresh scheme water, gland water and cyanide water.",
+{ id:"water", name:"Water circuits", color:"#4aa3df", desc:"Where the plant water comes from and where it goes: saline process water recovered from thickeners and dams, fresh scheme water for the few places salt cannot be tolerated, gland water for the slurry pump seals, and cyanide water returned from the tailings dam.",
   steps:[
    { t:"Thickener overflow is the main process water source, topped up with saline bore water from Dam 2. Process water SG is about 1.07.", ids:["ftt","w_ov","pwt","dams","w_d2"] },
    { t:"Process water is distributed as mill water and HP water: cyclone hopper dilution (density control), sprays and Knelson fluidising water.", ids:["w_pw","hpw","w_mw","w_kf","cfh","kn"] },
@@ -599,7 +599,7 @@ const FLOWS = [
    { t:"Scheme (fresh) water is used only where salt can't be tolerated, such as elution.", ids:["sch","w_sc","el4"] },
    { t:"TSF decant returns as cyanide water after hydrogen peroxide treatment and is reused in the plant.", ids:["tsf","w_dec","cnw","w_cnw"] }
   ] },
-{ id:"reag", name:"Reagents & oxygen", color:"#b07cd8", desc:"What gets dosed where, and how it's controlled.",
+{ id:"reag", name:"Reagents & oxygen", color:"#b07cd8", desc:"The chemicals and gases the process runs on: flotation reagents, cyanide, lime, lead nitrate, oxygen and the rest. Shows where each is dosed and how the dose is controlled.",
   steps:[
    { t:"Flotation reagents: copper sulphate at SAG discharge (conditioning time), PAX and frother at flotation feed. VSD pumps on g/t setpoints.", ids:["rg_cu","r_cu","rg_pax","r_pax","rg_fr","r_fr","ffb","sag"] },
    { t:"Leach reagents: milk of lime and cyanide at the CIL4 feed box, cyanide ratioed to solids at CIL2, lead nitrate at the CIL2 feed box.", ids:["rg_lime","r_li","rg_cn","r_cn","r_cn2","rg_pb","r_pb","c4fb","cil2"] },

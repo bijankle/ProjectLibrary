@@ -1064,7 +1064,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     let bx = null;
     document.querySelectorAll(".node.hl, .stream.hl:not(.stub)").forEach(g => { if (g.style.display === "none") return; const b = g.getBBox(); if (!b.width && !b.height) return;
       bx = bx ? { x1: Math.min(bx.x1, b.x), y1: Math.min(bx.y1, b.y), x2: Math.max(bx.x2, b.x + b.width), y2: Math.max(bx.y2, b.y + b.height) } : { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height }; });
-    if (bx) flyTo({ x: bx.x1, y: bx.y1, w: bx.x2 - bx.x1, h: bx.y2 - bx.y1 }, 1.25);
+    if (bx) flyTo({ x: bx.x1, y: bx.y1, w: bx.x2 - bx.x1, h: bx.y2 - bx.y1 }, 1.25, 900, i < 0);
     PFDLayout.sync(true);
   }
   // Step strip over the diagram: previous (faded) | current | next (faded); click a side card to move
@@ -1399,7 +1399,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   $("zFit").onclick = () => PFDLayout.active() ? PFDLayout.home() : fitAnim(); $("zInfo").onclick = () => { if (lastPanel) lastPanel(); else toast("Click any equipment, stream, loop, interlock or symbol to see its properties."); };
   window.addEventListener("resize", () => { if (PFDLayout.active()) return; const c = center(); const ar = svg.clientWidth / svg.clientHeight; vb.h = vb.w / ar; vb.x = c[0] - vb.w / 2; vb.y = c[1] - vb.h / 2; setVB(); });
   function bboxOf(g){ const b = g.getBBox(); return { x: b.x, y: b.y, w: b.width, h: b.height }; }
-  function flyTo(b, pad = 2.5, minW = 900){
+  function flyTo(b, pad = 2.5, minW = 900, corner = false){
     if (PFDLayout.active()) return;   // the map does its own zooming
     const W = svg.clientWidth, H = svg.clientHeight;
     const phone = matchMedia("(max-width: 900px)").matches, infoOn = $("info").classList.contains("on");
@@ -1407,6 +1407,9 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     const bottom = infoOn && phone ? $("info").offsetHeight : 0;
     const top = $("stepbar").classList.contains("on") ? $("stepbar").offsetHeight + 20 : 0;
     const uw = W - right, uh = Math.max(80, H - top - bottom);                          // usable screen area (px)
+    // corner: the whole box as large as fits, tucked into the top left of the usable area (a flow's overview)
+    if (corner){ const m = 24, k = Math.max(b.w / (uw - 2 * m), b.h / (uh - 2 * m), 900 / uw);
+      return animVB({ x: b.x - m * k, y: b.y - (top + m) * k, w: W * k, h: H * k }); }
     let w = Math.max(minW, b.w * pad), h = w * uh / uw; if (h < b.h * pad){ h = b.h * pad; w = h * uw / uh; }
     const k = w / uw;                                             // world units per pixel
     animVB({ x: b.x + b.w / 2 - (uw / 2) * k, y: b.y + b.h / 2 - (top + uh / 2) * k, w: W * k, h: H * k });
