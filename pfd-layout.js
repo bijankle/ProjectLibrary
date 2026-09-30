@@ -47,7 +47,10 @@ window.PFDLayout = (() => {
     const tl = L.DomUtil.create("div", "lo-tl"); tl.id = "loTL"; $("mapView").appendChild(tl); L.DomEvent.disableClickPropagation(tl); L.DomEvent.disableScrollPropagation(tl);
     // one row: Plant, then three folded menus: WBS filters (added by wbsPanel), Flow filters, Map options
     const pans = L.DomUtil.create("div", "lo-pans", tl);
-    pans.innerHTML = `<button class="lo-b lo-home" id="loHome" title="Back to the processing plant">Plant</button>`;
+    pans.innerHTML = `<button class="lo-b lo-home" id="loHome" title="Back to the processing plant" aria-label="Back to the processing plant"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5.5h4V20"/></svg></button>`;
+    // north arrow, top right (the map is always north up)
+    const nc = L.DomUtil.create("div", "lo-north", $("mapView")); nc.title = "North"; L.DomEvent.disableClickPropagation(nc);
+    nc.innerHTML = `<svg viewBox="0 0 40 52" aria-label="North"><text x="20" y="11" text-anchor="middle">N</text><path d="M20 15 29 45 20 39 11 45Z" class="n1"/><path d="M20 15 20 39 11 45Z" class="n2"/></svg>`;
     const menu = (id, cls, title, body) => { const m = L.DomUtil.create("div", "lo-pan shut " + cls, pans); m.id = id;
       m.innerHTML = `<button class="lo-wh" type="button">${title}<span>▾</span></button><div class="lo-fb">${body}</div>`;
       m.querySelector(".lo-wh").onclick = () => { m.classList.toggle("shut"); dispatchEvent(new Event("resize")); }; return m; };
@@ -240,7 +243,7 @@ window.PFDLayout = (() => {
         const poly = L.polygon(ll, { renderer: rend, className: "lo-area", color: `hsl(${hue} 85% 62%)`, weight: 1.5, fillColor: `hsl(${hue} 85% 55%)`, fillOpacity: .22, smoothFactor: 0 }).addTo(map);
         const cx = g.reduce((s, p) => s + p.m[0], 0) / g.length, cy = g.reduce((s, p) => s + p.m[1], 0) / g.length;
         const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<i class="la-ld" style="--h:${hue}"></i><span style="--h:${hue}" title="${esc(code + " (" + wbsName(code) + ")")}"><b>${code}</b></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
-        const go = e => { L.DomEvent.stopPropagation(e); const b = poly.getBounds(); map.flyTo(b.getCenter(), Math.min(18.5, Math.max(AREA_Z + 1, map.getBoundsZoom(b, false, [40, 40]))), { duration: .6 }); };
+        const go = e => { L.DomEvent.stopPropagation(e); const b = poly.getBounds(); map.flyTo(b.getCenter(), Math.min(18.5, Math.max(AREA_Z + 1, map.getBoundsZoom(b, false, [40, 40]))), { duration: .6 }); flash(code); };
         poly.on("click", go); lab.on("click", go);
         areas.push({ code, poly, lab, n: g.length, hue });
       });
@@ -263,7 +266,7 @@ window.PFDLayout = (() => {
       map.flyToBounds(bb, { padding: [50, 50], maxZoom: 18.5, duration: .6 });
       wbsOn = c; el.querySelectorAll("[data-w]").forEach(x => x.classList.toggle("on", x === b));
       if (matchMedia("(max-width: 700px)").matches) el.classList.add("shut");
-      zs.forEach(a => { const p = a.poly._path; if (p){ p.classList.remove("pick"); void p.getBoundingClientRect(); p.classList.add("pick"); setTimeout(() => p.classList.remove("pick"), 2600); } });
+      flash(c);
     });
   }
   // area labels (the code; the name is in the WBS panel) never overlap: biggest areas first, the rest wait for a closer zoom
@@ -283,6 +286,9 @@ window.PFDLayout = (() => {
   // Plant view (callout stacks): the zones show as outlines and their codes line up in a row along the top and the
   // bottom of the map (a zone in the upper half labels at the top), each joined to its zone by a leader
   const ROWH = 30;
+  // an area's zones flash a few times (picked from WBS filters or tapped on the map); they show while flashing at any zoom
+  function flash(code){ areas.filter(a => a.code === code).forEach(a => { const p = a.poly._path; if (!p) return;
+    p.classList.remove("pick"); void p.getBoundingClientRect(); p.classList.add("pick"); setTimeout(() => p.classList.remove("pick"), 2600); }); }
   function stackAreas(){
     const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height;
     const tl = $("loTL"), top = (tl ? tl.querySelector(".lo-pans").getBoundingClientRect().bottom - box.top : 50) + ROWH / 2 + 4, bot = H - ROWH / 2 - 6;
