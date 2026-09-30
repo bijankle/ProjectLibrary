@@ -115,12 +115,12 @@ window.AssetViz = (() => {
     // asset mix (before a type is picked): ranked bars, tap one to pick that type
     if (!ctx.type){
       const m = count(L, r => r.t);
-      h += card("Asset mix", bars(Object.entries(m).map(([k, v]) => ({ k, label: TN[k] || k, v })), "items", "t", 5));
+      h += card("Asset mix [qty]", bars(Object.entries(m).map(([k, v]) => ({ k, label: TN[k] || k, v })), "items", "t", 5));
     }
     // where the assets are (any type): by WBS area
     if (L.length){
       const m = count(L, r => r.a);
-      h += card(ctx.type ? `${TN[ctx.type] || "Assets"} by area` : "Assets by area", bars(Object.entries(m).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "items", next === "a" ? "a" : null, 5),
+      h += card((ctx.type ? `${TN[ctx.type] || "Assets"} by area` : "Assets by area") + " [qty]", bars(Object.entries(m).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "items", next === "a" ? "a" : null, 5),
         "");
     }
     if (mel.length){
@@ -133,24 +133,24 @@ window.AssetViz = (() => {
       if (totKw) h += card("Installed power by area [kW]", bars(Object.entries(count(live, r => r.a, kw)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v, tip: `<b>${esc(k)} ${esc(areaName(k))}</b><br>${fmt(v)} kW (${Math.round(v / totKw * 100)}%)` })), "kW", next === "a" ? "a" : null, 5), "kW, decommissioned left out.");
       if (ctx.type === "mel" || !ctx.type){
         const m = count(mel, r => r.k);
-        h += card("Equipment by type", bars(Object.entries(m).map(([k, v]) => ({ k, label: `${k} ${ctx.codeName ? ctx.codeName(k) : ""}`.trim(), v })), "items", ctx.type === "mel" && next === "k" ? "k" : null, 5),
+        h += card("Equipment by type [qty]", bars(Object.entries(m).map(([k, v]) => ({ k, label: `${k} ${ctx.codeName ? ctx.codeName(k) : ""}`.trim(), v })), "items", ctx.type === "mel" && next === "k" ? "k" : null, 5),
           "");
       }
       // splits: ≤5 parts each
-      h += card("Stage", donut(five(count(mel, r => get(r, "Stage"))), "items"));
-      h += card("Brownfield / greenfield", donut(five(count(mel, r => /brown/i.test(get(r, "Brownfield / greenfield")) ? "Brownfield" : /green/i.test(get(r, "Brownfield / greenfield")) ? "Greenfield" : "")), "items"));
-      h += card("Status", donut(five(count(mel, r => get(r, "Status"))), "items"));
+      h += card("Stage [qty]", donut(five(count(mel, r => get(r, "Stage"))), "items"));
+      h += card("Brownfield / greenfield [qty]", donut(five(count(mel, r => /brown/i.test(get(r, "Brownfield / greenfield")) ? "Brownfield" : /green/i.test(get(r, "Brownfield / greenfield")) ? "Greenfield" : "")), "items"));
+      h += card("Status [qty]", donut(five(count(mel, r => get(r, "Status"))), "items"));
       // drives
       const drv = live.filter(r => kw(r) > 0);
       if (drv.length){
-        h += card("Starter type", donut(five(count(drv, r => ({ DOL: "DOL", VSD: "VSD", FE: "FE (field equipment)" })[get(r, "Starter type")] || (get(r, "Starter type") ? get(r, "Starter type").replace(/^.*DOL.*$/, "DOL (other)") : ""))), "drives"), "Items with a power rating.");
+        h += card("Starter type [qty]", donut(five(count(drv, r => ({ DOL: "DOL", VSD: "VSD", FE: "FE (field equipment)" })[get(r, "Starter type")] || (get(r, "Starter type") ? get(r, "Starter type").replace(/^.*DOL.*$/, "DOL (other)") : ""))), "drives"), "Items with a power rating.");
         h += card("Power by voltage [kW]", bars(Object.entries(count(drv, r => get(r, "Voltage") || "Not given", kw)).map(([k, v]) => ({ k: "", label: k, v })), "kW", null, 5));
       }
     }
     if (lines.length){
-      h += card("Lines by service", bars(Object.entries(count(lines, r => r.k)).map(([k, v]) => ({ k, label: `${k} ${ctx.svcName ? ctx.svcName(k) : ""}`.trim(), v })), "lines", ctx.type === "line" && next === "k" ? "k" : null, 5));
+      h += card("Lines by service [qty]", bars(Object.entries(count(lines, r => r.k)).map(([k, v]) => ({ k, label: `${k} ${ctx.svcName ? ctx.svcName(k) : ""}`.trim(), v })), "lines", ctx.type === "line" && next === "k" ? "k" : null, 5));
       // sizes: ranked bars like the others (most common first), tap one to filter when size is the next step
-      h += card("Line sizes", bars(Object.entries(count(lines, r => r.sz)).filter(([k]) => k !== "?" && +k > 0).map(([k, v]) => ({ k, label: "DN" + k, v })), "lines", ctx.type === "line" && next === "sz" ? "sz" : null, 5), "Lines per nominal size.");
+      h += card("Line sizes [qty]", bars(Object.entries(count(lines, r => r.sz)).filter(([k]) => k !== "?" && +k > 0).map(([k, v]) => ({ k, label: "DN" + k, v })), "lines", ctx.type === "line" && next === "sz" ? "sz" : null, 5), "Lines per nominal size.");
       if (totLen) h += card("Pipe length by area [m]", bars(Object.entries(count(lines, r => r.a, len)).map(([k, v]) => ({ k, label: k === "?" ? "No area" : `${k} ${areaName(k)}`, v })), "m", null, 5), "Metres of pipe.");
     }
     el.innerHTML = h + `</div>`;
