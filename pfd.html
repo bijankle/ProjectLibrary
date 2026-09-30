@@ -415,8 +415,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     </div>
     <div id="stepList"></div>
   </div>
-  <h2>Legend</h2>
-  <div class="legend" id="legend"></div>
+  <div class="legend" id="legend" style="margin-top:14px"></div>
 </aside>
 
 <div id="stage"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
@@ -903,13 +902,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     c.onclick = () => src.click(); new MutationObserver(sync).observe(src, { attributes: true, attributeFilter: ["class"] }); sync(); return c;
   }
   OVERLAYS.forEach(o => $("overlays").appendChild(overlayPill(o)));
-  lg.insertAdjacentHTML("beforeend", `<div class="lg-sig" style="margin-top:8px"><svg viewBox="0 0 46 22"><line x1="2" y1="11" x2="30" y2="11" style="stroke:var(--ink);stroke-width:1.7;stroke-dasharray:6 4"/><rect x="28" y="3" width="16" height="16" style="fill:var(--panel);stroke:var(--ink)"/><circle cx="36" cy="11" r="7" style="fill:none;stroke:var(--ink)"/></svg><span>Control loop: DCS tag and signal</span></div>
-  <div class="lg-sig"><svg viewBox="0 0 46 22"><line x1="2" y1="11" x2="44" y2="11" style="stroke:#ff3b30;stroke-width:2.2;stroke-dasharray:10 3 2 3"/><path d="M23 2 L32 11 L23 20 L14 11 Z" style="fill:#ff3b30"/></svg><span>Interlock (I, filled) or permissive (P, hollow)</span></div>`);
   const mkList = (title, arr, kind, label) => {
     const h = document.createElement("div"); h.className = "lg-sub"; h.textContent = title + " (" + arr.length + ")";
     const box = document.createElement("div"); box.className = "lg-list";
-    h.onclick = () => { h.classList.toggle("open"); pref.set("pfd_open_" + kind, h.classList.contains("open") ? "1" : "0"); };
-    if (pref.get("pfd_open_" + kind, "0") === "1") h.classList.add("open");
+    h.onclick = () => h.classList.toggle("open");   // always starts closed
     arr.forEach(x => { const d = document.createElement("div"); d.className = "lg-li"; d.innerHTML = label(x); d.onclick = e => pick(e, { k: kind, id: x.id }, null, true); x.li = d; box.appendChild(d); });
     lg.appendChild(h); lg.appendChild(box);
   };
