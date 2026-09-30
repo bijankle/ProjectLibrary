@@ -229,6 +229,30 @@ window.PFDLayout = (() => {
     P.slice().reverse().forEach(p => { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); });
     return lo.slice(0, -1).concat(up.slice(0, -1));
   }
+  // the outline of several convex parts joined by necks (half width w, metres): the union is drawn on a 2 m grid and its
+  // edge traced (marching squares), the longest loop kept
+  function outline(rings, necks, w){
+    const inPoly = (R, x, y) => { let s = 0; for (let i = 0; i < R.length; i++){ const a = R[i], b = R[(i + 1) % R.length], c = (b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0]); if (c > 0) s |= 1; else if (c < 0) s |= 2; if (s === 3) return false; } return true; };
+    const nearSeg = (a, b, x, y) => { const dx = b[0] - a[0], dy = b[1] - a[1], t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / (dx * dx + dy * dy || 1))); return Math.hypot(x - a[0] - t * dx, y - a[1] - t * dy) <= w; };
+    const pts = rings.flat(), C = 2, x0 = Math.min(...pts.map(p => p[0])) - 3 * C, y0 = Math.min(...pts.map(p => p[1])) - 3 * C;
+    const nx = Math.ceil((Math.max(...pts.map(p => p[0])) + 3 * C - x0) / C) + 1, ny = Math.ceil((Math.max(...pts.map(p => p[1])) + 3 * C - y0) / C) + 1;
+    const G = new Uint8Array(nx * ny);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++){ const x = x0 + i * C, y = y0 + j * C;
+      G[j * nx + i] = rings.some(R => inPoly(R, x, y)) || necks.some(([a, b]) => nearSeg(a, b, x, y)) ? 1 : 0; }
+    const v = (i, j) => (i < 0 || j < 0 || i >= nx || j >= ny) ? 0 : G[j * nx + i], next = new Map(), key = p => p[0] + "," + p[1];
+    // edges between inside and outside cells, directed so the inside is on the left; chained into loops
+    for (let j = -1; j < ny; j++) for (let i = -1; i < nx; i++){
+      const a = v(i, j), r = v(i + 1, j), d = v(i, j + 1);
+      if (a !== r){ const p = [i + .5, j - .5], q = [i + .5, j + .5]; a ? next.set(key(q), p) : next.set(key(p), q); }
+      if (a !== d){ const p = [i - .5, j + .5], q = [i + .5, j + .5]; a ? next.set(key(p), q) : next.set(key(q), p); } }
+    let best = [];
+    while (next.size){ const [k0] = next.keys(), loop = []; let k = k0;
+      while (next.has(k)){ const p = next.get(k); next.delete(k); loop.push(p); k = key(p); }
+      if (loop.length > best.length) best = loop; }
+    let out = best.filter((p, i) => i % 2 === 0).map(p => [x0 + p[0] * C, y0 + p[1] * C]);
+    for (let n = 0; n < 3; n++) out = out.map((p, i) => { const a = out[(i + out.length - 1) % out.length], c = out[(i + 1) % out.length]; return [(a[0] + 2 * p[0] + c[0]) / 4, (a[1] + 2 * p[1] + c[1]) / 4]; });   // soften the grid steps
+    return out;
+  }
   function drawAreas(){
     if (!map) return;
     areas.forEach(a => { map.removeLayer(a.poly); map.removeLayer(a.lab); }); areas = [];
@@ -243,15 +267,26 @@ window.PFDLayout = (() => {
       pts.forEach(p => { const near = groups.filter(g => g.some(q => Math.hypot(q.m[0] - p.m[0], q.m[1] - p.m[1]) < 120));
         if (!near.length) return groups.push([p]);
         near.slice(1).forEach(b => { near[0].push(...b); groups.splice(groups.indexOf(b), 1); }); near[0].push(p); });
-      groups.forEach(g => {
-        const P = []; g.forEach(p => { const r = reach(p.id) + 14; for (let k = 0; k < 12; k++) P.push([p.m[0] + r * Math.cos(k * Math.PI / 6), p.m[1] + r * Math.sin(k * Math.PI / 6)]); });
-        const ll = hull(P).map(m => toLL(m, o)), hue = HUE[ci % HUE.length];
-        const poly = L.polygon(ll, { renderer: rend, className: "lo-area", color: `hsl(${hue} 85% 62%)`, weight: 1.5, fillColor: `hsl(${hue} 85% 55%)`, fillOpacity: .22, smoothFactor: 0 }).addTo(map);
-        const cx = g.reduce((s, p) => s + p.m[0], 0) / g.length, cy = g.reduce((s, p) => s + p.m[1], 0) / g.length;
+      // parts of one area within 300 m of each other join up: each keeps its outline, a narrow neck runs between the
+      // nearest pieces of equipment (a minimum spanning tree, so no loops); further parts stay on their own
+      const gap = (a, b) => { let d = 1e9, pa, pb; a.forEach(p => b.forEach(q => { const x = Math.hypot(p.m[0] - q.m[0], p.m[1] - q.m[1]); if (x < d){ d = x; pa = p; pb = q; } })); return { d, pa, pb }; };
+      const clusters = []; groups.forEach(g => { const near = clusters.filter(c => c.some(h => gap(g, h).d < 300));
+        if (!near.length) return clusters.push([g]); near.slice(1).forEach(c => { near[0].push(...c); clusters.splice(clusters.indexOf(c), 1); }); near[0].push(g); });
+      const hue = HUE[ci % HUE.length], mine = [];
+      clusters.forEach(cl => {
+        const ring = g => { const P = []; g.forEach(p => { const r = reach(p.id) + 14; for (let k = 0; k < 12; k++) P.push([p.m[0] + r * Math.cos(k * Math.PI / 6), p.m[1] + r * Math.sin(k * Math.PI / 6)]); }); return hull(P); };
+        const rings = cl.map(ring), necks = [];
+        for (const inT = [0]; inT.length < cl.length;){ let b = null;
+          inT.forEach(i => cl.forEach((g, j) => { if (inT.includes(j)) return; const x = gap(cl[i], g); if (!b || x.d < b.d) b = { ...x, j }; }));
+          inT.push(b.j); necks.push([b.pa.m, b.pb.m]); }
+        const shape = cl.length > 1 ? outline(rings, necks, 7) : rings[0], all = cl.flat();
+        const poly = L.polygon(shape.map(m => toLL(m, o)), { renderer: rend, className: "lo-area", color: `hsl(${hue} 85% 62%)`, weight: 1.5, fillColor: `hsl(${hue} 85% 55%)`, fillOpacity: .22, smoothFactor: 0 }).addTo(map);
+        const big = cl.slice().sort((a, b) => b.length - a.length)[0], cx = big.reduce((t, p) => t + p.m[0], 0) / big.length, cy = big.reduce((t, p) => t + p.m[1], 0) / big.length;   // the label sits on the biggest part
         const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<i class="la-ld" style="--h:${hue}"></i><span style="--h:${hue}" title="${esc(code + " (" + wbsName(code) + ")")}"><b>${code}</b></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
-        const go = e => { L.DomEvent.stopPropagation(e); const b = poly.getBounds(); map.flyTo(b.getCenter(), Math.min(18.5, Math.max(AREA_Z + 1, map.getBoundsZoom(b, false, [40, 40]))), { duration: .6 }); flash(code); };
-        poly.on("click", go); lab.on("click", go);
-        areas.push({ code, poly, lab, n: g.length, hue });
+        // a tap shows the whole area, every part of it, however far apart
+        const go = e => { L.DomEvent.stopPropagation(e); const b = L.featureGroup(mine).getBounds(); map.flyTo(b.getCenter(), Math.min(18.5, Math.max(AREA_Z + 1, map.getBoundsZoom(b, false, [40, 40]))), { duration: .6 }); flash(code); };
+        poly.on("click", go); lab.on("click", go); mine.push(poly);
+        areas.push({ code, poly, lab, n: all.length, hue });
       });
     });
     declutterAreas(); wbsPanel();

@@ -133,7 +133,10 @@ window.Browse = (() => {
   // chips that still don't fit at 8px widen the filter column (up to half the screen)
   // (min: the smallest size allowed; lines' "from …, to …" may go as small as it takes)
   function fitRows(sel, max, min = 8){
-    el.querySelectorAll(sel).forEach(b => { const s = b.querySelector("span"); if (!s) return; s.style.fontSize = max + "px";
+    el.querySelectorAll(sel).forEach(b => { const s = b.querySelector("span"); if (!s) return;
+      // the bracket text is never bigger than the code before it: capped just under the code's own size
+      const code = b.querySelector("b"), cap = code ? parseFloat(getComputedStyle(code).fontSize) - 1 : max;
+      s.style.fontSize = Math.min(max, cap) + "px";
       const lo = b.classList.contains("ln") ? 3 : min;
       for (let k = 0; k < 3 && b.scrollWidth > b.clientWidth + 1; k++){   // a couple of passes: padding and spacing don't scale
         const cur = parseFloat(s.style.fontSize), over = b.scrollWidth - b.clientWidth, w = s.getBoundingClientRect().width;
