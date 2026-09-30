@@ -344,10 +344,12 @@
       cur = it;
       // the tag to mark on a drawing: the item itself, or on a drawing's own page the item you came from
       const from = it.t === "pid" ? (stack.length && stack[stack.length - 1].it ? stack[stack.length - 1].it.key : null) : it.key;
-      body.innerHTML = `<button class="lk-back">← Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}</button>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
+      const hv = (d, t) => `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+      body.innerHTML = `<div class="lk-nav"><button class="lk-home" title="Home" aria-label="Home">${hv('<path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/>')}</button>` +
+        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button></div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
       body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from, { page: +a.dataset.page || 1 }); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
-      body.querySelector(".lk-back").onclick = back;
+      body.querySelector(".lk-back").onclick = back; body.querySelector(".lk-home").onclick = home;
 
       const pb = body.querySelector("[data-pfd]"); if (pb) pb.onclick = () => opts.pfd(it).go();
       L.fillSpec(body, it);
@@ -357,6 +359,8 @@
     // any code link in an item (also ones filled in later, like the valve codes in a pipe spec) opens that item
     body.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a[data-k]"); if (!a || !body.contains(a)) return; e.preventDefault();
       ensure().then(() => { const x = L.find(a.dataset.k, a.dataset.t); if (x) open(x, true); }); });
+    // home: back to the start (the Assets page's own reset when it has one, else an empty search)
+    const home = () => { stack.length = 0; cur = null; inp.value = ""; showList(""); if (opts.home) opts.home(); };
     const back = () => { const s = stack.pop(); if (s && s.it){ cur = null; open(s.it, false); } else { cur = null; showList(inp.value); if (s) body.scrollTop = s.scroll; } };
     let tmr; inp.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(() => { stack.length = 0; cur = null; ensure().then(() => showList(inp.value)); }, 120); });
     inp.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); clearTimeout(tmr); stack.length = 0; rememberQ(inp.value); ensure().then(() => { showList(inp.value); if (hits.length && (hits[0].k === norm(inp.value) || hits.length === 1)) open(hits[0], true); }); inp.blur(); } });
@@ -437,7 +441,9 @@
 .lk-rh{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mute);margin:2px 2px 8px}
 .lk-rh button{border:0;background:none;color:var(--lk-a);font:inherit;text-transform:none;letter-spacing:0;font-size:13px;cursor:pointer;padding:4px}
 .lk-empty{color:var(--mute);font-size:14px;padding:10px 2px;line-height:1.45}
-.lk-back{border:0;background:none;color:var(--lk-a);font:inherit;font-weight:700;padding:4px 0 10px;cursor:pointer}
+.lk-nav{display:flex;gap:8px;margin:2px 0 12px}
+.lk-home,.lk-back{width:34px;height:34px;border-radius:50%;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer}
+.lk-home:hover,.lk-back:hover{border-color:var(--lk-a);color:var(--lk-a)}
 .lk-kind{font-size:11.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--lk-a)}
 .lk-key{font-family:ui-monospace,Consolas,monospace;font-size:20px;font-weight:800;margin:4px 0 2px;word-break:break-all}.lk-name{font-size:15px;line-height:1.35;margin-bottom:8px}
 .lk-t{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}.lk-t td{padding:5px 4px;border-bottom:1px solid var(--lk-l);vertical-align:top;word-break:break-word}.lk-t td:first-child{color:var(--mute);width:1%;min-width:112px;padding-right:10px;font-size:12.5px;word-break:normal;overflow-wrap:normal;hyphens:manual}
