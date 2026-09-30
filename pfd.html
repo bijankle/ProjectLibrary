@@ -24,7 +24,7 @@ try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", fun
 <title>Project Library PFD</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
-:root{--fh:22px;--fl:13px;--fb:15px;
+:root{--fh:22px;--fl:13px;--fb:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --bg:#0f1216; --panel:#171b21; --panel2:#1f252d; --ink:#e9edf2; --mute:#95a1ae; --line:#2c343e;
   --accent:#e8b44a; --carbon:#f2f2f2; --node:#1c222a; --nodeln:#566373; --grid:#161a20; --frame:#222932; --framet:#6f7c8a;
 }
@@ -33,7 +33,7 @@ try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", fun
   --accent:#b67d12; --carbon:#111111; --node:#ffffff; --nodeln:#6d7a89; --grid:#e9ebef; --frame:#e3e7ec; --framet:#7a8594;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--ff);overflow:hidden}
 button,select,input{font:inherit;color:inherit}
 header{position:fixed;left:0;right:0;top:var(--tb,0px);height:54px;display:flex;align-items:center;gap:10px;padding:0 14px;
   background:var(--panel);border-bottom:1px solid var(--line);z-index:5}
@@ -119,9 +119,9 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 /* equipment: plain text boxes (tag + MEL description), centred on the item's position */
 #mapView .lo-bw{background:none;border:0;width:0 !important;height:0 !important}
 .lo-box{position:absolute;left:0;top:0;transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,0px)));z-index:1;display:flex;flex-direction:column;align-items:center;gap:1px;max-width:150px;width:max-content;
-  padding:3px 6px;border:1px solid #f5f7fa;border-radius:5px;background:rgba(16,20,24,.82);color:#fff;font:600 10.5px/1.15 system-ui,sans-serif;text-align:center;
+  padding:3px 6px;border:1px solid #f5f7fa;border-radius:5px;background:rgba(16,20,24,.82);color:#fff;font:600 10.5px/1.15 var(--ff);text-align:center;
   cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;transition:box-shadow .15s}
-.lo-box b{font:700 11px/1.15 system-ui,sans-serif;white-space:nowrap;text-align:center}
+.lo-box b{font:700 11px/1.15 var(--ff);white-space:nowrap;text-align:center}
 .lo-box span{font-size:9.5px;font-weight:500;color:#d7dde4;display:none}
 .lo-box em{font-style:normal;font-size:9px;font-weight:700;color:#ff8a80;display:none}
 .lo-box.est{border-style:dashed;border-color:#ffb347}
@@ -134,14 +134,14 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 #mapView:not(.zl1) .lo-box:not(.big):not(.hl):not(.sel){font-size:9px;padding:1px 4px}#mapView:not(.zl1) .lo-box:not(.big) b{font-size:9px}
 #mapView.noflows .lo-s:not(.hl),#mapView.noflows .lo-hit:not(.hl){display:none}
 #mapView.nominor .lo-bw:has(.lo-box.est),#mapView.nominor .lo-s.minor,#mapView.nominor .lo-hit.minor{display:none}
-.lo-dwg{display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.15;text-align:left}.lo-dwg small{font:600 9.5px ui-monospace,Consolas,monospace;opacity:.75}
+.lo-dwg{display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.15;text-align:left}.lo-dwg small{font:600 9.5px var(--ff);opacity:.75}
 .lo-wbs .lo-wl{width:272px;max-width:calc(100vw - 40px)}
 .lo-wh{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--ink);font:inherit;font-weight:800;font-size:var(--fl,13px);letter-spacing:.04em;text-transform:uppercase;padding:8px 10px;cursor:pointer;text-align:left}
 .lo-wh i{font-style:normal;color:var(--mute);font-weight:700}.lo-wh span{margin-left:auto;color:var(--mute);transition:transform .2s}
 
 .lo-wl{overflow-y:auto;padding:0 8px 8px}
 .lo-wl .flow{font-size:var(--fb,15px);padding:6px 8px;margin-bottom:4px;gap:7px;border-radius:8px;color:var(--ink)}
-.lo-wl .flow i{width:11px;height:11px;border-radius:3px}.lo-wl .flow b{font:800 11.5px ui-monospace,Consolas,monospace;flex:none}
+.lo-wl .flow i{width:11px;height:11px;border-radius:3px}.lo-wl .flow b{font:800 11.5px var(--ff);flex:none}
 .lo-wl .flow span{font-weight:600;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lo-wl .flow.on span{color:var(--ink)}
 #mapView:not(.areas) path.lo-area.pick{display:inline}path.lo-area.pick{animation:loPick .65s ease-in-out 4;stroke-width:4px}
 @keyframes loPick{50%{fill-opacity:.6;stroke-opacity:1}}
@@ -153,13 +153,13 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 .lo-area{cursor:pointer}
 .lo-home{display:inline-flex;align-items:center;justify-content:center;color:var(--ink)}
 .lo-north{position:absolute;right:12px;top:10px;z-index:500;width:40px;height:52px;pointer-events:auto;background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--line);border-radius:10px;padding:2px}
-.lo-north svg{width:100%;height:100%;display:block}.lo-north text{font:800 10px system-ui,sans-serif;fill:var(--ink)}
+.lo-north svg{width:100%;height:100%;display:block}.lo-north text{font:800 10px var(--ff);fill:var(--ink)}
 .lo-north .n1{fill:var(--ink)}.lo-north .n2{fill:var(--mute)}.lo-area-lab{cursor:pointer}
 .lo-area-lab span{position:absolute;left:0;top:0;transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,0px)));display:block;width:max-content;max-width:170px;text-align:center;padding:2px 7px;border-radius:8px;
-  background:rgba(12,15,19,.82);border:1.5px solid hsl(var(--h) 85% 62%);color:#e9edf2;font:600 11px/1.25 system-ui,sans-serif;box-shadow:0 2px 8px #0008}
+  background:rgba(12,15,19,.82);border:1.5px solid hsl(var(--h) 85% 62%);color:#e9edf2;font:600 11px/1.25 var(--ff);box-shadow:0 2px 8px #0008}
 .lo-area-lab span.c i{display:none}.lo-area-lab span.c{padding:2px 6px}.lo-area-lab span.off{visibility:hidden}
 .lo-area-lab i{font-style:normal}
-.lo-area-lab b{color:hsl(var(--h) 90% 70%);font:800 12px ui-monospace,Consolas,monospace}
+.lo-area-lab b{color:hsl(var(--h) 90% 70%);font:800 12px var(--ff)}
 .lo-box.press{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 55%,transparent)}
 .lo-box.lift{transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,0px))) scale(1.12);box-shadow:0 0 0 2px var(--accent),0 10px 24px #000c;cursor:grabbing;visibility:visible !important}
 #mapView.moving{cursor:grabbing}
@@ -279,7 +279,7 @@ svg{touch-action:none}
 .node .det{fill:none;stroke:var(--nodeln);stroke-width:1.6}
 .node .detf{fill:var(--nodeln);opacity:.55}
 .node text.nm{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;pointer-events:none}
-.node text.tg{fill:var(--mute);font-size:11.5px;text-anchor:middle;font-family:ui-monospace,Consolas,monospace;pointer-events:none}
+.node text.tg{fill:var(--mute);font-size:11.5px;text-anchor:middle;font-family:var(--ff);pointer-events:none}
 .node:hover .body{stroke:var(--accent)}
 .node.sel .body{stroke:var(--accent);stroke-width:3.5}
 .node.ghost{opacity:.16;pointer-events:none}
@@ -1110,7 +1110,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   function table(rows){ return rows && rows.length ? "<table>" + rows.map(r => `<tr><td>${esc(r[0])}</td><td>${r[2] ? r[1] : val(r[1])}</td></tr>`).join("") + "</table>" : ""; }
   function stageNote(st){ return st === 1 ? '<span class="pill" style="background:#5a4a2a;color:#ffd58a">STAGE 1 ONLY</span>' : st === 2 ? '<span class="pill" style="background:#23463a;color:#8fe3c0">STAGE 2</span>' : ""; }
   const link = s => `<a data-s="${s.id}"><span style="color:${STREAM_TYPES[s.ty].color}">■</span> ${esc(s.n)}</a>`;
-  const loopLink = L => `<a data-l="${L.id}"><b style="font-family:ui-monospace,monospace">${esc(L.tag)}</b> ${esc(L.name)}</a>`;
+  const loopLink = L => `<a data-l="${L.id}"><b style="font-family:var(--ff)">${esc(L.tag)}</b> ${esc(L.name)}</a>`;
   const ilkLink = I => `<a data-i="${I.id}"><b style="color:#ff3b30">${I.k}</b> ${esc(I.name)}</a>`;
   const loopsOn = id => LOOPS.filter(L => (L.node === id || (L.rel || []).includes(id)) && !(L.st && L.st !== stage));
   const ilksOn = id => INTERLOCKS.filter(I => (I.rel || []).includes(id) && !(I.st && I.st !== stage));
@@ -1175,7 +1175,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     let h = Lookup.pills(secs, "node");
     if (eqTags.length) Lookup.load().then(() => { const el = $("nLines"); if (!el) return; const seen = new Set(), out = [];
       eqTags.forEach(t => Lookup.refs(t).forEach(x => { if (x.t === "line" && !seen.has(x.k)){ seen.add(x.k); out.push(x); } }));
-      el.innerHTML = out.length ? out.map(x => `<a data-find="${esc(x.key)}"><b style="font-family:ui-monospace,monospace">${esc(x.key)}</b> ${esc(Lookup.lineText(x))}</a>`).join("") : `<span style="color:var(--mute)">None in the line list name these equipment numbers.</span>`;
+      el.innerHTML = out.length ? out.map(x => `<a data-find="${esc(x.key)}"><b style="font-family:var(--ff)">${esc(x.key)}</b> ${esc(Lookup.lineText(x))}</a>`).join("") : `<span style="color:var(--mute)">None in the line list name these equipment numbers.</span>`;
       el.querySelectorAll("a[data-find]").forEach(a => a.onclick = e => { e.preventDefault(); openSearch(a.dataset.find, true); });
       const b = el.closest(".pf").querySelector('.pf-b[data-p="lin"] i'); if (b) b.textContent = ins.length + outs.length + out.length; }).catch(() => { const el = $("nLines"); if (el) el.textContent = "Couldn't load the line list."; });
     $("iBody").innerHTML = PFDLayout.panelHtml(n) + h; bindLinks(); PFDLayout.bindPanel(n); openInfo();
@@ -1295,7 +1295,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     let h = `<div class="symm"><svg viewBox="0 0 44 30"><rect x="8" y="3" width="28" height="24" style="fill:var(--panel);stroke:var(--ink);stroke-width:1.6"/><circle cx="22" cy="15" r="11" style="fill:none;stroke:var(--ink);stroke-width:1.4"/></svg><div><b>Circle in a square</b> = a shared display, shared control function in the DCS (operator can see and adjust it on the OIS). Dashed lines = electrical signals. Dot = where it measures.</div></div>`;
     h += `<table><tr><td>Measures (PV)</td><td>${esc(L.pv)}</td></tr><tr><td>Moves (output)</td><td>${esc(L.mv)}</td></tr>` +
       `<tr><td>Measurement tag(s)</td><td>${val((L.m || []).join(", "))}</td></tr><tr><td>Controller tag</td><td>${val(L.c)}</td></tr>` +
-      L.a.map((a, i) => `<tr><td>Final element ${L.a.length > 1 ? i + 1 : ""}</td><td>${esc(FE_MEAN[a.k] ? FE_MEAN[a.k][0] : a.k)}: ${esc(a.l)}<br><b style="font-family:ui-monospace,monospace">${val((L.f || [])[i])}</b></td></tr>`).join("") + "</table>";
+      L.a.map((a, i) => `<tr><td>Final element ${L.a.length > 1 ? i + 1 : ""}</td><td>${esc(FE_MEAN[a.k] ? FE_MEAN[a.k][0] : a.k)}: ${esc(a.l)}<br><b style="font-family:var(--ff)">${val((L.f || [])[i])}</b></td></tr>`).join("") + "</table>";
     const rn = (L.rel || []).filter(id => byId[id]), rs = (L.rel || []).map(id => STREAMS.find(s => s.id === id)).filter(Boolean);
     h += Lookup.pills([{ id: "how", label: "How it works", html: `<div>${esc(L.txt)}</div>` + (L.note ? `<div style="margin-top:8px;color:var(--mute);font-size:13px">${esc(L.note)}</div>` : "") },
       { id: "eq", label: "Equipment", n: rn.length, html: rn.length ? `<div class="conn">${rn.map(id => `<a data-n="${id}">${esc(byId[id].n)}${byId[id].tag ? " (" + esc(byId[id].tag) + ")" : ""}</a>`).join("")}</div>` : "" },

@@ -24,13 +24,14 @@ try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", fun
 <title>Project Library Checks</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
-:root{--fh:22px;--fl:13px;--fb:15px;--bg:#0f1216;--card:#171b21;--card2:#1f252d;--ink:#e9edf2;--mute:#95a1ae;--gold:#e8b44a;--line:#2c343e;
+:root{--fh:22px;--fl:13px;--fb:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--bg:#0f1216;--card:#171b21;--card2:#1f252d;--ink:#e9edf2;--mute:#95a1ae;--gold:#e8b44a;--line:#2c343e;
   --s-decision:#60a5fa;--s-clash:#f87171;--s-missing:#fbbf24;--s-placeholder:#a78bfa;--s-check:#94a3b8;--s-diagram:#34d399}
 :root[data-theme="light"]{--bg:#f3f4f6;--card:#fff;--card2:#f0f2f5;--ink:#1d2430;--mute:#5d6875;--gold:#b67d12;--line:#d9dee5;
   --s-decision:#1d4ed8;--s-clash:#b91c1c;--s-missing:#a16207;--s-placeholder:#6d28d9;--s-check:#475569;--s-diagram:#047857}
 @media (min-width:901px) and (hover:hover){.page{margin-left:24px !important;margin-right:auto !important}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ff)}
+code,kbd,pre,button,input,select,textarea{font-family:var(--ff)}
 .page{max-width:1500px;margin:0 auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
 header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:6px}
 h1{font-size:var(--fh,22px);margin:0;flex:1;min-width:180px}
