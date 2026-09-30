@@ -139,15 +139,21 @@ window.PFDLayout = (() => {
     const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, GAP = 2, CG = 8, zl = planAreas().lines, BOT = 34 + ROWH * zl[1];
     const tl = $("loTL"), TOP = (tl ? Math.max(58, tl.querySelector(".lo-pans").getBoundingClientRect().bottom - box.top + 8) : 58) + ROWH * zl[0];   // below the menus and the zone codes (one or more lines)
     const items = [];
-    Object.values(N).forEach(o => { if (!o.el) return; o.el.classList.remove("dc"); if (o.el.classList.contains("lift")) return; setOff(o, 0, 0);
+    Object.values(N).forEach(o => { if (!o.el) return; o.el.classList.remove("dc", "so"); if (o.el.classList.contains("lift")) return; setOff(o, 0, 0);
       if (getComputedStyle(o.el).display === "none") return; const r = o.el.getBoundingClientRect(); if (!r.width) return;
       const p = { x: r.left + r.width / 2 - box.left, y: r.top + r.height / 2 - box.top };
-      if (p.x < -20 || p.x > W + 20 || p.y < -20 || p.y > H + 20) return;   // off screen: stays where it is
+      if (p.x < 0 || p.x > W || p.y < 0 || p.y > H) return o.el.classList.add("so");   // equipment off screen: its name hides rather than hang over the edge
       items.push({ o, p, w: r.width, h: r.height }); });
     if (!items.length) return;
     items.sort((a, b) => a.p.x - b.p.x);
-    const half = Math.ceil(items.length / 2), sides = [items.slice(0, half), items.slice(half)];
     const minX = Math.min(...items.map(i => i.p.x)), maxX = Math.max(...items.map(i => i.p.x)), avail = H - TOP - BOT;
+    // split left / right near the middle, moved so neither side needs more columns than it must (a narrow phone has
+    // room for about one column a side)
+    const hs = items.map(i => i.h + GAP), sum = (a, b) => hs.slice(a, b).reduce((t, v) => t + v, 0);
+    let half = Math.ceil(items.length / 2), bestK = half, bestC = 1e9;
+    for (let k = 0; k <= items.length; k++){ const c = Math.max(Math.ceil(sum(0, k) / avail), Math.ceil(sum(k) / avail)) * 1e4 + Math.abs(k - half);
+      if (c < bestC){ bestC = c; bestK = k; } }
+    half = bestK; const sides = [items.slice(0, half), items.slice(half)];
     sides.forEach((grp, si) => { if (!grp.length) return;
       grp.sort((a, b) => a.p.y - b.p.y);
       const tot = grp.reduce((t, i) => t + i.h + GAP, 0), nc = Math.max(1, Math.ceil(tot / avail)), per = Math.ceil(grp.length / nc);
@@ -291,13 +297,14 @@ window.PFDLayout = (() => {
     p.classList.remove("pick"); void p.getBoundingClientRect(); p.classList.add("pick"); setTimeout(() => p.classList.remove("pick"), 2600); }); }
   // the codes in view, split into the top and bottom rows; a row too wide for the screen (a phone) wraps onto more lines,
   // every other code on the next line so each line still spans the plant and the leaders stay short
+  const RB = 52;   // the bottom row stays clear of the map's corner buttons (info, full screen)
   function planAreas(){
     const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, G = 8, rows = [[], []];
     areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span");
       const p = map.latLngToContainerPoint(a.lab.getLatLng()); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) return;
       rows[p.y < H / 2 ? 0 : 1].push({ a, e, sp, p, w: sp.offsetWidth }); });
     const lines = rows.map(row => { row.sort((x, y) => x.p.x - y.p.x);
-      const nl = Math.max(1, Math.ceil((row.reduce((t, r) => t + r.w + G, 0) - G) / (W - 24)));
+      const nl = Math.max(1, Math.ceil((row.reduce((t, r) => t + r.w + G, 0) - G) / (W - 24 - (row === rows[1] ? RB : 0))));
       row.forEach((r, k) => r.ln = k % nl); return nl; });
     return { W, H, G, rows, lines };
   }
@@ -308,7 +315,7 @@ window.PFDLayout = (() => {
     rows.forEach((row, ri) => { const nl = Math.max(0, ...row.map(r => r.ln)) + 1;
       for (let ln = 0; ln < nl; ln++){ const line = row.filter(r => r.ln === ln); let cur = 12;
         line.forEach(r => { r.sp.classList.remove("off"); r.x = Math.max(r.p.x - r.w / 2, cur); cur = r.x + r.w + G; });
-        const over = cur - G - (W - 12); if (over > 0) for (let i = line.length - 1, lim = W - 12; i >= 0; i--){ const r = line[i]; r.x = Math.min(r.x, lim - r.w); lim = r.x - G; }
+        const R = W - 12 - (ri ? RB : 0), over = cur - G - R; if (over > 0) for (let i = line.length - 1, lim = R; i >= 0; i--){ const r = line[i]; r.x = Math.min(r.x, lim - r.w); lim = r.x - G; }
         // the first line sits at the edge of the map, further lines step in towards the plant
         line.forEach(r => { const tx = r.x + r.w / 2, ty = ri ? bot - ln * ROWH : top + ln * ROWH, dx = tx - r.p.x, dy = ty - r.p.y;
           r.sp.style.setProperty("--dx", dx + "px"); r.sp.style.setProperty("--dy", dy + "px");
