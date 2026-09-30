@@ -334,7 +334,7 @@ svg.focus .ctl, svg.focus .ilk{opacity:.12}
 /* PDC case colour (red = highest flow ... blue = lowest) is the border of every tph box; the dropdown text is the legend */
 :root{--cc:#eab308}
 .lab rect{stroke:var(--cc) !important}
-#case{font-weight:600;color:var(--ink)!important;opacity:1;border-color:var(--cc);border-width:2px}   /* plain text; the border carries the case colour */
+#case{font-weight:600;color:var(--ink)!important;opacity:1;border-color:var(--line)!important;border-width:1px;padding-left:28px;background-image:radial-gradient(circle at 14px 50%,var(--cc) 0 5px,transparent 5.5px);background-repeat:no-repeat}   /* grey border, a dot in the case colour before the name */
 #case option{font-weight:700;background:#fff}
 #info .sc .cur{background:color-mix(in srgb,var(--cc) 35%,transparent)}
 #info .sc th.cur{color:var(--ink)}
