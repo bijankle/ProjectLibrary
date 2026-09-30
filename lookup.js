@@ -481,6 +481,7 @@
 .sp-toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#171b21;color:#e9edf2;border:1px solid #e8b44a;border-radius:10px;padding:8px 12px;font-size:13px;max-width:90vw}.sp-toast[hidden]{display:none}
 .sp-msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font-size:14px}.sp-msg[hidden]{display:none}
 body.sp-on{overflow:hidden}
+.sp-top button{font-size:18px;line-height:1}   /* the symbols 40% larger, the buttons the same size */
 .sp-top button[hidden]{display:none}.sp-refs{position:absolute;inset:0;pointer-events:none}
 .sp-ref{position:absolute;pointer-events:auto;cursor:pointer;background:rgba(232,180,74,.13);border-radius:2px;box-shadow:inset 0 0 0 1px rgba(214,158,46,.35)}
 .sp-ref.d{background:rgba(232,180,74,.24);box-shadow:inset 0 0 0 1px rgba(214,158,46,.7)}
