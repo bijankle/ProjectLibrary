@@ -3,7 +3,7 @@
 // which sw.js serves first and which app updates keep. The app itself is always offline and isn't listed here.
 // Offline.mount(el) draws the section.
 window.Offline = (() => {
-  let CACHE = "kcgm-docs-1";   // the name sw.js uses; offline.json repeats it
+  let CACHE = "kcgm-docs-2";   // the name sw.js uses; offline.json repeats it
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const mb = b => b >= 1e9 ? (b / 1e9).toFixed(2) + " GB" : b >= 1e6 ? (b / 1e6).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1e3)) + " kB";
   let M = null, busy = false;

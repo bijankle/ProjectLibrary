@@ -224,3169 +224,2127 @@
  "pids": {
   "2000-F00-PFD-PR-10001": {
    "file": "PFDs/2000-F00-PFD-PR-10001.pdf",
-   "title": "PRIMARY CRUSHING",
+   "title": "Primary crushing 1",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 351238,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#1"
-   ]
+   "size": 351238
   },
   "2000-F00-PFD-PR-10002": {
    "file": "PFDs/2000-F00-PFD-PR-10002.pdf",
-   "title": "PRIMARY CRUSHING",
+   "title": "Primary crushing 2",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 385392,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#2"
-   ]
+   "size": 385392
   },
   "2000-F00-PFD-PR-10003": {
    "file": "PFDs/2000-F00-PFD-PR-10003.pdf",
-   "title": "FIM SAG MILLING",
+   "title": "FIM SAG milling",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 357490,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#3"
-   ]
+   "size": 357490
   },
   "2000-F00-PFD-PR-10004": {
    "file": "PFDs/2000-F00-PFD-PR-10004.pdf",
-   "title": "FIM SAG MILL RECYCLE CRUSHING",
+   "title": "FIM SAG mill recycle crushing",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 335322,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#4"
-   ]
+   "size": 335322
   },
   "2000-F00-PFD-PR-10005": {
    "file": "PFDs/2000-F00-PFD-PR-10005.pdf",
-   "title": "SAG & BALL MILLING",
+   "title": "SAG and ball milling",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 393521,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#5"
-   ]
+   "size": 393521
   },
   "2000-F00-PFD-PR-10006": {
    "file": "PFDs/2000-F00-PFD-PR-10006.pdf",
-   "title": "PEBBLE CRUSHING",
+   "title": "Pebble crushing",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 344606,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#6"
-   ]
+   "size": 344606
   },
   "2000-F00-PFD-PR-10007": {
    "file": "PFDs/2000-F00-PFD-PR-10007.pdf",
-   "title": "GRAVITY CONCENTRATION",
+   "title": "Gravity concentration",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 353466,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#7"
-   ]
+   "size": 353466
   },
   "2000-F00-PFD-PR-10008": {
    "file": "PFDs/2000-F00-PFD-PR-10008.pdf",
-   "title": "TRASH SCREENING",
+   "title": "Trash screening",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 359219,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#8"
-   ]
+   "size": 359219
   },
   "2000-F00-PFD-PR-10009": {
    "file": "PFDs/2000-F00-PFD-PR-10009.pdf",
-   "title": "ROUGHER/SCAVENGER FLOTATION",
+   "title": "Rougher and scavenger flotation",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 409191,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#9"
-   ]
+   "size": 409191
   },
   "2000-F00-PFD-PR-10010": {
    "file": "PFDs/2000-F00-PFD-PR-10010.pdf",
-   "title": "CLEANER / CLEANER SCAVENGER FLOTATION",
+   "title": "Cleaner and cleaner scavenger flotation",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 373545,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#10"
-   ]
+   "size": 373545
   },
   "2000-F00-PFD-PR-10012": {
    "file": "PFDs/2000-F00-PFD-PR-10012.pdf",
-   "title": "ONSTREAM SULPHUR ANALYSER",
+   "title": "Onstream sulphur analyser",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 357317,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#11"
-   ]
+   "size": 357317
   },
   "2000-F00-PFD-PR-10013": {
    "file": "PFDs/2000-F00-PFD-PR-10013.pdf",
-   "title": "CONCENTRATE STORAGE AND FILTRATION",
+   "title": "Concentrate storage and filtration, sheet 1",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 404597,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#12"
-   ]
+   "size": 404597
   },
   "2000-F00-PFD-PR-10014": {
    "file": "PFDs/2000-F00-PFD-PR-10014.pdf",
-   "title": "CONCENTRATE STORAGE AND FILTRATION",
+   "title": "Concentrate storage and filtration, sheet 2",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 356883,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#13"
-   ]
+   "size": 356883
   },
   "2000-F00-PFD-PR-10015": {
    "file": "PFDs/2000-F00-PFD-PR-10015.pdf",
-   "title": "CONCENTRATE ULTRA FINE GRINDING",
+   "title": "Concentrate ultra fine grinding 1",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 355797,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#14"
-   ]
+   "size": 355797
   },
   "2000-F00-PFD-PR-10016": {
    "file": "PFDs/2000-F00-PFD-PR-10016.pdf",
-   "title": "CONCENTRATE ULTRA FINE GRINDING 2 &",
+   "title": "Concentrate ultra fine grinding 2 and 3",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 390537,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#15"
-   ]
+   "size": 390537
   },
   "2000-F00-PFD-PR-10017": {
    "file": "PFDs/2000-F00-PFD-PR-10017.pdf",
-   "title": "CONCENTRATE THICKENING",
+   "title": "Concentrate thickening",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 372463,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#16"
-   ]
+   "size": 372463
   },
   "2000-F00-PFD-PR-10018": {
    "file": "PFDs/2000-F00-PFD-PR-10018.pdf",
    "title": "CIL1",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 375303,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#17"
-   ]
+   "size": 375303
   },
   "2000-F00-PFD-PR-10019": {
    "file": "PFDs/2000-F00-PFD-PR-10019.pdf",
    "title": "CIL2",
    "rev": "1",
    "date": "2024-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 398680,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#18"
-   ]
+   "size": 398680
   },
   "2000-F00-PFD-PR-10020": {
    "file": "PFDs/2000-F00-PFD-PR-10020.pdf",
    "title": "CIL3",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 404356,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#19"
-   ]
+   "size": 404356
   },
   "2000-F00-PFD-PR-10021": {
    "file": "PFDs/2000-F00-PFD-PR-10021.pdf",
-   "title": "CIL2 AND CIL3 TAILS",
+   "title": "CIL2 and CIL3 tails",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 361013,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#20"
-   ]
+   "size": 361013
   },
   "2000-F00-PFD-PR-10022": {
    "file": "PFDs/2000-F00-PFD-PR-10022.pdf",
-   "title": "FLOTATION TAILINGS THICKENING & WATER SERVICES",
+   "title": "Flotation tailings thickening and water services",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 423409,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#21"
-   ]
+   "size": 423409
   },
   "2000-F00-PFD-PR-10023": {
    "file": "PFDs/2000-F00-PFD-PR-10023.pdf",
-   "title": "",
+   "title": "CIL4 flotation tails leaching",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 443031,
-   "ocr": 1,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#22"
-   ]
+   "ocr": 1
   },
   "2000-F00-PFD-PR-10024": {
    "file": "PFDs/2000-F00-PFD-PR-10024.pdf",
-   "title": "FINAL TAILS",
+   "title": "Final tails",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 382242,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#23"
-   ]
+   "size": 382242
   },
   "2000-F00-PFD-PR-10026": {
    "file": "PFDs/2000-F00-PFD-PR-10026.pdf",
-   "title": "ELUTION - CIRCUIT NO.1",
+   "title": "Elution circuit 1",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 388166,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#24"
-   ]
+   "size": 388166
   },
   "2000-F00-PFD-PR-10027": {
    "file": "PFDs/2000-F00-PFD-PR-10027.pdf",
-   "title": "ELUTION - CIRCUIT NO.2",
+   "title": "Elution circuit 2",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 385215,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#25"
-   ]
+   "size": 385215
   },
   "2000-F00-PFD-PR-10028": {
    "file": "PFDs/2000-F00-PFD-PR-10028.pdf",
-   "title": "CARBON REGENERATION",
+   "title": "Carbon regeneration, sheet 1",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 367520,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#26"
-   ]
+   "size": 367520
   },
   "2000-F00-PFD-PR-10029": {
    "file": "PFDs/2000-F00-PFD-PR-10029.pdf",
-   "title": "CARBON REGENERATION",
+   "title": "Carbon regeneration, sheet 2",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 360332,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#27"
-   ]
+   "size": 360332
   },
   "2000-F00-PFD-PR-10030": {
    "file": "PFDs/2000-F00-PFD-PR-10030.pdf",
-   "title": "CARBON REGENERATION OFF GAS TREATMENT",
+   "title": "Carbon regeneration off gas treatment",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 366261,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#28"
-   ]
+   "size": 366261
   },
   "2000-F00-PFD-PR-10031": {
    "file": "PFDs/2000-F00-PFD-PR-10031.pdf",
-   "title": "",
+   "title": "CIL4 elution",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 363102,
-   "ocr": 1,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#29"
-   ]
+   "ocr": 1
   },
   "2000-F00-PFD-PR-10032": {
    "file": "PFDs/2000-F00-PFD-PR-10032.pdf",
-   "title": "",
+   "title": "CIL4 carbon regeneration",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 344899,
-   "ocr": 1,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#30"
-   ]
+   "ocr": 1
   },
   "2000-F00-PFD-PR-10033": {
    "file": "PFDs/2000-F00-PFD-PR-10033.pdf",
-   "title": "",
+   "title": "CIL4 carbon regeneration off gas treatment",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 342769,
-   "ocr": 1,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#31"
-   ]
+   "ocr": 1
   },
   "2000-F00-PFD-PR-10034": {
    "file": "PFDs/2000-F00-PFD-PR-10034.pdf",
-   "title": "ELECTROWINNING & GOLDROOM",
+   "title": "Electrowinning and goldroom",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 394775,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#32"
-   ]
+   "size": 394775
   },
   "2000-F00-PFD-PR-10035": {
    "file": "PFDs/2000-F00-PFD-PR-10035.pdf",
-   "title": "",
+   "title": "Electrowinning",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 345007,
-   "ocr": 1,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#33"
-   ]
+   "ocr": 1
   },
   "2000-F00-PFD-PR-10036": {
    "file": "PFDs/2000-F00-PFD-PR-10036.pdf",
-   "title": "INTENSIVE CYANIDATION AND GRAVITY ELECTROWINNING",
+   "title": "Intensive cyanidation and gravity electrowinning",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 370512,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#34"
-   ]
+   "size": 370512
   },
   "2000-F00-PFD-PR-10037": {
    "file": "PFDs/2000-F00-PFD-PR-10037.pdf",
-   "title": "REAGENTS - SHEET",
+   "title": "Reagents, sheet 1",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 367776,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#35"
-   ]
+   "size": 367776
   },
   "2000-F00-PFD-PR-10038": {
    "file": "PFDs/2000-F00-PFD-PR-10038.pdf",
-   "title": "REAGENTS - SHEET",
+   "title": "Reagents, sheet 2",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 375599,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#36"
-   ]
+   "size": 375599
   },
   "2000-F00-PFD-PR-10039": {
    "file": "PFDs/2000-F00-PFD-PR-10039.pdf",
-   "title": "",
+   "title": "Reagents, sheet 3",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 383403,
-   "ocr": 1,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#37"
-   ]
+   "ocr": 1
   },
   "2000-F00-PFD-PR-10040": {
    "file": "PFDs/2000-F00-PFD-PR-10040.pdf",
-   "title": "REAGENTS - SHEET",
+   "title": "Reagents, sheet 4",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 366525,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#38"
-   ]
+   "size": 366525
   },
   "2000-F00-PFD-PR-10041": {
    "file": "PFDs/2000-F00-PFD-PR-10041.pdf",
-   "title": "REAGENTS - SHEET",
+   "title": "Reagents, sheet 5",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 373640,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#39"
-   ]
+   "size": 373640
   },
   "2000-F00-PFD-PR-10042": {
    "file": "PFDs/2000-F00-PFD-PR-10042.pdf",
-   "title": "",
+   "title": "Reagents, sheet 6",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 414882,
-   "ocr": 1,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#40"
-   ]
+   "ocr": 1
   },
   "2000-F00-PFD-PR-10043": {
    "file": "PFDs/2000-F00-PFD-PR-10043.pdf",
-   "title": "REAGENTS - SHEET",
+   "title": "Reagents, sheet 7",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 365116,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#41"
-   ]
+   "size": 365116
   },
   "2000-F00-PFD-PR-10044": {
    "file": "PFDs/2000-F00-PFD-PR-10044.pdf",
-   "title": "REAGENTS - SHEET",
+   "title": "Reagents, sheet 8",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 371640,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#42"
-   ]
+   "size": 371640
   },
   "2000-F00-PFD-PR-10045": {
    "file": "PFDs/2000-F00-PFD-PR-10045.pdf",
-   "title": "REAGENTS - SHEET",
+   "title": "Reagents, sheet 9",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 335829,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#43"
-   ]
+   "size": 335829
   },
   "2000-F00-PFD-PR-10046": {
    "file": "PFDs/2000-F00-PFD-PR-10046.pdf",
-   "title": "WATER SERVICES - SHEET 1 OF",
+   "title": "Water services, sheet 1 of 3",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 392447,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#44"
-   ]
+   "size": 392447
   },
   "2000-F00-PFD-PR-10047": {
    "file": "PFDs/2000-F00-PFD-PR-10047.pdf",
-   "title": "WATER SERVICES - SHEET 2 OF",
+   "title": "Water services, sheet 2 of 3",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 369190,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#45"
-   ]
+   "size": 369190
   },
   "2000-F00-PFD-PR-10048": {
    "file": "PFDs/2000-F00-PFD-PR-10048.pdf",
-   "title": "WATER SERVICES - SHEET 3 OF",
+   "title": "Water services, sheet 3 of 3",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 336127,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#46"
-   ]
+   "size": 336127
   },
   "2000-F00-PFD-PR-10049": {
    "file": "PFDs/2000-F00-PFD-PR-10049.pdf",
-   "title": "AIR SERVICES - SHEET 1 OF",
+   "title": "Air services, sheet 1 of 2",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 333923,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#47"
-   ]
+   "size": 333923
   },
   "2000-F00-PFD-PR-10050": {
    "file": "PFDs/2000-F00-PFD-PR-10050.pdf",
-   "title": "AIR SERVICES - SHEET 2 OF",
+   "title": "Air services, sheet 2 of 2",
    "rev": "1",
    "date": "2026-09-04",
-   "status": "SP1 AS BUILT",
    "pages": 1,
-   "size": 356894,
-   "from": [
-    "a43618b0-PFDs_combined.pdf#48"
-   ]
+   "size": 356894
   },
   "2000-F00-PID-PR-10001": {
    "file": "PIDs/2000-F00-PID-PR-10001.pdf",
-   "title": "GENERAL LEGEND SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "General legend, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 451704,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_1.pdf#1"
-   ]
+   "size": 451704
   },
   "2000-F00-PID-PR-10002": {
    "file": "PIDs/2000-F00-PID-PR-10002.pdf",
-   "title": "me GENERAL LEGEND SHEET",
+   "title": "General legend, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 316841,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_2.pdf#1"
-   ]
+   "size": 316841
   },
   "2000-F00-PID-PR-10003": {
    "file": "PIDs/2000-F00-PID-PR-10003.pdf",
-   "title": "GENERAL LEGEND SHEET 3 PIPING AND INSTRUMENTATION DIAGRAM ws \u201ca \u201cwee",
+   "title": "General legend, sheet 3",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 323727,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_3.pdf#1"
-   ]
+   "size": 323727
   },
   "2000-F00-PID-PR-10004": {
    "file": "PIDs/2000-F00-PID-PR-10004.pdf",
-   "title": "Me GENERAL LEGEND SHEET 4 PIPING AND INSTRUMENTATION DIAGRAM aa TM \u201ce",
+   "title": "General legend, sheet 4",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 329447,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_4.pdf#1"
-   ]
+   "size": 329447
   },
   "2000-F00-PID-PR-10005": {
    "file": "PIDs/2000-F00-PID-PR-10005.pdf",
-   "title": "me = GENERAL LEGEND SHEET 5 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "General legend, sheet 5",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 300214,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_5.pdf#1"
-   ]
+   "size": 300214
   },
   "2000-F00-PID-PR-10006": {
    "file": "PIDs/2000-F00-PID-PR-10006.pdf",
-   "title": "LEGEND SHEET 6 PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No.",
+   "title": "General legend, sheet 6",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 205818,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_6.pdf#1"
-   ]
+   "size": 205818
   },
   "2000-F00-PID-PR-10007": {
    "file": "PIDs/2000-F00-PID-PR-10007.pdf",
-   "title": "GENERAL LEGEND SHEET 7 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "General legend, sheet 7",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 345967,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_7.pdf#1"
-   ]
+   "size": 345967
   },
   "2000-F00-PID-PR-10100": {
    "file": "PIDs/2000-F00-PID-PR-10100.pdf",
-   "title": "me GENERAL FVENT POND - VALVE STATION PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Event pond valve station",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 199252,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_8.pdf#1"
-   ]
+   "size": 199252
   },
   "2000-F00-PID-PR-10101": {
    "file": "PIDs/2000-F00-PID-PR-10101.pdf",
-   "title": "PIPERACKS DUAL CONTAINED PIPING LEAK DETECTION _ SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Piperacks, dual contained piping leak detection, sheet 1",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 319448,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_9.pdf#1"
-   ]
+   "size": 319448
   },
   "2000-F00-PID-PR-10102": {
    "file": "PIDs/2000-F00-PID-PR-10102.pdf",
-   "title": "DUAL CONTAINED PIPING LEAK DETECTION _ SHEET PIPING AND INSTRUMENTATION DIAGRAM eT _ \u201c",
+   "title": "Piperacks, dual contained piping leak detection, sheet 2",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 281012,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_10.pdf#1"
-   ]
+   "size": 281012
   },
   "2000-F12-PID-PR-10001": {
    "file": "PIDs/2000-F12-PID-PR-10001.pdf",
-   "title": "TILE. PRIMARY CRUSHING PRIMARY CRUSHING - SHEET 1- STAGE PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Primary crushing, sheet 1, Stage 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 650887,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_11.pdf#1"
-   ]
+   "size": 650887
   },
   "2000-F12-PID-PR-10002": {
    "file": "PIDs/2000-F12-PID-PR-10002.pdf",
-   "title": "PRIMARY CRUSHING PRIMARY CRUSHING - SHEET 2? - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Primary crushing, sheet 2, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 823917,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_12.pdf#1"
-   ]
+   "size": 823917
   },
   "2000-F12-PID-PR-10003": {
    "file": "PIDs/2000-F12-PID-PR-10003.pdf",
-   "title": "PRIMARY CRUSHING PRIMARY CRUSHING - SHEET 3 - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Primary crushing, sheet 3, Stage 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 211371,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_13.pdf#1"
-   ]
+   "size": 211371
   },
   "2000-F13-PID-PR-10001": {
    "file": "PIDs/2000-F13-PID-PR-10001.pdf",
-   "title": "MILLING & CLASSIFICATION CRUSHED ORE STOCKPILE - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Crushed ore stockpile, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 729502,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_14.pdf#1"
-   ]
+   "size": 729502
   },
   "2000-F13-PID-PR-10002": {
    "file": "PIDs/2000-F13-PID-PR-10002.pdf",
-   "title": "MILLING & CLASSIFICA TION SAG AND BALL MILLING - SHEET 1- STAGE PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "SAG and ball milling, sheet 1, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 611976,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_15.pdf#1"
-   ]
+   "size": 611976
   },
   "2000-F13-PID-PR-10003": {
    "file": "PIDs/2000-F13-PID-PR-10003.pdf",
-   "title": "MILLING & CLASSIFICA TION SAG AND BALL MILLING - SHEET 2? - STAGE PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "SAG and ball milling, sheet 2, Stage 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 573043,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_16.pdf#1"
-   ]
+   "size": 573043
   },
   "2000-F13-PID-PR-10004": {
    "file": "PIDs/2000-F13-PID-PR-10004.pdf",
-   "title": "MILLING & CLASSIFICATION SAG AND BALL MILLING - SHEET 3 - STAGE PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "SAG and ball milling, sheet 3, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 391409,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_17.pdf#1"
-   ]
+   "size": 391409
   },
   "2000-F13-PID-PR-10005": {
    "file": "PIDs/2000-F13-PID-PR-10005.pdf",
-   "title": "MILLING & CLASSIFICATION PFBBLE CRUSHING - SHEET 1- STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Pebble crushing, sheet 1, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 281927,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_18.pdf#1"
-   ]
+   "size": 281927
   },
   "2000-F13-PID-PR-10006": {
    "file": "PIDs/2000-F13-PID-PR-10006.pdf",
-   "title": "MILLING & CLASSIFICA TION PFBBLE CRUSHING - SHEET 2? - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Pebble crushing, sheet 2, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 617904,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_19.pdf#1"
-   ]
+   "size": 617904
   },
   "2000-F13-PID-PR-10007": {
    "file": "PIDs/2000-F13-PID-PR-10007.pdf",
-   "title": "GROWTH PROJECT MILLING & CLASSIFICATION TRASH SCREENING - SHEET 1- STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Trash screening, sheet 1, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 488456,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_20.pdf#1"
-   ]
+   "size": 488456
   },
   "2000-F13-PID-PR-10008": {
    "file": "PIDs/2000-F13-PID-PR-10008.pdf",
-   "title": "MILLING & CLASSIFICATION TRASH SCREENING - SHEET 2? - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Trash screening, sheet 2, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 415339,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_21.pdf#1"
-   ]
+   "size": 415339
   },
   "2000-F13-PID-PR-10009": {
    "file": "PIDs/2000-F13-PID-PR-10009.pdf",
-   "title": "MILLING & CLASSIFICA TION MILL COOLING WATER DISTRIBUTION PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Mill cooling water distribution",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 372965,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_22.pdf#1"
-   ]
+   "size": 372965
   },
   "2000-F13-PID-PR-10010": {
    "file": "PIDs/2000-F13-PID-PR-10010.pdf",
-   "title": "MILLING & CLASSIFICATION SAG MILL LUBE SYSTEM - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "SAG mill lube system, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 592580,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_23.pdf#1"
-   ]
+   "size": 592580
   },
   "2000-F13-PID-PR-10011": {
    "file": "PIDs/2000-F13-PID-PR-10011.pdf",
-   "title": "M | L L | N G & C L A S S | F | C A qT | 6 N BALL MILL LUBE SYSTEM - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Ball mill lube system, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 596389,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_24.pdf#1"
-   ]
+   "size": 596389
   },
   "2000-F13-PID-PR-10012": {
    "file": "PIDs/2000-F13-PID-PR-10012.pdf",
-   "title": "TMEe MILLING & CLASSIFICATION MILL COOLING & CHILLER WATER CIRCUIT PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No.",
+   "title": "Mill cooling and chiller water circuit",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 447982,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_25.pdf#1"
-   ]
+   "size": 447982
   },
   "2000-F13-PID-PR-10013": {
    "file": "PIDs/2000-F13-PID-PR-10013.pdf",
-   "title": "MILLING & CLASSIFICA TION SAG & BALL MILL LUBE SYSTEM - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "SAG and ball mill lube system, Stage 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 460497,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_26.pdf#1"
-   ]
+   "size": 460497
   },
   "2000-F14-PID-PR-10001": {
    "file": "PIDs/2000-F14-PID-PR-10001.pdf",
-   "title": "TILE. GRAVITY CIRCUIT & INTENSIVE LEACHING GRAVITY CONCENTRATION PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Gravity concentration",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 463167,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_27.pdf#1"
-   ]
+   "size": 463167
   },
   "2000-F14-PID-PR-10003": {
    "file": "PIDs/2000-F14-PID-PR-10003.pdf",
-   "title": "GRAVITY CIRCUIT & INTENSIVE LEACHING INTENSIVE CYANIDATION - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Intensive cyanidation, Stage 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 491610,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_28.pdf#1"
-   ]
+   "size": 491610
   },
   "2000-F16-PID-PR-10001": {
    "file": "PIDs/2000-F16-PID-PR-10001.pdf",
-   "title": "ROUGHER & SCAVENGER FLOTATION ROUGHER FLOTATION - SHEET 1- STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Rougher flotation, sheet 1, Stage 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 763905,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_29.pdf#1"
-   ]
+   "size": 763905
   },
   "2000-F16-PID-PR-10002": {
    "file": "PIDs/2000-F16-PID-PR-10002.pdf",
-   "title": "ROUGHER & SCAVENGER FLOTATION ROUGHER FLOTATION - SHEET 2? - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Rougher flotation, sheet 2, Stage 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 382848,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_30.pdf#1"
-   ]
+   "size": 382848
   },
   "2000-F16-PID-PR-10003": {
    "file": "PIDs/2000-F16-PID-PR-10003.pdf",
-   "title": "ROUGHER & SCAVENGER FLOTATION SCAVENGER FLOTATION - SHEET 1- STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Scavenger flotation, sheet 1, Stage 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 663489,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_31.pdf#1"
-   ]
+   "size": 663489
   },
   "2000-F16-PID-PR-10004": {
    "file": "PIDs/2000-F16-PID-PR-10004.pdf",
-   "title": "ROUGHER & SCAVENGER FLOTATION SCAVENGER FLOTATION - SHEET 2 - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Scavenger flotation, sheet 2, Stage 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 306458,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_32.pdf#1"
-   ]
+   "size": 306458
   },
   "2000-F16-PID-PR-10005": {
    "file": "PIDs/2000-F16-PID-PR-10005.pdf",
-   "title": "ROUGHER & SCAVENGER FLOTATION ONSTREAM SULPHUR ANALYSER - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Onstream sulphur analyser, Stage 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 465220,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_33.pdf#1"
-   ]
+   "size": 465220
   },
   "2000-F16-PID-PR-10006": {
    "file": "PIDs/2000-F16-PID-PR-10006.pdf",
-   "title": "ROUGHER & SCAVENGER FLOTATION FLOTATION AIR BLOWERS - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Flotation air blowers, Stage 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 301500,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_34.pdf#1"
-   ]
+   "size": 301500
   },
   "2000-F17-PID-PR-10001": {
    "file": "PIDs/2000-F17-PID-PR-10001.pdf",
-   "title": "FLOTATION TAILINGS PRE-LEACH THICKENING FLOTATION TAILINGS THICKENING - SHEET 1- STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Flotation tailings thickening, sheet 1, Stage 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 812295,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_35.pdf#1"
-   ]
+   "size": 812295
   },
   "2000-F17-PID-PR-10002": {
    "file": "PIDs/2000-F17-PID-PR-10002.pdf",
-   "title": "FLOTATION TAILINGS PRE-LEACH THICKENING FLOTATION TAILINGS THICKENING - SHEET 2 - STAGE 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Flotation tailings thickening, sheet 2, Stage 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 624065,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_36.pdf#1"
-   ]
+   "size": 624065
   },
   "2000-F175-PID-PR-40002": {
    "file": "PIDs/2000-F175-PID-PR-40002.pdf",
-   "title": "",
+   "title": "Saline water, borefields saline dam transfer pumps",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 261496,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_214.pdf#1"
-   ]
+   "size": 261496
   },
   "2000-F18-PID-PR-10001": {
    "file": "PIDs/2000-F18-PID-PR-10001.pdf",
-   "title": "CLEANER AND CLEANER-SCAVENGER FLOTATION CLEANER FLOTATION CELL - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Cleaner flotation cell, sheet 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 534263,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_37.pdf#1"
-   ]
+   "size": 534263
   },
   "2000-F18-PID-PR-10002": {
    "file": "PIDs/2000-F18-PID-PR-10002.pdf",
-   "title": "CLEANER AND CLEANER-SCAVENGER FLOTATION CLEANER FLOTATION CELL - SHEET 7? PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Cleaner flotation cell, sheet 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 284888,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_38.pdf#1"
-   ]
+   "size": 284888
   },
   "2000-F18-PID-PR-10003": {
    "file": "PIDs/2000-F18-PID-PR-10003.pdf",
-   "title": "CLEANER AND CLEANER-SCAVENGER FLOTATION CLEANER-SCAVENGER FLOTATION - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Cleaner scavenger flotation, sheet 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 477797,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_39.pdf#1"
-   ]
+   "size": 477797
   },
   "2000-F18-PID-PR-10004": {
    "file": "PIDs/2000-F18-PID-PR-10004.pdf",
-   "title": "| CLEANER AND CLEANER-SCAVENGER FLOTATION CLEANER-SCAVENGER FLOTATION - SHEET PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Cleaner scavenger flotation, sheet 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 290132,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_40.pdf#1"
-   ]
+   "size": 290132
   },
   "2000-F19-PID-PR-10001": {
    "file": "PIDs/2000-F19-PID-PR-10001.pdf",
-   "title": "",
+   "title": "FIM SAG milling",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 542932,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_41.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F19-PID-PR-10002": {
    "file": "PIDs/2000-F19-PID-PR-10002.pdf",
-   "title": "",
+   "title": "Mt Charlotte leach feed thickener",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 438257,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_42.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F19-PID-PR-10003": {
    "file": "PIDs/2000-F19-PID-PR-10003.pdf",
-   "title": "R E G R | N D A R E A REGRIND MILL THICKENER OVERFLOW PUMP PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Regrind mill thickener overflow pump",
    "rev": "B",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 209624,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_43.pdf#1"
-   ]
+   "size": 209624
   },
   "2000-F19-PID-PR-10004": {
    "file": "PIDs/2000-F19-PID-PR-10004.pdf",
-   "title": "",
+   "title": "Ball milling, Mt Charlotte",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 423431,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_44.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F19-PID-PR-10005": {
    "file": "PIDs/2000-F19-PID-PR-10005.pdf",
-   "title": "REGRIND AREA REGRIND MILL DISCHARGE PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Regrind mill discharge",
    "rev": "B",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 224786,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_45.pdf#1"
-   ]
+   "size": 224786
   },
   "2000-F19-PID-PR-10006": {
    "file": "PIDs/2000-F19-PID-PR-10006.pdf",
-   "title": "",
+   "title": "Ball charging system",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 291789,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_46.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F19-PID-PR-10007": {
    "file": "PIDs/2000-F19-PID-PR-10007.pdf",
-   "title": "M | L L | N G & C L A S S | F | C A qT | 0 N - A R E A A BALL CHARGING SYSTEM PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Ball charging system, area A",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 364595,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_47.pdf#1"
-   ]
+   "size": 364595
   },
   "2000-F21-PID-PR-10001": {
    "file": "PIDs/2000-F21-PID-PR-10001.pdf",
-   "title": "FLOTATION TAILINGS CIL4 CIL4 - FLOTATION TAILS LEACHING - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL4 flotation tails leaching, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 723412,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_48.pdf#1"
-   ]
+   "size": 723412
   },
   "2000-F21-PID-PR-10002": {
    "file": "PIDs/2000-F21-PID-PR-10002.pdf",
-   "title": "FLOTATION TAILINGS CIL4 CIL4 - FLOTATION TAILS LEACHING - SHEET PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL4 flotation tails leaching, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 554588,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_49.pdf#1"
-   ]
+   "size": 554588
   },
   "2000-F21-PID-PR-10003": {
    "file": "PIDs/2000-F21-PID-PR-10003.pdf",
-   "title": "FLOTATION TAILINGS CIL4 CIL4 - FLOTATION TAILS LEACHING - SHEET 3 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL4 flotation tails leaching, sheet 3",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 480125,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_50.pdf#1"
-   ]
+   "size": 480125
   },
   "2000-F21-PID-PR-10005": {
    "file": "PIDs/2000-F21-PID-PR-10005.pdf",
-   "title": "FLOTATION TAILINGS CIL4 CIL4 - CARBON DETECTION AND SAMPLING PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL4 carbon detection and sampling",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 263355,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_51.pdf#1"
-   ]
+   "size": 263355
   },
   "2000-F22-PID-PR-10001": {
    "file": "PIDs/2000-F22-PID-PR-10001.pdf",
-   "title": "CIL4 ~ CARBON TREATMENT & ELUTION ELUTION - SHEET",
+   "title": "CIL4 elution, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 499435,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_52.pdf#1"
-   ]
+   "size": 499435
   },
   "2000-F22-PID-PR-10002": {
    "file": "PIDs/2000-F22-PID-PR-10002.pdf",
-   "title": "CIL4 ~ CARBON TREATMENT & ELUTION ELUTION - SHEET",
+   "title": "CIL4 elution, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 610026,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_53.pdf#1"
-   ]
+   "size": 610026
   },
   "2000-F22-PID-PR-10005": {
    "file": "PIDs/2000-F22-PID-PR-10005.pdf",
-   "title": "CIL4 - CARBON TREATMENT & ELUTION CARBON REGENERATION - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL4 carbon regeneration, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 374530,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_54.pdf#1"
-   ]
+   "size": 374530
   },
   "2000-F22-PID-PR-10007": {
    "file": "PIDs/2000-F22-PID-PR-10007.pdf",
-   "title": "CIL4 - CARBON TREATMENT & ELUTION CARBON REGENERATION OFF GAS TREATMENT - SHEET 7 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL4 carbon regeneration off gas treatment, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 490710,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_55.pdf#1"
-   ]
+   "size": 490710
   },
   "2000-F22-PID-PR-10008": {
    "file": "PIDs/2000-F22-PID-PR-10008.pdf",
-   "title": "CIL4 CARBON TREATMENT & ELUTION CARBON REGENERATION OFF-GAS TREATMENT - SHEET 2 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL4 carbon regeneration off gas treatment, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 231228,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_56.pdf#1"
-   ]
+   "size": 231228
   },
   "2000-F23-PID-PR-10001": {
    "file": "PIDs/2000-F23-PID-PR-10001.pdf",
-   "title": "FINAL TAILINGS HANDLING & STORAGE FINAL TAILS TANK PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Final tails tank",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 472116,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_57.pdf#1"
-   ]
+   "size": 472116
   },
   "2000-F23-PID-PR-10002": {
    "file": "PIDs/2000-F23-PID-PR-10002.pdf",
-   "title": "FINAL TAILINGS HANDLING & STORAGE FINAL TAILS PUMPS PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No.",
+   "title": "Final tails pumps",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 769798,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_58.pdf#1"
-   ]
+   "size": 769798
   },
   "2000-F23-PID-PR-40002": {
    "file": "PIDs/2000-F23-PID-PR-40002.pdf",
-   "title": "m= FINAL TAILINGS HANDLING AND STORAGE FIM Ill BOOSTER STATION - SHEET 1 OF 2 PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM III booster station, sheet 1 of 2",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 218624,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_59.pdf#1"
-   ]
+   "size": 218624
   },
   "2000-F23-PID-PR-40003": {
    "file": "PIDs/2000-F23-PID-PR-40003.pdf",
-   "title": "FIM Ill BOOSTER STATION - SHEET 2 OF 2 PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM III booster station, sheet 2 of 2",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 220702,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_60.pdf#1"
-   ]
+   "size": 220702
   },
   "2000-F23-PID-PR-40005": {
    "file": "PIDs/2000-F23-PID-PR-40005.pdf",
-   "title": "FINAL TAILINGS HANDLING AND STORAGE FIM Ill VALVE STATION PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "FIM III valve station",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 235575,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_61.pdf#1"
-   ]
+   "size": 235575
   },
   "2000-F23-PID-PR-40006": {
    "file": "PIDs/2000-F23-PID-PR-40006.pdf",
-   "title": "FINAL TAILINGS HANDLING AND STORAGE FIM Ill DEPOSITION CELL 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "FIM III deposition cell 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 212486,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_62.pdf#1"
-   ]
+   "size": 212486
   },
   "2000-F23-PID-PR-40007": {
    "file": "PIDs/2000-F23-PID-PR-40007.pdf",
-   "title": "FINAL TAILINGS HANDLING AND STORAGE FIM Ill DEPOSITION CELL 2 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "FIM III deposition cell 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 195299,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_63.pdf#1"
-   ]
+   "size": 195299
   },
   "2000-F23-PID-PR-40008": {
    "file": "PIDs/2000-F23-PID-PR-40008.pdf",
-   "title": "PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "FIM III deposition cell 3",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 206846,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_64.pdf#1"
-   ]
+   "size": 206846
   },
   "2000-F24-PID-PR-10001": {
    "file": "PIDs/2000-F24-PID-PR-10001.pdf",
-   "title": "AIR & WATER SERVICES PROCESS WATER - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Process water, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 513528,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_65.pdf#1"
-   ]
+   "size": 513528
   },
   "2000-F24-PID-PR-10002": {
    "file": "PIDs/2000-F24-PID-PR-10002.pdf",
-   "title": "AIR & WATE R S E R VI C E S RAW WATER - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Raw water, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 398622,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_66.pdf#1"
-   ]
+   "size": 398622
   },
   "2000-F24-PID-PR-10003": {
    "file": "PIDs/2000-F24-PID-PR-10003.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S G . A N D W A T F R _ S H F F T 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Gland water, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 348245,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_67.pdf#1"
-   ]
+   "size": 348245
   },
   "2000-F24-PID-PR-10004": {
    "file": "PIDs/2000-F24-PID-PR-10004.pdf",
-   "title": "AIR & WATER SERVICES GLAND WATER - SHEET PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Gland water, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 371379,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_68.pdf#1"
-   ]
+   "size": 371379
   },
   "2000-F24-PID-PR-10005": {
    "file": "PIDs/2000-F24-PID-PR-10005.pdf",
-   "title": "AIR & WATER SERVICES POTABLE WATER - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Potable water, sheet 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 655894,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_69.pdf#1"
-   ]
+   "size": 655894
   },
   "2000-F24-PID-PR-10006": {
    "file": "PIDs/2000-F24-PID-PR-10006.pdf",
-   "title": "AIR & WATER SERVICES SCHEME WATER PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Scheme water",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 423022,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_70.pdf#1"
-   ]
+   "size": 423022
   },
   "2000-F24-PID-PR-10007": {
    "file": "PIDs/2000-F24-PID-PR-10007.pdf",
-   "title": "GROWTH PROJECT AIR & WATER SERVICES PLANT AIR - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Plant air, sheet 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 575106,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_71.pdf#1"
-   ]
+   "size": 575106
   },
   "2000-F24-PID-PR-10008": {
    "file": "PIDs/2000-F24-PID-PR-10008.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S PLANT AIR - SHEET 2? PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Plant air, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 394919,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_72.pdf#1"
-   ]
+   "size": 394919
   },
   "2000-F24-PID-PR-10009": {
    "file": "PIDs/2000-F24-PID-PR-10009.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S FIRE WATER - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Fire water, sheet 1",
    "rev": "3",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 626064,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_73.pdf#1"
-   ]
+   "size": 626064
   },
   "2000-F24-PID-PR-10010": {
    "file": "PIDs/2000-F24-PID-PR-10010.pdf",
-   "title": "AIR & WATER SERVICES PROCESS WATER - SHEET PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Process water, sheet 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 464089,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_74.pdf#1"
-   ]
+   "size": 464089
   },
   "2000-F24-PID-PR-10011": {
    "file": "PIDs/2000-F24-PID-PR-10011.pdf",
-   "title": "AIR & WATER SERVICES PLANT AIR - SHEET 3 PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No.",
+   "title": "Plant air, sheet 3",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 547767,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_75.pdf#1"
-   ]
+   "size": 547767
   },
   "2000-F24-PID-PR-10012": {
    "file": "PIDs/2000-F24-PID-PR-10012.pdf",
-   "title": "AIR & WATE R S E R VI C E S PLANT AIR - SHEET 4 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Plant air, sheet 4",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 542458,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_76.pdf#1"
-   ]
+   "size": 542458
   },
   "2000-F24-PID-PR-10013": {
    "file": "PIDs/2000-F24-PID-PR-10013.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S PLANT AIR - SHEET 5 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Plant air, sheet 5",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 371717,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_77.pdf#1"
-   ]
+   "size": 371717
   },
   "2000-F24-PID-PR-10014": {
    "file": "PIDs/2000-F24-PID-PR-10014.pdf",
-   "title": "AIR & WATER SERVICES GLAND WATER - SHEET 3 PIPING AND INSTRUMENTATION DIAGRAM _ _ \u201c",
+   "title": "Gland water, sheet 3",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 171236,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_78.pdf#1"
-   ]
+   "size": 171236
   },
   "2000-F24-PID-PR-10015": {
    "file": "PIDs/2000-F24-PID-PR-10015.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S FIRE WATER - SHEET PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Fire water, sheet 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 929841,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_79.pdf#1"
-   ]
+   "size": 929841
   },
   "2000-F24-PID-PR-10016": {
    "file": "PIDs/2000-F24-PID-PR-10016.pdf",
-   "title": "AIR & WATER SERVICES PLANT AIR - SHEET 6 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Plant air, sheet 6",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 269307,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_80.pdf#1"
-   ]
+   "size": 269307
   },
   "2000-F24-PID-PR-10017": {
    "file": "PIDs/2000-F24-PID-PR-10017.pdf",
-   "title": "AIR & WATER SERVICES RAW WATER FEED BOOSTER PUMPS PIPING AND INSTRUMENTATION DIAGRAM aa TM \u201ce",
+   "title": "Raw water feed booster pumps",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 432146,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_81.pdf#1",
-    "PID Combined - Compressed_Searchable Tesseract_82.pdf#1"
-   ]
+   "size": 432146
   },
   "2000-F24-PID-PR-10018": {
    "file": "PIDs/2000-F24-PID-PR-10018.pdf",
-   "title": "AIR & WATER SERVICES RAW WATER - SHEET PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Raw water, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 416544,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_83.pdf#1"
-   ]
+   "size": 416544
   },
   "2000-F24-PID-PR-10019": {
    "file": "PIDs/2000-F24-PID-PR-10019.pdf",
-   "title": "AIR & WATER SERVICES PROCESS WATER - SHEET 3 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Process water, sheet 3",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 768995,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_84.pdf#1"
-   ]
+   "size": 768995
   },
   "2000-F24-PID-PR-10020": {
    "file": "PIDs/2000-F24-PID-PR-10020.pdf",
-   "title": "AIR & WATER SERVICES RAW WATER - SHEET 3 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Raw water, sheet 3",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 350268,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_85.pdf#1"
-   ]
+   "size": 350268
   },
   "2000-F24-PID-PR-10022": {
    "file": "PIDs/2000-F24-PID-PR-10022.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S FIRE WATER - SHEET 3 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Fire water, sheet 3",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 370284,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_87.pdf#1"
-   ]
+   "size": 370284
   },
   "2000-F24-PID-PR-10023": {
    "file": "PIDs/2000-F24-PID-PR-10023.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S F | R EF \\W A T EF R _ S H EF EF i L. PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Fire water, sheet 4",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 620949,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_88.pdf#1"
-   ]
+   "size": 620949
   },
   "2000-F24-PID-PR-10025": {
    "file": "PIDs/2000-F24-PID-PR-10025.pdf",
-   "title": "AIR & WATER SERVICES PLANT AIR - SHEET 8 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Plant air, sheet 8",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 216369,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_90.pdf#1"
-   ]
+   "size": 216369
   },
   "2000-F24-PID-PR-10026": {
    "file": "PIDs/2000-F24-PID-PR-10026.pdf",
-   "title": "AIR & WATER SERVICES FIRE WATER - SHEET 5 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Fire water, sheet 5",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 329766,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_91.pdf#1"
-   ]
+   "size": 329766
   },
   "2000-F24-PID-PR-10027": {
    "file": "PIDs/2000-F24-PID-PR-10027.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S p _ A N T A | R _ S H EF EF T 9 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Plant air, sheet 9",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 361515,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_92.pdf#1"
-   ]
+   "size": 361515
   },
   "2000-F24-PID-PR-10028": {
    "file": "PIDs/2000-F24-PID-PR-10028.pdf",
-   "title": "AIR & WATER SERVICES POTABLE WATER \u2014- SHEET 3 PIPING AND INSTRUMENTATION DIAGRAM a \u201cTM \u201ceee",
+   "title": "Potable water, sheet 3",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 563859,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_93.pdf#1"
-   ]
+   "size": 563859
   },
   "2000-F24-PID-PR-10029": {
    "file": "PIDs/2000-F24-PID-PR-10029.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S PLANT AIR - SHEET 10 PIPING AND INSTRUMENTATION DIAGRAM _ TM \u201cee",
+   "title": "Plant air, sheet 10",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 409578,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_94.pdf#1"
-   ]
+   "size": 409578
   },
   "2000-F24-PID-PR-10030": {
    "file": "PIDs/2000-F24-PID-PR-10030.pdf",
-   "title": "AIR & WATER SERVICES PROCESS WATER - SHEET 4 PIPING AND INSTRUMENTATION DIAGRAM a _ \u201c",
+   "title": "Process water, sheet 4",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 354172,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_95.pdf#1"
-   ]
+   "size": 354172
   },
   "2000-F24-PID-PR-10031": {
    "file": "PIDs/2000-F24-PID-PR-10031.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S PLANT AIR - SHEET 11 PIPING AND INSTRUMENTATION DIAGRAM _ TM \u201cee",
+   "title": "Plant air, sheet 11",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 295893,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_96.pdf#1"
-   ]
+   "size": 295893
   },
   "2000-F24-PID-PR-10032": {
    "file": "PIDs/2000-F24-PID-PR-10032.pdf",
-   "title": "AIR & WATER SERVICES RAW WATER - SHEET 4 PIPING AND INSTRUMENTATION DIAGRAM a \u201cTM \u201ceee",
+   "title": "Raw water, sheet 4",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 249578,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_97.pdf#1"
-   ]
+   "size": 249578
   },
   "2000-F24-PID-PR-10033": {
    "file": "PIDs/2000-F24-PID-PR-10033.pdf",
-   "title": "AIR & WATER SERVICES HIGH PRESSURE SCHEME WATER PIPING AND INSTRUMENTATION DIAGRAM \u201cTM mene",
+   "title": "High pressure scheme water",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 250234,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_98.pdf#1"
-   ]
+   "size": 250234
   },
   "2000-F24-PID-PR-10034": {
    "file": "PIDs/2000-F24-PID-PR-10034.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S GLAND WATER - SHEET 4 PIPING AND INSTRUMENTATION DIAGRAM TM_ TM~ \u201cen",
+   "title": "Gland water, sheet 4",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 635876,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_99.pdf#1"
-   ]
+   "size": 635876
   },
   "2000-F24-PID-PR-10035": {
    "file": "PIDs/2000-F24-PID-PR-10035.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S GLAND WATER - SHEET 5 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Gland water, sheet 5",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 507227,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_100.pdf#1"
-   ]
+   "size": 507227
   },
   "2000-F24-PID-PR-10071": {
    "file": "PIDs/2000-F24-PID-PR-10071.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S POTABLE WATER _ SHEE TJ PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Potable water, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 285079,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_86.pdf#1"
-   ]
+   "size": 285079
   },
   "2000-F24-PID-PR-10074": {
    "file": "PIDs/2000-F24-PID-PR-10074.pdf",
-   "title": "A | R & W A qT E R S E R V | C E S p _ A N T A | R _ S H EF EF T | PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Plant air, sheet 7",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 546013,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_89.pdf#1"
-   ]
+   "size": 546013
   },
   "2000-F28-PID-PR-10001": {
    "file": "PIDs/2000-F28-PID-PR-10001.pdf",
-   "title": "ULTRA FINE GRINDING 2 / 3 CONCENTRATE ULTRA FINE GRINDING 2 - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Concentrate ultra fine grinding 2, sheet 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 597329,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_101.pdf#1"
-   ]
+   "size": 597329
   },
   "2000-F28-PID-PR-10002": {
    "file": "PIDs/2000-F28-PID-PR-10002.pdf",
-   "title": "ULTRA FINE GRINDING 2 / 3 CONCENTRATE ULTRA FINE GRINDING 2? - SHEET 7? PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Concentrate ultra fine grinding 2, sheet 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 569719,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_102.pdf#1"
-   ]
+   "size": 569719
   },
   "2000-F28-PID-PR-10003": {
    "file": "PIDs/2000-F28-PID-PR-10003.pdf",
-   "title": "ULTRA FINE GRINDING 2 / 3 CONCENTRATE ULTRA FINE GRINDING 3 - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Concentrate ultra fine grinding 3, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 461369,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_103.pdf#1"
-   ]
+   "size": 461369
   },
   "2000-F28-PID-PR-10004": {
    "file": "PIDs/2000-F28-PID-PR-10004.pdf",
-   "title": "U L qT R A F | N E G R | N D | N G 2 / 3 CONCENTRATE ULTRA FINE GRINDING 3 _ SHEE | PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Concentrate ultra fine grinding 3, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 539575,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_104.pdf#1"
-   ]
+   "size": 539575
   },
   "2000-F28-PID-PR-10005": {
    "file": "PIDs/2000-F28-PID-PR-10005.pdf",
-   "title": "ULTRA FINE GRINDING 2 / 3 CONCENTRATE ULTRA FINE GRINDING PRODUCT PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Concentrate ultra fine grinding product",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 424312,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_105.pdf#1"
-   ]
+   "size": 424312
   },
   "2000-F30-PID-PR-10001": {
    "file": "PIDs/2000-F30-PID-PR-10001.pdf",
-   "title": "",
+   "title": "Flotation tailings thickening no. 3",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 903962,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_106.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F30-PID-PR-10002": {
    "file": "PIDs/2000-F30-PID-PR-10002.pdf",
-   "title": "GROWTH PROJECT CONCENTRATE THICKENING AREA CONCENTRATE THICKENER UNDERFLOW PUMPS PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Concentrate thickener underflow pumps",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 330032,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_107.pdf#1"
-   ]
+   "size": 330032
   },
   "2000-F30-PID-PR-10003": {
    "file": "PIDs/2000-F30-PID-PR-10003.pdf",
-   "title": "",
+   "title": "Flotation tailings thickener",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 777729,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_108.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F30-PID-PR-10004": {
    "file": "PIDs/2000-F30-PID-PR-10004.pdf",
-   "title": "CONCENTRATE PRE-LEACH THICKENING CONCENTRATE PRE-LEACH THICKENER UNDERFLOW PUMPS PIPING AND INSTRUMENTATION DIAGRAM _ _ \u201c_",
+   "title": "Concentrate pre leach thickener underflow pumps",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 448668,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_109.pdf#1"
-   ]
+   "size": 448668
   },
   "2000-F30-PID-PR-10005": {
    "file": "PIDs/2000-F30-PID-PR-10005.pdf",
-   "title": "",
+   "title": "Leach and adsorption, CIL2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 738546,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_110.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F30-PID-PR-10006": {
    "file": "PIDs/2000-F30-PID-PR-10006.pdf",
-   "title": "CIL.2 CONCENTRATE LEACH TRANSFER PUMPS",
+   "title": "CIL2 concentrate leach transfer pumps",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 295381,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_111.pdf#1"
-   ]
+   "size": 295381
   },
   "2000-F30-PID-PR-10007": {
    "file": "PIDs/2000-F30-PID-PR-10007.pdf",
-   "title": "me C9 CILZ OXYGEN INJECTION SYSTEM PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL2 oxygen injection system",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 379549,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_112.pdf#1"
-   ]
+   "size": 379549
   },
   "2000-F30-PID-PR-10008": {
    "file": "PIDs/2000-F30-PID-PR-10008.pdf",
-   "title": "",
+   "title": "Leach and adsorption, CIL3, sheet 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 576111,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_113.pdf#1"
-   ]
+   "size": 576111
   },
   "2000-F30-PID-PR-10009": {
    "file": "PIDs/2000-F30-PID-PR-10009.pdf",
-   "title": "",
+   "title": "Leach and adsorption, CIL3, sheet 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 452883,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_114.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F30-PID-PR-10010": {
    "file": "PIDs/2000-F30-PID-PR-10010.pdf",
-   "title": "",
+   "title": "Carbon safety screens",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 721298,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_115.pdf#1"
-   ]
+   "size": 721298
   },
   "2000-F30-PID-PR-10011": {
    "file": "PIDs/2000-F30-PID-PR-10011.pdf",
-   "title": "me CP 3 CIL3 TAILS PUMPS AND CARBON DETECTION PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL3 tails pumps and carbon detection analysers",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 387604,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_116.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F30-PID-PR-10012": {
    "file": "PIDs/2000-F30-PID-PR-10012.pdf",
-   "title": "",
+   "title": "Leach and adsorption, CIL2 carbon transfer",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 337480,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_117.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F30-PID-PR-10013": {
    "file": "PIDs/2000-F30-PID-PR-10013.pdf",
-   "title": "CIL2 CILZ? OXYGEN INJECTION LANCE PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL2 oxygen injection lance",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 301908,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_118.pdf#1"
-   ]
+   "size": 301908
   },
   "2000-F30-PID-PR-10014": {
    "file": "PIDs/2000-F30-PID-PR-10014.pdf",
-   "title": "",
+   "title": "Tailings sampling circuit",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 353970,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_119.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F30-PID-PR-10015": {
    "file": "PIDs/2000-F30-PID-PR-10015.pdf",
-   "title": "",
+   "title": "Carbon safety screens, CIL3",
    "rev": "E",
    "date": "2025-02-11",
-   "status": "SUPERSEDED",
    "pages": 1,
    "size": 323425,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_120.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F30-PID-PR-10016": {
    "file": "PIDs/2000-F30-PID-PR-10016.pdf",
-   "title": "me CU 9 CILZ2 REAGENT DOSING PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL2 reagent dosing",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 465549,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_121.pdf#1"
-   ]
+   "size": 465549
   },
   "2000-F30-PID-PR-10017": {
    "file": "PIDs/2000-F30-PID-PR-10017.pdf",
-   "title": "CIL 3 LOADED CARBON RECOVERY PIPING AND INSTRUMENTATION DIAGRAM \u201cTM \u201cene",
+   "title": "CIL3 loaded carbon recovery",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 408165,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_122.pdf#1"
-   ]
+   "size": 408165
   },
   "2000-F30-PID-PR-10018": {
    "file": "PIDs/2000-F30-PID-PR-10018.pdf",
-   "title": "30 TK GDA OXYGEN INJECTION SYSTEM PIPING AND INSTRUMENTATION DIAGRAM NTS 30\\PI\\1500",
+   "title": "CIL3 tank oxygen injection system",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 435538,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_123.pdf#1"
-   ]
+   "size": 435538
   },
   "2000-F30-PID-PR-10019": {
    "file": "PIDs/2000-F30-PID-PR-10019.pdf",
-   "title": "NOV 2023} PROJECT: CIL 3 TANKS REPLACEMENT PROJECT CIL NO. 3 TANK G",
+   "title": "CIL3 tank G",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 465299,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_124.pdf#1"
-   ]
+   "size": 465299
   },
   "2000-F30-PID-PR-10020": {
    "file": "PIDs/2000-F30-PID-PR-10020.pdf",
-   "title": "CIL 3 ACID EFFLUENT AND FINE CARBON PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL3 acid effluent and fine carbon",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 426653,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_125.pdf#1"
-   ]
+   "size": 426653
   },
   "2000-F30-PID-PR-10021": {
    "file": "PIDs/2000-F30-PID-PR-10021.pdf",
-   "title": "",
+   "title": "CIL3 oxygen distribution circuit",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 279259,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_126.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F30-PID-PR-10022": {
    "file": "PIDs/2000-F30-PID-PR-10022.pdf",
-   "title": "",
+   "title": "CIL3 tank oxygen injection system, tank 32A",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 459621,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_127.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F30-PID-PR-40003": {
    "file": "PIDs/2000-F30-PID-PR-40003.pdf",
-   "title": "FIM Il EXTENSION DEPOSITION CELL G PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM II extension deposition cell G",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 181201,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_128.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F34-PID-PR-10001": {
    "file": "PIDs/2000-F34-PID-PR-10001.pdf",
-   "title": "",
+   "title": "Ultra fine grinding classification area",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 437890,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_129.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F34-PID-PR-10002": {
    "file": "PIDs/2000-F34-PID-PR-10002.pdf",
-   "title": "ULTRAFINE GRINDING AREA UFG MILL 1 PRODUCT TRANSFER PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "UFG mill 1 product transfer",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 159660,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_130.pdf#1"
-   ]
+   "size": 159660
   },
   "2000-F35-PID-PR-10001": {
    "file": "PIDs/2000-F35-PID-PR-10001.pdf",
-   "title": "",
+   "title": "Concentrates filtration, deslime area",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 865774,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_131.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F35-PID-PR-10002": {
    "file": "PIDs/2000-F35-PID-PR-10002.pdf",
-   "title": "CONCENTRATE STORAGE AREA UFG MILL FEED PUMPS PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "UFG mill feed pumps",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 244350,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_132.pdf#1"
-   ]
+   "size": 244350
   },
   "2000-F35-PID-PR-10003": {
    "file": "PIDs/2000-F35-PID-PR-10003.pdf",
-   "title": "",
+   "title": "Concentrate thickener area",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 626026,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_133.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F35-PID-PR-10004": {
    "file": "PIDs/2000-F35-PID-PR-10004.pdf",
-   "title": "",
+   "title": "Concentrate filter no. 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 323275,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_134.pdf#1"
-   ]
+   "size": 323275
   },
   "2000-F35-PID-PR-10005": {
    "file": "PIDs/2000-F35-PID-PR-10005.pdf",
-   "title": "",
+   "title": "Concentrate filter belt no. 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 403133,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_135.pdf#1"
-   ]
+   "size": 403133
   },
   "2000-F35-PID-PR-10006": {
    "file": "PIDs/2000-F35-PID-PR-10006.pdf",
-   "title": "CONCENTRATE STORAGE AREA UFG MILL 173 FEED PUMPS PIPING AND INSTRUMENTATION DIAGRAM TM_ TM~ \u201cen",
+   "title": "UFG mill 1 and 3 feed pumps",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 271144,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_136.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F35-PID-PR-25001": {
    "file": "PIDs/2000-F35-PID-PR-25001.pdf",
-   "title": "OCT 2023] PROJECT: B DEC 23 GROWTH PROJECT - ENABLING WORKS 43 pec 23) Son CONCENTRATE HANDLING AND FILTRATION AREA 035 CONCENTRATE STOCKPILE",
+   "title": "Concentrate stockpile",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 297780,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_137.pdf#1"
-   ]
+   "size": 297780
   },
   "2000-F35-PID-PR-25002": {
    "file": "PIDs/2000-F35-PID-PR-25002.pdf",
-   "title": "1B DEC 23 OCT 2023] PROJECT: GROWTH PROJECT - ENABLING WORKS 13 DEC 23 Title\u2019 CONCENTRATE BELT FILTER No 1 SRD AREA 35 CONCENTRATE HANDLING AND FILTRATION",
+   "title": "Concentrate belt filter no. 1",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 293981,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_138.pdf#1"
-   ]
+   "size": 293981
   },
   "2000-F65-PID-PR-10001": {
    "file": "PIDs/2000-F65-PID-PR-10001.pdf",
-   "title": "",
+   "title": "Acid wash and elution circuit 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 498166,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_139.pdf#1"
-   ]
+   "size": 498166
   },
   "2000-F65-PID-PR-10002": {
    "file": "PIDs/2000-F65-PID-PR-10002.pdf",
-   "title": "",
+   "title": "Acid wash and elution circuit 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 409602,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_140.pdf#1"
-   ]
+   "size": 409602
   },
   "2000-F65-PID-PR-10003": {
    "file": "PIDs/2000-F65-PID-PR-10003.pdf",
-   "title": "",
+   "title": "Carbon regeneration, sheet 1 of 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 609084,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_141.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F65-PID-PR-10004": {
    "file": "PIDs/2000-F65-PID-PR-10004.pdf",
-   "title": "",
+   "title": "Kiln off gas scrubber",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 459254,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_142.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F65-PID-PR-10005": {
    "file": "PIDs/2000-F65-PID-PR-10005.pdf",
-   "title": "",
+   "title": "Lean eluate circuit",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 495002,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_143.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F65-PID-PR-10006": {
    "file": "PIDs/2000-F65-PID-PR-10006.pdf",
-   "title": "",
+   "title": "Mercury scrubber tie in",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 329458,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_144.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F66-PID-PR-10001": {
    "file": "PIDs/2000-F66-PID-PR-10001.pdf",
-   "title": "E L E C qT R O W | N N | N G & G Q L D R O 0 M CIL4 ELECTROWINNING - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL4 electrowinning, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 402555,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_145.pdf#1"
-   ]
+   "size": 402555
   },
   "2000-F66-PID-PR-10002": {
    "file": "PIDs/2000-F66-PID-PR-10002.pdf",
-   "title": "ELECTROWINNING & GOLD ROOM CIL4A ELECTROWINNING - SHEET PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "CIL4 electrowinning, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 378882,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_146.pdf#1"
-   ]
+   "size": 378882
   },
   "2000-F66-PID-PR-10003": {
    "file": "PIDs/2000-F66-PID-PR-10003.pdf",
-   "title": "ELECTROWINNING & GOLD ROOM GRAVITY ELECTROWINNING PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No.",
+   "title": "Gravity electrowinning",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 438962,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_147.pdf#1"
-   ]
+   "size": 438962
   },
   "2000-F66-PID-PR-10004": {
    "file": "PIDs/2000-F66-PID-PR-10004.pdf",
-   "title": "",
+   "title": "Electrowinning circuit 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 473417,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_148.pdf#1"
-   ]
+   "size": 473417
   },
   "2000-F66-PID-PR-10005": {
    "file": "PIDs/2000-F66-PID-PR-10005.pdf",
-   "title": "",
+   "title": "Gold smelting",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 438485,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_149.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F66-PID-PR-10006": {
    "file": "PIDs/2000-F66-PID-PR-10006.pdf",
-   "title": "",
+   "title": "Gravity circuit, Acacia reactor area",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 484346,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_150.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F71-PID-PR-10001": {
    "file": "PIDs/2000-F71-PID-PR-10001.pdf",
-   "title": "",
+   "title": "Cyanide piping, CIL2, CIL3 and elution circuit",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 588333,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_151.pdf#1"
-   ]
+   "size": 588333
   },
   "2000-F71-PID-PR-10002": {
    "file": "PIDs/2000-F71-PID-PR-10002.pdf",
-   "title": "",
+   "title": "Hydrochloric acid and frother agent, reagents area B",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 347558,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_152.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F72-PID-PR-10001": {
    "file": "PIDs/2000-F72-PID-PR-10001.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS LIME - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Lime, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 547772,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_153.pdf#1"
-   ]
+   "size": 547772
   },
   "2000-F72-PID-PR-10002": {
    "file": "PIDs/2000-F72-PID-PR-10002.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS LIME - SHEET 2 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Lime, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 476866,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_154.pdf#1"
-   ]
+   "size": 476866
   },
   "2000-F72-PID-PR-10003": {
    "file": "PIDs/2000-F72-PID-PR-10003.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS LIME - SHEET 3 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Lime, sheet 3",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 416906,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_155.pdf#1"
-   ]
+   "size": 416906
   },
   "2000-F72-PID-PR-10004": {
    "file": "PIDs/2000-F72-PID-PR-10004.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS - FLOCCULANT - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Flocculant, sheet 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 500719,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_156.pdf#1"
-   ]
+   "size": 500719
   },
   "2000-F72-PID-PR-10005": {
    "file": "PIDs/2000-F72-PID-PR-10005.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS - CYANIDE PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No.",
+   "title": "Cyanide",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 584660,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_157.pdf#1"
-   ]
+   "size": 584660
   },
   "2000-F72-PID-PR-10006": {
    "file": "PIDs/2000-F72-PID-PR-10006.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS - CAUSTIC PIPING AND INSTRUMENTATION DIAGRAM a _ \u201cee",
+   "title": "Caustic",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 361344,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_158.pdf#1"
-   ]
+   "size": 361344
   },
   "2000-F72-PID-PR-10007": {
    "file": "PIDs/2000-F72-PID-PR-10007.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS - HYDROCHLORIC ACID PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Hydrochloric acid",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 510239,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_159.pdf#1"
-   ]
+   "size": 510239
   },
   "2000-F72-PID-PR-10008": {
    "file": "PIDs/2000-F72-PID-PR-10008.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS - COPPER SULPHATE PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Copper sulphate",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 485122,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_160.pdf#1"
-   ]
+   "size": 485122
   },
   "2000-F72-PID-PR-10009": {
    "file": "PIDs/2000-F72-PID-PR-10009.pdf",
-   "title": "GROWTH PROJECT REAGENTS MIXING & STORAGE REAGENTS - FROTHER PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Frother",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 453948,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_161.pdf#1"
-   ]
+   "size": 453948
   },
   "2000-F72-PID-PR-10010": {
    "file": "PIDs/2000-F72-PID-PR-10010.pdf",
-   "title": "TILE, REAGENTS MIXING & STORAGE REAGENTS - POTASSIUM AMYL XANTHATE (PAX) PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No.",
+   "title": "Potassium amyl xanthate (PAX)",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 597713,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_162.pdf#1"
-   ]
+   "size": 597713
   },
   "2000-F72-PID-PR-10011": {
    "file": "PIDs/2000-F72-PID-PR-10011.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS - OXYGEN PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Oxygen",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 453750,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_163.pdf#1"
-   ]
+   "size": 453750
   },
   "2000-F72-PID-PR-10012": {
    "file": "PIDs/2000-F72-PID-PR-10012.pdf",
-   "title": "GROWTH PROJECT REAGENTS MIXING & STORAGE REAGENTS - ANTISCALANT - SHEET 1 PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Antiscalant, sheet 1",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 335151,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_164.pdf#1"
-   ]
+   "size": 335151
   },
   "2000-F72-PID-PR-10013": {
    "file": "PIDs/2000-F72-PID-PR-10013.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS - ANTISCALANT - SHEET 7? PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No.",
+   "title": "Antiscalant, sheet 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 145520,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_165.pdf#1"
-   ]
+   "size": 145520
   },
   "2000-F72-PID-PR-10014": {
    "file": "PIDs/2000-F72-PID-PR-10014.pdf",
-   "title": "REAGENTS MIXING & STORAGE RFAGENTS - HYDROGEN PEROXIDE PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Hydrogen peroxide",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 644647,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_166.pdf#1"
-   ]
+   "size": 644647
   },
   "2000-F72-PID-PR-10015": {
    "file": "PIDs/2000-F72-PID-PR-10015.pdf",
-   "title": "REAGENTS MIXING & STORAGE REFAGENTS - LEAD NITRATE PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Lead nitrate",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 407706,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_167.pdf#1"
-   ]
+   "size": 407706
   },
   "2000-F72-PID-PR-10016": {
    "file": "PIDs/2000-F72-PID-PR-10016.pdf",
-   "title": "REAGENTS MIXING & STORAGE REAGENTS - FLOCCULANT - SHEET 7? PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No.",
+   "title": "Flocculant, sheet 2",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 289818,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_168.pdf#1"
-   ]
+   "size": 289818
   },
   "2000-F75-PID-PR-10001": {
    "file": "PIDs/2000-F75-PID-PR-10001.pdf",
-   "title": "",
+   "title": "Water management and tailings",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 385730,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_169.pdf#1",
-    "PID Combined - Compressed_Searchable Tesseract_170.pdf#1"
-   ]
+   "size": 385730
   },
   "2000-F75-PID-PR-10002": {
    "file": "PIDs/2000-F75-PID-PR-10002.pdf",
-   "title": "SALINE WATER DISTRIBUTION SALINE WATER PUMPS",
+   "title": "Saline water pumps",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 509844,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_171.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F75-PID-PR-10003": {
    "file": "PIDs/2000-F75-PID-PR-10003.pdf",
-   "title": "",
+   "title": "Water management",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 548706,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_172.pdf#1"
-   ]
+   "size": 548706
   },
   "2000-F75-PID-PR-10004": {
    "file": "PIDs/2000-F75-PID-PR-10004.pdf",
-   "title": "",
+   "title": "Decant dam 3 pump upgrade",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 205836,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_173.pdf#1"
-   ]
+   "size": 205836
   },
   "2000-F75-PID-PR-10005": {
    "file": "PIDs/2000-F75-PID-PR-10005.pdf",
-   "title": "",
+   "title": "TSF recommissioning, decant return",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 263060,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_174.pdf#1"
-   ]
+   "size": 263060
   },
   "2000-F75-PID-PR-10006": {
    "file": "PIDs/2000-F75-PID-PR-10006.pdf",
-   "title": "",
+   "title": "Tails TSF recommissioning, Kearns Corner",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 208264,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_175.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F75-PID-PR-10007": {
    "file": "PIDs/2000-F75-PID-PR-10007.pdf",
-   "title": "",
+   "title": "Gland water system",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 454808,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_176.pdf#1"
-   ]
+   "size": 454808
   },
   "2000-F75-PID-PR-10008": {
    "file": "PIDs/2000-F75-PID-PR-10008.pdf",
-   "title": "",
+   "title": "Scheme water reticulation system, sheet 1 of 4",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 301423,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_177.pdf#1"
-   ]
+   "size": 301423
   },
   "2000-F75-PID-PR-25001": {
    "file": "PIDs/2000-F75-PID-PR-25001.pdf",
-   "title": "PROJECT: GROWTH PROJECT - ENABLING WORKS SCHEME AND FIRE WATER PUMP PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Scheme and fire water pump",
    "rev": "4",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 466589,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_178.pdf#1"
-   ]
+   "size": 466589
   },
   "2000-F75-PID-PR-25002": {
    "file": "PIDs/2000-F75-PID-PR-25002.pdf",
-   "title": "PROJECT\u2019 GROWTH PROJECT - ENABLING WORKS te POTABLE WATER PUMP AREA OF WATER ores",
+   "title": "Potable water pump",
    "rev": "4",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 331946,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_179.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F75-PID-PR-25003": {
    "file": "PIDs/2000-F75-PID-PR-25003.pdf",
-   "title": "PROJECT: GROWTH PROJECT - ENABLING WORKS \u2018TILE. FIRE WATER NETWORK",
+   "title": "Fire water network",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 377664,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_180.pdf#1"
-   ]
+   "size": 377664
   },
   "2000-F75-PID-PR-25004": {
    "file": "PIDs/2000-F75-PID-PR-25004.pdf",
-   "title": "PROJECT: GROWTH PROJECT - ENABLING WORKS FIRE WATER DISTRIBUTION TO MT CHARLOTTE STOCKPILE AREA AREA 075 WATER SERVICES PIPING & INSTRUMENTATION DIAGRAM",
+   "title": "Fire water distribution to Mt Charlotte stockpile area",
    "rev": "4",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 194187,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_181.pdf#1"
-   ]
+   "size": 194187
   },
   "2000-F75-PID-PR-25005": {
    "file": "PIDs/2000-F75-PID-PR-25005.pdf",
-   "title": "PROJECT: GROWTH PROJECT - ENABLING WORKS TILE eee re WATER SERVICES PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "Raw sewage",
    "rev": "1",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 251238,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_182.pdf#1"
-   ]
+   "size": 251238
   },
   "2000-F75-PID-PR-25006": {
    "file": "PIDs/2000-F75-PID-PR-25006.pdf",
-   "title": "PROJECT: GROWTH PROJECT - ENABLING WORKS Tite SCHEME WATER BACKFLOW PREVENTION & METERING VALVE STATION SONG OO INSTRUMENT AON DIAGRAM",
+   "title": "Scheme water backflow prevention and metering valve station",
    "rev": "4",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 226902,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_183.pdf#1"
-   ]
+   "size": 226902
   },
   "2000-F75-PID-PR-25007": {
    "file": "PIDs/2000-F75-PID-PR-25007.pdf",
-   "title": "BEC B OCT 2023] PROJECT: GROWTH PROJECT - ENABLING WORKS soem] WATER SERVICES 13 DEC 23 TAILINGS AND WATER SERVICES - SHEET 1 OF",
+   "title": "Tailings and water services, sheet 1 of 3",
    "rev": "4",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 342284,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_184.pdf#1"
-   ]
+   "size": 342284
   },
   "2000-F75-PID-PR-25008": {
    "file": "PIDs/2000-F75-PID-PR-25008.pdf",
-   "title": "",
+   "title": "Tailings and water services, sheet 2 of 3",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 540793,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_185.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F75-PID-PR-25010": {
    "file": "PIDs/2000-F75-PID-PR-25010.pdf",
-   "title": "WATER SERVICES TAILINGS AND WATER SERVICES - SHEET 3 OF 3 PIPING & INSTRUMENTATION DIAGRAM",
+   "title": "Tailings and water services, sheet 3 of 3",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 374528,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_186.pdf#1"
-   ]
+   "size": 374528
   },
   "2000-F75-PID-PR-40001": {
    "file": "PIDs/2000-F75-PID-PR-40001.pdf",
-   "title": "FIM Il CELL G DECANT PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM II cell G decant",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 188285,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_187.pdf#1"
-   ]
+   "size": 188285
   },
   "2000-F75-PID-PR-40002": {
    "file": "PIDs/2000-F75-PID-PR-40002.pdf",
-   "title": "FIM Ill DECANT - SHEET 1 OF 2 PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM III decant, sheet 1 of 2",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 200393,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_188.pdf#1"
-   ]
+   "size": 200393
   },
   "2000-F75-PID-PR-40003": {
    "file": "PIDs/2000-F75-PID-PR-40003.pdf",
-   "title": "FIM Ill DECANT - SHEET 2 OF 2 PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM III decant, sheet 2 of 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 200237,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_189.pdf#1"
-   ]
+   "size": 200237
   },
   "2000-F75-PID-PR-40004": {
    "file": "PIDs/2000-F75-PID-PR-40004.pdf",
-   "title": "me WATER SERVICES DECANT DAM 4& PIPING AND INSTRUMENTATION DIAGRAM SHEET Al SCALE NTS DRG No 2000-F75-PID-PR-40004",
+   "title": "Decant dam 4",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 346474,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_190.pdf#1"
-   ]
+   "size": 346474
   },
   "2000-F75-PID-PR-40006": {
    "file": "PIDs/2000-F75-PID-PR-40006.pdf",
-   "title": "FIM Il CELL G SEEPAGE WATER PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM II cell G seepage water",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 152116,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_191.pdf#1"
-   ]
+   "size": 152116
   },
   "2000-F75-PID-PR-40007": {
    "file": "PIDs/2000-F75-PID-PR-40007.pdf",
-   "title": "FIM Il CELL G UNDERDRAINAGE AND TOE DRAIN PUMPS PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM II cell G underdrainage and toe drain pumps",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 227358,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_192.pdf#1"
-   ]
+   "size": 227358
   },
   "2000-F75-PID-PR-40008": {
    "file": "PIDs/2000-F75-PID-PR-40008.pdf",
-   "title": "FIM Ill TYPICAL SEEPAGE PUMP ARRANGEMENT PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM III typical seepage pump arrangement",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 163264,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_193.pdf#1"
-   ]
+   "size": 163264
   },
   "2000-F75-PID-PR-40009": {
    "file": "PIDs/2000-F75-PID-PR-40009.pdf",
-   "title": "FIM Ill SEEPAGE WATER PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM III seepage water",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 158547,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_194.pdf#1"
-   ]
+   "size": 158547
   },
   "2000-F75-PID-PR-40011": {
    "file": "PIDs/2000-F75-PID-PR-40011.pdf",
-   "title": "FIM Ill TOE DRAIN PUMP PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM III toe drain pump",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 145624,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_195.pdf#1"
-   ]
+   "size": 145624
   },
   "2000-F75-PID-PR-40012": {
    "file": "PIDs/2000-F75-PID-PR-40012.pdf",
-   "title": "PIPING AND INSTRUMENTATION DIAGRAM",
+   "title": "FIM III underdrainage pumps",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 252915,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_196.pdf#1"
-   ]
+   "size": 252915
   },
   "2000-F75-PID-PR-40014": {
    "file": "PIDs/2000-F75-PID-PR-40014.pdf",
-   "title": "FIM Ill BOOSTER STATION SEAL WATER PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM III booster station seal water",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 237016,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_197.pdf#1"
-   ]
+   "size": 237016
   },
   "2000-F75-PID-PR-40016": {
    "file": "PIDs/2000-F75-PID-PR-40016.pdf",
-   "title": "FIM Il VALVE STATION No.1 PIPING AND INSTRUMENTATION DIAGRAM SHEET SCALE DRG No",
+   "title": "FIM II valve station no. 1",
    "rev": "M",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 193783,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_198.pdf#1"
-   ]
+   "size": 193783
   },
   "2000-F75-PID-PR-40020": {
    "file": "PIDs/2000-F75-PID-PR-40020.pdf",
-   "title": "",
+   "title": "FIM I booster pump",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 284714,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_199.pdf#1"
-   ]
+   "size": 284714
   },
   "2000-F75-PID-PR-40021": {
    "file": "PIDs/2000-F75-PID-PR-40021.pdf",
-   "title": "",
+   "title": "Tails TSF recommissioning, Kearns Corner",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 385943,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_200.pdf#1"
-   ]
+   "size": 385943
   },
   "2000-F75-PID-PR-40022": {
    "file": "PIDs/2000-F75-PID-PR-40022.pdf",
-   "title": "",
+   "title": "Pipeline, FIM II booster station upgrade",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 396189,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_201.pdf#1"
-   ]
+   "size": 396189
   },
   "2000-F75-PID-PR-40023": {
    "file": "PIDs/2000-F75-PID-PR-40023.pdf",
-   "title": "",
+   "title": "Tails pipeline, Kaltails booster station upgrade",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 375395,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_202.pdf#1"
-   ]
+   "size": 375395
   },
   "2000-F75-PID-PR-40024": {
    "file": "PIDs/2000-F75-PID-PR-40024.pdf",
-   "title": "",
+   "title": "FIM II booster station hub",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 244037,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_203.pdf#1"
-   ]
+   "size": 244037
   },
   "2000-F75-PID-PR-40025": {
    "file": "PIDs/2000-F75-PID-PR-40025.pdf",
-   "title": "",
+   "title": "TSF extension, valve station no. 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 320178,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_204.pdf#1"
-   ]
+   "size": 320178
   },
   "2000-F75-PID-PR-40026": {
    "file": "PIDs/2000-F75-PID-PR-40026.pdf",
-   "title": "",
+   "title": "FIM 2 extension, valve station no. 3",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 319612,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_205.pdf#1"
-   ]
+   "size": 319612
   },
   "2000-F75-PID-PR-40027": {
    "file": "PIDs/2000-F75-PID-PR-40027.pdf",
-   "title": "",
+   "title": "TSF extension, paddock E",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 324177,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_206.pdf#1"
-   ]
+   "size": 324177
   },
   "2000-F75-PID-PR-40028": {
    "file": "PIDs/2000-F75-PID-PR-40028.pdf",
-   "title": "",
+   "title": "FIM 2 TSF extension, outfall piping",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 324767,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_207.pdf#1"
-   ]
+   "size": 324767
   },
   "2000-F75-PID-PR-40029": {
    "file": "PIDs/2000-F75-PID-PR-40029.pdf",
-   "title": "",
+   "title": "TSF extension, seepage headers",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 188943,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_208.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F75-PID-PR-40030": {
    "file": "PIDs/2000-F75-PID-PR-40030.pdf",
-   "title": "",
+   "title": "FIM II paddock E and F decant system",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 412882,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_209.pdf#1"
-   ]
+   "size": 412882
   },
   "2000-F75-PID-PR-40031": {
    "file": "PIDs/2000-F75-PID-PR-40031.pdf",
-   "title": "",
+   "title": "Decant dam 3 pump upgrade, sheet 1",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 184025,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_210.pdf#1"
-   ]
+   "size": 184025
   },
   "2000-F75-PID-PR-40032": {
    "file": "PIDs/2000-F75-PID-PR-40032.pdf",
-   "title": "",
+   "title": "Decant dam 3 pump upgrade, sheet 2",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 233580,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_211.pdf#1"
-   ]
+   "size": 233580
   },
   "2000-F81-PID-PR-10001": {
    "file": "PIDs/2000-F81-PID-PR-10001.pdf",
-   "title": "",
+   "title": "Plant services LPG system",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 181161,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_212.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F81-PID-PR-10002": {
    "file": "PIDs/2000-F81-PID-PR-10002.pdf",
-   "title": "",
+   "title": "Air services",
    "rev": "",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 388184,
-   "ocr": 1,
-   "from": [
-    "PID Combined - Compressed_Searchable Tesseract_213.pdf#1"
-   ]
+   "ocr": 1
   },
   "2000-F00-DCR-PR-10002": {
    "file": "PIDs/2000-F00-DCR-PR-10002.pdf",
-   "title": "PROCESS DESIGN CRITERIA - STAGE 2",
+   "title": "Process design criteria, Stage 2",
    "rev": "4",
    "pages": 20,
    "size": 1221105,
@@ -3394,7 +2352,7 @@
   },
   "2000-F00-DRG-GE-10100": {
    "file": "PIDs/2000-F00-DRG-GE-10100.pdf",
-   "title": "GENERAL FIM SITE GENERAL ARRANGEMENT (NEW PLANT)",
+   "title": "New plant general arrangement",
    "rev": "0",
    "pages": 1,
    "size": 12795175,
@@ -3403,7 +2361,7 @@
   },
   "2000-F00-DRG-GE-20001": {
    "file": "PIDs/2000-F00-DRG-GE-20001.pdf",
-   "title": "FIM PROCESS PLANT OVERALL PLANT LAYOUT (OLD PLANT)",
+   "title": "Old plant overall layout",
    "rev": "2",
    "pages": 1,
    "size": 9223927,
