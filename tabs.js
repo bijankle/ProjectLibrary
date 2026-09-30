@@ -12,8 +12,21 @@ window.Tabs = (() => {
   const mark = s => `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#e8b44a"/><rect x="6" y="6" width="52" height="52" rx="13" fill="none" stroke="#111418" stroke-width="2.5"/><text x="32" y="44.5" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-weight="800" font-size="36" fill="#111418">P</text></svg>`;
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const desk = () => matchMedia("(min-width: 901px) and (hover: hover)").matches;
-  let el = null, O = {}, openM = null;
-  const set = id => el && el.querySelectorAll(".tb-t").forEach(a => { const on = a.dataset.t === id; a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  // phone (anything that isn't a desktop with a mouse): a slim top row (the P, the section's name, its search) and the
+  // sections as a tab bar along the bottom, with More (settings, checks, sources, help) as a page of its own
+  const phone = !desk(); document.documentElement.classList.toggle("phone", phone);
+  let el = null, O = {}, openM = null, bn = null, mo = null;
+  const NAME = { assets: "Assets", pfd: "PFD", layout: "Layout", quiz: "Quiz", more: "More" };
+  const ICO = { assets: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+    pfd: '<rect x="3" y="4" width="6" height="5" rx="1"/><rect x="15" y="4" width="6" height="5" rx="1"/><rect x="9" y="15" width="6" height="5" rx="1"/><path d="M9 6.5h6M18 9v3.5h-6V15"/>',
+    layout: '<path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/>',
+    quiz: '<rect x="6" y="3" width="13" height="16" rx="2"/><path d="M4 7v12a2 2 0 0 0 2 2h10"/><path d="M10.5 9.2a2 2 0 1 1 2.6 1.9c-.6.2-1.1.7-1.1 1.4v.5M12 15.8v.1"/>',
+    more: '<path d="M4 7h16M4 12h16M4 17h16"/>' };
+  const ico = id => `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[id]}</svg>`;
+  let active = "";
+  const set = id => { if (!el) return; active = id;
+    [...el.querySelectorAll(".tb-t"), ...(bn ? bn.querySelectorAll(".tb-t") : [])].forEach(a => { const on = a.dataset.t === (mo && !mo.hidden ? "more" : id); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    const n = el.querySelector(".ph-n"); if (n) n.textContent = mo && !mo.hidden ? "More" : O.title || NAME[id] || ""; };
   const theme = v => { try { localStorage.setItem("kcgm_theme", v); } catch (e) {} if (window.kcgmTheme) kcgmTheme(v); drawMenus(); };
   const curTheme = () => { try { return localStorage.getItem("kcgm_theme") || "device"; } catch (e) { return "device"; } };
   const tab = id => () => { const a = el.querySelector(`.tb-t[data-t="${id}"]`); if (a) a.click(); };
@@ -105,18 +118,64 @@ window.Tabs = (() => {
   function mount(o = {}){
     O = o;
     el = document.createElement("div"); el.className = "tbw";
+    if (phone) return mountPhone(o);
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
-    el.innerHTML = (desk() ? `<div class="lg lg-big" title="Project Library">${mark(60)}</div><nav class="mb" aria-label="Menu"><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` : "") +
-      `<nav class="tb" aria-label="App sections">${desk() ? "" : `<div class="lg lg-m" title="Project Library">${mark(20)}</div>`}<div class="tb-seg">${tabs}</div>${desk() ? "" : `<div class="mn mn-one"><button type="button" class="tb-s mn-b" aria-label="Menu" title="Menu">☰</button><div class="mn-d mn-dr"></div></div>`}</nav>`;
-    document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", desk());
+    el.innerHTML = `<div class="lg lg-big" title="Project Library">${mark(60)}</div><nav class="mb" aria-label="Menu"><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
+      `<nav class="tb" aria-label="App sections"><div class="tb-seg">${tabs}</div></nav>`;
+    document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", true);
     el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (o.onTab && o.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
     el.querySelectorAll(".mn").forEach(m => { const b = m.querySelector(".mn-b");
       b.onclick = e => { e.stopPropagation(); openM === m ? close() : open(m); };
-      b.onmouseenter = () => { if (openM && openM !== m && desk()) open(m); };   // menu bar: moving across opens the next one
+      b.onmouseenter = () => { if (openM && openM !== m) open(m); };   // menu bar: moving across opens the next one
       m.querySelector(".mn-d").addEventListener("click", e => e.stopPropagation()); });
     document.addEventListener("click", close); addEventListener("keydown", e => { if (e.key === "Escape") close(); });
     drawMenus(); set(o.active);
   }
+  // ---------- phone ----------
+  // top: the P, the section's name and a slot for that section's search (Tabs.slot); bottom: the five sections
+  function mountPhone(o){
+    el.classList.add("ph");
+    el.innerHTML = `<nav class="ph-top"><div class="lg lg-m" title="Project Library">${mark(30)}</div><b class="ph-n"></b><div class="ph-slot"><input class="mo-q" type="search" placeholder="Search the app" aria-label="Search the app" autocomplete="off" hidden></div></nav>`;
+    bn = document.createElement("nav"); bn.className = "bn"; bn.setAttribute("aria-label", "App sections");
+    bn.innerHTML = [...TABS, ["more", "More", "#"]].map(([id, n, href]) => `<a class="tb-t bn-t" data-t="${id}" href="${href}"><i>${ico(id)}</i><span>${n}</span></a>`).join("");
+    mo = document.createElement("div"); mo.className = "mo"; mo.hidden = true; mo.setAttribute("role", "dialog"); mo.setAttribute("aria-label", "More");
+    document.body.prepend(el); document.body.append(bn, mo); document.documentElement.classList.add("has-tb", "has-bn");
+    bn.querySelectorAll(".tb-t").forEach(a => a.onclick = e => {
+      if (a.dataset.t === "more"){ e.preventDefault(); mo.hidden ? more(true) : more(false); return; }
+      const was = !mo.hidden; more(false);
+      if (o.onTab && o.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } else if (was && a.dataset.t === active){ e.preventDefault(); } });
+    drawMore(); set(o.active);
+    if (o.active === "more" && o.openMore !== false) more(true);
+  }
+  const row = (a, icon, label, sub) => `<button type="button" class="mo-i" data-a="${a}"><i>${icon}</i><span>${label}${sub ? `<small>${sub}</small>` : ""}</span><em>›</em></button>`;
+  function drawMore(){
+    mo.innerHTML = `<div class="mo-r"></div><div class="mo-l">
+      <div class="mo-g">App</div>${row("settings", "⚙", "Settings")}${row("offline", "⤓", "Offline downloads")}${row("update", "↻", "Update app", '<b class="mn-ver">Checking the version…</b>')}
+      <div class="mo-g">Data</div>${row("checks", "✓", "Checks")}${row("sources", "▤", "Sources")}
+      <div class="mo-g">Help</div>${row("howto", "?", "How to use")}${row("gloss", "Aa", "Glossary")}${row("about", "ⓘ", "About this app")}</div>`;
+    mo.querySelectorAll(".mo-i[data-a]").forEach(b => b.onclick = () => { const a = b.dataset.a; if (a !== "update") more(false); ({
+      settings: settings, offline: settings, checks: () => location.href = "issues.html", sources: () => location.href = "issues.html#sources",
+      howto: () => help(), about: () => help("about"), gloss: glossary, update: () => { b.disabled = true; window.AppUpdate && AppUpdate.update(); } })[a](); });
+    if (window.AppUpdate) Promise.all([AppUpdate.installed(), AppUpdate.latest()]).then(([a, l]) => mo.querySelectorAll(".mn-ver").forEach(v => {
+      v.textContent = l && a && a !== l ? `Installed ${a}, latest ${l}: update available` : l ? `${l}: up to date` : a ? `${a} (offline)` : ""; }));
+    const inp = el.querySelector(".mo-q"), out = mo.querySelector(".mo-r"), list = mo.querySelector(".mo-l");
+    inp.oninput = () => { const r = find(inp.value); list.hidden = !!inp.value.trim();
+      out.innerHTML = r.map((x, i) => `<button type="button" class="mo-i" data-r="${i}"><i>${x.f ? "→" : "?"}</i><span>${esc(x.t)}${x.h ? `<small>${esc(x.h.slice(0, 90))}…</small>` : ""}</span><em>›</em></button>`).join("") || (inp.value.trim() ? `<div class="mn-no">Nothing found.</div>` : "");
+      out.querySelectorAll("[data-r]").forEach(b => b.onclick = () => { const x = r[+b.dataset.r]; more(false); if (x.run) x.run(); else help(x.t); }); };
+    inp.onkeydown = e => { if (e.key === "Enter"){ const f = out.querySelector("[data-r]"); if (f) f.click(); } };
+  }
+  // settings: the Assets page has the settings screen; from another page, go there
+  const settings = () => { if (O.onSettings && O.settingsPage !== false) O.onSettings(); else location.href = "index.html?cards#settings"; };
+  // More as a page of its own between the top row and the tab bar; the top row's search becomes the app search
+  function more(on){
+    if (!mo) return; mo.hidden = !on; const inp = el.querySelector(".mo-q");
+    [...el.querySelector(".ph-slot").children].forEach(c => { if (c !== inp) c.classList.toggle("mo-off", on); });
+    inp.hidden = !on; if (!on){ inp.value = ""; inp.oninput && inp.oninput(); }
+    if (on){ const h = document.getElementById("helpWin"); if (h) h.hidden = true; }
+    set(active);
+  }
+  // a section's own search box goes into the top row (phone only); false on a desktop
+  const slot = node => { if (!phone || !el || !node) return false; const s = el.querySelector(".ph-slot"); s.insertBefore(node, s.firstChild); return true; };
   const css = `:root{--tb:calc(44px + env(safe-area-inset-top));--fh:22px;--fl:13px;--fb:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 /* one font everywhere, only three sizes */
 body,button,input,select,textarea,code,kbd,pre,svg,.leaflet-container{font-family:var(--ff)}   /* the three text sizes: titles, section labels, body */
@@ -173,9 +232,32 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 ::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--mute) 75%,transparent);border-width:2px}
 ::-webkit-scrollbar-thumb:active{background-color:var(--gold,var(--accent));border-width:2px}
 @supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:transparent transparent}*:hover{scrollbar-color:color-mix(in srgb,var(--mute) 45%,transparent) transparent}}
-@media (max-width:380px){.tb-t{flex-direction:column;gap:0;font-size:var(--fb,15px);padding:5px 9px;line-height:1.1}.tb-i{font-size:var(--fb,15px)}.tb-s{width:34px}}`;
+/* ---------- phone: top row, bottom tab bar, More page ---------- */
+:root{--bn:0px}
+:root.phone{--tb:calc(52px + env(safe-area-inset-top));--bn:calc(58px + env(safe-area-inset-bottom))}
+.tbw.ph{border-bottom:1px solid var(--line)}
+.ph-top{height:52px;display:flex;align-items:center;gap:8px;padding:0 max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))}
+.ph-top .lg-m{flex:none;display:flex}.ph-top .lg-m svg{width:30px;height:30px}
+.ph-n{flex:none;font-size:var(--fb,15px);font-weight:800;white-space:nowrap}
+.ph-slot{flex:1;min-width:0;display:flex;align-items:center;gap:6px}.ph-slot>*{min-width:0}.ph-slot>.mo-off{display:none!important}
+.ph-slot input[type=search],.ph-slot .mo-q{flex:1;width:100%;height:36px;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:18px;padding:0 12px;font:inherit;font-size:16px}
+.bn{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:var(--panel,var(--card));border-top:1px solid var(--line);
+  padding:4px max(2px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(2px,env(safe-area-inset-left));height:var(--bn);box-sizing:border-box}
+.bn-t{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--mute);text-decoration:none;font-size:var(--fl,13px);font-weight:600;-webkit-tap-highlight-color:transparent}
+.bn-t i{display:grid;place-items:center;width:56px;height:28px;border-radius:14px;transition:background .15s}
+.bn-t.on,html[data-theme="light"] .bn-t.on{color:var(--ink);font-weight:800;background:none;box-shadow:none}.bn-t.on i{background:color-mix(in srgb,var(--gold,var(--accent)) 30%,transparent)}
+.mo{position:fixed;left:0;right:0;top:var(--tb);bottom:var(--bn);z-index:55;background:var(--bg);overflow-y:auto;overscroll-behavior:contain;padding:4px 0 16px}.mo[hidden]{display:none}
+.mo-g{font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding:14px 16px 6px}
+.mo-i{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:var(--panel,var(--card));color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:12px 16px;cursor:pointer}
+.mo-i i{flex:none;width:26px;text-align:center;font-style:normal;font-weight:800;color:var(--mute)}.mo-i span{flex:1;min-width:0}.mo-i em{font-style:normal;color:var(--mute)}
+.mo-i small{display:block;color:var(--mute);font-size:var(--fl,13px);margin-top:2px}.mo-i small b{font-weight:500}.mo-r .mn-no{padding:14px 16px}
+.mo-l[hidden]{display:none}
+/* phone: help opens as a page between the two bars */
+:root.phone .hw{top:var(--tb);bottom:var(--bn);padding:0;background:var(--bg);z-index:58}
+:root.phone .hw-b{border:0;border-radius:0;width:100%;max-height:none;height:100%;box-shadow:none}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  return { mount, set, help };
+  const title = t => { O.title = t; set(active); };
+  return { mount, set, help, slot, more, phone, desk, title };
 })();
 
 // Property tables (label | value): the label column is set, per table, to the width that makes the whole table take

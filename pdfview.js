@@ -21,13 +21,14 @@ window.PdfView = (() => {
       <input class="sp-q" type="search" placeholder="Find in this drawing (Ctrl+F)" aria-label="Find in this drawing" autocomplete="off" spellcheck="false">
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="fit" title="Fit">⤢</button><button data-a="in" title="Zoom in">+</button></div>
-      <button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
+      <button class="sp-fb" data-a="find" title="Find in this drawing">⌕</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
       <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div><div class="sp-refs"></div></div></div><div class="sp-msg"></div>`;
     document.body.appendChild(el);
     V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
-      fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close, back: () => cur.onBack && cur.onBack() })[b.dataset.a]());
+      fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close,
+      find: () => { const on = !el.classList.contains("find-on"); el.classList.toggle("find-on", on); const q = el.querySelector(".sp-q"); if (on){ q.focus(); q.select(); } else q.blur(); }, back: () => cur.onBack && cur.onBack() })[b.dataset.a]());
     // find: Ctrl+F / ⌘F while a drawing is open searches its text (the page is a picture, so the browser's own find can't)
     const q = el.querySelector(".sp-q"); let qt;
     q.addEventListener("input", () => { clearTimeout(qt); qt = setTimeout(() => findText(q.value), 350); });

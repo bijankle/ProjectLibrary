@@ -14,6 +14,10 @@ window.Browse = (() => {
   const SPI = { EB: "Blower header", FR: "Not used", FS: "Deluge system", HS: "Slurry hose", MC: "Service / flushing coupling", MS: "Filter, trap, breather",
     MV: "Gland water valve", OP: "Orifice plate", SC: "Straub coupling", SP: "Spray nozzle / bar", SS: "Special spool / injector", ST: "Strainer", VC: "Victaulic coupling" };
   const KEY = "kcgm_browse2";
+  // phone: one full width list; the filter steps open in a sheet from the Filter chip, the chosen steps and recent
+  // searches sit as chips above the list
+  const PH = () => document.documentElement.classList.contains("phone");
+  let sheet = false;
   let B = null, rows = [], path = [], shownN = 60, names = {}, q = "", ph0 = "";
 
   const area = s => { const m = /\bF(\d{2})\b/.exec(s || ""); return m ? "F" + m[1] : ""; };
@@ -101,6 +105,7 @@ window.Browse = (() => {
     const crumbs = path.map((p, i) => { const nm = p.f === "t" || p.v == null || p.v === "?" ? "" : nameOf(p.f, t(), p.v);
       const txt = p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : (p.v === "?" ? "Other" : p.v) + (nm ? " - " + nm : "");
       return `<button class="bw-cr" data-i="${i}" title="Remove this and the steps after it"><span>${esc(txt)}${p.n ? ` <i>(${p.n.toLocaleString()})</i>` : ""}</span><b>×</b></button>`; }).join("");
+    if (PH()){ drawPhone(list, st); return; }
     let opts = "", az = null, qw = 1;
     if (st){
       const c = {}; for (const r of list) c[r[st[0]]] = (c[r[st[0]]] || 0) + 1;
@@ -125,6 +130,74 @@ window.Browse = (() => {
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
     if (az) bindAZ();
     fit(); fitLayout();
+  }
+  // ---------- phone ----------
+  // the words a description is shortened with when its row doesn't fit on one line (then it shrinks, then it's cut)
+  const AB = [["primary","Pri"],["secondary","Sec"],["tertiary","Tert"],["conveyor","Conv"],["flotation","Flot"],["concentrate","Conc"],["tailings","Tails"],
+    ["thickener","Thkr"],["discharge","Disch"],["transmitter","Tx"],["indicator","Ind"],["indicating","Ind"],["pressure","Press"],["temperature","Temp"],["level","Lvl"],
+    ["valve","Vlv"],["control","Ctrl"],["cyclone","Cyc"],["cyclones","Cycs"],["water","Wtr"],["process","Proc"],["distribution","Dist"],["hopper","Hppr"],["feeder","Fdr"],
+    ["overflow","O/F"],["underflow","U/F"],["recovery","Rec"],["regrind","Regr"],["sampler","Smplr"],["sample","Smpl"],["agitator","Agit"],["compressor","Comp"],
+    ["electrical","Elec"],["instrument","Inst"],["isolation","Iso"],["solenoid","Sol"],["switch","Sw"],["position","Pos"],["differential","Diff"],["density","Dens"],
+    ["analyser","Anlsr"],["analyzer","Anlsr"],["emergency","Emerg"],["maintenance","Maint"],["launder","Ldr"],["reagent","Rgt"],["cyanide","CN"],["electrowinning","EW"],
+    ["transfer","Trans"],["storage","Stor"],["motor","Mtr"],["crusher","Crshr"],["gyratory","Gyr"],["bearing","Brg"],["lubrication","Lube"],["hydraulic","Hyd"],
+    ["station","Stn"],["assembly","Assy"],["stockpile","Stkpl"],["reclaim","Recl"],["scavenger","Scav"],["cleaner","Clnr"],["rougher","Rghr"],["vibrating","Vib"],
+    ["vibration","Vib"],["north","N"],["south","S"],["east","E"],["west","W"],["number","No."],["and","&"],["with","w/"],["building","Bldg"],["platform","Pltfm"],
+    ["compartment","Cpt"],["circuit","Ccts"],["dewatering","Dewat"],["filtration","Filt"],["transport","Trans"],["measurement","Meas"],["pneumatic","Pneu"],
+    ["automatic","Auto"],["manual","Man"],["intermediate","Int"],["classification","Class"],["grinding","Grind"],["leaching","Leach"],["adsorption","Ads"],
+    ["regeneration","Regen"],["elution","Elut"],["acid","Acid"],["caustic","Caus"],["collector","Coll"],["frother","Froth"],["flocculant","Floc"],["lime","Lime"],
+    ["oxygen","O₂"],["nitrogen","N₂"],["air","Air"],["return","Rtn"],["supply","Sup"],["header","Hdr"],["drain","Drn"],["bypass","Byp"],["isolating","Iso"]];
+  const ABM = new Map(AB.map(([w, a]) => [w, a]));
+  const abbr = t => String(t).replace(/[A-Za-z]+/g, w => { const a = ABM.get(w.toLowerCase()); return a && a !== w ? a : w; });
+  // a row: TAG (description) on one line: full words if they fit, else shortened words, then smaller (not under 11 px), then cut with …
+  function fitPhone(){
+    el.querySelectorAll(".bp-it").forEach(b => { const s = b.querySelector("span"); if (!s) return;
+      s.textContent = "(" + s.dataset.full + ")"; s.style.fontSize = "";
+      if (b.scrollWidth <= b.clientWidth + 1) return;
+      s.textContent = "(" + abbr(s.dataset.full) + ")";
+      const max = parseFloat(getComputedStyle(s).fontSize);
+      for (let k = 0; k < 3 && b.scrollWidth > b.clientWidth + 1; k++){
+        const cur = parseFloat(s.style.fontSize) || max, over = b.scrollWidth - b.clientWidth, w = s.getBoundingClientRect().width;
+        s.style.fontSize = Math.max(11, cur * Math.max(0, w - over - 2) / w).toFixed(2) + "px"; } });
+  }
+  const recents = () => { try { return JSON.parse(localStorage.getItem("kcgm_recent_lookups") || "[]"); } catch (e) { return []; } };
+  function drawPhone(list, st){
+    const hits = list.slice(0, shownN).map(r => r.it), rc = recents().slice(0, 8);
+    const lab = (p, i) => p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : (p.v === "?" ? "Other" : p.v);
+    const chips = path.map((p, i) => `<button class="bp-c on" data-i="${i}">${esc(lab(p, i))} <b>×</b></button>`).join("");
+    const rec = rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("");
+    const nSet = path.filter(p => p.v != null).length;
+    // the sheet: the steps chosen (tap one to change it), the step to choose now with its options, the steps still to come
+    let sh = "";
+    if (sheet){
+      const all = [["t", "Asset type"], ...steps()];
+      sh = `<div class="bp-scrim"></div><div class="bp-sh" role="dialog" aria-label="Filter"><div class="bp-grip"></div><div class="bp-sht"><b>Filter</b>${path.length ? `<button class="bp-clr">Clear</button>` : ""}</div><div class="bp-steps">` +
+        all.map(([f, l], i) => { if (i < path.length) return `<button class="bp-st" data-i="${i}"><span>${esc(l)}</span><em>${esc(lab(path[i], i))}</em></button>`;
+          if (i > path.length) return `<div class="bp-st off"><span>${esc(l)}</span></div>`;
+          const c = {}; for (const r of list) c[r[f]] = (c[r[f]] || 0) + 1;
+          const vals = f === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => ALPHA.compare(TN[x], TN[y])) : order(f, c);
+          return `<div class="bp-st open"><span>${esc(l)}</span>${f !== "t" ? `<button class="bp-any">Any</button>` : ""}</div><div class="bp-opts">` +
+            vals.map(v => { const n = f === "t" || v === "?" ? "" : shortName(nameOf(f, t(), v)); return `<button class="bp-o" data-v="${esc(v)}" data-n="${c[v]}"><b>${esc(f === "t" ? TN[v] : v === "?" ? "Other" : v)}</b>${n ? ` <span>${esc(n)}</span>` : ""}</button>`; }).join("") + `</div>`; }).join("") +
+        `</div><button class="bp-go">Show ${list.length.toLocaleString()} ${list.length === 1 ? "item" : "items"}</button></div>`;
+    }
+    el.innerHTML = `<div class="bp-bar"><button class="bp-c bp-f${nSet ? " set" : ""}">⚲ Filter${nSet ? " " + nSet : ""}</button>${chips}${rec ? `<i class="bp-sep"></i>${rec}` : ""}</div>
+      <div class="bw-r bp-l"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
+      ${hits.map((it, i) => `<button class="bw-it bp-it" data-i="${i}"><b>${esc(it.key)}</b> <span data-full="${esc(resDesc(it))}"></span></button>`).join("")}
+      ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>${sh}`;
+    const go = () => { sheet = false; after(); };
+    el.querySelector(".bp-f").onclick = () => { sheet = true; draw(); };
+    el.querySelectorAll(".bp-c.on").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
+    el.querySelectorAll(".bp-r").forEach(b => b.onclick = () => { const x = rc[+b.dataset.r]; if (x.q) lk.search(x.q); else lk.openKey(x.key); });
+    el.querySelectorAll(".bp-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i]); });
+    const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
+    if (sheet){
+      el.querySelector(".bp-scrim").onclick = go; el.querySelector(".bp-go").onclick = go;
+      const clr = el.querySelector(".bp-clr"); if (clr) clr.onclick = () => { path = []; after(); };
+      el.querySelectorAll(".bp-st[data-i]").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
+      el.querySelectorAll(".bp-o").forEach(b => b.onclick = () => { const f = (path.length ? steps()[path.length - 1] : ["t"])[0]; path.push({ f, v: b.dataset.v, n: +b.dataset.n }); if (!nextStep()) sheet = false; after(); });
+      const any = el.querySelector(".bp-any"); if (any) any.onclick = () => { path.push({ f: steps()[path.length - 1][0], v: null }); if (!nextStep()) sheet = false; after(); };
+      const sc = el.querySelector(".bp-steps"), o = sc.querySelector(".bp-st.open"); if (o) sc.scrollTop = Math.max(0, o.offsetTop - sc.offsetTop - 8);
+    }
+    fit(); fitPhone();
   }
   // one row per result: code (description); a line reads code (from Name (tag), to Name (tag))
   const resDesc = it => { if (it.t === "pid"){ const d = window.Pid && Pid.info(it.key); return d && d.title ? Lookup.pidTitle(d.title) : ""; }
@@ -180,8 +253,9 @@ window.Browse = (() => {
   const after = () => { shownN = 60; save(); draw(); };
   // the two panes fill the screen below the search bar and scroll on their own
   function fit(){ if (!el || !el.offsetParent) return; const z = window.TextSize ? TextSize.z() : 1;   // inside a zoomed page, CSS pixels are scaled by the text size
-    el.style.height = Math.max(260, (window.innerHeight - el.getBoundingClientRect().top - window.scrollY - 6) / z) + "px"; }
-  window.addEventListener("resize", () => { fit(); fitLayout(); });
+    const bn = document.querySelector(".bn"), b = bn ? bn.offsetHeight : 0;
+    el.style.height = Math.max(260, (window.innerHeight - el.getBoundingClientRect().top - window.scrollY - 6 - b) / z) + "px"; }
+  window.addEventListener("resize", () => { fit(); if (PH()) fitPhone(); else fitLayout(); });
   const save = () => {};   // the filter is not kept between visits
   function mount(root, box){
     el = root; lk = box; el.classList.add("bw");
@@ -192,7 +266,7 @@ window.Browse = (() => {
       .catch(e => { el.innerHTML = `<div class="bw-note">Couldn't load the lists (${esc(e.message)}). Check the connection and reopen the app.</div>`; });
   }
   // back from an item: the list where it was
-  const restore = () => { fit(); fitLayout(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
+  const restore = () => { fit(); if (PH()) fitPhone(); else fitLayout(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
   const css = `.bw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px;min-height:260px}
 .bw-l,.bw-r{overflow-y:auto;overscroll-behavior:contain;min-height:0;-webkit-overflow-scrolling:touch}
 .bw-lw{position:relative;display:flex;min-height:0;min-width:0}
@@ -224,7 +298,30 @@ window.Browse = (() => {
 .bw-it.ln b{font-size:var(--fb,15px)}.bw-it b{font-size:var(--fb,15px);color:var(--gold);font-family:inherit;font-weight:700}
 .bw-it span{font-size:var(--fb,15px);color:var(--mute)}
 .bw-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-size:var(--fb,15px);font-weight:700}
-.bw-note{font-size:var(--fb,15px);color:var(--mute);line-height:1.4}`;
+.bw-note{font-size:var(--fb,15px);color:var(--mute);line-height:1.4}
+/* phone */
+:root.phone .bw{display:flex;flex-direction:column;gap:0}
+.bp-bar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0 8px;flex:none;align-items:center}.bp-bar::-webkit-scrollbar{display:none}
+.bp-c{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:var(--fb,15px);font-weight:600;white-space:nowrap;cursor:pointer}
+.bp-c.on,.bp-f.set{background:var(--gold);border-color:var(--gold);color:#1a1307;font-weight:700}.bp-c.on b{opacity:.6;margin-left:2px}
+.bp-f{font-weight:800}.bp-r{color:var(--mute)}.bp-sep{flex:none;width:1px;height:22px;background:var(--line)}
+:root.phone .bw-r.bp-l{flex:1;min-height:0;border-left:0;padding:0}
+.bp-it{display:block}.bp-it span{font-size:var(--fb,15px)}
+.bp-scrim{position:fixed;inset:0;background:#0007;z-index:61}
+.bp-sh{position:fixed;left:0;right:0;bottom:0;z-index:62;max-height:82vh;display:flex;flex-direction:column;background:var(--card);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px #0006;
+  padding:6px 14px calc(12px + env(safe-area-inset-bottom))}
+.bp-grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:2px auto 8px}
+.bp-sht{display:flex;justify-content:space-between;align-items:center;font-size:var(--fb,15px);margin-bottom:4px}
+.bp-clr{border:0;background:none;color:var(--gold);font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;padding:4px}
+.bp-steps{overflow-y:auto;min-height:0;flex:1;overscroll-behavior:contain}
+.bp-st{display:flex;align-items:center;gap:8px;width:100%;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:11px 2px;text-align:left}
+.bp-st span{flex:1}.bp-st em{font-style:normal;background:var(--gold);color:#1a1307;border-radius:99px;padding:2px 10px;font-weight:700;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bp-st.off{color:var(--mute);font-weight:600}.bp-st.open{border-bottom:0}
+.bp-any{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:3px 10px;font:inherit;font-size:var(--fb,15px)}
+.bp-opts{display:flex;flex-wrap:wrap;gap:6px;padding:0 0 12px;border-bottom:1px solid var(--line)}
+.bp-o{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:7px 10px;font:inherit;font-size:var(--fb,15px);text-align:left;cursor:pointer;max-width:100%}
+.bp-o span{color:var(--mute)}
+.bp-go{flex:none;margin-top:10px;border:0;border-radius:12px;background:var(--gold);color:#1a1307;font:inherit;font-size:var(--fb,15px);font-weight:800;padding:13px}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   // back to no filter (the Assets tab calls this each time it opens)
   const reset = () => { if (!path.length) return; path = []; q = ""; if (lk) lk.input.value = ""; if (B) after(); };

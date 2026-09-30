@@ -182,6 +182,36 @@ body.searching #homeMain{display:none}
 .hist{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:10px}
 .hist .hq{font-weight:800;margin-bottom:6px}
 .tally{display:flex;gap:14px;font-size:var(--fb,15px);color:var(--mute);justify-content:center;margin-top:6px}
+/* ---------- phone (tabs.js sets :root.phone): the search sits in the top row, the sections along the bottom ---------- */
+:root.phone body{padding-bottom:var(--bn)}
+:root.phone .appbar{display:none}
+:root.phone .page{padding-bottom:16px}
+:root.phone #lkRoot{flex:1;display:flex}:root.phone #lkRoot .lk-bar{flex:1;gap:6px;min-width:0}
+:root.phone #lkRoot .lk-in{height:36px;border-radius:18px;padding:0 10px 0 32px;font-size:16px;
+  background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") 10px 50%/16px no-repeat}
+:root.phone #lkRoot .lk-cam{width:36px;height:36px;border-radius:50%;font-size:17px}
+:root.phone #qSearch{height:36px}
+.ph-hide,:root:not(.phone) #qSearch{display:none!important}
+/* quiz: progress on top, the card, two big buttons at the bottom */
+:root.phone #deck{bottom:var(--bn);padding-bottom:10px}
+:root.phone #deck .legend,:root.phone #deckSet{display:none}
+#qBtns{display:none;gap:10px}
+:root.phone #qBtns{display:flex}
+#qBtns button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:14px 10px;font:inherit;font-size:var(--fb,15px);font-weight:800;cursor:pointer}
+#qBtns #qMain{flex:2;background:var(--gold);border-color:var(--gold);color:#1a1307}
+#qBtns #qLater.on{border-color:var(--bad);color:var(--bad)}
+/* settings: grouped rows like the phone's own settings */
+:root.phone #settings h2{margin:18px 4px 6px}
+:root.phone #settings .sgc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+:root.phone #settings #fsBtn{background:var(--card);text-align:left;border-radius:14px}
+/* glossary: A to Z with sticky letters and a letter strip */
+.gl-h,.gl-az{display:none}
+:root.phone .gl{display:block;background:none;border-radius:0;overflow:visible}
+:root.phone .gl-h{display:block;position:sticky;top:var(--tb);z-index:2;background:var(--bg);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;color:var(--gold);padding:10px 4px 4px}
+:root.phone .gl-e{background:var(--card);border-bottom:1px solid var(--line);padding:9px 12px;margin-right:22px}
+:root.phone .gl-e b{display:block;color:var(--ink)}:root.phone .gl-e span{display:block;color:var(--mute)}
+:root.phone .gl-az{display:flex;flex-direction:column;justify-content:space-between;position:fixed;right:2px;top:calc(var(--tb) + 70px);bottom:calc(var(--bn) + 16px);z-index:3;touch-action:none}
+:root.phone .gl-az i{font-style:normal;font-size:var(--fl,13px);font-weight:800;color:var(--gold);padding:0 5px;line-height:1}
 </style>
 </head>
 <body>
@@ -235,6 +265,7 @@ body.searching #homeMain{display:none}
   </div>
   <div class="stage" id="stage"></div>
   <div class="legend" id="legend"><span class="l">→ swipe right: back</span><span class="r">swipe left or tap: next ←</span></div>
+  <div id="qBtns"><button type="button" id="qLater">↻ Later</button><button type="button" id="qMain">Show answer</button></div>
 </section>
 
 <!-- END -->
@@ -266,18 +297,18 @@ body.searching #homeMain{display:none}
   </div>
   <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">Full screen</button>
   <h2>Theme</h2>
-  <div id="thRoot"></div>
+  <div class="sgc" id="thRoot"></div>
   <h2>App size</h2>
-  <div id="tsRoot"></div>
+  <div class="sgc" id="tsRoot"></div>
   <h2>Offline downloads</h2>
-  <div id="offRoot"></div>
+  <div class="sgc" id="offRoot"></div>
   <h2>Free Google AI key</h2>
-  <input class="field secret" id="keyIn" type="text" name="kcgm-ai-key" placeholder="Paste key (starts with AIza)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
+  <div class="sgc"><input class="field secret" id="keyIn" type="text" name="kcgm-ai-key" placeholder="Paste key (starts with AIza)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
   <div class="row" style="margin-top:10px">
     <button class="btn primary" id="keyTest">Test &amp; save</button>
     <button class="btn" id="keyClear">Remove key</button>
   </div>
-  <p class="sub" id="keyStatus" style="margin-top:10px"></p>
+  <p class="sub" id="keyStatus" style="margin-top:10px"></p></div>
   <div id="modelWrap" style="display:none">
     <h2>AI model</h2>
     <select class="field" id="modelSel"></select>
@@ -334,6 +365,9 @@ body.searching #homeMain{display:none}
     if (TAB_OF[id]) Tabs.set(TAB_OF[id]);
     document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
     $("deck").classList.toggle("on", id === "deck"); window.scrollTo(0, 0);
+    // phone: the top row's search follows the section (assets search, or the quiz questions)
+    if (Tabs.title) Tabs.title({ settings: "Settings", gloss: "Glossary", history: "Q&A history" }[id] || "");
+    const qz = TAB_OF[id] === "quiz"; $("lkRoot").classList.toggle("ph-hide", qz); if ($("qSearch")) $("qSearch").classList.toggle("ph-hide", !qz);
     if (id === "settings" && window.Offline) Offline.mount($("offRoot"));
     if (id === "home" && window.Browse) requestAnimationFrame(() => Browse.fit());   // e.g. after the text size changed
   };
@@ -427,15 +461,23 @@ body.searching #homeMain{display:none}
     el.querySelector(".atext").textContent = c.a;
     el.querySelector(".etext").textContent = c.e;
     const ag = el.querySelector(".again-t"), setAg = () => { const on = !!run.marks[run.i]; ag.classList.toggle("on", on); ag.setAttribute("aria-pressed", on); ag.textContent = on ? "↻ Marked to revisit (tap to undo)" : "↻ Revisit this one"; };
-    ag.onclick = () => { run.marks[run.i] = !run.marks[run.i]; if (run.done[run.i] != null) record(run.i); setAg(); }; setAg();
+    ag.onclick = () => { run.marks[run.i] = !run.marks[run.i]; if (run.done[run.i] != null) record(run.i); setAg(); qBtns(); }; setAg();
     if (past) el.querySelector(".flip").style.transition = "none";
     el.style.transform = `translateX(${dir * 40}px)`; el.style.opacity = "0";
     $("stage").innerHTML = ""; $("stage").appendChild(el);
     requestAnimationFrame(() => { el.style.transition = "transform .22s ease, opacity .22s ease"; el.style.transform = ""; el.style.opacity = "1"; });
     card = el; bindSwipe(el);
-    renderQA(el, c, []);
+    renderQA(el, c, []); qBtns();
   }
-  function reveal(){ if (shown) return; shown = true; card.classList.add("shown"); }
+  function reveal(){ if (shown) return; shown = true; card.classList.add("shown"); qBtns(); }
+  // phone: the two buttons under the card (Later marks the card to see again)
+  function qBtns(){ if (!run) return; const last = run.i + 1 >= run.list.length;
+    $("qMain").textContent = !shown ? "Show answer" : last ? "Finish" : "Next";
+    $("qLater").classList.toggle("on", !!run.marks[run.i]); $("qLater").textContent = run.marks[run.i] ? "↻ Marked" : "↻ Later"; }
+  $("qMain").onclick = () => next();
+  $("qLater").onclick = () => { if (!card) return; run.marks[run.i] = true; if (run.done[run.i] != null) record(run.i);
+    const ag = card.querySelector(".again-t"); if (ag){ ag.classList.add("on"); ag.setAttribute("aria-pressed", true); ag.textContent = "↻ Marked to revisit (tap to undo)"; }
+    if (!shown) reveal(); else next(); qBtns(); };
   // the result for card i (first time past it, or again when its "revisit" tick changes)
   function record(i){
     const c = run.list[i], known = !run.marks[i], h = hist[c.q] || { s: 0, k: 0, last: 0 };
@@ -575,8 +617,17 @@ body.searching #homeMain{display:none}
   // ---------- GLOSSARY ----------
   function renderGloss(f){
     f = (f || "").toLowerCase();
-    $("gList").innerHTML = GLOSSARY.filter(([k, v]) => !f || k.toLowerCase().includes(f) || v.toLowerCase().includes(f))
-      .map(([k, v]) => `<div class="k">${k}</div><div>${v}</div>`).join("") || `<div class="k">–</div><div>No match</div>`;
+    const list = GLOSSARY.filter(([k, v]) => !f || k.toLowerCase().includes(f) || v.toLowerCase().includes(f));
+    if (Tabs.phone){   // phone: A to Z, a sticky letter over each group and a strip down the side to jump
+      const L = k => { const c = String(k).trim().charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
+      const sorted = list.slice().sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: "base", numeric: true }));
+      let h = "", last = ""; sorted.forEach(([k, v]) => { const c = L(k); if (c !== last){ h += `<div class="gl-h" id="gl-${c}">${c}</div>`; last = c; } h += `<div class="gl-e"><b>${k}</b><span>${v}</span></div>`; });
+      const letters = [...new Set(sorted.map(x => L(x[0])))];
+      $("gList").innerHTML = (h || `<div class="gl-e"><b>No match</b></div>`) + (letters.length > 1 ? `<div class="gl-az">${letters.map(c => `<i data-l="${c}">${c}</i>`).join("")}</div>` : "");
+      const az = $("gList").querySelector(".gl-az"); if (az){ const go = e => { const t = document.elementFromPoint(az.getBoundingClientRect().left + 6, e.clientY); const c = t && t.dataset && t.dataset.l; if (c){ const g = $("gl-" + c); if (g) window.scrollTo(0, g.offsetTop - az.getBoundingClientRect().top + 60); } };
+        az.addEventListener("pointerdown", e => { az.setPointerCapture(e.pointerId); go(e); }); az.addEventListener("pointermove", e => { if (e.buttons || e.pointerType === "touch") go(e); }); }
+      return; }
+    $("gList").innerHTML = list.map(([k, v]) => `<div class="k">${k}</div><div>${v}</div>`).join("") || `<div class="k">–</div><div>No match</div>`;
   }
   // ---------- LOOKUP ----------
   let lk = null;
@@ -660,7 +711,14 @@ body.searching #homeMain{display:none}
   // the Quiz tab opens on a card: the deck in progress, or a fresh one with the last choices
   function openQuiz(){ if (run && !run.finished) show("deck"); else start(pick()); }
   const openGloss = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
-  const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#gloss") openGloss(); };
+  // phone: the Assets search (with its camera) and a quiz search share the top row; the quiz one starts a deck of the
+  // cards whose question or answer has every word typed
+  { const q = document.createElement("input"); q.type = "search"; q.id = "qSearch"; q.className = "ph-hide"; q.placeholder = "Search the questions"; q.setAttribute("aria-label", "Search the quiz questions"); q.enterKeyHint = "go";
+    q.onkeydown = e => { if (e.key !== "Enter") return; const w = q.value.toLowerCase().split(/\s+/).filter(Boolean); if (!w.length) return;
+      const hit = CARDS.filter(c => w.every(x => (c.q + " " + c.a + " " + (c.e || "")).toLowerCase().includes(x)));
+      q.blur(); if (hit.length) start(shuffle(hit)); else { q.value = ""; q.placeholder = "No question has all those words"; } };
+    if (Tabs.slot($("lkRoot"))) Tabs.slot(q); }
+  const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#gloss") openGloss(); else if (location.hash === "#settings") openSettings(); };
   openHash(); window.addEventListener("hashchange", openHash);
 })();
 </script>

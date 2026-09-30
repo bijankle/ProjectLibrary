@@ -226,7 +226,7 @@ window.PFDLayout = (() => {
   const wbsName = c => { let t = (WBS[c] || "").replace(/\s+-\s+/g, ", ").toLowerCase(); SHORT.forEach(([r, v]) => t = t.replace(r, v));
     return t.replace(/^./, x => x.toUpperCase()).replace(/\b(cil\d?|ufg|ew|ilr)\b/gi, x => x.toUpperCase()).replace(/\barea ([a-z])\b/, (m, x) => "area " + x.toUpperCase()); };
   const HUE = [42, 200, 140, 330, 20, 265, 95, 180, 0, 300];
-  let areas = [];
+  let areas = [], byCode = {};
   function hull(P){   // convex hull, monotone chain
     P = P.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]); if (P.length < 3) return P;
     const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]), lo = [], up = [];
@@ -265,6 +265,7 @@ window.PFDLayout = (() => {
     api.NODES.forEach(nd => { if (!LAYOUT.nodes[nd.id] || LAYOUT.nodes[nd.id].est) return; const c = {};   // major equipment only (on the drawings)
       ((ED[nd.id] && ED[nd.id].eq) || []).forEach(r => { const m = /^F\d\d/.exec(r.tag || ""); if (m) c[m[0]] = (c[m[0]] || 0) + 1; });
       const code = Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b))[0]; if (code) (by[code] = by[code] || []).push(nd.id); });
+    byCode = by;
     const o = LAYOUT.home[0];
     Object.keys(by).sort().forEach((code, ci) => {
       // split far apart groups of one area (single linkage, 120 m)
@@ -312,6 +313,7 @@ window.PFDLayout = (() => {
       map.flyToBounds(bb, { padding: [50, 50], maxZoom: 18.5, duration: .6 });
       wbsOn = c; el.querySelectorAll("[data-w]").forEach(x => x.classList.toggle("on", x === b));
       if (matchMedia("(max-width: 700px)").matches) el.classList.add("shut");
+      if (PH) layers(false);
       flash(c);
     });
   }
@@ -519,14 +521,59 @@ window.PFDLayout = (() => {
     a.download = `kcgm-layout-moves-${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
 
+  // ---------- phone ----------
+  // Map or List at the top (the map first); one Layers button opens a sheet with the three menus as tabs: Areas (the WBS
+  // filters), Flows (the flow filters) and Map (the map options)
+  const PH = document.documentElement.classList.contains("phone");
+  let lsh = null, lscrim = null, lbtn = null, list = null;
+  function layers(on, tab){
+    if (!lsh) return; lsh.hidden = lscrim.hidden = !on; lbtn.classList.toggle("on", on);
+    if (tab) lsh.querySelectorAll("[data-lt]").forEach(b => { const me = b.dataset.lt === tab; b.classList.toggle("on", me); $(b.dataset.p).hidden = !me; });
+  }
+  function phoneSetup(){
+    const mv = $("mapView");
+    // the switch
+    const sw = document.createElement("div"); sw.className = "lo-sw"; sw.innerHTML = `<button data-v="map" class="on">Map</button><button data-v="list">List</button>`;
+    mv.appendChild(sw); L.DomEvent.disableClickPropagation(sw);
+    list = document.createElement("div"); list.className = "lo-list"; list.hidden = true; mv.appendChild(list); L.DomEvent.disableClickPropagation(list); L.DomEvent.disableScrollPropagation(list);
+    sw.querySelectorAll("button").forEach(b => b.onclick = () => view(b.dataset.v));
+    // the Layers button and its sheet (in the page, above the map)
+    lbtn = document.createElement("button"); lbtn.type = "button"; lbtn.className = "lo-lb"; lbtn.textContent = "▣ Layers"; mv.appendChild(lbtn); L.DomEvent.disableClickPropagation(lbtn);
+    lscrim = document.createElement("div"); lscrim.className = "lo-scrim"; lscrim.hidden = true;
+    lsh = document.createElement("div"); lsh.className = "lo-sh"; lsh.hidden = true;
+    lsh.innerHTML = `<div class="lo-shh"><div class="lo-seg lo-tabs"><button data-lt="areas" data-p="loShA" class="on">Areas</button><button data-lt="flows" data-p="loShF">Flows</button><button data-lt="map" data-p="loShM">Map</button></div><button type="button" class="lo-done">Done</button></div>
+      <div class="lo-shb" id="loShA"></div><div class="lo-shb" id="loShF" hidden></div><div class="lo-shb" id="loShM" hidden></div>`;
+    document.body.append(lscrim, lsh);
+    let wb = $("loWbs"); if (!wb){ wb = document.createElement("div"); wb.id = "loWbs"; wb.className = "lo-pan lo-wbs"; }
+    $("loShA").appendChild(wb); $("loShF").appendChild($("loFF")); $("loShM").appendChild($("loMO"));
+    lsh.querySelectorAll("[data-lt]").forEach(b => b.onclick = () => layers(true, b.dataset.lt));
+    lbtn.onclick = () => layers(lsh.hidden, null); lscrim.onclick = lsh.querySelector(".lo-done").onclick = () => layers(false);
+  }
+  function view(v){
+    const sw = $("mapView").querySelector(".lo-sw"); sw.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+    list.hidden = v !== "list"; $("mapView").classList.toggle("listing", v === "list"); document.body.classList.toggle("lo-listing", v === "list"); if (v === "list") drawList(); else map.invalidateSize();
+  }
+  // the list: every WBS area with its equipment; an item opens on the map (flown to and selected)
+  let listOpen = null;
+  function drawList(){
+    const codes = Object.keys(byCode).sort();
+    list.innerHTML = codes.map(c => { const a = areas.find(x => x.code === c), ids = byCode[c].slice().sort((x, y) => String(api.byId[x] && api.byId[x].n).localeCompare(String(api.byId[y] && api.byId[y].n)));
+      return `<button class="lo-lr${c === listOpen ? " open" : ""}" data-c="${c}"><i style="background:hsl(${a ? a.hue : 0} 85% 55%)"></i><b>${c}</b><span>${esc(wbsName(c))}</span><em>${ids.length}</em></button>` +
+        (c === listOpen ? `<div class="lo-le">${ids.map(id => { const n = api.byId[id] || {}; return `<button data-id="${esc(id)}"><b>${esc(n.n || id)}</b><span>${esc(n.tag || "")}</span></button>`; }).join("")}</div>` : ""); }).join("");
+    list.querySelectorAll(".lo-lr").forEach(b => b.onclick = () => { listOpen = listOpen === b.dataset.c ? null : b.dataset.c; const y = list.scrollTop; drawList(); list.scrollTop = y; });
+    list.querySelectorAll(".lo-le button").forEach(b => b.onclick = () => { const id = b.dataset.id; view("map");
+      setTimeout(() => { map.flyTo(pos(id), Math.max(map.getZoom(), 19), { duration: .6 }); api.pick(null, { k: "n", id }); }, 60); });
+  }
+
   // ---------- show / hide ----------
   async function show(v){
     on = v; document.body.classList.toggle("layout", v); $("mapView").hidden = !v;
     const mleg = $("mleg");
-    if (!v){ if (moving) moving.cancel(); if (mleg && mleg.closest("#loFF")) { document.body.appendChild(mleg); dispatchEvent(new Event("resize")); } return true; }
+    if (!v){ if (moving) moving.cancel(); if (PH) layers(false); document.body.classList.remove("lo-listing"); if (mleg && mleg.closest("#loFF")) { document.body.appendChild(mleg); dispatchEvent(new Event("resize")); } return true; }
     try { await load(); } catch (e) { api.toast("Couldn't load the map (" + e.message + "). Check the connection."); on = false; document.body.classList.remove("layout"); $("mapView").hidden = true; return false; }
-    if (!map){ build(); drawStreams(); markers(); Object.values(S).forEach(o => { arrow(o.lay, o.s.ty); arrow(o.mid, o.s.ty); }); }
+    if (!map){ build(); drawStreams(); markers(); Object.values(S).forEach(o => { arrow(o.lay, o.s.ty); arrow(o.mid, o.s.ty); }); if (PH) phoneSetup(); }
     if (mleg) { $("loFF").querySelector(".lo-fb").appendChild(mleg); dispatchEvent(new Event("resize")); }
+    if (PH && list && !list.hidden) document.body.classList.add("lo-listing");
     setTimeout(declutter, 50);
     map.invalidateSize(); sync(false); return true;
   }

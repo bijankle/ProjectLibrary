@@ -91,8 +91,11 @@
   // secs: [{ id, label, n, html }]; sections without html are left out. The last pill picked in a group is kept
   // for the next item, when it has one. Clicks are handled once for the whole page (below).
   const pfLast = {};
+  const PHONE = () => document.documentElement.classList.contains("phone");
   L.pills = (secs, group = "g", mid = "") => {
     secs = secs.filter(x => x && x.html); if (!secs.length) return "";
+    // phone, an item's own sections: stacked sections that fold open (the first one open) instead of pills
+    if (PHONE() && /^item-/.test(group)) return mid + `<div class="acc">` + secs.map((x, i) => `<details class="acc-s"${i ? "" : " open"}><summary><span>${esc(x.label)}</span>${x.n != null ? `<i>${x.n}</i>` : ""}</summary><div class="acc-b">${x.html}</div></details>`).join("") + `</div>`;
     if (secs.length === 1) return mid + secs[0].html;   // one section: no pill bar
     const last = pfLast[group], act = last && !/^(r-|also$)/.test(last) && secs.some(x => x.id === last) ? last : secs[0].id;   // links to other items are not carried over
     return `<div class="pf" data-g="${esc(group)}"><div class="pf-bar">${secs.map(x => `<button type="button" class="pf-b${x.id === act ? " on" : ""}" data-p="${esc(x.id)}">${esc(x.label)}${x.n != null ? ` <i>${x.n}</i>` : ""}</button>`).join("")}</div>` + mid +
@@ -159,8 +162,9 @@
   L.listName = it => it.t === "line" ? L.lineText(it) : headName(it);
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
-    let h = `<div class="lk-kind">${esc(typeName(it.t))}</div>` +
-      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + (it.r || it.t === "spec" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`);   // records: the table says it (no summary line)
+    let h = `<div class="lk-head"><div class="lk-kind">${esc(typeName(it.t))}</div>` +
+      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + (it.r && !PHONE() || it.t === "spec" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
+      (PHONE() ? figs(it) : "") + `</div>`;
     if (dwg) h += `<div class="lk-dwgnote">${esc([dwg.title, dwg.rev && "Rev " + dwg.rev, dwg.status, dwg.pages > 1 && dwg.pages + " sheets"].filter(Boolean).join(" · "))}${dwg.inferred ? " · number read from the sheet order" : ""}${opts.find ? `. ${esc(opts.find)} is marked on it` : ""}.</div>`;
     else if (it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
     const pfd = opts.pfd && opts.pfd(it);
@@ -222,6 +226,19 @@
     h += L.pills(secs, "item-" + (it.t === "pid" ? "pid" : "rec"));
     return h;
   };
+  // phone header card: up to three key figures for the item's kind, never one its tag or name already says
+  const FIG = { mel: ["Installed power (kW)", "Design duty point", "Nominal duty point", "Size / description", "Duty / standby", "Status"],
+    ins: ["Instrument type", "Range / units", "Process fluid", "Loop number", "Make"], cv: ["Valve size (mm)", "Fail position", "Actuator type", "Fluid", "Flow max (m³/h)"],
+    line: ["Size (DN)", "Pipe spec", "Design pressure (kPag)", "Operating pressure (kPag)", "Insulation", "Pipe length (m)"], mv: ["Size (DN)", "Valve type", "Spec", "Manufacturer", "Model"],
+    spi: ["Size (DN)", "Total qty", "Pipe spec", "Make / model"], hose: ["Size (DN)", "Length (m)", "Internal diameter (mm)", "Pipe spec", "Service"] };
+  function figs(it){
+    const want = FIG[it.t]; if (!it.r || !want) return "";
+    const rows = want.map(n => ({ l: n, v: L.get(it, n) })).filter(r => r.v && String(r.v).trim() && String(r.v).length <= 22);
+    const kept = L.dedupe(rows, { heads: [it.key, headName(it)] }).slice(0, 3); if (!kept.length) return "";
+    const show = r => { const u = (/\(([^)]+)\)\s*$/.exec(r.l) || [])[1], l = r.l.replace(/\s*\([^)]*\)\s*$/, "");
+      return [u === "DN" ? "DN" + r.v : u && /^[\d.,\s]+$/.test(r.v) ? r.v + " " + u : r.v, l]; };
+    return `<div class="lk-figs">${kept.map(r => { const [v, l] = show(r); return `<div><b>${esc(v)}</b><span>${esc(l)}</span></div>`; }).join("")}</div>`;
+  }
   // spec section (pipe class for a line, datasheet for a valve), filled once spec/index.json is loaded
   L.fillSpec = (root, it) => { const el = root.querySelector(".lk-spec"); if (!el || !window.Spec) return;
     if (el.dataset.k) it = L.find(el.dataset.k, el.dataset.t) || it;   // the spec may come from the same tag in another list
@@ -509,12 +526,39 @@ body.sp-on{overflow:hidden}
 .sp-pick button:hover{border-color:#e8b44a}
 @media (min-width:901px) and (hover:hover){.sp-rot{display:none !important}}
 @media (max-width:600px){.sp-dl,.sp-view [data-a=fit]{display:none}.sp-top{flex-wrap:wrap;gap:5px;padding:6px 8px}.sp-tt{flex-basis:100%;font-size:var(--fb,15px);order:-1}.sp-top button{min-width:30px;height:30px;padding:0 6px}.sp-nav span{min-width:0}.sp-x{margin-left:auto}}
+/* phone: the sheet fills the screen; close and back float top left, the title beside them, and one floating bar at the
+   bottom holds the sheets, zoom, find and turn (find opens a box just above it) */
+.sp-fb{display:none !important}
+:root.phone .sp-view .sp-top{position:absolute;top:auto;left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100vw - 16px);bottom:calc(14px + env(safe-area-inset-bottom));
+  flex-wrap:nowrap;gap:2px;padding:4px;border:1px solid #3a434f;border-radius:26px;background:#171b21f0;box-shadow:0 4px 16px #0008;z-index:3}
+:root.phone .sp-view .sp-top button{min-width:40px;height:40px;border:0;background:none;border-radius:20px;font-size:21px;padding:0 6px}
+:root.phone .sp-view .sp-top .sp-nav{gap:0}:root.phone .sp-view .sp-top .sp-nav+.sp-nav,:root.phone .sp-view .sp-top .sp-fb{border-left:1px solid #3a434f}
+:root.phone .sp-view .sp-x,:root.phone .sp-view .sp-back{position:fixed;top:calc(10px + env(safe-area-inset-top));left:10px;width:42px;height:42px!important;border-radius:50%!important;
+  background:#171b21f0!important;border:1px solid #3a434f!important;box-shadow:0 2px 10px #0008;margin:0!important;z-index:4}
+:root.phone .sp-view .sp-back{left:60px}
+:root.phone .sp-view .sp-tt{position:fixed;top:calc(15px + env(safe-area-inset-top));left:62px;max-width:calc(100vw - 74px);flex:none;order:0;font-size:var(--fl,13px);color:#e9edf2;background:#171b21e0;border:1px solid #3a434f;border-radius:16px;padding:6px 12px;pointer-events:none;z-index:4}
+:root.phone .sp-view .sp-back:not([hidden])~.sp-tt{max-width:calc(100vw - 124px)}
+:root.phone .sp-view .sp-back:not([hidden])~.sp-tt{left:112px}
+:root.phone .sp-view .sp-fb{display:inline-flex!important}:root.phone .sp-view .sp-dl{display:none}:root.phone .sp-view [data-a=fit]{display:inline-flex}
+:root.phone .sp-view .sp-q{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));width:auto;max-width:none;height:42px;display:none;z-index:4;font-size:16px;box-shadow:0 4px 16px #0008}
+:root.phone .sp-view.find-on .sp-q{display:block}
+:root.phone .sp-view .sp-pg{font-size:var(--fl,13px)}
+:root.phone .sp-view .sp-body{padding:0}
 .lk-dwg{display:inline-block;color:#2f7cf6 !important;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.lk-dwg:hover{color:#5b9bff !important}
 .lk-dwgnote{font-size:var(--fb,15px);color:var(--mute);margin:-4px 0 8px;line-height:1.4}
 .lk-dwgb{color:#2f7cf6;text-decoration:none;white-space:nowrap;font-size:var(--fb,15px);font-weight:700;margin-left:4px;cursor:pointer}
 .lk-d summary{list-style:none}.lk-d summary::-webkit-details-marker{display:none}.lk-d summary::before{content:"▸";display:inline-block;width:14px;color:var(--lk-a);transition:transform .15s}
 .lk-d[open]>summary::before{transform:rotate(90deg)}.sp-c{font-weight:600;color:var(--mute);font-size:var(--fb,15px);margin-left:4px}
 .sp-head{margin:14px 0 2px;font-size:var(--fb,15px);line-height:1.35}.sp-head b{color:var(--lk-a)}.sp-sub{font-size:var(--fb,15px);color:var(--mute);margin-bottom:2px}
+:root.phone .lk-head{background:var(--lk-c);border:1px solid var(--lk-l);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+:root.phone .lk-head .lk-name{margin:0}.lk-figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.lk-figs b{display:block;font-size:var(--fb,15px);font-weight:800;overflow-wrap:anywhere}.lk-figs span{display:block;font-size:var(--fl,13px);color:var(--mute)}
+.acc{background:var(--lk-c);border:1px solid var(--lk-l);border-radius:14px;overflow:hidden}
+.acc-s+.acc-s{border-top:1px solid var(--lk-l)}
+.acc-s>summary{display:flex;align-items:center;gap:8px;list-style:none;cursor:pointer;padding:12px 14px;font-weight:800;font-size:var(--fb,15px)}
+.acc-s>summary::-webkit-details-marker{display:none}.acc-s>summary span{flex:1}.acc-s>summary i{font-style:normal;color:var(--mute);font-weight:600}
+.acc-s>summary::after{content:"▾";color:var(--mute);transition:transform .15s}.acc-s[open]>summary::after{transform:rotate(180deg)}
+.acc-b{padding:0 12px 12px}.acc-b .lk-t{margin-top:0}
 .lk-ocr{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);font-family:inherit;font-size:var(--fb,15px);padding:8px}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   window.Lookup = L;

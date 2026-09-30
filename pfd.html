@@ -380,6 +380,72 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 #info .symm{display:flex;gap:10px;align-items:center;background:var(--panel2);border-radius:9px;padding:8px 10px;margin:4px 0 8px;font-size:var(--fb,15px)}
 #info .symm svg{width:44px;height:30px;flex:none}
 #info .symm b{color:var(--accent)}
+/* ---------- phone (tabs.js sets :root.phone): the search in the top row, the sections along the bottom ---------- */
+#pfab,#mshH,#mscrim{display:none}
+:root.phone header{top:var(--tb);height:44px;padding:0 8px;gap:8px}
+:root.phone #menuBtn,:root.phone #side,:root.phone #scrim{display:none!important}
+:root.phone #stage,:root.phone #mapView{left:0;top:calc(44px + var(--tb));bottom:var(--bn)}
+:root.phone #zoom{bottom:calc(var(--bn) + 12px);right:10px}
+/* the drawing gets the whole screen: Fluids, Layers and Story float over it, each opening a sheet */
+:root.phone body:not(.layout):not(.flowing) #pfab{display:flex;position:fixed;left:10px;bottom:calc(var(--bn) + 12px);gap:8px;z-index:6}
+:root.phone #info.on ~ #pfab{display:none!important}
+#pfab button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:9px 13px;font:inherit;font-size:var(--fb,15px);font-weight:800;box-shadow:0 2px 8px #0005;cursor:pointer;white-space:nowrap}
+#pfab button.on{background:var(--accent);border-color:var(--accent);color:#1a1307}
+:root.phone body:not(.layout) #mleg{display:none!important}
+:root.phone body.msh:not(.layout) #mleg{display:flex!important;position:fixed;left:0;right:0;bottom:var(--bn);top:auto;max-height:62vh;overflow-y:auto;border-radius:16px 16px 0 0;border:0;
+  padding:8px 14px 14px;z-index:31;box-shadow:0 -6px 24px #0006;gap:8px}
+:root.phone body.msh:not(.layout) #mscrim{display:block;position:fixed;left:0;right:0;top:0;bottom:var(--bn);background:#0006;z-index:30}
+:root.phone body:not(.layout) #mshH{display:flex;align-items:center;justify-content:space-between;font-size:var(--fb,15px)}
+:root.phone body:not(.layout) #mshH::before{content:"";position:absolute;left:50%;top:6px;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--line)}
+#mshH button{border:0;background:none;color:var(--accent);font:inherit;font-weight:800;padding:6px}
+:root.phone body:not(.layout) #mleg .mrow.mtop{display:none}
+:root.phone body:not(.layout) #mleg[data-m=fl] .mov,:root.phone body:not(.layout) #mleg[data-m=ly] .mfl,:root.phone body:not(.layout) #mleg[data-m=fl] .mst,:root.phone body:not(.layout) #mleg[data-m=ly] .mst{display:none!important}
+#mleg #legend{display:none}:root.phone body:not(.layout) #mleg[data-m=ly] #legend{display:flex;margin-top:4px!important}
+:root.phone #mleg .fp{font-size:var(--fb,15px);padding:6px 12px 6px 9px}:root.phone #mleg .mrow{gap:7px}
+/* tapping equipment: a short sheet with the name and first figures; drag it up for everything, down to close */
+:root.phone #info{left:0;right:0;top:auto;bottom:var(--bn);width:auto;height:auto;max-height:44vh;border-radius:16px 16px 0 0;border-bottom:0;transition:max-height .2s;z-index:20;box-shadow:0 -6px 24px #0006}
+:root.phone #info.full{max-height:calc(100vh - var(--tb) - var(--bn) - 50px)}
+:root.phone #info .top{padding:18px 14px 8px;touch-action:none;cursor:grab}
+:root.phone #info .top::before{content:"";position:absolute;left:50%;top:7px;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--line)}
+:root.phone #info h3{font-size:var(--fb,15px)}
+/* narrative on the phone: slides. The words on top, the drawing in the middle, big back and next at the bottom */
+:root.phone #stepbar{left:0;right:0;top:calc(44px + var(--tb));flex-direction:column;gap:0;pointer-events:auto}
+:root.phone #info.on ~ #stepbar{right:0}
+:root.phone #sbCur{display:block;border-radius:0;border-width:0 0 1px;padding:8px 14px 10px;flex:none}
+:root.phone #sbCur::before{display:none}
+.sl-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}.sl-top span{font-size:var(--fl,13px);color:var(--mute);font-variant-numeric:tabular-nums}
+.sl-x{border:0;background:var(--panel2);color:var(--ink);width:30px;height:30px;border-radius:50%;font:inherit;font-size:var(--fb,15px);cursor:pointer;flex:none}
+.sl-pg{flex:1;height:5px;border-radius:3px;background:var(--panel2);overflow:hidden}.sl-pg i{display:block;height:100%;background:var(--accent)}
+#sbCur .sl-t{display:block;font-weight:800;font-size:var(--fb,15px);-webkit-line-clamp:unset}#sbCur .sl-d{display:block;color:var(--ink);-webkit-line-clamp:unset;margin-top:2px}
+:root.phone .sb-prev,:root.phone .sb-next{position:fixed;bottom:calc(var(--bn) + 12px);width:calc(50% - 15px);opacity:1;justify-content:center;font-weight:800;padding:13px;border-radius:14px;box-shadow:0 2px 8px #0005;visibility:visible!important}
+:root.phone .sb-prev{left:10px}:root.phone .sb-next{right:10px;background:var(--accent);border-color:var(--accent);color:#1a1307}
+:root.phone .sb-prev::before,:root.phone .sb-next::after{display:none}:root.phone .sb-prev.none{opacity:.45}
+:root.phone body.flowing #zoom,:root.phone body.layout.lo-listing #zoom{display:none}
+/* layout on the phone: Plant top left, Map or List top centre, Layers bottom left; the three menus live in the Layers sheet */
+.lo-sw,.lo-lb,.lo-list{display:none}
+:root.phone .lo-tl{right:auto}
+:root.phone .lo-sw{display:flex;position:absolute;top:8px;left:0;right:0;margin:0 auto;width:max-content;z-index:600;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px;box-shadow:0 2px 8px #0005}
+.lo-sw button{border:0;background:none;color:var(--mute);font:inherit;font-size:var(--fb,15px);font-weight:800;padding:6px 18px;border-radius:8px;cursor:pointer}
+.lo-sw button.on{background:var(--accent);color:#1a1307}
+:root.phone .lo-lb{display:block;position:absolute;left:10px;bottom:12px;z-index:600;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:9px 13px;font:inherit;font-size:var(--fb,15px);font-weight:800;box-shadow:0 2px 8px #0005;cursor:pointer}
+.lo-lb.on{background:var(--accent);border-color:var(--accent);color:#1a1307}
+:root.phone .lo-list:not([hidden]){display:block;position:absolute;inset:0;padding:56px 0 16px;overflow-y:auto;background:var(--bg);z-index:550;overscroll-behavior:contain}
+#mapView.listing .lo-lb,#mapView.listing .lo-north{display:none}
+.lo-lr{display:flex;align-items:center;gap:10px;width:100%;border:0;border-bottom:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:12px 14px;text-align:left;cursor:pointer}
+.lo-lr i{width:12px;height:12px;border-radius:3px;flex:none}.lo-lr b{flex:none}.lo-lr span{flex:1;min-width:0;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lo-lr em{font-style:normal;color:var(--mute)}.lo-lr em::after{content:" ›";display:inline-block;transition:transform .15s}.lo-lr.open em::after{transform:rotate(90deg)}
+.lo-le button{display:flex;align-items:baseline;gap:8px;width:100%;border:0;border-bottom:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:9px 14px 9px 36px;text-align:left;cursor:pointer}
+.lo-le button b{font-weight:600}.lo-le button span{color:var(--mute);font-size:var(--fl,13px)}
+.lo-scrim{position:fixed;left:0;right:0;top:0;bottom:var(--bn);background:#0006;z-index:30}.lo-scrim[hidden]{display:none}
+.lo-sh{position:fixed;left:0;right:0;bottom:var(--bn);max-height:66vh;display:flex;flex-direction:column;background:var(--panel);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px #0006;z-index:31;padding:14px 14px 12px}
+.lo-sh[hidden]{display:none}.lo-sh::before{content:"";position:absolute;left:50%;top:6px;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--line)}
+.lo-shh{display:flex;align-items:center;gap:10px;margin-bottom:10px}.lo-tabs{flex:1}.lo-tabs button{flex:1;padding:7px 4px}
+.lo-done{border:0;background:none;color:var(--accent);font:inherit;font-size:var(--fb,15px);font-weight:800;padding:6px}
+.lo-shb{overflow-y:auto;min-height:0;overscroll-behavior:contain}.lo-shb[hidden]{display:none}
+.lo-sh .lo-pan{background:none;border:0;box-shadow:none;max-height:none;overflow:visible;border-radius:0}.lo-sh .lo-wh{display:none}
+.lo-sh .lo-pan .lo-wl,.lo-sh .lo-pan .lo-fb{display:flex!important;flex-direction:column;width:auto;max-width:none;padding:0;overflow:visible}
+.lo-sh .lo-ff .lo-fb{display:block!important}.lo-sh .lo-mo .lo-fb{gap:8px}
+.lo-sh .lo-b,.lo-sh .lo-seg button{padding:9px 12px}
 
 </style>
 </head>
@@ -428,8 +494,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <div id="zoom"><button id="zInfo" title="Show the properties panel again" style="font-size:21px">ⓘ</button><button id="zIn" title="Zoom in">+</button><button id="zOut" title="Zoom out">−</button><button id="zFit" title="Fit" style="font-size:20px">⤢</button></div>
 <div id="stepbar"><button class="sb-card sb-prev" id="sbPrev"></button><div class="sb-card sb-cur" id="sbCur"></div><button class="sb-card sb-next" id="sbNext"></button></div>
 <div id="toast"></div>
-<div id="mleg" class="m-only" aria-label="Legend and filters"></div>
+<div id="mleg" class="m-only" aria-label="Legend and filters"><div id="mshH"><b></b><button type="button">Done</button></div></div>
 <div id="scrim" class="m-only"></div>
+<div id="mscrim"></div>
+<div id="pfab"><button type="button" id="fbFl">≋ Fluids</button><button type="button" id="fbLy">▣ Layers</button><button type="button" id="fbSt">▶ Story</button></div>
 
 <script src="pfd-data.js"></script>
 <script src="pfd-streams.js"></script>
@@ -917,7 +985,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 
   // Phone: compact legend and filter strip fixed along the bottom (outside the drawing, so zoom never hides it)
   { const bar = $("mleg"), SHORT = { ore: "Ore", flot: "Flotation", conc: "Concentrate", tails: "Tails", leach: "Leach", carbon: "Carbon", gold: "Gold", water: "Water", cnw: "CN water", reag: "Reagent", air: "Air / O₂" };
-    const top = document.createElement("div"); top.className = "mrow"; bar.appendChild(top);
+    const top = document.createElement("div"); top.className = "mrow mtop"; bar.appendChild(top);
     const nar = document.createElement("button"); nar.className = "fp tg nar"; nar.type = "button"; nar.textContent = "▶ Narrative"; nar.onclick = () => $("narBtn").click(); top.appendChild(nar);
     const fl = document.createElement("div"); fl.className = "mrow mfl"; bar.appendChild(fl);
     Object.entries(STREAM_TYPES).forEach(([k, t]) => { t.chip = fluidPill(k, t, SHORT[k]); fl.appendChild(t.chip); });
@@ -925,10 +993,31 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     OVERLAYS.forEach(o => ov.appendChild(overlayPill(o, o.short)));
     const st = document.createElement("div"); st.className = "mrow mst"; st.hidden = true; bar.appendChild(st);
     NARR.forEach(f => { const c = document.createElement("button"); c.type = "button"; c.className = "fp"; c.style.setProperty("--c", f.color); c.innerHTML = `<i></i>${esc(f.name)}`;
-      c.onclick = () => setFlow(focusFlow && focusFlow.id === f.id ? null : f); f.chip = c; st.appendChild(c); });
+      c.onclick = () => { setFlow(focusFlow && focusFlow.id === f.id ? null : f); mSheet(null); }; f.chip = c; st.appendChild(c); });
     // the strip's height sets where the drawing / map stop
     const fit = () => document.documentElement.style.setProperty("--mlh", (matchMedia("(max-width: 900px)").matches && !bar.closest("#loFF") ? bar.offsetHeight : 0) + "px");   // none while it sits in the Layout's Flow filters
     new ResizeObserver(fit).observe(bar); addEventListener("resize", fit); fit();
+  }
+  // Phone: Fluids, Layers and Story open the filter strip as a sheet (one part of it each); the loop and interlock lists
+  // go in Layers
+  const PHONE = document.documentElement.classList.contains("phone");
+  function mSheet(m){ const bar = $("mleg"); if (m) bar.dataset.m = m; document.body.classList.toggle("msh", !!m);
+    if (m) $("mshH").querySelector("b").textContent = { fl: "Fluids", ly: "Layers", st: "Stories" }[m]; fabSync(); }
+  function fabSync(){ const n = $("mleg").querySelectorAll(".mfl .fp.on").length, open = document.body.classList.contains("msh") ? $("mleg").dataset.m : "";
+    $("fbFl").textContent = "≋ Fluids" + (n ? " " + n : ""); $("fbFl").classList.toggle("on", !!n || open === "fl");
+    $("fbLy").classList.toggle("on", open === "ly" || !!$("mleg").querySelector(".mov .fp.on")); $("fbSt").classList.toggle("on", open === "st"); }
+  if (PHONE){
+    $("mleg").appendChild($("legend"));
+    $("fbFl").onclick = () => { if (narr) setNarr(false); mSheet("fl"); };
+    $("fbLy").onclick = () => { if (narr) setNarr(false); mSheet("ly"); };
+    $("fbSt").onclick = () => { if (!narr) setNarr(true); mSheet("st"); };
+    $("mscrim").onclick = $("mshH").querySelector("button").onclick = () => { if (narr && !focusFlow) setNarr(false); mSheet(null); };
+    new MutationObserver(fabSync).observe($("mleg"), { subtree: true, attributes: true, attributeFilter: ["class"] });
+    // the details sheet: drag the top up for all of it, down to make it short again or close it; a tap toggles
+    const top = $("info").querySelector(".top"); let y0 = null;
+    top.addEventListener("pointerdown", e => { if (e.target.closest("button, a")) return; y0 = e.clientY; top.setPointerCapture(e.pointerId); });
+    top.addEventListener("pointerup", e => { if (y0 == null) return; const dy = e.clientY - y0; y0 = null; const inf = $("info");
+      if (dy < -30) inf.classList.add("full"); else if (dy > 40){ if (inf.classList.contains("full")) inf.classList.remove("full"); else closeInfo(); } else inf.classList.toggle("full"); });
   }
   // Phone: sidebar becomes a drawer
   $("menuBtn").onclick = () => document.body.classList.toggle("menu");
@@ -954,11 +1043,13 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     selIds: () => new Set(sel.filter(x => x.k === "n" || x.k === "s").map(x => x.id)),
     nodeState: id => gState(byId[id] && byId[id].g), streamState: id => gState(sById[id] && sById[id].g) });
   const setView = v => { document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v); Tabs.set(v === "map" ? "layout" : "pfd");
+    if (PHONE) $("search").placeholder = v === "map" ? "Search the layout" : "Search the PFD";
     PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); });
     if (v !== "map") setVB(); };
   document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
   // the tab strip: PFD and Layout switch here, Assets and Quiz open the phone app page
-  Tabs.mount({ active: "pfd", onSettings: () => showSettings(), onTab: t => { if (t !== "pfd" && t !== "layout") return false; setView(t === "layout" ? "map" : "pfd"); return true; } });
+  Tabs.mount({ active: "pfd", onSettings: () => showSettings(), settingsPage: !PHONE, onTab: t => { if (t !== "pfd" && t !== "layout") return false; setView(t === "layout" ? "map" : "pfd"); return true; } });
+  if (Tabs.slot($("search"))) $("search").placeholder = "Search the PFD";
   const openHash = () => { if (location.hash === "#layout") setView("map"); else if (location.hash === "#pfd" && PFDLayout.active()) setView("pfd"); };
   window.addEventListener("hashchange", openHash); if (location.hash === "#layout") setTimeout(openHash, 0);
   $("tSvc").addEventListener("click", () => $("mapView").classList.toggle("svcon", $("tSvc").classList.contains("on")));
@@ -1090,10 +1181,17 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       el.innerHTML = k < 0 ? `<b>≡</b><span>Overview: the whole ${esc(f.name.toLowerCase())}</span>` : `<b>${k + 1}</b><span>${esc(f.steps[k].t)}</span>`; };
     card($("sbPrev"), i - 1); card($("sbNext"), i + 1);
     $("sbCur").innerHTML = `<b>${i < 0 ? "≡" : i + 1}</b><span><span class="sb-t">${esc(f.name)} · ${i < 0 ? "overview" : "step " + (i + 1) + " of " + n}</span>${esc(i < 0 ? f.desc : f.steps[i].t)}</span>`;
+    if (PHONE){   // slides: progress and ✕ on top, the step's words, Back and Next as big buttons
+      $("sbCur").innerHTML = `<div class="sl-top"><button type="button" class="sl-x" aria-label="End the story">✕</button><div class="sl-pg"><i style="width:${(i + 2) / (n + 1) * 100}%"></i></div><span>${i + 2}/${n + 1}</span></div>` +
+        `<span class="sl-t">${esc(f.name)}${i < 0 ? ", overview" : ", step " + (i + 1)}</span><span class="sl-d">${esc(i < 0 ? f.desc : f.steps[i].t)}</span>`;
+      $("sbCur").querySelector(".sl-x").onclick = () => { setFlow(null); setNarr(false); };
+      $("sbPrev").classList.toggle("none", i < 0); $("sbPrev").textContent = "◀ Back";
+      $("sbNext").classList.remove("none"); $("sbNext").textContent = i >= n - 1 ? "Done" : "Next ▶";
+    }
     $("sbCur").classList.remove("pulse"); void $("sbCur").offsetWidth; $("sbCur").classList.add("pulse");
   }
   $("sbPrev").onclick = () => { stopPlay(); if (focusFlow && stepIx > -1) showStep(stepIx - 1); };
-  $("sbNext").onclick = () => { stopPlay(); if (focusFlow && stepIx < focusFlow.steps.length - 1) showStep(stepIx + 1); };
+  $("sbNext").onclick = () => { stopPlay(); if (!focusFlow) return; if (stepIx < focusFlow.steps.length - 1) showStep(stepIx + 1); else if (PHONE){ setFlow(null); setNarr(false); } };
   window.addEventListener("keydown", e => { if (!focusFlow || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
     if (e.key === "ArrowRight") $("sbNext").click(); if (e.key === "ArrowLeft") $("sbPrev").click(); });
   $("next").onclick = () => { stopPlay(); if (focusFlow) showStep(Math.min(stepIx + 1, focusFlow.steps.length - 1)); };
@@ -1361,7 +1459,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
       $("cvBack").onclick = () => back && back(); fillCvSpec($("iBody")); });
   }
   function openInfo(){ $("info").classList.add("on"); }
-  function closeInfo(){ $("info").classList.remove("on"); }
+  function closeInfo(){ $("info").classList.remove("on", "full"); }
   $("infoX").onclick = closeInfo;
 
   // ---------- pan / zoom ----------

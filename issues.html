@@ -95,6 +95,28 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
 .sev{font-size:var(--fb,15px);font-weight:800;padding:2px 8px;border-radius:99px;color:#fff;white-space:nowrap}
 .note{font-size:var(--fb,15px)}
 .more{text-align:center;margin:12px}
+/* ---------- phone: the bottom tab bar (More), the filter in the top row; Checks: tiles that filter, then short cards
+   (tap one for the documents, dates and comment); Sources: one row per document, tap it for the details ---------- */
+#about{display:none}
+:root.phone body{padding-top:var(--tb);padding-bottom:var(--bn)}
+:root.phone .page>header,:root.phone #ver,:root.phone .tabs,:root.phone #checksPane>p.sub{display:none}
+:root.phone #checksPane.about>p.sub{display:block}
+:root.phone #about{display:inline-block;border:0;background:none;color:var(--gold);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:4px 0;margin:0 0 6px;cursor:pointer}
+:root.phone #sevChips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+:root.phone #sevChips .chip{flex-direction:column;align-items:flex-start;gap:0;border-radius:12px;padding:8px 10px;font-weight:600;color:var(--mute)}
+:root.phone #sevChips .chip i{display:none}:root.phone #sevChips .chip span{order:-1;font-size:var(--fh,22px);font-weight:800;color:var(--c)}
+:root.phone #sevChips .chip.off{opacity:.45}:root.phone #sevChips .chip.solo{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+:root.phone .bar #q{display:none}
+:root.phone #rows tr{cursor:pointer;padding:10px 12px}
+:root.phone #rows td{padding:2px 0}
+:root.phone #rows td:nth-child(2){display:inline;width:auto;color:var(--mute);margin-left:6px}:root.phone #rows td:first-child{display:inline;width:auto}
+:root.phone #rows td.item{padding-top:6px}
+:root.phone #rows tr:not(.open) td.doc,:root.phone #rows tr:not(.open) td.date,:root.phone #rows tr:not(.open) td.note{display:none}
+:root.phone #rows td[data-l]::before{font-size:var(--fl,13px)}:root.phone #rows td:first-child::before,:root.phone #rows td:nth-child(2)::before,:root.phone #rows td.item::before{display:none}
+:root.phone #docsPane>p.sub{display:none}
+:root.phone #docRows tr.drow{cursor:pointer}:root.phone #docRows tr.drow td.num{order:2}
+:root.phone #docRows .ib{display:none}
+:root.phone .sv{z-index:70}
 @media (max-width: 760px){
   table:not(.sv-tb),table:not(.sv-tb) thead,table:not(.sv-tb) tbody,table:not(.sv-tb) tr,table:not(.sv-tb) td{display:block;width:100%}
   table:not(.sv-tb) thead{display:none}
@@ -133,6 +155,7 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
     </table>
   </div>
   <div id="checksPane">
+  <button type="button" id="about">About these checks</button>
   <p class="sub">Contradictions and gaps between the project documents, and checks on the Smart PFD itself. Each row says what one document states, what the other states, and which one the app takes as true and why. Where two documents clash, the one with the newer revision date (marked newer) is taken as true unless the comment says why not. Built from the lists by <code>tools/build_issues.py</code>; the diagram checks run live.</p>
   <div class="chips" id="sevChips"></div>
   <div class="bar">
@@ -150,6 +173,7 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
 </div>
 <iframe id="pfdFrame" title="Diagram checks" style="position:absolute;left:-9999px;top:0;width:1600px;height:900px;border:0" aria-hidden="true"></iframe>
 <script src="app-update.js"></script>
+<script src="tabs.js"></script>
 <script src="xlsx-lite.js"></script>
 <script src="sources-view.js"></script>
 <script>
@@ -166,11 +190,19 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
   // date cell; the newer of the two dates is marked, as the newer document is taken as true
   const dcell = (a, b) => !a ? "–" : `<span class="${b && a > b ? "newer" : ""}"${b && a > b ? ' title="Newer document"' : ""}>${fmt(a)}</span>`;
   AppUpdate.mount($("updBtn"), $("ver"));
+  const PHONE = window.Tabs && Tabs.phone;
+  if (PHONE){ Tabs.mount({ active: "more", openMore: false, title: location.hash === "#sources" ? "Sources" : "Checks" }); Tabs.slot($("q")); $("q").placeholder = "Filter the checks";
+    $("about").onclick = () => { const on = $("checksPane").classList.toggle("about"); $("about").textContent = on ? "Hide the explanation" : "About these checks"; };
+    $("rows").addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) tr.classList.toggle("open"); }); }
 
   function chips(){
     $("sevChips").innerHTML = SEV.map(s => { const n = all.filter(r => r.sev === s).length;
-      return `<button class="chip${off.has(s) ? " off" : ""}" data-s="${s}" title="${SEVTIP[s]}"><i style="background:${SEVC[s]}"></i>${s} <span>${n}</span></button>`; }).join("");
-    $("sevChips").querySelectorAll(".chip").forEach(b => b.onclick = () => { off.has(b.dataset.s) ? off.delete(b.dataset.s) : off.add(b.dataset.s); shown = 200; chips(); draw(); });
+      const solo = off.size === SEV.length - 1 && !off.has(s);
+      return `<button class="chip${off.has(s) ? " off" : ""}${solo ? " solo" : ""}" data-s="${s}" title="${SEVTIP[s]}" style="--c:${SEVC[s]}"><i style="background:${SEVC[s]}"></i>${s} <span>${n}</span></button>`; }).join("");
+    // phone: a tile shows only its type; tapping it again shows them all
+    $("sevChips").querySelectorAll(".chip").forEach(b => b.onclick = () => { const s = b.dataset.s;
+      if (PHONE){ const solo = off.size === SEV.length - 1 && !off.has(s); off = new Set(solo ? [] : SEV.filter(x => x !== s)); }
+      else off.has(s) ? off.delete(s) : off.add(s); shown = 200; chips(); draw(); });
     const cats = [...new Set(all.map(r => r.cat))].sort(), cur = $("cat").value;
     $("cat").innerHTML = '<option value="">All categories</option>' + cats.map(c => `<option${c === cur ? " selected" : ""}>${esc(c)}</option>`).join("");
   }
@@ -203,6 +235,7 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
         ${kv("Used in the app for", esc(v.used))}${v.full !== v.title ? kv("Called in the checks", "“" + esc(v.title) + "”") : ""}${kv("Note", esc(v.note))}
         ${v.sheets ? kv("Sheets", `${v.sheets.length}: ${esc(v.sheets[0].slice(-5))} to ${esc(v.sheets[v.sheets.length - 1].slice(-5))}`) : ""}<div class="trows" data-k="${v.k}"></div></div>
         ${v.history && v.history.length > 1 ? `<div class="dh">Revision history</div><table class="hist">${v.history.slice().reverse().map(h => `<tr><td>Rev ${esc(h.rev)}</td><td class="date">${fmt(h.date)}</td><td>${esc(h.status)}</td></tr>`).join("")}</table>` : ""}</td></tr>`).join("");
+    if (PHONE) $("docRows").querySelectorAll("tr.drow").forEach(r => r.onclick = e => { if (!e.target.closest("button, a")) r.querySelector(".ib").click(); });
     $("docRows").querySelectorAll(".ib").forEach(b => b.onclick = () => { const r = b.closest("tr").nextElementSibling, open = r.hidden; r.hidden = !open; b.setAttribute("aria-expanded", open); b.classList.toggle("on", open); });
     SourceView.index().then(ix => document.querySelectorAll("#docRows td.tb").forEach(td => tables(td, ix[td.dataset.k], DOCS[td.dataset.k]))).catch(() => {});
   }
@@ -219,6 +252,7 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
     $("tabDocs").setAttribute("aria-selected", docs); $("tabChecks").setAttribute("aria-selected", !docs);
     $("docsPane").hidden = !docs; $("checksPane").hidden = docs;
     history.replaceState(null, "", docs ? "#sources" : location.pathname + location.search);
+    if (PHONE){ Tabs.title(docs ? "Sources" : "Checks"); $("q").placeholder = docs ? "Filter the sources" : "Filter the checks"; }
   }
   $("tabChecks").onclick = () => tab("checks"); $("tabDocs").onclick = () => tab("docs");
   if (location.hash === "#sources") tab("docs");
@@ -228,7 +262,10 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
   const histSheet = () => ({ name: "Revision history", widths: [30, 50, 6, 14, 50],
     rows: [["Document number", "Title", "Rev", "Date", "Status"], ...docList().flatMap(v => (v.history || []).map(h => [v.number, v.full, h.rev, fmt(h.date), h.status]))] });
   if ($("xlsDocs")) $("xlsDocs").onclick = () => XLSX.download(`Project source documents ${new Date().toISOString().slice(0, 10)}.xlsx`, [docSheet(), histSheet()]);
-  $("q").oninput = () => { shown = 200; draw(); }; $("cat").onchange = () => { shown = 200; draw(); };
+  // on the phone the one filter box serves whichever of the two is open
+  $("q").oninput = () => { if (PHONE && !$("docsPane").hidden){ const w = $("q").value.toLowerCase().split(/\s+/).filter(Boolean);
+      document.querySelectorAll("#docRows tr.drow").forEach(r => { const hide = w.length && !w.every(x => r.textContent.toLowerCase().includes(x)); r.hidden = hide; if (hide) r.nextElementSibling.hidden = true; }); return; }
+    shown = 200; draw(); }; $("cat").onchange = () => { shown = 200; draw(); };
   $("xls").onclick = () => {
     const f = filtered(), head = ["Type", "Category", "Item", "What document 1 says", "Document 1", "Date 1", "What document 2 says", "Document 2", "Date 2", "Comment (which is taken as true and why)"];
     XLSX.download(`Project checks ${new Date().toISOString().slice(0, 10)}.xlsx`, [
