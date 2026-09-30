@@ -1,7 +1,7 @@
 // Quick reference glossary: [term, meaning]
 const GLOSSARY = [
-  ["F00","General Fimiston Site (HV power, buried services, pipe racks)"],
-  ["F10","Primary Crushing, Fimiston Existing (Primary Crushing 1)"],
+  ["F00","General FIM Site (HV power, buried services, pipe racks)"],
+  ["F10","Primary Crushing, FIM Existing (Primary Crushing 1)"],
   ["F12","Primary Crushing, new (Primary Crushing 2), crushed ore stockpile"],
   ["F13","Milling & Classification (new SAG, ball mill, pebble crushing, cyclones, trash screens)"],
   ["F14","Gravity Circuit & Intensive Leaching (Knelsons, ILR)"],
@@ -9,7 +9,7 @@ const GLOSSARY = [
   ["F16","Rougher & Scavenger Flotation (FLS tank cells)"],
   ["F17","Flotation Tailings Pre-Leach Thickening"],
   ["F18","Cleaner & Cleaner-Scavenger Flotation (Jameson cells)"],
-  ["F19","Milling & Classification, Fimiston Existing, Area A (old SAG)"],
+  ["F19","Milling & Classification, FIM Existing, Area A (old SAG)"],
   ["F20","Milling & Classification, Area B"],
   ["F21","Flotation Tailings CIL4"],
   ["F22","CIL4 Carbon Treatment & Elution, CIL4 regen kiln"],
@@ -68,7 +68,7 @@ const GLOSSARY = [
   ["Scheme water","Fresh pipeline water, SG 1.00"],["Process water","Saline bore water, SG about 1.07"],
   ["Cyanide water","TSF decant return, peroxide treated"],["Gland water","Clean seal water to slurry pump glands"],
   ["MoL","Milk of lime"],["PSA","Pressure swing adsorption oxygen plant"],["LPG","Fuel for CIL4 elution heater"],
-  ["NSR","Northern Star Resources (owner)"],["PDC","Process design criteria"],["PFD","Process flow diagram"],
+  ["PDC","Process design criteria"],["PFD","Process flow diagram"],
   ["P&ID","Piping and instrumentation diagram"],["TQ","Technical query"],["SysCAD","Mass balance model software"],
   ["WBS","Work breakdown structure"],
   ["DCS","Distributed control system (Yokogawa Centum VP)"],["OIS","Operator interface system, the control room screens"],

@@ -248,7 +248,7 @@
   },
   "2000-F00-PFD-PR-10003": {
    "file": "PFDs/2000-F00-PFD-PR-10003.pdf",
-   "title": "FIMISTON SAG MILLING",
+   "title": "FIM SAG MILLING",
    "rev": "1",
    "date": "2026-09-04",
    "status": "SP1 AS BUILT",
@@ -260,7 +260,7 @@
   },
   "2000-F00-PFD-PR-10004": {
    "file": "PFDs/2000-F00-PFD-PR-10004.pdf",
-   "title": "FIMISTON SAG MILL RECYCLE CRUSHING",
+   "title": "FIM SAG MILL RECYCLE CRUSHING",
    "rev": "1",
    "date": "2026-09-04",
    "status": "SP1 AS BUILT",
@@ -3394,7 +3394,7 @@
   },
   "2000-F00-DRG-GE-10100": {
    "file": "PIDs/2000-F00-DRG-GE-10100.pdf",
-   "title": "GENERAL FIMISTON SITE GENERAL ARRANGEMENT (NEW PLANT)",
+   "title": "GENERAL FIM SITE GENERAL ARRANGEMENT (NEW PLANT)",
    "rev": "0",
    "pages": 1,
    "size": 12795175,
@@ -3403,7 +3403,7 @@
   },
   "2000-F00-DRG-GE-20001": {
    "file": "PIDs/2000-F00-DRG-GE-20001.pdf",
-   "title": "FIMISTON PROCESS PLANT OVERALL PLANT LAYOUT (OLD PLANT)",
+   "title": "FIM PROCESS PLANT OVERALL PLANT LAYOUT (OLD PLANT)",
    "rev": "2",
    "pages": 1,
    "size": 9223927,

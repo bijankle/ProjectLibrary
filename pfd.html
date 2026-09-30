@@ -850,7 +850,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   document.querySelectorAll("#stageSeg button").forEach(b => b.onclick = () => {
     document.querySelectorAll("#stageSeg button").forEach(x => x.classList.toggle("on", x === b));
     stage = +b.dataset.s; applyStage();
-    toast(stage === 1 ? "Stage 1 as built: tails to old CIL2/3 and the dam, concentrate to CIL1 and Gidji. Stage 2 items shown faded." : "Stage 2: all tails to CIL4, UFG 3 added, CIL2 leach and CIL3 adsorption, Gidji shut.");
+    toast(stage === 1 ? "Stage 1 as built: tails to old CIL2/3 and the dam, concentrate to CIL1 and the offsite roaster. Stage 2 items shown faded." : "Stage 2: all tails to CIL4, UFG 3 added, CIL2 leach and CIL3 adsorption, offsite roaster shut.");
   });
   // ---------- PDC case ----------
   // order of PDC_CASES: nominal, design grade (24.0, lowest), achievable (25.5, higher grade), high throughput (28.35)

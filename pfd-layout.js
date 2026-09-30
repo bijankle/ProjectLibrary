@@ -61,8 +61,8 @@ window.PFDLayout = (() => {
        <button class="lo-b" id="loFlows" title="The PFD streams drawn on the plant (a flow picked in the list always shows)"></button>
        <button class="lo-b" id="loMinor" title="Items not on the layout drawings, placed beside the equipment they work with (dashed boxes)"></button>
        <button class="lo-b" id="loExp" title="Download the positions moved on this device, to send in">Moves</button>
-       <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-20001" title="Fimiston process plant overall plant layout (old plant)">Open old layout<small>2000-F00-DRG-GE-20001</small></button>
-       <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-10100" title="General Fimiston site general arrangement (new plant)">Open new layout<small>2000-F00-DRG-GE-10100</small></button>`);
+       <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-20001" title="FIM process plant overall plant layout (old plant)">Open old layout<small>2000-F00-DRG-GE-20001</small></button>
+       <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-10100" title="General FIM site general arrangement (new plant)">Open new layout<small>2000-F00-DRG-GE-10100</small></button>`);
     const bar = mo;
     bar.querySelectorAll("[data-b]").forEach(b => b.onclick = () => setBase(b.dataset.b));
     $("loHome").onclick = () => home(true);
@@ -207,7 +207,7 @@ window.PFDLayout = (() => {
   // (the area is the WBS code most of an item's MEL tags start with) labelled "F12 (Primary crushing)". Items of one
   // area more than 120 m from the rest get a zone of their own. Tapping a zone zooms in until the boxes show.
   const AREA_Z = 16.75;
-  const WBS = {F00: "General Fimiston Site", F10: "Primary Crushing - Existing", F12: "Primary Crushing", F13: "Milling & Classification", F14: "Gravity Circuit & Intensive Leaching",
+  const WBS = {F00: "General FIM Site", F10: "Primary Crushing - Existing", F12: "Primary Crushing", F13: "Milling & Classification", F14: "Gravity Circuit & Intensive Leaching",
     F16: "Rougher & Scavenger Flotation", F17: "Flotation Tailings Pre-Leach Thickening", F18: "Cleaner & Cleaner Scavenger Flotation", F19: "Milling & Classification - Existing - Area A",
     F20: "Milling & Classification - Area B", F21: "Flotation Tailings CIL4", F22: "CIL4 - Carbon Treatment & Elution", F23: "Final Tailings Handling & Storage", F24: "Air & Water Services",
     F28: "Ultra Fine Grinding 2 / 3", F30: "Concentrate Pre-Leach Thickening, CIL2/3 & Concentrate Thickening", F34: "Ultra Fine Grinding - Existing", F35: "Concentrate Handling & Filtration",
