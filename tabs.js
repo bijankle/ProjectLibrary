@@ -168,3 +168,31 @@ body,button,input,select,textarea,code,kbd,pre,svg,.leaflet-container{font-famil
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   return { mount, set, help };
 })();
+
+// Property tables (label | value): the label column is set, per table, to the width that makes the whole table take
+// the fewest lines, so as little text as possible wraps in either column. Worked out again when a table appears or
+// its width changes. (A text's line count is estimated as its one line width over the column width, rounded up.)
+(() => {
+  const SEL = ".lk-t, #info table";
+  const cv = document.createElement("canvas").getContext("2d");
+  const pad = el => { const s = getComputedStyle(el); return parseFloat(s.paddingLeft) + parseFloat(s.paddingRight); };
+  const textW = el => { cv.font = getComputedStyle(el).font; return el.textContent.split("\n").reduce((m, t) => Math.max(m, cv.measureText(t.trim()).width), 0); };
+  function fit(t){
+    const rows = [...t.rows].filter(r => r.cells.length === 2); if (!rows.length) return;
+    const W = t.clientWidth; if (!W) return;
+    const pl = pad(rows[0].cells[0]), pv = pad(rows[0].cells[1]);
+    const R = rows.map(r => [textW(r.cells[0]), textW(r.cells[1])]);
+    const lines = w => R.reduce((n, [a, b]) => n + Math.max(Math.ceil(a / Math.max(1, w - pl)) || 1, Math.ceil(b / Math.max(1, W - w - pv)) || 1), 0);
+    const lo = Math.min(W * .25, 90), hi = W * .6;
+    const cands = new Set([lo, hi]); R.forEach(([a]) => { const w = Math.ceil(a + pl + 1); if (w > lo && w < hi) cands.add(w); });
+    let best = null, bn = 1e9; [...cands].sort((a, b) => a - b).forEach(w => { const n = lines(w); if (n < bn){ bn = n; best = w; } });   // ties: the narrower label, wider values
+    t.style.setProperty("--lw", Math.round(best) + "px");
+  }
+  const st = document.createElement("style");
+  st.textContent = `.lk-t td:first-child,#info table td:first-child{width:var(--lw,13.5em)!important}`;
+  document.head.appendChild(st);
+  const ro = new ResizeObserver(es => es.forEach(e => fit(e.target))), seen = new WeakSet();
+  const scan = () => document.querySelectorAll(SEL).forEach(t => { if (!seen.has(t)){ seen.add(t); ro.observe(t); fit(t); } });   // (new tables; the observer refits on a width change)
+  let q = 0; new MutationObserver(() => { if (!q) q = requestAnimationFrame(() => { q = 0; scan(); }); }).observe(document.documentElement, { childList: true, subtree: true });
+  scan();
+})();
