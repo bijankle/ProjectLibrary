@@ -18,6 +18,7 @@ window.PdfView = (() => {
     if (V) return V;
     const el = document.createElement("div"); el.className = "sp-view"; el.hidden = true;
     el.innerHTML = `<div class="sp-top"><button class="sp-back" data-a="back" title="Back to the last drawing" hidden>←</button><b class="sp-tt"></b><div class="sp-nav sp-pages"><button data-a="prev" title="Previous page">◀</button><span class="sp-pg"></span><button data-a="next" title="Next page">▶</button></div>
+      <input class="sp-q" type="search" placeholder="Find in this drawing (Ctrl+F)" aria-label="Find in this drawing" autocomplete="off" spellcheck="false">
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="fit" title="Fit">⤢</button><button data-a="in" title="Zoom in">+</button></div>
       <button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
@@ -27,7 +28,15 @@ window.PdfView = (() => {
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
       fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close, back: () => cur.onBack && cur.onBack() })[b.dataset.a]());
-    addEventListener("keydown", e => { if (el.hidden) return; if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
+    // find: Ctrl+F / ⌘F while a drawing is open searches its text (the page is a picture, so the browser's own find can't)
+    const q = el.querySelector(".sp-q"); let qt;
+    q.addEventListener("input", () => { clearTimeout(qt); qt = setTimeout(() => findText(q.value), 350); });
+    q.addEventListener("keydown", e => { e.stopPropagation();
+      if (e.key === "Enter"){ e.preventDefault(); clearTimeout(qt); if (V.hits.length && norm(q.value) === norm(cur.find || "")) showHit(V.fi + (e.shiftKey ? -1 : 1)); else findText(q.value); }
+      if (e.key === "Escape"){ q.value = ""; q.blur(); } });
+    addEventListener("keydown", e => { if (el.hidden) return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f"){ e.preventDefault(); q.focus(); q.select(); return; }
+      if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
     addEventListener("popstate", () => { if (!el.hidden) close(true); });
     // rotating the phone: refit the sheet once the new size has settled (keeps the zoom level)
     // (only a real size change: the browser bar sliding in and out while panning must not redraw everything)
@@ -75,6 +84,7 @@ window.PdfView = (() => {
     V.el.querySelector(".sp-back").hidden = !cur.back; V.refs = []; V.refsEl.innerHTML = ""; pickClose();
     const me = cur; if (cur.refs) Promise.resolve(cur.refs).then(a => { if (cur !== me) return; V.refs = a || []; drawRefs(); });
     V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true;
+    V.el.querySelector(".sp-q").value = cur.find || "";
     V.msg.textContent = "Loading…"; V.msg.hidden = false;
     let d; try { d = await getDoc(cur.url); } catch (e) { V.msg.textContent = "Couldn't load the PDF (" + e.message + "). Check the connection."; return; }
     V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
@@ -161,7 +171,19 @@ window.PdfView = (() => {
   }
 
   // ---------- mark a tag on the page ----------
-  async function mark(tag){
+  // find typed text: this page first, then the other sheets of the document (the first sheet with it opens)
+  let fgen = 0;
+  async function findText(t){
+    const g = ++fgen; t = String(t || "").trim();
+    if (norm(t).length < 3){ cur.find = null; V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; return; }
+    cur.find = t; await mark(t, true); if (g !== fgen || V.hits.length) return;
+    const d = await getDoc(cur.url), want = norm(t);
+    for (let p = 1; p <= d.numPages; p++){ if (p === V.page) continue;
+      const tc = await (await d.getPage(p)).getTextContent(); if (g !== fgen) return;
+      if (norm(tc.items.map(i => i.str).join("")).includes(want)){ await go(p); return; } }
+    toast(`“${t}” isn't in the searchable text of this drawing.`);
+  }
+  async function mark(tag, quiet){
     const want = norm(tag); if (want.length < 3) return;
     const tc = await V.pg.getTextContent(), vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), W = vp.width, H = vp.height;
     const items = tc.items.filter(t => t.str && t.str.trim()).map(t => { const [a, b, c, d, e, f] = t.transform, h = Math.hypot(c, d) || Math.hypot(a, b);
@@ -186,7 +208,7 @@ window.PdfView = (() => {
     V.marks.innerHTML = V.hits.map(h => `<i style="left:${h.l * 100}%;top:${h.t * 100}%;width:${h.w * 100}%;height:${h.h * 100}%"></i>`).join("");
     const f = V.el.querySelector(".sp-finds"); f.hidden = !V.hits.length;
     if (V.hits.length){ V.fi = 0; V.el.querySelector(".sp-fn").textContent = `${tag}: 1 / ${V.hits.length}`; pulse(0); }
-    else toast(`${tag} isn't written as searchable text on this drawing.`);
+    else if (!quiet) toast(`${tag} isn't written as searchable text on this drawing.`);
   }
   function pulse(k){ [...V.marks.children].forEach((m, i) => m.classList.toggle("on", i === k)); }
   function showHit(k){   // step through the matches, bringing each into view without changing the zoom

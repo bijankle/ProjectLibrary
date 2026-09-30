@@ -468,6 +468,8 @@
 .sp-view{position:fixed;inset:0;z-index:2000;background:#2b2f36;display:flex;flex-direction:column}.sp-view[hidden]{display:none}
 .sp-top{display:flex;gap:8px;align-items:center;padding:8px 10px;background:#171b21;color:#e9edf2;border-bottom:1px solid #2c343e}
 .sp-tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.sp-q{flex:0 1 230px;min-width:90px;height:32px;box-sizing:border-box;border:1px solid #3a434f;background:#0f1216;color:#e9edf2;border-radius:8px;padding:0 9px;font:inherit;font-size:13px}
+.sp-q:focus{outline:none;border-color:#e8b44a}
 .sp-nav{display:flex;align-items:center;gap:4px}.sp-nav[hidden]{display:none}.sp-nav span{font-size:12.5px;min-width:58px;text-align:center;color:#aab4c0}
 .sp-top button,.sp-dl{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;min-width:34px;height:32px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px}
 .sp-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}.sp-sheet{position:relative;background:#fff;margin:0 auto;box-shadow:0 2px 14px #0008;transform-origin:0 0}
