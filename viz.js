@@ -86,7 +86,7 @@ window.AssetViz = (() => {
       const q = e.currentTarget.getBoundingClientRect(), i = PdfView.nearest(boxes, (e.clientX - q.left) / q.width * 1e4, (e.clientY - q.top) / q.height * 1e4);
       if (i >= 0) a = e.currentTarget.children[i] || a;   // overlapping boxes: the nearest centre wins
       const t = a.dataset.t, k = a.dataset.k;
-      if (k === "d"){ if (Pid.has(t)) go(t); return; }
+      if (k === "d"){ if (Pid.has(t)){ if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }   // a continuation: that drawing becomes the item on the left
       const tag = t.split("|")[0]; if (window.kcgmOpenTag) kcgmOpenTag(tag); });
     PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
       if (g !== gen) return; page = pg;
