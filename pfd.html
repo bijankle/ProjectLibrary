@@ -193,7 +193,8 @@ svg.dragging{cursor:grabbing}
 #info .body{padding:12px 16px 18px;overflow-y:auto;font-size:var(--fb,15px);line-height:1.5}
 #info table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:var(--fb,15px)}
 #info td{padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:top}
-#info td:first-child{color:var(--mute);width:1%;min-width:112px;padding-right:10px;font-size:var(--fb,15px)}
+#info td:last-child{overflow-wrap:anywhere}@media (max-width:600px){#info td:first-child{width:45%}}
+#info td:first-child{color:var(--mute);width:13.5em;padding-right:10px;font-size:var(--fb,15px)}
 #info h4{margin:14px 0 4px;font-size:var(--fl,13px);letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
 #info .conn a{display:block;color:var(--ink);text-decoration:none;padding:5px 8px;border-radius:7px;background:var(--panel2);margin:4px 0;font-size:var(--fb,15px);cursor:pointer}
 #info .conn a:hover{outline:1px solid var(--accent)}

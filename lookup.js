@@ -446,7 +446,7 @@
 .lk-home:hover,.lk-back:hover{border-color:var(--lk-a);color:var(--lk-a)}
 .lk-kind{font-size:var(--fl,13px);font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--lk-a)}
 .lk-key{font-family:inherit;font-size:var(--fh,22px);font-weight:800;margin:4px 0 2px;word-break:break-all}.lk-name{font-size:var(--fb,15px);line-height:1.35;margin-bottom:8px}
-.lk-t{width:100%;border-collapse:collapse;font-size:var(--fb,15px);margin:6px 0}.lk-t td{padding:5px 4px;border-bottom:1px solid var(--lk-l);vertical-align:top;word-break:break-word}.lk-t td:first-child{color:var(--mute);width:1%;min-width:112px;padding-right:10px;font-size:var(--fb,15px);word-break:normal;overflow-wrap:normal;hyphens:manual}
+.lk-t{width:100%;border-collapse:collapse;font-size:var(--fb,15px);margin:6px 0}.lk-t td{padding:5px 4px;border-bottom:1px solid var(--lk-l);vertical-align:top;word-break:break-word}.lk-t td:first-child{color:var(--mute);width:13.5em;padding-right:10px;font-size:var(--fb,15px);word-break:normal;overflow-wrap:normal;hyphens:manual}
 .lk-a{color:var(--lk-a);text-decoration:underline;cursor:pointer}.lk-row{display:block;text-decoration:none;color:var(--ink);background:var(--lk-c);border-radius:8px;padding:6px 8px;margin:4px 0;font-size:var(--fb,15px)}
 .lk-row b{font-family:inherit;color:var(--lk-a);margin-right:4px}.lk-h{margin:14px 0 4px;font-size:var(--fl,13px);letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
 .pf-bar{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 8px}
@@ -463,6 +463,8 @@
 .lk-btn{border:1px solid var(--lk-a);background:none;color:var(--lk-a);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer;margin:6px 0}
 .lk-spec .lk-btn{font-size:var(--fb,15px);padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:var(--fb,15px);line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:var(--fb,15px);margin-left:4px}
+@media (max-width:600px){.lk-t td:first-child{width:45%}}
+.lk-t td:last-child{overflow-wrap:anywhere}
 .lk-t td.lk-sub{color:var(--lk-a);font-size:var(--fl,13px);font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}
 .sp-self .sp-head{display:none}
 .sp-cl{display:flex;flex-direction:column}.sp-p{padding:6px 2px;border-bottom:1px solid var(--lk-l);font-size:var(--fb,15px);line-height:1.4;color:var(--mute)}.sp-p b{color:var(--ink);font-weight:600}
