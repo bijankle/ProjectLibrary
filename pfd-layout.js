@@ -136,8 +136,8 @@ window.PFDLayout = (() => {
   // a dot at the equipment. Each side is ordered top to bottom so the leaders don't cross; a side too tall for the
   // screen spreads over more columns, outward.
   function stackOut(){
-    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, BOT = 34 + ROWH, GAP = 2, CG = 8;
-    const tl = $("loTL"), TOP = (tl ? Math.max(58, tl.querySelector(".lo-pans").getBoundingClientRect().bottom - box.top + 8) : 58) + ROWH;   // below the menus and the zone codes
+    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, GAP = 2, CG = 8, zl = planAreas().lines, BOT = 34 + ROWH * zl[1];
+    const tl = $("loTL"), TOP = (tl ? Math.max(58, tl.querySelector(".lo-pans").getBoundingClientRect().bottom - box.top + 8) : 58) + ROWH * zl[0];   // below the menus and the zone codes (one or more lines)
     const items = [];
     Object.values(N).forEach(o => { if (!o.el) return; o.el.classList.remove("dc"); if (o.el.classList.contains("lift")) return; setOff(o, 0, 0);
       if (getComputedStyle(o.el).display === "none") return; const r = o.el.getBoundingClientRect(); if (!r.width) return;
@@ -289,19 +289,30 @@ window.PFDLayout = (() => {
   // an area's zones flash a few times (picked from WBS filters or tapped on the map); they show while flashing at any zoom
   function flash(code){ areas.filter(a => a.code === code).forEach(a => { const p = a.poly._path; if (!p) return;
     p.classList.remove("pick"); void p.getBoundingClientRect(); p.classList.add("pick"); setTimeout(() => p.classList.remove("pick"), 2600); }); }
-  function stackAreas(){
-    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height;
-    const tl = $("loTL"), top = (tl ? tl.querySelector(".lo-pans").getBoundingClientRect().bottom - box.top : 50) + ROWH / 2 + 4, bot = H - ROWH / 2 - 6;
-    const rows = [[], []];
-    areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span"); sp.classList.remove("off");
-      const p = map.latLngToContainerPoint(a.lab.getLatLng()); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40){ sp.classList.add("off"); return; }
+  // the codes in view, split into the top and bottom rows; a row too wide for the screen (a phone) wraps onto more lines,
+  // every other code on the next line so each line still spans the plant and the leaders stay short
+  function planAreas(){
+    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, G = 8, rows = [[], []];
+    areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span");
+      const p = map.latLngToContainerPoint(a.lab.getLatLng()); if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) return;
       rows[p.y < H / 2 ? 0 : 1].push({ a, e, sp, p, w: sp.offsetWidth }); });
-    rows.forEach((row, ri) => { row.sort((x, y) => x.p.x - y.p.x); const G = 8; let cur = 12;
-      row.forEach(r => { r.x = Math.max(r.p.x - r.w / 2, cur); cur = r.x + r.w + G; });
-      const over = cur - G - (W - 12); if (over > 0) for (let i = row.length - 1, lim = W - 12; i >= 0; i--){ const r = row[i]; r.x = Math.min(r.x, lim - r.w); lim = r.x - G; }
-      row.forEach(r => { const tx = r.x + r.w / 2, ty = ri ? bot : top, dx = tx - r.p.x, dy = ty - r.p.y;
-        r.sp.style.setProperty("--dx", dx + "px"); r.sp.style.setProperty("--dy", dy + "px");
-        const ld = r.e.querySelector(".la-ld"); ld.style.display = "block"; ld.style.width = Math.hypot(dx, dy) + "px"; ld.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`; }); });
+    const lines = rows.map(row => { row.sort((x, y) => x.p.x - y.p.x);
+      const nl = Math.max(1, Math.ceil((row.reduce((t, r) => t + r.w + G, 0) - G) / (W - 24)));
+      row.forEach((r, k) => r.ln = k % nl); return nl; });
+    return { W, H, G, rows, lines };
+  }
+  function stackAreas(){
+    const { W, H, G, rows } = planAreas();
+    const tl = $("loTL"), top = (tl ? tl.querySelector(".lo-pans").getBoundingClientRect().bottom - $("mapView").getBoundingClientRect().top : 50) + ROWH / 2 + 4, bot = H - ROWH / 2 - 6;
+    areas.forEach(a => { const e = a.lab.getElement(); if (e) e.querySelector("span").classList.add("off"); });
+    rows.forEach((row, ri) => { const nl = Math.max(0, ...row.map(r => r.ln)) + 1;
+      for (let ln = 0; ln < nl; ln++){ const line = row.filter(r => r.ln === ln); let cur = 12;
+        line.forEach(r => { r.sp.classList.remove("off"); r.x = Math.max(r.p.x - r.w / 2, cur); cur = r.x + r.w + G; });
+        const over = cur - G - (W - 12); if (over > 0) for (let i = line.length - 1, lim = W - 12; i >= 0; i--){ const r = line[i]; r.x = Math.min(r.x, lim - r.w); lim = r.x - G; }
+        // the first line sits at the edge of the map, further lines step in towards the plant
+        line.forEach(r => { const tx = r.x + r.w / 2, ty = ri ? bot - ln * ROWH : top + ln * ROWH, dx = tx - r.p.x, dy = ty - r.p.y;
+          r.sp.style.setProperty("--dx", dx + "px"); r.sp.style.setProperty("--dy", dy + "px");
+          const ld = r.e.querySelector(".la-ld"); ld.style.display = "block"; ld.style.width = Math.hypot(dx, dy) + "px"; ld.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`; }); } });
   }
   function drawNode(nd){
     const id = nd.id; if (!LAYOUT.nodes[id]) return;
