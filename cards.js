@@ -5,21 +5,21 @@
 // and Stage 2 (2000-F00-REP-PR-10002).
 
 const TOPICS = {
-  big: {name: "Big Picture", icon: "🧭", blurb: "Why the flowsheet looks the way it does"},
-  codes: {name: "Area Codes", icon: "🔢", blurb: "F12, F16, F21... what people mean"},
-  tags: {name: "Reading Tags", icon: "🏷️", blurb: "Equipment, motor, cable and instrument tags"},
-  acro: {name: "Acronyms & Slang", icon: "💬", blurb: "The words you hear on the radio"},
-  crush: {name: "Crushing", icon: "🪨", blurb: "ROM pad to coarse ore stockpile"},
-  mill: {name: "Milling & Classification", icon: "⚙️", blurb: "SAG, ball mill, pebbles, cyclones"},
-  grav: {name: "Gravity & ILR", icon: "✨", blurb: "Knelsons, intensive leach, gravity EW"},
-  flot: {name: "Flotation", icon: "🫧", blurb: "Roughers, scavengers, Jamesons"},
-  conc: {name: "Concentrate & UFG", icon: "🔬", blurb: "Thickening, IsaMills, CIL2/3"},
-  cil4: {name: "Tails Leach (CIL4)", icon: "🛢️", blurb: "Flotation tails thickener and CIL4"},
-  elu: {name: "Elution, Regen & Goldroom", icon: "🔥", blurb: "Stripping carbon and pouring doré"},
-  util: {name: "Water, Air & Reagents", icon: "💧", blurb: "Services that keep it all running"},
-  nums: {name: "Key Numbers", icon: "📊", blurb: "Throughput, grades, recoveries"},
-  ctrl: {name: "Controls & DCS", icon: "🎛️", blurb: "Modes, interlocks, loops and trips"},
-  hand: {name: "Shift Handover Scenarios", icon: "📻", blurb: "What does that report actually mean?"},
+  big: {name: "Big Picture", blurb: "Why the flowsheet looks the way it does"},
+  codes: {name: "Area Codes", blurb: "F12, F16, F21... what people mean"},
+  tags: {name: "Reading Tags", blurb: "Equipment, motor, cable and instrument tags"},
+  acro: {name: "Acronyms & Slang", blurb: "The words you hear on the radio"},
+  crush: {name: "Crushing", blurb: "ROM pad to coarse ore stockpile"},
+  mill: {name: "Milling & Classification", blurb: "SAG, ball mill, pebbles, cyclones"},
+  grav: {name: "Gravity & ILR", blurb: "Knelsons, intensive leach, gravity EW"},
+  flot: {name: "Flotation", blurb: "Roughers, scavengers, Jamesons"},
+  conc: {name: "Concentrate & UFG", blurb: "Thickening, IsaMills, CIL2/3"},
+  cil4: {name: "Tails Leach (CIL4)", blurb: "Flotation tails thickener and CIL4"},
+  elu: {name: "Elution, Regen & Goldroom", blurb: "Stripping carbon and pouring doré"},
+  util: {name: "Water, Air & Reagents", blurb: "Services that keep it all running"},
+  nums: {name: "Key Numbers", blurb: "Throughput, grades, recoveries"},
+  ctrl: {name: "Controls & DCS", blurb: "Modes, interlocks, loops and trips"},
+  hand: {name: "Shift Handover Scenarios", blurb: "What does that report actually mean?"},
 };
 
 const CARDS = [

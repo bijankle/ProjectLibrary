@@ -11,7 +11,7 @@
   // Things that look like a plant code inside any text
   const TAG_RE = /\b(2000-[A-Z0-9]{3,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}|\d{2}-\d{4}-[A-Z0-9]{1,6}-[A-Z0-9]{2,6}-\d{2,4}(?:-[A-Z]{1,3})?|F\d{2}-[A-Z]{1,4}-\d{2,4}[A-Z]?|F\d{2}-\d{5}|SP-[A-Z]{2}-\d{3}|[A-Z]{1,5} ?\d{5}[A-Z]?)\b/g;
   const TYPE_ORDER = ["pfd", "mel", "ins", "cv", "mv", "line", "spec", "spi", "hose", "gloss", "pid"];
-  const ICON = { mel: "⚙️", ins: "📟", cv: "🎚️", mv: "🔧", line: "〰️", spi: "🔩", hose: "🪢", pfd: "🗺️", gloss: "📖", pid: "📐", spec: "📘" };
+  const ICON = {};   // no pictures: each list is named in words (the type line, the pills)
 
   L.addExtra = list => { extras = extras.concat(list); if (DB) indexExtras(list); };
   function indexExtras(list){ list.forEach(x => { x.k = norm(x.key); x.txt = (x.key + " " + x.name + " " + (x.words || "")).toLowerCase(); items.push(x); addKey(x.k, x); }); }
@@ -20,7 +20,7 @@
   let dtLoad = null;
   L.load = () => loading || (dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => { DB = d; build();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
-    // drawings in the app (small index, waited for so records can show their 📐 open buttons straight away);
+    // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
     return (window.Pid ? Pid.load().then(() => Pid.all().forEach(d => { const k = norm(d.number); if (byKey.has(k)) return;
       const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => dtLoad).then(() => { done = true; return L; }); }));
@@ -68,14 +68,15 @@
   L.count = q => { const nq = norm(q); return nq.length < 2 ? 0 : L.search(q, 100000).length; };
 
   // ---------- rendering ----------
+  // a drawing in the app: its number links straight to the drawing; any other known code links to its page
   const linkify = v => esc(v).replace(TAG_RE, m => { const k = norm(m);
-    const open = /-(PID|PFD)-/.test(m) && window.Pid && Pid.has(m) ? ` <a class="lk-dwgb" data-dwg="${m}" href="#" title="Open this drawing">📐 open</a>` : "";
-    return (byKey.has(k) ? `<a class="lk-a" data-k="${k}">${m}</a>` : m) + open; });
+    if (/-(PID|PFD)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${m}</a>`;
+    return byKey.has(k) ? `<a class="lk-a" data-k="${k}">${m}</a>` : m; });
   L.resultsHTML = (hits, q) => {
     if (!hits.length) return `<div class="lk-empty">No match for “${esc(q)}”. Try fewer characters, e.g. the number only.</div>`;
     // one line per result: icon, code, description (the pill shows the list it comes from)
     const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
-    return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><span class="lk-ic1">${ICON[it.t] || "•"}</span><b>${esc(it.key)}</b><span>${esc(L.listName(it))}</span></button>`).join("");
+    return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><b>${esc(it.key)}</b><span>${esc(L.listName(it))}</span></button>`).join("");
   };
   const PILLN = { mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
   const KEYF = {
@@ -158,12 +159,12 @@
   L.listName = it => it.t === "line" ? L.lineText(it) : headName(it);
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
-    let h = `<div class="lk-kind">${ICON[it.t] || ""} ${esc(typeName(it.t))}</div>` +
+    let h = `<div class="lk-kind">${esc(typeName(it.t))}</div>` +
       (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + (it.r || it.t === "spec" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`);   // records: the table says it (no summary line)
-    if (dwg) h += `<div class="lk-dwgnote">${esc([dwg.title, dwg.rev && "Rev " + dwg.rev, dwg.status, dwg.pages > 1 && dwg.pages + " sheets"].filter(Boolean).join(" · "))}${dwg.inferred ? " · number read from the sheet order" : ""}. Tap the number to open the drawing${opts.find ? `; ${esc(opts.find)} is marked on it` : ""}.</div>`;
+    if (dwg) h += `<div class="lk-dwgnote">${esc([dwg.title, dwg.rev && "Rev " + dwg.rev, dwg.status, dwg.pages > 1 && dwg.pages + " sheets"].filter(Boolean).join(" · "))}${dwg.inferred ? " · number read from the sheet order" : ""}${opts.find ? `. ${esc(opts.find)} is marked on it` : ""}.</div>`;
     else if (it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
     const pfd = opts.pfd && opts.pfd(it);
-    if (pfd) h += `<button class="lk-btn" data-pfd="1">🗺️ ${esc(pfd.label)}</button>`;
+    if (pfd) h += `<button class="lk-btn" data-pfd="1">${esc(pfd.label)}</button>`;
     if (it.t === "pfd" || it.t === "gloss"){ h += it.html || `<p>${esc(it.text || "")}</p>`; }
     // the rest sits under pill filters: Details, Pipe spec, All fields, Also in, then one pill per list that refers to it
     const secs = [];
@@ -191,7 +192,7 @@
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
       if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
     }
-    if (others.length) secs.push({ id: "also", label: "Also in", n: others.length, html: others.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${ICON[x.t] || ""} ${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("") });
+    if (others.length) secs.push({ id: "also", label: "Also in", n: others.length, html: others.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("") });
     // related items: one pill per list that refers to this tag (or its twin entries)
     const rf = [...new Set([it, ...twins].flatMap(y => refs.get(y.k) || []))].filter(x => x !== it && !twins.includes(x));
     if (rf.length){
@@ -289,7 +290,7 @@
   L.mount = (root, opts = {}) => {
     root.classList.add("lk");
     root.innerHTML = `<form class="lk-bar" role="search" autocomplete="off" onsubmit="return false"><input class="lk-in" type="search" name="kcgm-tag-search" id="kcgm-tag-search-${Math.random().toString(36).slice(2, 7)}" inputmode="search" enterkeyhint="search" placeholder="${esc(opts.placeholder || "Any tag, line, valve or word")}" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" aria-label="Search tags, lines, valves" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other">
-      <button class="lk-cam" type="button" title="Read a tag from a photo">📷</button><input type="file" accept="image/*" capture="environment" hidden></form>
+      <button class="lk-cam" type="button" title="Read a tag from a photo" aria-label="Read a tag from a photo"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></svg></button><input type="file" accept="image/*" capture="environment" hidden></form>
       <div class="lk-status"></div><div class="lk-body"></div>`;
     const inp = root.querySelector(".lk-in"), cam = root.querySelector(".lk-cam"), file = root.querySelector("input[type=file]"), body = root.querySelector(".lk-body"), stat = root.querySelector(".lk-status");
     const stack = []; let hits = [], showingRecent = false;
@@ -302,8 +303,8 @@
     const showRecent = () => {
       const r = recents(); status(""); showingRecent = true;
       body.innerHTML = `<div class="lk-rh"><span>Recent searches</span>${r.length ? '<button type="button" class="lk-clr">Clear</button>' : ""}</div>` +
-        (r.length ? r.map((x, i) => x.q ? `<button type="button" class="lk-hit lk-rec" data-r="${i}"><span class="lk-ic">🔍</span><span class="lk-hb"><b>${esc(x.q)}</b><em>search</em></span></button>`
-          : `<button type="button" class="lk-hit lk-rec" data-r="${i}"><span class="lk-ic">🕘</span><span class="lk-hb"><b>${esc(x.key)}</b><span>${esc(x.name)}</span><em>${esc(DB ? typeName(x.t) : "")}</em></span></button>`).join("")
+        (r.length ? r.map((x, i) => x.q ? `<button type="button" class="lk-hit lk-rec" data-r="${i}"><span class="lk-hb"><b>${esc(x.q)}</b><em>search</em></span></button>`
+          : `<button type="button" class="lk-hit lk-rec" data-r="${i}"><span class="lk-hb"><b>${esc(x.key)}</b><span>${esc(x.name)}</span><em>${esc(DB ? typeName(x.t) : "")}</em></span></button>`).join("")
           : `<div class="lk-empty">Nothing yet. Type any part of a tag, line, valve or plain words; items you open show up here.</div>`);
       body.querySelectorAll(".lk-rec").forEach(b => b.onclick = () => { const x = r[+b.dataset.r];
         if (x.q){ inp.value = x.q; rememberQ(x.q); ensure().then(() => showList(x.q)); return; }
@@ -366,8 +367,8 @@
         const ed = body.querySelector(".lk-ocr"); if (ed) body.querySelector(".lk-ocrgo").onclick = () => { inp.value = ed.value.trim(); showList(inp.value); };
       }).catch(e => status("Photo reading failed: " + esc(e.message || e)));
     };
-    const scanHTML = res => `<div class="lk-kind">📷 Read from photo</div>` +
-      (res.found.length ? `<h4 class="lk-h">Codes found in the lists</h4>` + res.found.map(c => `<button class="lk-hit" data-q="${esc(c.q)}"><span class="lk-ic">${ICON[c.it.t] || "•"}</span><span class="lk-hb"><b>${esc(c.it.key)}</b><span>${esc(c.it.name)}</span><em>read as “${esc(c.raw)}”</em></span></button>`).join("")
+    const scanHTML = res => `<div class="lk-kind">Read from photo</div>` +
+      (res.found.length ? `<h4 class="lk-h">Codes found in the lists</h4>` + res.found.map(c => `<button class="lk-hit" data-q="${esc(c.q)}"><span class="lk-hb"><b>${esc(c.it.key)}</b><span>${esc(c.it.name)}</span><em>read as “${esc(c.raw)}”</em></span></button>`).join("")
         : `<div class="lk-empty">No list code recognised. Edit the text below and search, or retake the photo closer and straight on.</div>`) +
       `<h4 class="lk-h">Text read</h4><textarea class="lk-ocr" rows="4">${esc(res.text)}</textarea><button class="lk-btn lk-ocrgo">Search this text</button>`;
     inp.value = opts.initial || ""; if (opts.initial) ensure().then(() => showList(inp.value)); else body.innerHTML = opts.intro || "";
@@ -417,7 +418,7 @@
   const css = `.lk{--lk-c:var(--card,var(--panel2));--lk-a:var(--gold,var(--accent));--lk-l:var(--line)}
 .lk-bar{display:flex;gap:8px}.lk-in{flex:1;min-width:0;padding:12px 13px;border-radius:12px;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);font-size:16px;font-family:ui-monospace,Consolas,monospace}
 @media (min-width:901px) and (hover:hover){.lk-cam{display:none !important}}   /* no camera on a desktop */
-.lk-cam{flex:none;width:48px;border-radius:12px;border:1px solid var(--lk-l);background:var(--lk-c);font-size:21px;cursor:pointer}
+.lk-cam{display:flex;align-items:center;justify-content:center;color:var(--ink);flex:none;width:48px;border-radius:12px;border:1px solid var(--lk-l);background:var(--lk-c);font-size:21px;cursor:pointer}
 .lk-status{font-size:13px;color:var(--mute);min-height:18px;margin:6px 2px}
 .lk-hit{display:flex;gap:10px;width:100%;text-align:left;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:12px;padding:10px 11px;margin-bottom:7px;cursor:pointer;font:inherit}
 .lk-hit:hover{border-color:var(--lk-a)}

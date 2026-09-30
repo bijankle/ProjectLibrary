@@ -200,7 +200,7 @@ body.searching #homeMain{display:none}
 
 <!-- QUIZ -->
 <section id="quiz" class="screen"><div class="page">
-  <div class="titlerow"><h1>KCGM <span>Quiz</span></h1><button class="qfbtn" id="qfBtn" aria-expanded="false">⚙ Filters</button></div>
+  <div class="titlerow"><h1>KCGM <span>Quiz</span></h1><button class="qfbtn" id="qfBtn" aria-expanded="false">Filters</button></div>
   <p class="sub">A question fills the screen. Swipe to see the answer. Swipe again: right if you knew it, left to see it again.</p>
   <button class="qstart" id="startBtn"><b>▶ New deck</b><span id="qSum"></span></button>
   <div class="stats" id="stats"></div>
@@ -231,7 +231,7 @@ body.searching #homeMain{display:none}
     <button class="x" id="quitBtn" aria-label="Finish">✕</button>
     <div class="prog"><i id="progBar"></i></div>
     <div class="count" id="count"></div>
-    <button class="x" id="deckSet" aria-label="Quiz settings" title="Deck, length, topics and progress">⚙</button>
+    <button class="x" id="deckSet" aria-label="Quiz settings" title="Deck, length, topics and progress">Filters</button>
   </div>
   <div class="stage" id="stage"></div>
   <div class="legend" id="legend"><span class="l">→ swipe right: back</span><span class="r">swipe left or tap: next ←</span></div>
@@ -264,7 +264,7 @@ body.searching #homeMain{display:none}
     <button class="x" id="setBack" aria-label="Back">←</button>
     <h1 style="margin:0;font-size:22px">Settings</h1>
   </div>
-  <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">⛶ Full screen</button>
+  <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">Full screen</button>
   <h2>Theme</h2>
   <div id="thRoot"></div>
   <h2>App size</h2>
@@ -349,7 +349,7 @@ body.searching #homeMain{display:none}
     Object.entries(TOPICS).forEach(([k, t]) => {
       const d = document.createElement("div");
       d.className = "topic" + (sel.has(k) ? " sel" : "");
-      d.innerHTML = `<div class="ic">${t.icon}</div><div class="nm">${t.name}</div><div class="bl">${t.blurb}</div><div class="pc">${topicInfo(k)}</div>`;
+      d.innerHTML = `<div class="nm">${t.name}</div><div class="bl">${t.blurb}</div><div class="pc">${topicInfo(k)}</div>`;
       d.onclick = () => { sel.has(k) ? sel.delete(k) : sel.add(k); store.set("kcgm_topics", [...sel]); renderHome(); };
       tp.appendChild(d);
     });
@@ -421,7 +421,7 @@ body.searching #homeMain{display:none}
             <button type="button" class="again-t" aria-pressed="false">↻ Revisit this one</button><div class="qa"></div></div>
         </div>
       </div>`;
-    el.querySelectorAll(".chip").forEach(x => x.textContent = tp.icon + "  " + tp.name);
+    el.querySelectorAll(".chip").forEach(x => x.textContent = tp.name);
     el.querySelector(".qtext").textContent = c.q;
     el.querySelector(".qmini").textContent = c.q;
     el.querySelector(".atext").textContent = c.a;
@@ -580,7 +580,7 @@ body.searching #homeMain{display:none}
   }
   // ---------- LOOKUP ----------
   let lk = null;
-  const LK_INTRO_UNUSED = `<div class="lk-empty">Type any part of a code, e.g. <b>13-PP-401</b>, <b>FCV16011</b>, <b>0716</b>, <b>SP-HS-001</b>, a P&amp;ID number, or words like <b>cyclone feed pump</b>. Spaces and hyphens don't matter. Tap 📷 to read a tag from a photo.<br><br>Covers the MEL, instrument list, control valve list, manual valve list, line list, SPI list, slurry hose lists and the glossary.</div>`;
+  const LK_INTRO_UNUSED = `<div class="lk-empty">Type any part of a code, e.g. <b>13-PP-401</b>, <b>FCV16011</b>, <b>0716</b>, <b>SP-HS-001</b>, a P&amp;ID number, or words like <b>cyclone feed pump</b>. Spaces and hyphens don't matter. The camera button reads a tag from a photo.<br><br>Covers the MEL, instrument list, control valve list, manual valve list, line list, SPI list, slurry hose lists and the glossary.</div>`;
   // Search lives in the top bar: type straight in, results replace the home content until the bar is cleared
   Lookup.addExtra(GLOSSARY.map(([k, v]) => ({ t: "gloss", key: k, name: v, text: v })));
   lk = Lookup.mount($("lkRoot"), { placeholder: "Search tags, lines, valves…", intro: "", scrollTop: () => window.scrollTo(0, 0),
@@ -628,7 +628,7 @@ body.searching #homeMain{display:none}
     const list = $("histList"); list.innerHTML = all.length ? "" : '<p class="sub">No follow up questions yet. Ask one on the answer side of any card.</p>';
     all.forEach(th => {
       const d = document.createElement("div"); d.className = "hist";
-      const q = document.createElement("div"); q.className = "hq"; q.textContent = (TOPICS[th.t] ? TOPICS[th.t].icon + " " : "") + th.q; d.appendChild(q);
+      const q = document.createElement("div"); q.className = "hq"; q.textContent = th.q; d.appendChild(q);
       th.turns.forEach(t => {
         const me = document.createElement("div"); me.className = "bub me"; me.textContent = t.q; d.appendChild(me);
         const ai = document.createElement("div"); ai.className = "bub ai"; ai.textContent = t.a; d.appendChild(ai);

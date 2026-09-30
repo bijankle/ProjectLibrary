@@ -57,7 +57,7 @@ window.Offline = (() => {
         const need = g.files.filter(f => st[f] !== "ok"), left = need.reduce((t, f) => t + (M.sz[f] || 0), 0), full = !need.length;
         r.classList.toggle("have", full); r.classList.toggle("part", !full && (ok + old) > 0);
         r.querySelector(".off-st").textContent = full ? "✓ on this device, up to date" : old ? `${old} updated file${old > 1 ? "s" : ""}: ${mb(left)} to download` : ok ? `${ok} of ${g.files.length} saved: ${mb(left)} to go` : "";
-        const b = r.querySelector(".off-b"); b.textContent = full ? "Remove" : old ? "⟳ Update" : ok ? "⬇ Finish" : "⬇ Download"; b.disabled = busy; b.dataset.act = full ? "rm" : "get";
+        const b = r.querySelector(".off-b"); b.textContent = full ? "Remove" : old ? "Update" : ok ? "Finish" : "Download"; b.disabled = busy; b.dataset.act = full ? "rm" : "get";
       }
       if (navigator.storage && navigator.storage.estimate){ const e = await navigator.storage.estimate();
         const kept = navigator.storage.persisted ? await navigator.storage.persisted().catch(() => false) : false;

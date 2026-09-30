@@ -43,21 +43,21 @@ window.PFDLayout = (() => {
     map.on("zoomend", () => { zoomCls(); redrawStreamsOf(null); }); zoomCls(); map.on("moveend", () => setTimeout(() => { declutter(); declutterAreas(); }, 0));
     map.on("click", () => { if (moving || Date.now() - dropped < 400) return; api.clearSel(true); api.closeInfo(); });
     // corner controls: imagery, dim, home, export
-    // top left: ⌂ Plant and the WBS filters, Flow filters and Map options menus (folded until tapped)
+    // top left: Plant and the WBS filters, Flow filters and Map options menus (folded until tapped)
     const tl = L.DomUtil.create("div", "lo-tl"); tl.id = "loTL"; $("mapView").appendChild(tl); L.DomEvent.disableClickPropagation(tl); L.DomEvent.disableScrollPropagation(tl);
-    // one row: ⌂ Plant, then three folded menus: WBS filters (added by wbsPanel), Flow filters, Map options
+    // one row: Plant, then three folded menus: WBS filters (added by wbsPanel), Flow filters, Map options
     const pans = L.DomUtil.create("div", "lo-pans", tl);
-    pans.innerHTML = `<button class="lo-b lo-home" id="loHome" title="Back to the processing plant">⌂ Plant</button>`;
+    pans.innerHTML = `<button class="lo-b lo-home" id="loHome" title="Back to the processing plant">Plant</button>`;
     const menu = (id, cls, title, body) => { const m = L.DomUtil.create("div", "lo-pan shut " + cls, pans); m.id = id;
       m.innerHTML = `<button class="lo-wh" type="button">${title}<span>▾</span></button><div class="lo-fb">${body}</div>`;
       m.querySelector(".lo-wh").onclick = () => { m.classList.toggle("shut"); dispatchEvent(new Event("resize")); }; return m; };
     menu("loFF", "lo-ff", "Flow filters", "");
     const mo = menu("loMO", "lo-mo", "Map options",
       `<div class="lo-seg">${[["sat", "Satellite"], ["hyb", "Hybrid"], ["esri", "Esri"]].map(([k, t]) => `<button data-b="${k}">${t}</button>`).join("")}</div>
-       <button class="lo-b" id="loDim" title="Dim the photo so the overlay reads better">◐ Dim</button>
+       <button class="lo-b" id="loDim" title="Dim the photo so the overlay reads better">Dim</button>
        <button class="lo-b" id="loFlows" title="The PFD streams drawn on the plant (a flow picked in the list always shows)"></button>
        <button class="lo-b" id="loMinor" title="Items not on the layout drawings, placed beside the equipment they work with (dashed boxes)"></button>
-       <button class="lo-b" id="loExp" title="Download the positions moved on this device, to send in">⬇ Moves</button>
+       <button class="lo-b" id="loExp" title="Download the positions moved on this device, to send in">Moves</button>
        <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-20001" title="Fimiston process plant overall plant layout (old plant)">Open old layout<small>2000-F00-DRG-GE-20001</small></button>
        <button class="lo-b lo-dwg" data-dwg="2000-F00-DRG-GE-10100" title="General Fimiston site general arrangement (new plant)">Open new layout<small>2000-F00-DRG-GE-10100</small></button>`);
     const bar = mo;
@@ -192,7 +192,7 @@ window.PFDLayout = (() => {
     const m = N[nd.id].mel, big = !!LAYOUT.nodes[nd.id].sh;
     const why = !m.rows.length ? "No MEL entry" : "Not in MEL: " + m.missing.join(", ");
     return `<div class="lo-box${big ? " big" : ""}${LAYOUT.nodes[nd.id].est ? " est" : ""}${m.gap ? " gap" : ""}" title="${esc(m.gap ? why : "")}">` +
-      `<b>${two(m.desc)}</b>${m.gap ? `<em>⚠ ${esc(why)}</em>` : ""}</div><i class="lo-lead"></i><s class="lo-dot"></s>`;   // the concise name only: tap for tags and MEL rows
+      `<b>${two(m.desc)}</b>${m.gap ? `<em>${esc(why)}</em>` : ""}</div><i class="lo-lead"></i><s class="lo-dot"></s>`;   // the concise name only: tap for tags and MEL rows
   }
   // Zoomed far out the boxes can't be read: the map shows WBS areas instead, a soft zone round each area's equipment
   // (the area is the WBS code most of an item's MEL tags start with) labelled "F12 (Primary crushing)". Items of one
@@ -310,7 +310,7 @@ window.PFDLayout = (() => {
         st = null; moving = null; dropped = Date.now(); o.el.classList.remove("lift"); $("mapView").classList.remove("moving");
         map.dragging.enable(); if (map.touchZoom) map.touchZoom.enable();
         if (!keep){ if (LAYOUT.nodes[id].ll[0] === start[0] && LAYOUT.nodes[id].ll[1] === start[1]) delete saved[id]; else saved[id] = start; o.lay.setLatLng(start); redrawStreamsOf(id); }
-        else api.toast("Position saved on this device. Use ⬇ Moves to send it in.");
+        else api.toast("Position saved on this device. Use Map options → Moves to send it in.");
         save(); sync(false); expLabel(); drawAreas(); if (api.infoOpen()) api.refreshPanel(); };
       const up = () => end(true), cancelEv = () => end(false);
       moving = { id, cancel: () => end(false) };
@@ -416,13 +416,13 @@ window.PFDLayout = (() => {
   function panelHtml(n){
     if (!on || !LAYOUT.nodes[n.id]) return "";
     const est = LAYOUT.nodes[n.id].est, mine = !!saved[n.id], m = N[n.id] && N[n.id].mel;
-    return `<div class="lo-mv"><span>✥ To move it: press and hold its box on the map for half a second, then drag. ${mine ? "Position moved on this device." : est ? "Position estimated: not identified on the layout drawings. Please move it if you know where it is." : "Placed from the layout drawings (about ±5 m)."}</span>${mine ? `<button class="hbtn" id="loReset">↺ Reset position</button>` : ""}</div>` +
-      (m && m.gap ? `<div class="lo-gap">⚠ ${!m.rows.length ? "This block has no matching MEL entry." : "Tag" + (m.missing.length > 1 ? "s" : "") + " with no MEL row: " + esc(m.missing.join(", ")) + "."}</div>` : "");
+    return `<div class="lo-mv"><span>To move it: press and hold its box on the map for half a second, then drag. ${mine ? "Position moved on this device." : est ? "Position estimated: not identified on the layout drawings. Please move it if you know where it is." : "Placed from the layout drawings (about ±5 m)."}</span>${mine ? `<button class="hbtn" id="loReset">↺ Reset position</button>` : ""}</div>` +
+      (m && m.gap ? `<div class="lo-gap">${!m.rows.length ? "This block has no matching MEL entry." : "Tag" + (m.missing.length > 1 ? "s" : "") + " with no MEL row: " + esc(m.missing.join(", ")) + "."}</div>` : "");
   }
   function bindPanel(n){
     const r = $("loReset"); if (r) r.onclick = () => { delete saved[n.id]; save(); redrawNode(n.id); redrawStreamsOf(n.id); sync(false); expLabel(); api.refreshPanel(); };
   }
-  function expLabel(){ const n = Object.keys(saved).length, b = $("loExp"); if (b){ b.textContent = `⬇ Moves (${n})`; b.disabled = !n; } }
+  function expLabel(){ const n = Object.keys(saved).length, b = $("loExp"); if (b){ b.textContent = `Moves (${n})`; b.disabled = !n; } }
   function exportMoves(){
     const out = { exported: new Date().toISOString(), note: "Smart PFD layout positions moved on this device ([lat, lng]). Send to be built into tools/build_layout.py.", moves: {} };
     Object.entries(saved).forEach(([id, p]) => { const n = api.byId[id]; out.moves[id] = { ll: p, name: n ? n.n : id, tag: n ? n.tag : "" }; });

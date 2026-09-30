@@ -6,8 +6,8 @@
 // File: Settings (theme, app size, offline downloads, AI key), Checks, Sources.
 // Help: a search over everything app wide (settings, features, how-to notes), How to use, Update app, About.
 window.Tabs = (() => {
-  const TABS = [["assets", "🔎", "Assets", "index.html?cards#assets"], ["pfd", "〰️", "PFD", "pfd.html#pfd"],
-    ["layout", "🗺️", "Layout", "pfd.html#layout"], ["quiz", "🃏", "Quiz", "index.html?cards#quiz"]];
+  const TABS = [["assets", "Assets", "index.html?cards#assets"], ["pfd", "PFD", "pfd.html#pfd"],
+    ["layout", "Layout", "pfd.html#layout"], ["quiz", "Quiz", "index.html?cards#quiz"]];
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const desk = () => matchMedia("(min-width: 901px) and (hover: hover)").matches;
   let el = null, O = {}, openM = null;
@@ -19,16 +19,16 @@ window.Tabs = (() => {
   // ---------- everything the Help search can find: how-to notes and app wide features ----------
   const TOPICS = [
     { t: "Browse the assets", k: "assets filter browse type code area steps any", h: "Pick an asset type on the left, then narrow it by code, area, size and so on; each option shows how many items it leaves. Once every step is set the list shows just those items. Tap × on a step at the top to change it, or Any to skip a step. The filter starts empty each time you open Assets." },
-    { t: "Search any tag", k: "search tag line valve instrument camera photo glossary", h: "Type any part of a tag, line number, valve or word in the search box; spaces, hyphens and slashes don't matter. 📷 reads a tag from a photo. The book button opens the glossary. Recent searches are kept." },
+    { t: "Search any tag", k: "search tag line valve instrument camera photo glossary", h: "Type any part of a tag, line number, valve or word in the search box; spaces, hyphens and slashes don't matter. On the phone the camera button reads a tag from a photo. Help → Glossary lists plant terms. Recent searches are kept." },
     { t: "Asset charts", k: "charts graphs power kw mw donut bars", h: "On a wide desktop screen the charts beside the list follow the Browse filter. Tap a bar to apply it as the next filter step (asset type, code or area) or to open an item (top power users). Installed power leaves decommissioned equipment out." },
-    { t: "P&IDs and PFD sheets", k: "pid drawing ribbon continuation tap back pfd viewer marked", h: "Open a drawing from any item (📐 open or the drawing number). On the sheet, every tag and drawing number shaded gold can be tapped: a drawing opens that sheet with the way back marked in red, a tag opens its Assets page, a bubble shared by several tags offers a choice. ← goes back to the last sheet at the same zoom." },
+    { t: "P&IDs and PFD sheets", k: "pid drawing ribbon continuation tap back pfd viewer marked", h: "Open a drawing by clicking its number on any item. On the sheet, every tag and drawing number shaded gold can be tapped: a drawing opens that sheet with the way back marked in red, a tag opens its Assets page, a bubble shared by several tags offers a choice. ← goes back to the last sheet at the same zoom." },
     { t: "Fluid filters", k: "fluid filter pfd ore flotation water reagent ctrl select pills", h: "Tap a fluid pill to see where it runs; everything else fades. Ctrl+click (⌘+click on a Mac) adds more. On the Layout the same pills are in Flow filters." },
     { t: "Narrative mode", k: "narrative story flows steps prev next play", h: "Narrative mode swaps the fluid pills for the five process stories (ore main line, grinding recycle, flotation, concentrate & gold, carbon). Pick one and step through it with the cards at the top or ◀ ▶. Utilities show only where they join the story's equipment." },
     { t: "Select and zoom on the PFD", k: "pfd select zoom pan click esc clear loops interlocks services", h: "Scroll to zoom, drag to pan. Click anything (equipment, stream, loop, interlock, symbol) to select it: everything else fades and the view zooms to fit. Ctrl+click adds or removes items. Click empty space or press Esc to clear. Control loops shows ISA tag bubbles with dashed signal lines; Interlocks shows red cause → effect lines (I interlock, P permissive). Design values are from the Stage 2 PDC and control philosophies, not live plant data." },
     { t: "Layout zoom", k: "layout map zoom wbs areas stack callout boxes", h: "Zoomed out: WBS area zones. At the plant view: every name lined up in columns left and right with a leader to its dot. Zoomed in: name boxes on the equipment. Tap a zone to fly in." },
-    { t: "Move a Layout box", k: "layout drag move position hold export moves", h: "Press and hold a box for half a second until it lifts, then drag it. A shorter tap only selects it. Moves are kept on this device; Map options → ⬇ Moves downloads them to send in." },
-    { t: "Layout menus", k: "wbs filters flow filters map options satellite dim minor equipment old new layout drawing", h: "Top left of the map: ⌂ Plant, WBS filters (fly to an area), Flow filters (fluids and narrative), Map options (imagery, dim, flow lines, minor equipment, moves, the old and new layout drawings)." },
-    { t: "Quiz", k: "quiz flashcards cards swipe revisit deck", h: "Tap or swipe left to see the answer, then again for the next card; swipe right goes back. ↻ Revisit keeps a card for later. ⚙ on the card sets the filters; ✕ ends the deck." },
+    { t: "Move a Layout box", k: "layout drag move position hold export moves", h: "Press and hold a box for half a second until it lifts, then drag it. A shorter tap only selects it. Moves are kept on this device; Map options → Moves downloads them to send in." },
+    { t: "Layout menus", k: "wbs filters flow filters map options satellite dim minor equipment old new layout drawing", h: "Top left of the map: Plant, WBS filters (fly to an area), Flow filters (fluids and narrative), Map options (imagery, dim, flow lines, minor equipment, moves, the old and new layout drawings)." },
+    { t: "Quiz", k: "quiz flashcards cards swipe revisit deck", h: "Tap or swipe left to see the answer, then again for the next card; swipe right goes back. ↻ Revisit keeps a card for later. Filters on the card sets the deck; ✕ ends the deck." },
     { t: "Offline use", k: "offline download cache no signal documents", h: "The app, lists and search always work offline. Documents are kept once opened; File → Settings → Offline downloads fetches them all ahead of time." }
   ];
   const FEATURES = () => [
@@ -55,9 +55,9 @@ window.Tabs = (() => {
   // ---------- menus ----------
   const item = (id, label, sub) => `<button type="button" class="mn-i" data-a="${id}">${label}${sub ? `<small>${sub}</small>` : ""}</button>`;
   const fileItems = () => item("settings", "Settings…", "Theme, app size, offline downloads, AI key") +
-    `<hr>` + item("checks", "🐞 Checks") + item("sources", "📄 Sources");
+    `<hr>` + item("checks", "Checks") + item("sources", "Sources");
   const helpItems = () => `<div class="mn-s"><input type="search" placeholder="Search the app: settings, features, how to…" aria-label="Search the app"><div class="mn-r"></div></div>` +
-    item("howto", "How to use…") + item("gloss", "📖 Glossary", "Plant terms and abbreviations") + `<hr><button type="button" class="mn-i" data-a="update">⟳ Update app<small class="mn-ver">Checking the version…</small></button>` + item("about", "About this app");
+    item("howto", "How to use…") + item("gloss", "Glossary", "Plant terms and abbreviations") + `<hr><button type="button" class="mn-i" data-a="update">Update app<small class="mn-ver">Checking the version…</small></button>` + item("about", "About this app");
   function drawMenus(){
     if (!el) return;
     const f = el.querySelector(".mn-f .mn-d"); if (f) f.innerHTML = fileItems();
@@ -103,7 +103,7 @@ window.Tabs = (() => {
   function mount(o = {}){
     O = o;
     el = document.createElement("div"); el.className = "tbw";
-    const tabs = TABS.map(([id, ic, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span class="tb-i">${ic}</span><span>${n}</span></a>`).join("");
+    const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
     el.innerHTML = (desk() ? `<nav class="mb" aria-label="Menu"><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` : "") +
       `<nav class="tb" aria-label="App sections">${tabs}${desk() ? "" : `<div class="mn mn-one"><button type="button" class="tb-s mn-b" aria-label="Menu" title="Menu">☰</button><div class="mn-d mn-dr"></div></div>`}</nav>`;
     document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", desk());

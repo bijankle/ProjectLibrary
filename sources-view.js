@@ -17,7 +17,7 @@ window.SourceView = (() => {
     box = document.createElement("div");
     box.className = "sv"; box.hidden = true; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true");
     box.innerHTML = `<div class="sv-top"><div class="sv-t"><b id="svTitle"></b><small id="svHow"></small></div>
-        <a class="btn primary" id="svDl" download>⬇ Excel</a><button class="btn" id="svX" aria-label="Close">✕</button></div>
+        <a class="btn primary" id="svDl" download>Excel</a><button class="btn" id="svX" aria-label="Close">✕</button></div>
       <div class="sv-bar"><select id="svSheet" aria-label="Table"></select>
         <input id="svQ" type="search" placeholder="Filter rows (all words must match)" autocomplete="off" data-lpignore="true" data-1p-ignore="true">
         <span class="count" id="svN"></span></div>
@@ -40,7 +40,7 @@ window.SourceView = (() => {
     cur = { k, d, si: 0, rows: [], q: "", shown: 300 };
     $("svTitle").textContent = title; $("svHow").textContent = d.how;
     $("svDl").href = d.xlsx; $("svDl").download = d.fname; $("svDl").title = `${d.fname} (${mb(d.size)})`;
-    $("svDl").textContent = `⬇ Excel (${mb(d.size)})`;
+    $("svDl").textContent = `Excel (${mb(d.size)})`;
     $("svSheet").innerHTML = d.sheets.map((s, i) => `<option value="${i}">${esc(s.name)}${s.caption ? " · " + esc(s.caption.slice(0, 40)) : ""} (${s.n.toLocaleString()} × ${s.c})${s.hidden ? " · hidden in original" : ""}</option>`).join("");
     $("svQ").value = "";
     box.hidden = false; document.body.style.overflow = "hidden";

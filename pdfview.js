@@ -20,7 +20,7 @@ window.PdfView = (() => {
     el.innerHTML = `<div class="sp-top"><button class="sp-back" data-a="back" title="Back to the last drawing" hidden>←</button><b class="sp-tt"></b><div class="sp-nav sp-pages"><button data-a="prev" title="Previous page">◀</button><span class="sp-pg"></span><button data-a="next" title="Next page">▶</button></div>
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="fit" title="Fit">⤢</button><button data-a="in" title="Zoom in">+</button></div>
-      <button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">⬇ PDF</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
+      <button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
       <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div><div class="sp-refs"></div></div></div><div class="sp-msg"></div>`;
     document.body.appendChild(el);
     V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),

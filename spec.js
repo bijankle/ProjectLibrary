@@ -8,7 +8,7 @@ window.Spec = (() => {
   let IX = null, loading = null;
   const load = () => loading || (loading = fetch("spec/index.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => (IX = d)).catch(e => { loading = null; throw e; }));
   const num = v => { const m = String(v || "").match(/\d+(?:\.\d+)?/); return m ? +m[0] : null; };
-  const pageBtn = (page, label, title) => `<button class="lk-btn sp-open" data-page="${page}" data-title="${esc(title)}">📄 ${esc(label)} <span>page ${page}</span></button>`;
+  const pageBtn = (page, label, title) => `<button class="lk-btn sp-open" data-page="${page}" data-title="${esc(title)}">${esc(label)} <span>page ${page}</span></button>`;
 
   // collapsed section: summary line, content hidden until tapped
   // sections become pill filters (Lookup.pills): one shown at a time
@@ -32,7 +32,7 @@ window.Spec = (() => {
     const fit = size != null ? comps.filter(c => c.lo != null && size >= c.lo && size <= c.hi) : [];
     const dp = (P.design || []).find(r => /pressure/i.test(r[0])), dt = (P.design || []).find(r => /temperature/i.test(r[0]));
     // no summary on top: the datasheet button, then the pills (the class title is the first Class row)
-    const h = pageBtn(P.page, "Open the " + cls + " datasheet", "Piping class " + cls);
+    const h = pageBtn(P.page, cls + " datasheet", "Piping class " + cls);
     const S = [];
     if (size != null)
       S.push(sec("fit", `${unit}${size}`, fit.length, fit.length
@@ -68,7 +68,7 @@ window.Spec = (() => {
     const get = k => ((V.rows || []).find(r => new RegExp("^" + k, "i").test(r[0])) || [])[1];
     let h = "";   // no summary on top: the table below says it all
     if (size != null && V.lo != null && (size < V.lo || size > V.hi)) h += `<div class="sp-warn">DN${esc(size)} is outside this datasheet's size range (${esc(V.u)}${V.lo} to ${V.hi}).</div>`;
-    h += pageBtn(V.page, "Open the " + code + " datasheet", "Valve " + code);
+    h += pageBtn(V.page, code + " datasheet", "Valve " + code);
     // one table, no sub pills: type, materials and ratings first, then the rest of the datasheet, then its notes
     const rows = V.rows || [], body = tbl([...rows.filter(r => KEY_ROWS.test(r[0])), ...rows.filter(r => !KEY_ROWS.test(r[0]))]) +
       (V.notes || []).map(n => `<div class="sp-n"><b>${esc(n[0])}</b> ${esc(n[1])}</div>`).join("");

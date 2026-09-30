@@ -123,7 +123,7 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 .lo-box em{font-style:normal;font-size:9px;font-weight:700;color:#ff8a80;display:none}
 .lo-box.est{border-style:dashed;border-color:#ffb347}
 .lo-box.gap{border-color:#ff5a4f;box-shadow:0 0 0 1px #ff5a4f}
-.lo-box.gap b::after{content:" ⚠";color:#ff8a80}
+
 #mapView.zl2 .lo-box span,#mapView.zl2 .lo-box em{display:block}
 #mapView.stack .lo-lead{background:rgba(245,247,250,.45)}#mapView.stack .lo-box b br{display:none}#mapView.stack .lo-box{padding-top:1px;padding-bottom:1px}
 .lo-lead{position:absolute;left:0;top:0;height:1px;background:rgba(245,247,250,.7);transform-origin:0 0;display:none;pointer-events:none}
@@ -375,19 +375,19 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <header>
   <button class="hbtn m-only" id="menuBtn" aria-label="Menu" title="Menu">☰</button>
   <h1>KCGM <span>Interactive PFD</span></h1>
-  <button class="hbtn" id="setBtn" title="Settings: update the app, offline downloads, checks and sources" aria-label="Settings">⚙</button>
-  <div class="seg" id="viewSeg" title="Schematic PFD or the same items on the real plant layout"><button data-v="pfd" data-l="PFD" class="on">Schematic</button><button data-v="map" data-l="Map">🗺 Layout</button></div>
+  <button class="hbtn" id="setBtn" title="Settings: update the app, offline downloads, checks and sources" aria-label="Settings">Settings</button>
+  <div class="seg" id="viewSeg" title="Schematic PFD or the same items on the real plant layout"><button data-v="pfd" data-l="PFD" class="on">Schematic</button><button data-v="map" data-l="Map">Layout</button></div>
   <div class="seg" id="stageSeg"><button data-s="1">Stage 1</button><button data-s="2" class="on">Stage 2</button></div>
   <select class="hbtn" id="case" title="PDC design case: changes the flow figures on the lines and highlights that column in stream panels"></select>
-  <button class="hbtn" id="tLoops" title="Show ISA control loops (tag bubbles and signal lines)">🎛 Control loops</button>
-  <button class="hbtn" id="tIlk" title="Show interlocks and start permissives">⛔ Interlocks</button>
-  <button class="hbtn" id="tSvc" title="Show water, reagent and air lines">💧 Service lines</button>
-  <button class="hbtn" id="tAnim" title="Animate every stream">➤ Animate all</button>
+  <button class="hbtn" id="tLoops" title="Show ISA control loops (tag bubbles and signal lines)">Control loops</button>
+  <button class="hbtn" id="tIlk" title="Show interlocks and start permissives">Interlocks</button>
+  <button class="hbtn" id="tSvc" title="Show water, reagent and air lines">Service lines</button>
+  <button class="hbtn" id="tAnim" title="Animate every stream">Animate all</button>
   <div class="grow"></div>
-  <input id="search" placeholder="🔎 Search any tag, line, valve…  ( / )" autocomplete="off" spellcheck="false">
-  <button class="hbtn" id="camBtn" title="Read a tag from a photo">📷</button>
+  <input id="search" placeholder="Search any tag, line, valve…  ( / )" autocomplete="off" spellcheck="false">
+  <button class="hbtn" id="camBtn" title="Read a tag from a photo">Photo</button>
   <button class="hbtn" id="tTheme" title="Light / dark">◐</button>
-  <a class="hbtn" href="index.html?cards" title="Open the flashcards">🃏 Flashcards</a>
+  <a class="hbtn" href="index.html?cards" title="Open the flashcards">Flashcards</a>
 </header>
 
 <aside id="side">
@@ -896,7 +896,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   { const bar = $("mleg"), SHORT = { ore: "Ore", flot: "Flotation", conc: "Concentrate", tails: "Tails", leach: "Leach", carbon: "Carbon", gold: "Gold", water: "Water", cnw: "CN water", reag: "Reagent", air: "Air / O₂" };
     const top = document.createElement("div"); top.className = "mrow"; bar.appendChild(top);
     const nar = document.createElement("button"); nar.className = "fp tg nar"; nar.type = "button"; nar.textContent = "▶ Narrative"; nar.onclick = () => $("narBtn").click(); top.appendChild(nar);
-    [["tLoops", "🎛 Loops"], ["tIlk", "⛔ Interlocks"], ["tSvc", "💧 Services"]].forEach(([id, label]) => {
+    [["tLoops", "Loops"], ["tIlk", "Interlocks"], ["tSvc", "Services"]].forEach(([id, label]) => {
       const c = document.createElement("button"); c.className = "fp tg"; c.type = "button"; c.textContent = label; const src = $(id);
       const sync = () => c.classList.toggle("on", src.classList.contains("on")); c.onclick = () => { src.click(); sync(); }; sync(); top.appendChild(c); });
     const fl = document.createElement("div"); fl.className = "mrow mfl"; bar.appendChild(fl);
@@ -912,7 +912,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   $("menuBtn").onclick = () => document.body.classList.toggle("menu");
   $("scrim").onclick = () => document.body.classList.remove("menu");
   $("side").addEventListener("click", e => { if (matchMedia("(max-width: 900px)").matches && e.target.closest(".flow, .lg-item, .lg-li, .step")) setTimeout(() => document.body.classList.remove("menu"), 150); });
-  // ---------- settings (header ⚙ and the sidebar): update, offline downloads, checks, sources, theme ----------
+  // ---------- settings (File → Settings): update, offline downloads, checks, sources, theme ----------
   function showSettings(){
     lastPanel = showSettings; $("iKind").textContent = "Settings"; $("iName").textContent = "App settings"; $("iTag").textContent = "";
     $("iBody").innerHTML = `
@@ -1124,7 +1124,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   // instrument list rows by tag (loop tags plus every instrument pulled in against a PFD block)
   const INS_BY_TAG = Object.assign({}, ...Object.values(EQUIP_DATA).map(d => Object.fromEntries(d.ins.map(i => [i.tag, i]))), INSTR_DATA);
 
-  const melOne = (r, heads) => melTable(r, heads) + `<div class="conn"><a data-find="${esc(r.tag)}">🔎 Everything in the lists that mentions ${esc(r.tag)}</a></div>`;
+  const melOne = (r, heads) => melTable(r, heads) + `<div class="conn"><a data-find="${esc(r.tag)}">Everything in the lists that mentions ${esc(r.tag)}</a></div>`;
   function showNode(n){
     $("iKind").innerHTML = (n.area ? "Equipment · Area " + esc(n.area) : "Equipment") + stageNote(n.st);
     $("iName").textContent = n.n; $("iTag").textContent = n.tag || "";
@@ -1152,7 +1152,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     ];
     // the block's own information stays together in Overview
     if (n.hear) secs[0].html += `<h4>What you'll hear</h4><div>${esc(n.hear)}</div>`;
-    if (dw.size) secs[0].html += `<h4>Drawings</h4><div class="conn">${[...dw].sort().map(d => `<a data-dwg="${esc(d)}">📐 ${esc(d)}</a>`).join("")}</div>`;
+    if (dw.size) secs[0].html += `<h4>Drawings</h4><div class="conn">${[...dw].sort().map(d => `<a data-dwg="${esc(d)}">${esc(d)}</a>`).join("")}</div>`;
     let h = Lookup.pills(secs, "node");
     if (eqTags.length) Lookup.load().then(() => { const el = $("nLines"); if (!el) return; const seen = new Set(), out = [];
       eqTags.forEach(t => Lookup.refs(t).forEach(x => { if (x.t === "line" && !seen.has(x.k)){ seen.add(x.k); out.push(x); } }));
@@ -1441,7 +1441,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     const draw = () => {
       $("iKind").textContent = "Search · plant lists"; $("iName").textContent = "Look up any code"; $("iTag").textContent = "MEL, instruments, valves, lines, SPI, hoses, PFD";
       $("iBody").innerHTML = '<div id="lkPanel"></div>';
-      lkUI = Lookup.mount($("lkPanel"), { pfd: pfdFor, onOpen: it => { const f = !it.go && pfdFor(it); if (f && f.peek) f.peek(); }, initial: q || "", intro: `<div class="lk-empty">Type any part of a code (e.g. <b>13-PP-401</b>, <b>FCV16011</b>, <b>0716</b>, a P&amp;ID number) or words (e.g. <b>cyclone feed pump</b>). Spaces and hyphens don't matter. 📷 reads a tag from a photo.</div>` });
+      lkUI = Lookup.mount($("lkPanel"), { pfd: pfdFor, onOpen: it => { const f = !it.go && pfdFor(it); if (f && f.peek) f.peek(); }, initial: q || "", intro: `<div class="lk-empty">Type any part of a code (e.g. <b>13-PP-401</b>, <b>FCV16011</b>, <b>0716</b>, a P&amp;ID number) or words (e.g. <b>cyclone feed pump</b>). Spaces and hyphens don't matter.</div>` });
       openInfo();
     };
     lastPanel = () => draw(); draw();
