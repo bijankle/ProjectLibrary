@@ -94,8 +94,6 @@
   const PHONE = () => document.documentElement.classList.contains("phone");
   L.pills = (secs, group = "g", mid = "") => {
     secs = secs.filter(x => x && x.html); if (!secs.length) return "";
-    // phone, an item's own sections: stacked sections that fold open (the first one open) instead of pills
-    if (PHONE() && /^item-/.test(group)) return mid + `<div class="acc">` + secs.map((x, i) => `<details class="acc-s"${i ? "" : " open"}><summary><span>${esc(x.label)}</span>${x.n != null ? `<i>${x.n}</i>` : ""}</summary><div class="acc-b">${x.html}</div></details>`).join("") + `</div>`;
     if (secs.length === 1) return mid + secs[0].html;   // one section: no pill bar
     const last = pfLast[group], act = last && !/^(r-|also$)/.test(last) && secs.some(x => x.id === last) ? last : secs[0].id;   // links to other items are not carried over
     return `<div class="pf" data-g="${esc(group)}"><div class="pf-bar">${secs.map(x => `<button type="button" class="pf-b${x.id === act ? " on" : ""}" data-p="${esc(x.id)}">${esc(x.label)}${x.n != null ? ` <i>${x.n}</i>` : ""}</button>`).join("")}</div>` + mid +
@@ -188,6 +186,11 @@
       const NAMEF = { mel: "Equipment name", ins: "Description", cv: "Location", spi: "Description", hose: "Description" };   // the phone's header card names it
       const kept = L.dedupe(rows.filter(r => !inTag(it, r.l) && !(PHONE() && r.l === NAMEF[it.t])), { heads: [it.key, ...twins.map(x => x.key)] });
       docRows(it, kept);
+      // the item's drawings sit above the sections, P&ID first then PFD, each with its title (out of the Details table)
+      const DW = /^(P&IDs?|PFD)$/, dws = kept.filter(r => DW.test(r.l)).sort((a, b) => (a.l === "PFD") - (b.l === "PFD"));
+      if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
+        h += `<div class="lk-dw">` + dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
+          return `<div class="lk-dr"><span>${r.l === "PFD" ? "PFD" : "P&amp;ID"}</span><div>` + (ns.length ? ns.map(n => `<div>${dwgA(n)}${dwgTitle(n) ? ` <i>${esc(dwgTitle(n))}</i>` : ""}</div>`).join("") : r.h) + `</div></div>`; }).join("") + `</div>`; }
       const filled = new Set(rows.map(r => canon(r.l)));
       // a missing line number isn't worth a mention when the item's P&ID is given (the drawing shows the line)
       const onPid = rows.some(r => /P&ID/i.test(r.l) && /PID/.test(r.v));
@@ -507,6 +510,9 @@
 .lk-t{width:100%;border-collapse:collapse;font-size:var(--fb,15px);margin:6px 0}.lk-t td{padding:5px 4px;border-bottom:1px solid var(--lk-l);vertical-align:top;word-break:break-word}.lk-t td:first-child{color:var(--mute);width:13.5em;padding-right:10px;font-size:var(--fb,15px);word-break:normal;overflow-wrap:normal;hyphens:manual}
 .lk-a{color:var(--lk-a);text-decoration:underline;cursor:pointer}.lk-row{display:block;text-decoration:none;color:var(--ink);background:var(--lk-c);border-radius:8px;padding:6px 8px;margin:4px 0;font-size:var(--fb,15px)}
 .lk-row b{font-family:inherit;color:var(--lk-a);margin-right:4px}.lk-h{margin:14px 0 4px;font-size:var(--fl,13px);letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
+.lk-dw{border:1px solid var(--lk-l);border-radius:12px;background:var(--lk-c);padding:4px 12px;margin:0 0 4px;font-size:var(--fb,15px)}
+.lk-dr{display:flex;gap:10px;padding:6px 0;line-height:1.35}.lk-dr+.lk-dr{border-top:1px solid var(--lk-l)}
+.lk-dr>span{flex:none;width:3.4em;color:var(--mute);font-weight:700}.lk-dr>div{min-width:0;overflow-wrap:anywhere}.lk-dr i{font-style:normal;color:var(--mute)}
 .pf-bar{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 8px}
 .pf-b{border:1px solid var(--lk-l,var(--line));background:var(--lk-c,var(--panel2));color:var(--ink);border-radius:99px;padding:4px 10px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;white-space:nowrap}
 .pf-b i{font-style:normal;color:var(--mute);font-weight:600;font-size:var(--fb,15px)}
@@ -586,12 +592,6 @@ body.sp-on{overflow:hidden}
 .lk-head .lk-step{margin-left:0;height:30px}
 :root.phone .lk-head .lk-name{margin:0}.lk-figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
 .lk-figs b{display:block;font-size:var(--fb,15px);font-weight:800;overflow-wrap:anywhere}.lk-figs span{display:block;font-size:var(--fl,13px);color:var(--mute)}
-.acc{background:var(--lk-c);border:1px solid var(--lk-l);border-radius:14px;overflow:hidden}
-.acc-s+.acc-s{border-top:1px solid var(--lk-l)}
-.acc-s>summary{display:flex;align-items:center;gap:8px;list-style:none;cursor:pointer;padding:12px 14px;font-weight:800;font-size:var(--fb,15px)}
-.acc-s>summary::-webkit-details-marker{display:none}.acc-s>summary span{flex:1}.acc-s>summary i{font-style:normal;color:var(--mute);font-weight:600}
-.acc-s>summary::after{content:"▾";color:var(--mute);transition:transform .15s}.acc-s[open]>summary::after{transform:rotate(180deg)}
-.acc-b{padding:0 12px 12px}.acc-b .lk-t{margin-top:0}
 .lk-ocr{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);font-family:inherit;font-size:var(--fb,15px);padding:8px}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   window.Lookup = L;
