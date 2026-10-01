@@ -581,6 +581,10 @@ window.PFDLayout = (() => {
     init(a){ api = a; },
     show, active: () => on, zoom: z => map && (z == null ? map.getZoom() : map.setZoom(z, { animate: false })), sync: z => on && sync(z), panelHtml, bindPanel, declutter: () => map && declutter(),
     zoomBy: d => map && (d > 0 ? map.zoomIn(.75) : map.zoomOut(.75)), home: () => map && home(true),
-    focus: id => { if (map && LAYOUT.nodes[id]) map.flyTo(pos(id), Math.max(map.getZoom(), 19), { duration: .6 }); }
+    focus: id => { if (map && LAYOUT.nodes[id]) map.flyTo(pos(id), Math.max(map.getZoom(), 19), { duration: .6 }); },
+    // fly to a WBS area (all its zones) and flash it, as the WBS filters do
+    area: c => { const zs = areas.filter(a => a.code === c); if (!map || !zs.length) return false;
+      const bb = zs.reduce((u, a) => u.extend(a.poly.getBounds()), L.latLngBounds(zs[0].poly.getBounds().getSouthWest(), zs[0].poly.getBounds().getNorthEast()));
+      map.flyToBounds(bb, { padding: [50, 50], maxZoom: 18.5, duration: .6 }); flash(c); return true; }
   };
 })();

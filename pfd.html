@@ -1602,6 +1602,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   window.addEventListener("keydown", e => { if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); openSearch(""); } });
   // ?find=TAG opens with that item selected; with #layout it is shown on the layout map, flown to
   // (&node=ID: an item the PFD doesn't draw, shown as the PFD item it belongs to, e.g. a PAX valve as the PAX tank)
+  // ?area=F13: the area's frame on the PFD, or its WBS zone on the layout (#layout)
+  { const a = new URLSearchParams(location.search).get("area"); if (a) setTimeout(() => {
+      if (location.hash === "#layout"){ setView("map"); const t0 = Date.now(), go = () => { if (!PFDLayout.area(a) && Date.now() - t0 < 6000) setTimeout(go, 300); }; setTimeout(go, 500); return; }
+      const f = FRAMES.find(fr => (String(fr.label || "").match(/F\d\d/g) || []).includes(a)); if (f) flyTo({ x: f.x, y: f.y, w: f.w, h: f.h }, 1.05, 700); }, 300); }
   { const Q = new URLSearchParams(location.search), f = Q.get("find"), nd = Q.get("node"); if (f) setTimeout(() => { Lookup.load().then(() => { const k = Lookup.norm(f), hit = onPfd.get(k) || (nd && byId[nd] ? { go: goNode(byId[nd]) } : null); if (!hit){ openSearch(f, true); return; }
       hit.go(); if (location.hash === "#layout"){ const nid = nd && byId[nd] ? nd : Object.keys(EQUIP_DATA).find(id => EQUIP_DATA[id].eq.some(r => Lookup.norm(r.tag) === k) || EQUIP_DATA[id].ins.some(i => Lookup.norm(i.tag) === k));
         setView("map"); if (nid) setTimeout(() => PFDLayout.focus(nid), 700); } }); }, 300); }

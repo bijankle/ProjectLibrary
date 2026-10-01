@@ -46,5 +46,19 @@ for (const x of recs){ if (pfd[x.k] || SITE.test(x.txt)) continue;
   if (id) assoc[x.k] = id; }
 // 3. valves on a linked line
 for (const x of recs){ if (pfd[x.k] || assoc[x.k] || !/^(mv|cv)$/.test(x.t)) continue; const ln = x.r[x.f.indexOf("Line number")]; const a = ln && (direct(norm(ln)) || assoc[norm(ln)]); if (a) assoc[x.k] = a; }
-fs.writeFileSync(path.join(root, "pfd-tags.json"), JSON.stringify({ pfd, assoc, layout }));
-console.log(Object.keys(pfd).length, "tags on the PFD,", Object.keys(assoc).length, "linked to a PFD item,", layout.length, "items on the layout");
+// 4. still nothing, but its P&ID has PFD items: the main one (most tags the PFD shows on that P&ID); a tie → the area link
+const pidMain = {};
+recs.forEach(x => { const id = direct(x.k); if (!id) return; x.pids.forEach(p => { const c = pidMain[p] = pidMain[p] || {}; c[id] = (c[id] || 0) + 1; }); });
+const mainOf = p => { const c = pidMain[p]; if (!c) return null; const e = Object.entries(c).sort((a, b) => b[1] - a[1]); return e.length > 1 && e[0][1] === e[1][1] ? null : e[0][0]; };
+const JUNK = /not used|reserved|spare tag|deleted/i, none = [];
+let main = 0;
+for (const x of recs){ if (pfd[x.k] || assoc[x.k]) continue;
+  if (JUNK.test(String(x.r[1] || "")) || !String(x.r[1] || "").trim() || SITE.test(x.txt)){ none.push(x.k); continue; }   // left unlinked on purpose
+  const m = x.pids.map(mainOf).find(Boolean); if (m){ assoc[x.k] = m; main++; } }
+// 5. everything else gets its area (worked out from the tag in the app): which areas the PFD frames and the layout show
+const FRAMES = get("FRAMES"), pfdAreas = [...new Set(FRAMES.flatMap(f => String(f.label || "").match(/F\d\d/g) || []))].sort();
+const layoutAreas = [...new Set(Object.entries(LAYOUT.nodes).filter(([id, n]) => !n.est && EQ[id]).map(([id]) => { const c = {};
+  (EQ[id].eq || []).forEach(r => { const m = /^F\d\d/.exec(r.tag || ""); if (m) c[m[0]] = (c[m[0]] || 0) + 1; });
+  return Object.keys(c).sort((a, b) => c[b] - c[a] || a.localeCompare(b))[0]; }).filter(Boolean))].sort();
+fs.writeFileSync(path.join(root, "pfd-tags.json"), JSON.stringify({ pfd, assoc, layout, none, pfdAreas, layoutAreas }));
+console.log(Object.keys(pfd).length, "tags on the PFD,", Object.keys(assoc).length, "linked to a PFD item (" + main + " as the main item of their P&ID),", none.length, "left out,", layout.length, "items on the layout; areas: PFD", pfdAreas.join(" "), "/ layout", layoutAreas.join(" "));

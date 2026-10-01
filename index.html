@@ -681,9 +681,19 @@ body.searching #homeMain{display:none}
     onOpen: (it, how) => { if (window.AssetViz) AssetViz.item(it); if (!restoring && cur !== "home") show("home"); nav(how !== "step"); }, onList: () => { if (window.AssetViz) AssetViz.list(); },
     within: v => window.Browse ? Browse.query(v) : false,   // with Browse filters set, typing narrows the filtered list
     // PFD and Layout links: only for tags the Smart PFD or the layout really shows (pfd-tags.json, tools/build_pfd_tags.js)
-    views: it => { const id = PT && (PT.pfd[it.k] || (PT.assoc || {})[it.k]); if (!id) return null; const u = "pfd.html?find=" + encodeURIComponent(it.key) + (PT.pfd[it.k] ? "" : "&node=" + encodeURIComponent(id));
-      return { pfd: u + "#pfd", layout: !/^L:/.test(id) && PT.layout.includes(id) ? u + "#layout" : null }; } });
-  let PT = null; fetch("pfd-tags.json").then(r => r.ok ? r.json() : null).then(d => { PT = d; }).catch(() => {});
+    // the PFD item it is (or belongs to); else its area: the area's frame on the PFD, its WBS zone on the layout
+    views: it => { if (!PT) return null; const id = PT.pfd[it.k] || (PT.assoc || {})[it.k], a = areaOf(it);
+      const aPfd = a && PT.pfdAreas.includes(a) ? "pfd.html?area=" + a + "#pfd" : null, aLay = a && PT.layoutAreas.includes(a) ? "pfd.html?area=" + a + "#layout" : null;
+      if (!id) return PT.noneSet.has(it.k) ? null : { pfd: aPfd, layout: aLay };
+      const u = "pfd.html?find=" + encodeURIComponent(it.key) + (PT.pfd[it.k] ? "" : "&node=" + encodeURIComponent(id));
+      return { pfd: u + "#pfd", layout: !/^L:/.test(id) && PT.layout.includes(id) ? u + "#layout" : aLay }; } });
+  // an item's area from its tag (F13-…, 13-0051-… lines, FCV 13075 / FIT13640 numbers), else from its P&ID number
+  const areaOf = it => { const k = String(it.key); let m = /^F(\d\d)\b/.exec(k) || /^(\d\d)-\d{3,5}-/.exec(k) || (/^(ins|cv)$/.test(it.t) && /^[A-Z]{1,5} ?(\d\d)\d{3}/.exec(k));
+    if (!(m && m[1] !== "00")) m = /2000-F(\d\d)-PID-/.exec((it.r || []).join(" ")); if (!m || m[1] === "00") return null;
+    return AREA_AS["F" + m[1]] || "F" + m[1]; };
+  // existing plant areas the PFD and layout don't draw on their own, shown as the area that does the same job
+  const AREA_AS = { F20: "F19", F25: "F18", F26: "F18", F70: "F72", F71: "F72", F78: "F22", F15: "F10" };
+  let PT = null; fetch("pfd-tags.json").then(r => r.ok ? r.json() : null).then(d => { if (d){ d.noneSet = new Set(d.none || []); d.pfdAreas = d.pfdAreas || []; d.layoutAreas = d.layoutAreas || []; } PT = d; }).catch(() => {});
   window.kcgmOpenTag = k => { show("home"); Tabs.set("assets"); lk.openKey(k); };   // a tag tapped on a drawing
   { const st = $("lkRoot").querySelector(".lk-status"), bd = $("lkRoot").querySelector(".lk-body");
     $("lkResults").append(st, bd);
