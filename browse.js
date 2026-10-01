@@ -117,7 +117,7 @@ window.Browse = (() => {
     if (st){
       const c = {}; for (const r of list) c[r[st[0]]] = (c[r[st[0]]] || 0) + 1;
       const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => ALPHA.compare(TN[x], TN[y])) : order(st[0], c);
-      const sn = shortAll(vals.filter(v => v !== "?"), v => nameOf(st[0], t(), v));
+      const sn = st[0] === "t" ? () => "" : shortAll(vals.filter(v => v !== "?"), v => nameOf(st[0], t(), v));   // (asset types have no short names)
       opts = `<div class="bw-h">${esc(st[1])}${st[0] !== "t" ? `<button class="bw-any">Any</button>` : ""}</div>` +
         vals.map(v => { const n = st[0] === "t" || v === "?" ? "" : sn(v), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
           // code (short name); the full name and the count show on the gold chip once picked
@@ -183,7 +183,7 @@ window.Browse = (() => {
           if (i > path.length) return `<div class="bp-st off"><span>${esc(l)}</span></div>`;
           const c = {}; for (const r of list) c[r[f]] = (c[r[f]] || 0) + 1;
           const vals = f === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => ALPHA.compare(TN[x], TN[y])) : order(f, c);
-          const sn = shortAll(vals.filter(v => v !== "?"), v => nameOf(f, t(), v));
+          const sn = f === "t" ? () => "" : shortAll(vals.filter(v => v !== "?"), v => nameOf(f, t(), v));
           return `<div class="bp-st open"><span>${esc(l)}</span>${f !== "t" ? `<button class="bp-any">Any</button>` : ""}</div><div class="bp-opts">` +
             vals.map(v => { const n = f === "t" || v === "?" ? "" : sn(v); return `<button class="bp-o" data-v="${esc(v)}" data-n="${c[v]}"><b>${esc(f === "t" ? TN[v] : v === "?" ? "Other" : v)}</b>${n ? ` <span>${esc(n)}</span>` : ""}</button>`; }).join("") + `</div>`; }).join("") +
         `</div><button class="bp-go">Show ${list.length.toLocaleString()} ${list.length === 1 ? "item" : "items"}</button></div>`;
