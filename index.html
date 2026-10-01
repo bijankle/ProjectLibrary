@@ -55,8 +55,16 @@ body{overscroll-behavior:none}
 /* HOME / END / GLOSSARY */
 @media (min-width:901px) and (hover:hover){.page{margin-left:24px !important;margin-right:auto !important}}   /* desktop: from the left */
 /* wide desktop: the asset charts (viz.js) fill the space right of the Assets column */
-@media (min-width:1100px) and (hover:hover){#home.on{display:flex;align-items:flex-start;gap:24px}#home>.page{flex:none;width:640px}
+@media (min-width:1100px) and (hover:hover){#home.on{display:flex;align-items:flex-start;gap:0}#home>.page{flex:none;width:var(--lw,640px);max-width:none}
+  /* the divider: a thin line with a dotted grip; drag it to share the width, double click for the default */
+  #home #split{display:block;flex:none;align-self:stretch;position:sticky;top:var(--tb,0px);height:calc(100vh - var(--tb,0px));width:24px;cursor:col-resize;touch-action:none}
+  #split::before{content:"";position:absolute;left:11px;top:14px;bottom:14px;width:2px;border-radius:1px;background:var(--line)}
+  #split i{position:absolute;left:7px;top:50%;margin-top:-22px;width:10px;height:44px;box-sizing:border-box;border-radius:5px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px}
+  #split i b{width:3px;height:3px;border-radius:50%;background:var(--mute)}
+  #split:hover::before,#split.drag::before{background:var(--gold)}#split:hover i,#split.drag i{border-color:var(--gold)}#split:hover i b,#split.drag i b{background:var(--gold)}
+  body.splitting{cursor:col-resize;user-select:none}
   #viz{flex:1;min-width:0;position:sticky;top:var(--tb,0px);max-height:calc(100vh - var(--tb,0px));overflow-y:auto;padding:14px 24px 24px 0}}
+#split{display:none}
 .page{max-width:640px;margin:0 auto;
   padding:14px 16px calc(env(safe-area-inset-bottom) + 24px)}
 body{padding-top:var(--tb,0px)}
@@ -233,7 +241,7 @@ body.searching #homeMain{display:none}
   <div id="homeMain">
   <div id="browse"></div>
   </div>
-</div><aside id="viz" class="vz" hidden aria-label="Asset charts"></aside></section>
+</div><div id="split" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div><aside id="viz" class="vz" hidden aria-label="Asset charts"></aside></section>
 
 <!-- QUIZ -->
 <section id="quiz" class="screen"><div class="page">
@@ -656,6 +664,17 @@ body.searching #homeMain{display:none}
     let was = false; new MutationObserver(() => { const now = document.body.classList.contains("searching"); if (was && !now) Browse.restore(); was = now; }).observe(document.body, { attributes: true, attributeFilter: ["class"] }); }
   // home: Browse pickers by default, flashcards one tap away
   AssetViz.mount($("viz"));
+  // the divider between the list and the charts / drawing (wide desktop): the list's width is kept on this computer
+  { const sp = $("split"), home = $("home"), MIN_L = 380, MIN_R = 420, DEF = 640;
+    const setW = w => { const max = Math.max(MIN_L, innerWidth - MIN_R - 24); w = Math.round(Math.max(MIN_L, Math.min(max, w))); home.style.setProperty("--lw", w + "px"); return w; };
+    try { const w = +localStorage.getItem("kcgm_split"); if (w) setW(w); } catch (e) {}
+    let x0 = 0, w0 = 0, on = false;
+    sp.addEventListener("pointerdown", e => { on = true; x0 = e.clientX; w0 = home.querySelector(".page").getBoundingClientRect().width; sp.setPointerCapture(e.pointerId); sp.classList.add("drag"); document.body.classList.add("splitting"); e.preventDefault(); });
+    sp.addEventListener("pointermove", e => { if (on) setW(w0 + e.clientX - x0); });
+    const end = () => { if (!on) return; on = false; sp.classList.remove("drag"); document.body.classList.remove("splitting");
+      try { localStorage.setItem("kcgm_split", parseInt(getComputedStyle(home).getPropertyValue("--lw")) || DEF); } catch (e) {} dispatchEvent(new Event("resize")); };
+    sp.addEventListener("pointerup", end); sp.addEventListener("pointercancel", end);
+    sp.addEventListener("dblclick", () => { setW(DEF); try { localStorage.removeItem("kcgm_split"); } catch (e) {} dispatchEvent(new Event("resize")); }); }
   Browse.mount($("browse"), lk);
   $("glossBtn").onclick = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
   $("glossBack").onclick = () => show("home");

@@ -46,14 +46,13 @@ window.AssetViz = (() => {
     if ((!own.length && !shown) || !window.Pid || !window.PdfView){ el.innerHTML = ""; return; }
     if (!shown) shown = own[0];
     const n = shown, d = Pid.info(n) || {}, ser = series(n), go = x => { if (x === shown) return; hist.push(shown); shown = x; drawItem(); };
-    el.innerHTML = `<div class="vz-pv">` + (ser.length > 1 || hist.length ? `<div class="vz-tabs">${hist.length ? `<button type="button" class="vz-tab vz-bk" title="Back to ${esc(hist[hist.length - 1])}">‹</button>` : ""}` +
+    el.innerHTML = `<div class="vz-pv">` + (ser.length > 1 ? `<div class="vz-tabs">` +
       (ser.length > 1 ? ser.map(x => `<button type="button" class="vz-tab${x === n ? " on" : ""}" data-n="${esc(x)}" title="${esc(x)}">Sheet ${sheetOf(x)}</button>`).join("") : "") + `</div>` : "") +
       `<div class="vz-pt"><b>${esc(n)}</b> ${esc(d.title || "")}</div>` +
       `<div class="vz-sheet"><div class="vz-stage"><canvas></canvas><div class="vz-mk"></div><div class="vz-rf"></div></div>` +
       `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="fit" title="Fit">⤢</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Full screen">⛶</button></div>` +
       `<p class="vz-note">Loading the drawing…</p></div></div>`;
     el.querySelectorAll(".vz-tab[data-n]").forEach(b => b.onclick = () => go(b.dataset.n));
-    const bk = el.querySelector(".vz-bk"); if (bk) bk.onclick = () => { shown = hist.pop(); drawItem(); };
     const box = el.querySelector(".vz-sheet"), stage = box.querySelector(".vz-stage"), cv = box.querySelector("canvas"), key = cur.key;
     let z = 1, tx = 0, ty = 0, W = 0, H = 0, page = null, sc = 1, rz = 0, rt = null;
     const apply = () => { z = Math.max(1, Math.min(10, z)); tx = Math.min(0, Math.max(W - W * z, tx)); ty = Math.min(0, Math.max(H - H * z, ty));
