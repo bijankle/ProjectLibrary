@@ -54,9 +54,9 @@ window.AssetViz = (() => {
     const nb = (x, side) => x ? `<button type="button" class="vz-nb vz-${side}" data-n="${esc(x)}" title="${esc(x + " " + ((Pid.info(x) || {}).title || ""))}"><b>${esc(x)}</b><i>${esc((Pid.info(x) || {}).title || "")}</i></button>` : `<span class="vz-nb vz-${side}"></span>`;
     el.innerHTML = `<div class="vz-pv"><div class="vz-hd">` + (ser.length > 1 ? `<div class="vz-tabs">` +
       ser.map(x => `<button type="button" class="vz-tab${x === n ? " on" : ""}" data-n="${esc(x)}" title="${esc(x)}">Sheet ${sheetOf(x)}</button>`).join("") + `</div>` : "") +
-      `<div class="vz-nav">${nb(prv, "p")}<button type="button" class="vz-ar" data-n="${esc(prv || "")}"${prv ? ` title="${esc(prv)}"` : " disabled"} aria-label="Previous drawing">‹</button>` +
+      `<div class="vz-nav"><button type="button" class="vz-ar" data-n="${esc(prv || "")}"${prv ? ` title="${esc(prv)}"` : " disabled"} aria-label="Previous drawing">‹</button>` +
       `<div class="vz-cur"><b>${esc(n)}${at >= 0 ? ` <small>${at + 1} of ${list.length}</small>` : ""}</b><i>${esc(d.title || "")}</i></div>` +
-      `<button type="button" class="vz-ar" data-n="${esc(nxt || "")}"${nxt ? ` title="${esc(nxt)}"` : " disabled"} aria-label="Next drawing">›</button>${nb(nxt, "n")}</div></div>` +
+      `<button type="button" class="vz-ar" data-n="${esc(nxt || "")}"${nxt ? ` title="${esc(nxt)}"` : " disabled"} aria-label="Next drawing">›</button></div></div>` +
       `<div class="vz-sheet"><div class="vz-stage"><canvas></canvas><div class="vz-mk"></div><div class="vz-rf"></div></div>` +
       `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="fit" title="Fit">⤢</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Full screen">⛶</button></div>` +
       `<p class="vz-note">Loading the drawing…</p></div></div>`;
@@ -235,7 +235,7 @@ window.AssetViz = (() => {
 .vz-hd{display:flex;align-items:center;gap:12px;min-width:0}.vz-hd .vz-tabs{flex:none;flex-wrap:nowrap}
 .vz-nav{flex:1;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px}
 .vz-cur{flex:0 0 auto;max-width:60%;text-align:center;line-height:1.25}.vz-cur b{display:block;font-size:var(--fb,15px);white-space:nowrap}.vz-cur i{display:block;font-style:normal;color:var(--mute);font-size:var(--fl,13px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vz-ar{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card,var(--panel));color:var(--ink);font:inherit;font-size:20px;font-weight:700;line-height:1;cursor:pointer}
+.vz-ar{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:color-mix(in srgb,var(--mute) 16%,var(--card,var(--panel)));color:var(--mute);font:inherit;font-size:20px;font-weight:700;line-height:1;cursor:pointer}
 .vz-ar:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}.vz-ar:disabled{opacity:.35;cursor:default}
 .vz-nb{flex:0 1 220px;min-width:0;display:flex;flex-direction:column;border:0;background:none;padding:2px 4px;font:inherit;color:var(--ink);cursor:pointer;line-height:1.25;border-radius:6px}
 .vz-nb.vz-p{text-align:right;align-items:flex-end}.vz-nb.vz-n{text-align:left;align-items:flex-start}

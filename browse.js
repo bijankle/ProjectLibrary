@@ -134,7 +134,7 @@ window.Browse = (() => {
     el.querySelectorAll(".bw-o").forEach(b => b.onclick = () => { path.push({ f: st[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
     const any = el.querySelector(".bw-any"); if (any) any.onclick = () => { path.push({ f: st[0], v: null }); after(); };
     el.querySelectorAll(".bw-cr").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
-    el.querySelectorAll(".bw-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i]); });
+    el.querySelectorAll(".bw-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i], list.map(r => r.it)); });
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
     if (az) bindAZ();
     wireRec(); fit(); fitLayout();
@@ -201,7 +201,7 @@ window.Browse = (() => {
     el.querySelector(".bp-f").onclick = () => { sheet = true; draw(); };
     el.querySelectorAll(".bp-c.on").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
     el.querySelectorAll(".bp-r").forEach(b => b.onclick = () => { const x = rc[+b.dataset.r]; if (x.q) lk.search(x.q); else lk.openKey(x.key); });
-    el.querySelectorAll(".bp-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i]); });
+    el.querySelectorAll(".bp-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i], list.map(r => r.it)); });
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
     if (sheet){
       el.querySelector(".bp-scrim").onclick = go; el.querySelector(".bp-go").onclick = go;

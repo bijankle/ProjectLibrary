@@ -366,15 +366,21 @@
       all.forEach(it => counts[it.t] = (counts[it.t] || 0) + 1);
       if (only && !counts[only]) only = "";
       const list = only ? all.filter(it => it.t === only) : all;
-      hits = list.slice(0, shownN);
+      hits = list.slice(0, shownN); lastList = list;
       status(all.length ? `${all.length} match${all.length > 1 ? "es" : ""}${only ? `, ${list.length} in ${PILL[only] || typeName(only)}` : ""}` : "");
       const types = TYPE_ORDER.filter(t => counts[t]);
       body.innerHTML = (types.length ? `<div class="lk-pills"><button class="lk-pill${only ? "" : " on"}" data-t="">All <i>${all.length}</i></button>${types.map(t => `<button class="lk-pill${only === t ? " on" : ""}" data-t="${t}">${ICON[t] || ""} ${esc(PILL[t] || typeName(t))} <i>${counts[t]}</i></button>`).join("")}</div>` : "") +
         L.resultsHTML(hits, q) + (list.length > hits.length ? `<button class="lk-more">Show ${Math.min(200, list.length - hits.length)} more (${list.length - hits.length} left)</button>` : "");
-      body.querySelectorAll(".lk-row1").forEach(b => b.onclick = () => open(hits[+b.dataset.i], true));
+      body.querySelectorAll(".lk-row1").forEach(b => b.onclick = () => { ctx = lastList; open(hits[+b.dataset.i], true); });
       body.querySelectorAll(".lk-pill").forEach(b => b.onclick = () => { only = b.dataset.t; showList(inp.value); });
       const m = body.querySelector(".lk-more"); if (m) m.onclick = () => { shownN += 200; showList(inp.value, true); };
     };
+    // the list an item was opened from (Browse's filtered list, search results); stepping walks it. With no list (a link,
+    // a drawing, a recent) it is every item of the same kind in tag order
+    let ctx = null, lastList = [];
+    const ORD = new Intl.Collator(undefined, { numeric: true });
+    const stepList = it => { if (ctx && ctx.includes(it)) return ctx;
+      const all = items.filter(x => x.t === it.t && x.r !== undefined).sort((a, b) => ORD.compare(a.key, b.key)); ctx = all; return all; };
     const open = (it, push) => {
       if (!it) return; remember(it); showingRecent = false; if (it.go){ it.go(); return; } if (push) stack.push({ q: inp.value, scroll: body.scrollTop, it: cur });
       cur = it;
@@ -382,19 +388,23 @@
       const from = it.t === "pid" ? (stack.length && stack[stack.length - 1].it ? stack[stack.length - 1].it.key : null) : it.key;
       const hv = (d, t) => `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
       body.innerHTML = `<div class="lk-nav"><button class="lk-home" title="Home" aria-label="Home">${hv('<path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/>')}</button>` +
-        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button></div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
+        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button>` + stepHTML(it) + `</div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
       body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from, { page: +a.dataset.page || 1 }); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
       body.querySelector(".lk-back").onclick = back; body.querySelector(".lk-home").onclick = home;
+      body.querySelectorAll(".lk-st[data-s]").forEach(b => b.onclick = () => { const a = stepList(cur), i = a.indexOf(cur), x = a[i + +b.dataset.s]; if (x) open(x, false); });
 
       const pb = body.querySelector("[data-pfd]"); if (pb) pb.onclick = () => opts.pfd(it).go();
       L.fillSpec(body, it);
       if (opts.onOpen) opts.onOpen(it);
     };
     let cur = null;
+    // previous / next item in the list it came from: one gold block, ‹ 12 of 147 ›
+    const stepHTML = it => { const a = stepList(it), i = a.indexOf(it); if (i < 0 || a.length < 2) return "";
+      return `<span class="lk-step"><button class="lk-st" data-s="-1"${i > 0 ? ` title="${esc(a[i - 1].key)}"` : " disabled"} aria-label="Previous item">‹</button><span class="lk-sn"><b>${(i + 1).toLocaleString()}</b> of ${a.length.toLocaleString()}</span><button class="lk-st" data-s="1"${i < a.length - 1 ? ` title="${esc(a[i + 1].key)}"` : " disabled"} aria-label="Next item">›</button></span>`; };
     // any code link in an item (also ones filled in later, like the valve codes in a pipe spec) opens that item
     body.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a[data-k]"); if (!a || !body.contains(a)) return; e.preventDefault();
-      ensure().then(() => { const x = L.find(a.dataset.k, a.dataset.t); if (x) open(x, true); }); });
+      ensure().then(() => { const x = L.find(a.dataset.k, a.dataset.t); if (x){ ctx = null; open(x, true); } }); });
     // home: back to the start (the Assets page's own reset when it has one, else an empty search)
     const home = () => { stack.length = 0; cur = null; inp.value = ""; showList(""); if (opts.home) opts.home(); };
     const back = () => { const s = stack.pop(); if (s && s.it){ cur = null; open(s.it, false); } else { cur = null; showList(inp.value); if (s) body.scrollTop = s.scroll; } };
@@ -415,7 +425,7 @@
       `<h4 class="lk-h">Text read</h4><textarea class="lk-ocr" rows="4">${esc(res.text)}</textarea><button class="lk-btn lk-ocrgo">Search this text</button>`;
     inp.value = opts.initial || ""; if (opts.initial) ensure().then(() => showList(inp.value)); else body.innerHTML = opts.intro || "";
     return { input: inp, search: q => { inp.value = q; ensure().then(() => showList(q)); }, openKey: k => ensure().then(() => open(L.find(norm(k)), true)),
-      openItem: it => { stack.length = 0; cur = null; open(it, true); } };
+      openItem: (it, list) => { stack.length = 0; cur = null; ctx = list || null; open(it, true); } };
   };
 
   // ---------- photo text recognition ----------
@@ -479,6 +489,9 @@
 .lk-empty{color:var(--mute);font-size:var(--fb,15px);padding:10px 2px;line-height:1.45}
 .lk-nav{display:flex;gap:8px;margin:2px 0 12px}
 .lk-home,.lk-back{width:34px;height:34px;border-radius:50%;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer}
+.lk-nav{align-items:center}.lk-step{display:inline-flex;align-items:stretch;height:34px;border-radius:9px;overflow:hidden;background:var(--lk-a);margin-left:6px}
+.lk-st{border:0;background:var(--lk-a);color:#1a1307;font:inherit;font-size:20px;font-weight:800;padding:0 11px;cursor:pointer;line-height:1}.lk-st:hover:not(:disabled){filter:brightness(1.1)}.lk-st:disabled{opacity:.4;cursor:default}
+.lk-sn{display:flex;align-items:center;padding:0 8px;background:color-mix(in srgb,var(--lk-a) 55%,#fff);color:#1a1307;font-size:var(--fl,13px);white-space:nowrap}.lk-sn b{margin-right:3px}
 .lk-home:hover,.lk-back:hover{border-color:var(--lk-a);color:var(--lk-a)}
 .lk-kind{font-size:var(--fl,13px);font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--lk-a)}
 .lk-key{font-family:inherit;font-size:var(--fh,22px);font-weight:800;margin:4px 0 2px;word-break:break-all}.lk-name{font-size:var(--fb,15px);line-height:1.35;margin-bottom:8px}
