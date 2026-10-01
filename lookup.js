@@ -186,11 +186,11 @@
       const NAMEF = { mel: "Equipment name", ins: "Description", cv: "Location", spi: "Description", hose: "Description" };   // the phone's header card names it
       const kept = L.dedupe(rows.filter(r => !inTag(it, r.l) && !(PHONE() && r.l === NAMEF[it.t])), { heads: [it.key, ...twins.map(x => x.key)] });
       docRows(it, kept);
-      // the item's drawings sit above the sections, P&ID first (number only) then PFD with its sheet title (out of the Details table); no labels, the numbers say PID / PFD
+      // the item's drawings sit above the sections, P&ID first then PFD, numbers only (out of the Details table); no labels, the numbers say PID / PFD
       const DW = /^(P&IDs?|PFD)$/, dws = kept.filter(r => DW.test(r.l)).sort((a, b) => (a.l === "PFD") - (b.l === "PFD"));
       if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
         h += `<div class="lk-dw">` + dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
-          return `<div class="lk-dr"><div>` + (ns.length ? ns.map(n => `<div>${dwgA(n)}${r.l === "PFD" && dwgTitle(n) ? ` <i>${esc(dwgTitle(n))}</i>` : ""}</div>`).join("") : r.h) + `</div></div>`; }).join("") + `</div>`; }
+          return `<div class="lk-dr"><div>` + (ns.length ? ns.map(n => `<div>${dwgA(n)}</div>`).join("") : r.h) + `</div></div>`; }).join("") + `</div>`; }
       secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` });
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
       if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
@@ -507,7 +507,7 @@
 .lk-row b{font-family:inherit;color:var(--lk-a);margin-right:4px}.lk-h{margin:14px 0 4px;font-size:var(--fl,13px);letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
 .lk-dw{border:1px solid var(--lk-l);border-radius:12px;background:var(--lk-c);padding:4px 12px;margin:0 0 4px;font-size:var(--fb,15px)}
 .lk-dr{display:flex;gap:10px;padding:6px 0;line-height:1.35}.lk-dr+.lk-dr{border-top:1px solid var(--lk-l)}
-.lk-dr>div{min-width:0;overflow-wrap:anywhere}.lk-dr i{font-style:normal;color:var(--mute)}
+.lk-dr>div{min-width:0;overflow-wrap:anywhere}
 .pf-bar{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 8px}
 .pf-b{border:1px solid var(--lk-l,var(--line));background:var(--lk-c,var(--panel2));color:var(--ink);border-radius:99px;padding:4px 10px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;white-space:nowrap}
 .pf-b i{font-style:normal;color:var(--mute);font-weight:600;font-size:var(--fb,15px)}
