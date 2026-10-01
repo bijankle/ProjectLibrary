@@ -163,10 +163,10 @@
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
     let h = `<div class="lk-head"><div class="lk-kind">${esc(typeName(it.t))}</div>` +
-      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + (it.r && !PHONE() || it.t === "spec" || it.t === "line" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
+      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + (it.t === "pid" ? (PHONE() && dwg && dwg.title ? `<div class="lk-name">${esc(dwg.title)}</div>` : "") : it.r && !PHONE() || it.t === "spec" || it.t === "line" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
       (PHONE() ? figs(it) : "") + `</div>`;
-    if (dwg) h += `<div class="lk-dwgnote">${esc([dwg.title, dwg.rev && "Rev " + dwg.rev, dwg.status, dwg.pages > 1 && dwg.pages + " sheets"].filter(Boolean).join(" · "))}${dwg.inferred ? " · number read from the sheet order" : ""}${opts.find ? `. ${esc(opts.find)} is marked on it` : ""}.</div>`;
-    else if (it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
+    // a drawing: no summary lines (the preview beside it shows the number and title); the phone has no preview, so the title stays there
+    if (!dwg && it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
     const pfd = opts.pfd && opts.pfd(it);
     if (pfd) h += `<button class="lk-btn" data-pfd="1">${esc(pfd.label)}</button>`;
     if (it.t === "pfd" || it.t === "gloss"){ h += it.html || `<p>${esc(it.text || "")}</p>`; }
@@ -203,7 +203,7 @@
     if (rf.length){
       const g = {}; rf.forEach(x => (g[x.t] = g[x.t] || []).push(x));
       TYPE_ORDER.filter(t => g[t]).forEach(t => { const a = g[t], show = a.slice(0, 60);
-        secs.push({ id: "r-" + t, label: (PILLN[t] || typeName(t)), n: a.length, html: `<div class="lk-ns" style="margin:2px 0 4px">${it.t === "pid" ? "On this drawing" : "Referring to " + esc(it.key)}</div>` +
+        secs.push({ id: "r-" + t, label: (PILLN[t] || typeName(t)), n: a.length, html: 
           show.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b> ${esc(L.lineText(x))}</a>`).join("") +
           (a.length > show.length ? `<div class="lk-ns">and ${a.length - show.length} more; search the tag to see them all.</div>` : "") }); });
     }
@@ -219,8 +219,8 @@
         { n: pl.to.length, html: pl.to.length ? pl.to.map(pidRow).join("") : none("goes out to another P&ID") });
       secs.unshift({ id: "pids", label: "P&IDs", n: new Set([...pl.from, ...pl.to].map(p => p.k)).size, html: P });
       const ln = secs.find(x => x.id === "r-line"), all = ln ? ln.html : "";
-      const Ls = L.pills([{ id: "from", label: "From", n: pl.lin.length, html: pl.lin.length ? `<div class="lk-ns" style="margin:2px 0 4px">Coming in from other P&IDs</div>` + pl.lin.map(lineRow).join("") : none("comes in from another P&ID") },
-        { id: "to", label: "To", n: pl.lout.length, html: pl.lout.length ? `<div class="lk-ns" style="margin:2px 0 4px">Going out to other P&IDs</div>` + pl.lout.map(lineRow).join("") : none("goes out to another P&ID") },
+      const Ls = L.pills([{ id: "from", label: "From", n: pl.lin.length, html: pl.lin.length ? pl.lin.map(lineRow).join("") : none("comes in from another P&ID") },
+        { id: "to", label: "To", n: pl.lout.length, html: pl.lout.length ? pl.lout.map(lineRow).join("") : none("goes out to another P&ID") },
         all && { id: "all", label: "On this drawing", n: ln.n, html: all }], "pid-l");
       if (ln) Object.assign(ln, { id: "lines", html: Ls }); else if (pl.lin.length + pl.lout.length) secs.splice(1, 0, { id: "lines", label: "Lines", html: Ls });
     }
