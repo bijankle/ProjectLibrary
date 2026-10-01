@@ -186,11 +186,11 @@
       const NAMEF = { mel: "Equipment name", ins: "Description", cv: "Location", spi: "Description", hose: "Description" };   // the phone's header card names it
       const kept = L.dedupe(rows.filter(r => !inTag(it, r.l) && !(PHONE() && r.l === NAMEF[it.t])), { heads: [it.key, ...twins.map(x => x.key)] });
       docRows(it, kept);
-      // the item's drawings sit above the sections, P&ID first then PFD, each with its title (out of the Details table)
+      // the item's drawings sit above the sections, P&ID first (number only) then PFD with its sheet title (out of the Details table)
       const DW = /^(P&IDs?|PFD)$/, dws = kept.filter(r => DW.test(r.l)).sort((a, b) => (a.l === "PFD") - (b.l === "PFD"));
       if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
         h += `<div class="lk-dw">` + dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
-          return `<div class="lk-dr"><span>${r.l === "PFD" ? "PFD" : "P&amp;ID"}</span><div>` + (ns.length ? ns.map(n => `<div>${dwgA(n)}${dwgTitle(n) ? ` <i>${esc(dwgTitle(n))}</i>` : ""}</div>`).join("") : r.h) + `</div></div>`; }).join("") + `</div>`; }
+          return `<div class="lk-dr"><span>${r.l === "PFD" ? "PFD" : "P&amp;ID"}</span><div>` + (ns.length ? ns.map(n => `<div>${dwgA(n)}${r.l === "PFD" && dwgTitle(n) ? ` <i>${esc(dwgTitle(n))}</i>` : ""}</div>`).join("") : r.h) + `</div></div>`; }).join("") + `</div>`; }
       secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` });
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
       if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
