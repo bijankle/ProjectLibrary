@@ -30,6 +30,7 @@ window.AssetViz = (() => {
   // the whole sheet fits the space with the item marked; drawing number tabs above when there are several; a click on
   // the sheet opens it full screen in the drawing viewer
   let cur = null, shown = null, hist = [], gen = 0;
+  const ORD = new Intl.Collator(undefined, { numeric: true });
   const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   function item(it){ cur = it; shown = null; hist = []; lastSig = ""; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
   function list(){ if (!cur) return; cur = null; lastSig = ""; draw(true); }
@@ -46,13 +47,20 @@ window.AssetViz = (() => {
     if ((!own.length && !shown) || !window.Pid || !window.PdfView){ el.innerHTML = ""; return; }
     if (!shown) shown = own[0];
     const n = shown, d = Pid.info(n) || {}, ser = series(n), go = x => { if (x === shown) return; hist.push(shown); shown = x; drawItem(); };
-    el.innerHTML = `<div class="vz-pv">` + (ser.length > 1 ? `<div class="vz-tabs">` +
-      (ser.length > 1 ? ser.map(x => `<button type="button" class="vz-tab${x === n ? " on" : ""}" data-n="${esc(x)}" title="${esc(x)}">Sheet ${sheetOf(x)}</button>`).join("") : "") + `</div>` : "") +
-      `<div class="vz-pt"><b>${esc(n)}</b> ${esc(d.title || "")}</div>` +
+    // one row over the sheet: the series' sheet tabs on the left; in the middle the drawing with its description, ‹ › either
+    // side and the drawings before and after it (P&IDs or PFD sheets, in number order) beyond them
+    const kind = /-PFD-/.test(n) ? "-PFD-" : "-PID-", list = Pid.all().map(x => x.number).filter(x => x && x.includes(kind)).sort(ORD.compare),
+      at = list.indexOf(n), prv = at > 0 ? list[at - 1] : null, nxt = at >= 0 && at < list.length - 1 ? list[at + 1] : null;
+    const nb = (x, side) => x ? `<button type="button" class="vz-nb vz-${side}" data-n="${esc(x)}" title="${esc(x + " " + ((Pid.info(x) || {}).title || ""))}"><b>${esc(x)}</b><i>${esc((Pid.info(x) || {}).title || "")}</i></button>` : `<span class="vz-nb vz-${side}"></span>`;
+    el.innerHTML = `<div class="vz-pv"><div class="vz-hd">` + (ser.length > 1 ? `<div class="vz-tabs">` +
+      ser.map(x => `<button type="button" class="vz-tab${x === n ? " on" : ""}" data-n="${esc(x)}" title="${esc(x)}">Sheet ${sheetOf(x)}</button>`).join("") + `</div>` : "") +
+      `<div class="vz-nav">${nb(prv, "p")}<button type="button" class="vz-ar" data-n="${esc(prv || "")}"${prv ? ` title="${esc(prv)}"` : " disabled"} aria-label="Previous drawing">‹</button>` +
+      `<div class="vz-cur"><b>${esc(n)}${at >= 0 ? ` <small>${at + 1} of ${list.length}</small>` : ""}</b><i>${esc(d.title || "")}</i></div>` +
+      `<button type="button" class="vz-ar" data-n="${esc(nxt || "")}"${nxt ? ` title="${esc(nxt)}"` : " disabled"} aria-label="Next drawing">›</button>${nb(nxt, "n")}</div></div>` +
       `<div class="vz-sheet"><div class="vz-stage"><canvas></canvas><div class="vz-mk"></div><div class="vz-rf"></div></div>` +
       `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="fit" title="Fit">⤢</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Full screen">⛶</button></div>` +
       `<p class="vz-note">Loading the drawing…</p></div></div>`;
-    el.querySelectorAll(".vz-tab[data-n]").forEach(b => b.onclick = () => go(b.dataset.n));
+    el.querySelectorAll(".vz-tab[data-n], .vz-nb[data-n], .vz-ar[data-n]").forEach(b => b.onclick = () => { if (b.dataset.n) go(b.dataset.n); });
     const box = el.querySelector(".vz-sheet"), stage = box.querySelector(".vz-stage"), cv = box.querySelector("canvas"), key = cur.key;
     let z = 1, tx = 0, ty = 0, W = 0, H = 0, page = null, sc = 1, rz = 0, rt = null;
     const apply = () => { z = Math.max(1, Math.min(10, z)); tx = Math.min(0, Math.max(W - W * z, tx)); ty = Math.min(0, Math.max(H - H * z, ty));
@@ -224,7 +232,17 @@ window.AssetViz = (() => {
 .vz-tabs{display:flex;flex-wrap:wrap;gap:6px}
 .vz-tab{border:1px solid var(--line);background:var(--card,var(--panel));color:var(--mute);border-radius:8px;padding:5px 10px;font:inherit;font-size:var(--fb,15px);cursor:pointer}
 .vz-tab.on{border-color:var(--gold);color:var(--ink);font-weight:700}
-.vz-pt{font-size:var(--fb,15px);color:var(--mute)}.vz-pt b{color:var(--ink)}
+.vz-hd{display:flex;align-items:center;gap:12px;min-width:0}.vz-hd .vz-tabs{flex:none;flex-wrap:nowrap}
+.vz-nav{flex:1;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px}
+.vz-cur{flex:0 0 auto;max-width:60%;text-align:center;line-height:1.25}.vz-cur b{display:block;font-size:var(--fb,15px);white-space:nowrap}.vz-cur i{display:block;font-style:normal;color:var(--mute);font-size:var(--fl,13px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vz-ar{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card,var(--panel));color:var(--ink);font:inherit;font-size:20px;font-weight:700;line-height:1;cursor:pointer}
+.vz-ar:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}.vz-ar:disabled{opacity:.35;cursor:default}
+.vz-nb{flex:0 1 220px;min-width:0;display:flex;flex-direction:column;border:0;background:none;padding:2px 4px;font:inherit;color:var(--ink);cursor:pointer;line-height:1.25;border-radius:6px}
+.vz-nb.vz-p{text-align:right;align-items:flex-end}.vz-nb.vz-n{text-align:left;align-items:flex-start}
+.vz-nb b{font-size:var(--fl,13px);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.vz-nb i{font-style:normal;color:var(--mute);font-size:var(--fl,13px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.vz-nb:hover b{color:var(--gold)}span.vz-nb{cursor:default}
+.vz-cur small{font-weight:500;color:var(--mute);font-size:var(--fl,13px);margin-left:4px}
+.vz-pv{container-type:inline-size}@container (max-width:820px){.vz-nb{display:none}}   /* (narrow: the arrows alone; their numbers show on hover) */
 .vz-sheet{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;touch-action:none;cursor:default;user-select:none}
 .vz-sheet.drag{cursor:default}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
