@@ -184,8 +184,8 @@ window.Tabs = (() => {
   // More as a page of its own between the top row and the tab bar; the top row's search becomes the app search
   // ---------- back and home (every page, every tab) ----------
   // Every view change is a browser history entry (Tabs.push / Tabs.replace, the page restores it in Tabs.onPop), so ←
-  // and the phone's own back go to the previous view, across tabs and pages. ⌂ is the front page of the tab you're in.
-  const NAVB = `<span class="nv-bh"><button type="button" class="nv-b nv-home" aria-label="Home" title="Front page of this tab"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg></button><button type="button" class="nv-b nv-back" aria-label="Back" title="Back to the previous view"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></button><button type="button" class="nv-b nv-fwd" aria-label="Forward" title="Forward again (redo the view change)" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button></span>`;
+  // and the phone's own back go to the previous view, across tabs and pages. ⌂ is the Assets front page.
+  const NAVB = `<span class="nv-bh"><button type="button" class="nv-b nv-home" aria-label="Home" title="Assets front page, nothing filtered"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg></button><button type="button" class="nv-b nv-back" aria-label="Back" title="Back to the previous view"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></button><button type="button" class="nv-b nv-fwd" aria-label="Forward" title="Forward again (redo the view change)" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button></span>`;
   let depth = 0;
   // ⟶ redoes a view change you went back from: on if the browser can go forward (its navigation API, else the furthest depth
   // this tab has reached, which a new view change cuts back to itself)
@@ -201,8 +201,9 @@ window.Tabs = (() => {
     const h = document.getElementById("helpWin"); if (h && !h.hidden){ h.hidden = true; return; }
     if ((history.state && history.state.d > 0) || sameSite()) history.back(); else goHome();
   }
+  // ⌂ is always the Assets front page with nothing searched, filtered or open (this page does it when it holds Assets)
   function goHome(){ more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true;
-    if (O.onHome && O.onHome(active) !== false) return; const t = TABS.find(x => x[0] === active); if (t) location.href = t[2]; }
+    if (O.homeHere && O.onHome && O.onHome("assets") !== false) return; location.href = "index.html?cards#home"; }
   function goFwd(){ history.forward(); }
   addEventListener("pageshow", () => setTimeout(fwdState, 0));
   addEventListener("popstate", e => { fwdState(); if (mo && !mo.hidden) more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true; if (O.onPop) O.onPop(e.state || {}); });
@@ -281,6 +282,10 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .nv-b:disabled{opacity:.35;cursor:default}.nv-b:disabled:hover{border-color:var(--line);color:var(--ink)}
 .nv-b:hover{border-color:var(--gold,var(--accent));color:var(--gold,var(--accent))}
 .ph-top .nv-bh{margin-right:2px;gap:4px}.ph-top .nv-b{width:34px;height:34px}
+:root.phone .nv-b{border-width:1.5px;border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}:root.phone .nv-b svg{stroke-width:2.6}   /* phone: firmer buttons */
+:root.phone :is(.btn,.pf-b,.lk-pill,.lk-btn,.lk-vw,.ts-r,.x,#qBtns button){border-width:1.5px;border-style:solid;border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}
+:root.phone :is(.btn,.pf-b,.lk-pill,.lk-btn,.ts-r,#qBtns button){font-weight:800}
+:root.phone :is(.pf-b.on,.lk-pill.on){border-color:var(--lk-a,var(--gold))}
 /* everything that can be clicked shows the hand, and list items light up under the mouse */
 button:not(:disabled),a[href],summary,select,label[for],[role=button],[role=tab],input[type=range],input[type=checkbox],input[type=radio],[data-k],[data-dwg]{cursor:pointer}
 button:disabled{cursor:default}

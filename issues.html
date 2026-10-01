@@ -8,11 +8,12 @@
 // laid out narrower (screen width / size) and the zoom is locked there, like Ctrl + scroll in a browser.
 window.kcgmViewport = function(z){ try {
   var m = document.querySelector('meta[name="viewport"]'); if (!m || !matchMedia("(pointer: coarse)").matches) return;
-  if (!(z >= .7 && z <= 1.6) || z === 1){ m.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"); return; }
+  if (!(z >= .7 && z <= 2.4) || z === 1){ m.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"); return; }
   var land = screen.orientation ? /landscape/.test(screen.orientation.type) : innerWidth > innerHeight, w = land ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
   m.setAttribute("content", "width=" + Math.round(w / z) + ", initial-scale=" + z + ", minimum-scale=" + z + ", maximum-scale=" + z + ", viewport-fit=cover, user-scalable=no");
 } catch (e) {} };
-try { kcgmViewport(parseFloat(localStorage.getItem("kcgm_text_size"))); } catch (e) {}
+// (a phone with no choice yet opens at 1.6, the app's 100%)
+try { var z0 = parseFloat(localStorage.getItem("kcgm_text_size")); kcgmViewport(z0 > 0 ? z0 : 1.6); } catch (e) {}
 // Theme (one for every page, Settings → Theme): "dark", "light" or "device" (follows the computer / phone), set before
 // the first paint as data-theme on <html>
 window.kcgmTheme = function(v){ try { v = v || localStorage.getItem("kcgm_theme") || "device";
@@ -20,7 +21,10 @@ window.kcgmTheme = function(v){ try { v = v || localStorage.getItem("kcgm_theme"
 kcgmTheme();
 // Text size (Settings → Text size): the app's three text sizes (titles, labels, body) scaled together, 65, 75, 90, 100
 // or 115 percent; set before the first paint as the size variables on <html>
-window.kcgmText = function(v){ try { v = v || localStorage.getItem("kcgm_text") || "n"; var k = { xs: .65, s: .75, n: .9, l: 1, xl: 1.15 }[v] || .9, s = document.documentElement.style;
+// On a phone the steps are 55, 65, 75, 85, 100 percent (Normal is the old Small; a step chosen before moves up one)
+window.kcgmText = function(v){ try { var ph = matchMedia("(pointer: coarse)").matches;
+  if (ph && !localStorage.getItem("kcgm_text_m")) { var o = localStorage.getItem("kcgm_text"); if (o) localStorage.setItem("kcgm_text", { xs: "s", s: "n", n: "l", l: "xl", xl: "xl" }[o] || "n"); localStorage.setItem("kcgm_text_m", "1"); }
+  v = v || localStorage.getItem("kcgm_text") || "n"; var k = (ph ? { xs: .55, s: .65, n: .75, l: .85, xl: 1 } : { xs: .65, s: .75, n: .9, l: 1, xl: 1.15 })[v] || (ph ? .75 : .9), s = document.documentElement.style;
   s.setProperty("--fh", 22 * k + "px"); s.setProperty("--fl", 13 * k + "px"); s.setProperty("--fb", 15 * k + "px"); } catch (e) {} };
 kcgmText();
 try { addEventListener("storage", function(e){ if (e.key === "kcgm_text") { kcgmText(); dispatchEvent(new Event("resize")); } }); } catch (e) {}

@@ -345,7 +345,7 @@ window.Browse = (() => {
 .bp-go{flex:none;margin-top:10px;border:0;border-radius:12px;background:var(--gold);color:#1a1307;font:inherit;font-size:var(--fb,15px);font-weight:800;padding:13px}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   // back to no filter (the Assets tab calls this each time it opens)
-  const reset = () => { if (!path.length) return; path = []; q = ""; if (lk) lk.input.value = ""; if (B) after(); };
+  const reset = () => { if (!path.length && !q) return; path = []; q = ""; if (lk) lk.input.value = ""; if (B) after(); };
   // the search box's text while filters are set (index.html hands it over); returns true when Browse took it
   const query = v => { q = v || ""; if (!path.length) return false; if (B){ shownN = 60; draw(); } return q.trim().length >= 2; };
   // the filter as history keeps it (Back returns to it, also from another page)

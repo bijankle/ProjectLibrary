@@ -8,11 +8,12 @@
 // laid out narrower (screen width / size) and the zoom is locked there, like Ctrl + scroll in a browser.
 window.kcgmViewport = function(z){ try {
   var m = document.querySelector('meta[name="viewport"]'); if (!m || !matchMedia("(pointer: coarse)").matches) return;
-  if (!(z >= .7 && z <= 1.6) || z === 1){ m.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"); return; }
+  if (!(z >= .7 && z <= 2.4) || z === 1){ m.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"); return; }
   var land = screen.orientation ? /landscape/.test(screen.orientation.type) : innerWidth > innerHeight, w = land ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
   m.setAttribute("content", "width=" + Math.round(w / z) + ", initial-scale=" + z + ", minimum-scale=" + z + ", maximum-scale=" + z + ", viewport-fit=cover, user-scalable=no");
 } catch (e) {} };
-try { kcgmViewport(parseFloat(localStorage.getItem("kcgm_text_size"))); } catch (e) {}
+// (a phone with no choice yet opens at 1.6, the app's 100%)
+try { var z0 = parseFloat(localStorage.getItem("kcgm_text_size")); kcgmViewport(z0 > 0 ? z0 : 1.6); } catch (e) {}
 // Theme (one for every page, Settings → Theme): "dark", "light" or "device" (follows the computer / phone), set before
 // the first paint as data-theme on <html>
 window.kcgmTheme = function(v){ try { v = v || localStorage.getItem("kcgm_theme") || "device";
@@ -20,7 +21,10 @@ window.kcgmTheme = function(v){ try { v = v || localStorage.getItem("kcgm_theme"
 kcgmTheme();
 // Text size (Settings → Text size): the app's three text sizes (titles, labels, body) scaled together, 65, 75, 90, 100
 // or 115 percent; set before the first paint as the size variables on <html>
-window.kcgmText = function(v){ try { v = v || localStorage.getItem("kcgm_text") || "n"; var k = { xs: .65, s: .75, n: .9, l: 1, xl: 1.15 }[v] || .9, s = document.documentElement.style;
+// On a phone the steps are 55, 65, 75, 85, 100 percent (Normal is the old Small; a step chosen before moves up one)
+window.kcgmText = function(v){ try { var ph = matchMedia("(pointer: coarse)").matches;
+  if (ph && !localStorage.getItem("kcgm_text_m")) { var o = localStorage.getItem("kcgm_text"); if (o) localStorage.setItem("kcgm_text", { xs: "s", s: "n", n: "l", l: "xl", xl: "xl" }[o] || "n"); localStorage.setItem("kcgm_text_m", "1"); }
+  v = v || localStorage.getItem("kcgm_text") || "n"; var k = (ph ? { xs: .55, s: .65, n: .75, l: .85, xl: 1 } : { xs: .65, s: .75, n: .9, l: 1, xl: 1.15 })[v] || (ph ? .75 : .9), s = document.documentElement.style;
   s.setProperty("--fh", 22 * k + "px"); s.setProperty("--fl", 13 * k + "px"); s.setProperty("--fb", 15 * k + "px"); } catch (e) {} };
 kcgmText();
 try { addEventListener("storage", function(e){ if (e.key === "kcgm_text") { kcgmText(); dispatchEvent(new Event("resize")); } }); } catch (e) {}
@@ -258,6 +262,7 @@ body.searching #homeMain{display:none}
 #qBtns #qLater.on{border-color:var(--bad);color:var(--bad)}
 /* settings: grouped rows like the phone's own settings */
 :root.phone #settings h2{margin:18px 4px 6px}
+:root.phone #settings>.page>.topbar,:root.phone #gloss>.page>.topbar,:root.phone #history>.page>.topbar{display:none}   /* the top row names the page */
 :root.phone #settings .sgc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 :root.phone #settings #fsBtn{background:var(--card);text-align:left;border-radius:14px}
 /* glossary: A to Z with sticky letters and a letter strip */
@@ -345,7 +350,6 @@ body.searching #homeMain{display:none}
 <!-- GLOSSARY -->
 <section id="gloss" class="screen"><div class="page">
   <div class="topbar" style="margin-bottom:12px">
-    <button class="x" id="glossBack" aria-label="Back">←</button>
     <h1 style="margin:0;font-size:22px">Glossary</h1>
   </div>
   <input class="search" id="gSearch" placeholder="Search e.g. F21, PAX, roping" autocomplete="off">
@@ -355,7 +359,6 @@ body.searching #homeMain{display:none}
 <!-- SETTINGS -->
 <section id="settings" class="screen"><div class="page">
   <div class="topbar" style="margin-bottom:12px">
-    <button class="x" id="setBack" aria-label="Back">←</button>
     <h1 style="margin:0;font-size:22px">Settings</h1>
   </div>
   <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">Full screen</button>
@@ -389,7 +392,6 @@ body.searching #homeMain{display:none}
 <!-- HISTORY -->
 <section id="history" class="screen"><div class="page">
   <div class="topbar" style="margin-bottom:12px">
-    <button class="x" id="histBack" aria-label="Back">←</button>
     <h1 style="margin:0;font-size:22px">Q&amp;A history</h1>
   </div>
   <div id="histList"></div>
@@ -814,7 +816,6 @@ body.searching #homeMain{display:none}
   Browse.mount($("browse"), lk); Browse.onChange(() => nav(false));
   lk.input.addEventListener("input", () => setTimeout(() => nav(false), 200));
   $("glossBtn").onclick = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
-  $("glossBack").onclick = () => show("home");
   $("gSearch").oninput = e => renderGloss(e.target.value);
 
   // ---------- SETTINGS ----------
@@ -825,7 +826,6 @@ body.searching #homeMain{display:none}
     if (AI.model()) $("modelSel").innerHTML = `<option>${AI.model()}</option>`;
   }
   const openSettings = () => { renderSettings(); TextSize.theme($("thRoot")); TextSize.text($("txRoot")); TextSize.mount($("tsRoot")); show("settings"); };
-  $("setBack").onclick = () => { renderHome(); show(cur); };
   $("keyTest").onclick = async () => {
     const k = $("keyIn").value.trim();
     if (!k){ $("keyStatus").textContent = "Paste a key first."; return; }
@@ -855,7 +855,6 @@ body.searching #homeMain{display:none}
     });
     show("history");
   };
-  $("histBack").onclick = () => show("quiz");
 
   // ---------- FULL SCREEN ----------
   $("fsBtn").onclick = () => {
@@ -870,12 +869,13 @@ body.searching #homeMain{display:none}
   // the tab strip: Assets and Quiz switch here, PFD and Layout open pfd.html; a quiz left half way resumes
   Tabs.mount({ active: "assets", onSettings: openSettings, onGlossary: () => openGloss(), onPop: restore,
     // ⌂: Assets with no filter, search or item; the quiz home
-    onHome: t => { if (t === "quiz"){ renderHome(); show("quiz"); return true; }
-      restoring = true; lk.input.value = ""; Browse.reset(); if (lk.current()) lk.close(); show("home"); restoring = false; nav(true); return true; },
+    homeHere: true, onHome: () => { assetsHome(); nav(true); return true; },
     onTab: t => {
     if (t === "assets"){ show("home"); Browse.reset(); if (lk.current()) lk.close(); return true; }
     if (t === "quiz"){ openQuiz(); return true; }
     return false; } });
+  // ⌂ (from any tab or page): Assets with no search, no filter and no item open
+  function assetsHome(){ restoring = true; lk.input.value = ""; Browse.reset(); if (lk.current()) lk.close(); show("home"); restoring = false; }
   // the Quiz tab opens on a card: the deck in progress, or a fresh one with the last choices
   function openQuiz(){ if (run && !run.finished) show("deck"); else start(pick()); }
   const openGloss = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
@@ -886,7 +886,7 @@ body.searching #homeMain{display:none}
       const hit = CARDS.filter(c => w.every(x => (c.q + " " + c.a + " " + (c.e || "")).toLowerCase().includes(x)));
       q.blur(); if (hit.length) start(shuffle(hit)); else { q.value = ""; q.placeholder = "No question has all those words"; } };
     if (Tabs.slot($("lkRoot"))) Tabs.slot(q); }
-  const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#gloss") openGloss(); else if (location.hash === "#settings") openSettings(); };
+  const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#home"){ assetsHome(); history.replaceState(history.state, "", "#assets"); } else if (location.hash === "#gloss") openGloss(); else if (location.hash === "#settings") openSettings(); };
   // back here from another page: the view this entry was left on; else the address (#quiz, #settings…)
   if (history.state && history.state.s) restore(history.state); else { restoring = true; openHash(); restoring = false; nav(false); }
   window.addEventListener("hashchange", openHash);
