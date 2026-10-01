@@ -23,6 +23,10 @@ const AI = (() => {
     const stableFlash = names.filter(n => /^gemini-\d+(\.\d+)?-flash$/.test(n)).sort((a, b) => ver(b) - ver(a));
     const anyFlash = names.filter(n => /flash/.test(n) && !/lite/.test(n)).sort((a, b) => ver(b) - ver(a));
     const best = stableFlash[0] || (names.includes("gemini-flash-latest") ? "gemini-flash-latest" : anyFlash[0]) || names[0];
+    // stand ins when the best one is busy: the other stable flash models, then any flash (lite included), newest first
+    const lite = names.filter(n => /flash-lite$/.test(n)).sort((a, b) => ver(b) - ver(a));
+    const spare = [...new Set([...stableFlash, "gemini-flash-latest", ...lite, ...anyFlash])].filter(n => n !== best && names.includes(n));
+    set("kcgm_gspare", JSON.stringify(spare.slice(0, 4)));
     return { best, names };
   }
 
@@ -83,17 +87,21 @@ Rules:
       contents,
       generationConfig: { temperature: 0.3, maxOutputTokens: 4096, responseMimeType: "application/json", responseSchema: SCHEMA }
     };
-    const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 45000);
+    // Google answers 503 ("high demand") or 500 when a model is overloaded, often for minutes and mostly on its newest model.
+    // So: wait a moment and try once more, then ask the other flash models this key has; the answer is the same kind of thing.
+    const busy = st => st === 503 || st === 500 || st === 502 || st === 504;
+    let spare = []; try { spare = JSON.parse(get("kcgm_gspare", "[]")) || []; } catch (e) {}
+    if (!spare.length) { try { await detectModels(key()); spare = JSON.parse(get("kcgm_gspare", "[]")) || []; } catch (e) {} }
+    const tries = [m, m, ...spare.filter(x => x !== m)].slice(0, 5);
     let r;
-    try {
-      r = await fetch(`${BASE}/models/${m}:generateContent?key=${encodeURIComponent(key())}`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal
-      });
-    } catch (e) {
-      throw new Error(e.name === "AbortError" ? "No reply in time. Check your signal and try again." : "Can't reach Google. Check your signal.");
-    } finally { clearTimeout(timer); }
-    if (r.status === 404) { set("kcgm_gmodel", null); throw new Error("That AI model was retired. Tap Test in Settings to pick the current one, then ask again."); }
-    if (!r.ok) throw new Error(await errText(r));
+    for (let i = 0; i < tries.length; i++) {
+      if (i) await new Promise(ok => setTimeout(ok, i === 1 ? 1500 : 600));
+      r = await send(tries[i], body);
+      if (r.status === 404 && tries[i] === m) { set("kcgm_gmodel", null); if (spare.length) continue;
+        throw new Error("That AI model was retired. Tap Test in Settings to pick the current one, then ask again."); }
+      if (!busy(r.status) && r.status !== 404) break;
+    }
+    if (!r.ok) throw new Error(busy(r.status) ? "Google's AI is overloaded right now (all its models this key can use said \"high demand\"). This is on Google's side, not the app. Try again in a few minutes." : await errText(r));
     const j = await r.json();
     const cand = (j.candidates || [])[0];
     const text = ((cand && cand.content && cand.content.parts) || []).filter(p => !p.thought).map(p => p.text || "").join("");
@@ -104,6 +112,17 @@ Rules:
     return out;
   }
 
+  async function send(m, body) {
+    const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 45000);
+    try {
+      return await fetch(`${BASE}/models/${m}:generateContent?key=${encodeURIComponent(key())}`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal
+      });
+    } catch (e) {
+      throw new Error(e.name === "AbortError" ? "No reply in time. Check your signal and try again." : "Can't reach Google. Check your signal.");
+    } finally { clearTimeout(timer); }
+  }
+
   async function test(k) {
     const { best, names } = await detectModels(k);
     if (!best) throw new Error("No usable Gemini model found for this key.");
@@ -111,5 +130,5 @@ Rules:
     return { best, names };
   }
 
-  return { ready, ask, test, key, model, setModel: m => set("kcgm_gmodel", m), clear: () => { set("kcgm_gkey", null); set("kcgm_gmodel", null); } };
+  return { ready, ask, test, key, model, setModel: m => set("kcgm_gmodel", m), clear: () => { set("kcgm_gkey", null); set("kcgm_gmodel", null); set("kcgm_gspare", null); } };
 })();

@@ -44,6 +44,20 @@ for (const x of recs){ if (pfd[x.k] || SITE.test(x.txt)) continue;
     let best = null, bs = 0, tie = false; cand.forEach(c => { const sc = [...w].filter(v => nodeWords[c] && nodeWords[c].has(v)).length; if (sc > bs){ bs = sc; best = c; tie = false; } else if (sc && sc === bs) tie = true; });
     if (bs > 0 && !tie && (bs >= 2 || cand.length === 1)) id = best; }   // one shared word is enough only when the P&ID has one PFD item
   if (id) assoc[x.k] = id; }
+// 2b. a line whose From / To is another line that got linked (a branch, a header, a pipe run through other areas) → that
+//     line's PFD item, followed along the chain until nothing changes, e.g. 00-1789-HCL drain ← 00-4054 ← 00-1132 ← 72-1125
+//     (HCl pump discharge) → the hydrochloric acid node. Only same service lines, so a tie-in to a utility header doesn't count.
+const LN = /\b\d{2}-Z?\d{3,4}-[A-Z0-9]+-[A-Z0-9]+-\d+\b/g, svc = t => (String(t).split("-")[2] || "");
+const lines = recs.filter(x => x.t === "line");
+for (let pass = 0, ch = 1; ch && pass < 30; pass++){ ch = 0;
+  for (const x of lines){ if (pfd[x.k] || assoc[x.k] || SITE.test(x.txt)) continue;
+    const ends = [x.r[x.f.indexOf("From")], x.r[x.f.indexOf("To")]].join(" ").toUpperCase().match(LN) || [];
+    for (const e of ends){ if (svc(e) !== svc(x.r[0])) continue; const a = direct(norm(e)) || assoc[norm(e)]; if (a){ assoc[x.k] = a; ch++; break; } } } }
+// also the other way: a linked line whose From / To names an unlinked line of the same service
+for (let pass = 0, ch = 1; ch && pass < 30; pass++){ ch = 0;
+  for (const x of lines){ const a = direct(x.k) || assoc[x.k]; if (!a) continue;
+    const ends = [x.r[x.f.indexOf("From")], x.r[x.f.indexOf("To")]].join(" ").toUpperCase().match(LN) || [];
+    for (const e of ends){ const k = norm(e); if (svc(e) !== svc(x.r[0]) || pfd[k] || assoc[k]) continue; if (recs.some(y => y.k === k && SITE.test(y.txt))) continue; assoc[k] = a; ch++; } } }
 // 3. valves on a linked line
 for (const x of recs){ if (pfd[x.k] || assoc[x.k] || !/^(mv|cv)$/.test(x.t)) continue; const ln = x.r[x.f.indexOf("Line number")]; const a = ln && (direct(norm(ln)) || assoc[norm(ln)]); if (a) assoc[x.k] = a; }
 // 4. still nothing, but its P&ID has PFD items: the main one (most tags the PFD shows on that P&ID); a tie → the area link

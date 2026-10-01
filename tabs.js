@@ -185,9 +185,15 @@ window.Tabs = (() => {
   // ---------- back and home (every page, every tab) ----------
   // Every view change is a browser history entry (Tabs.push / Tabs.replace, the page restores it in Tabs.onPop), so ←
   // and the phone's own back go to the previous view, across tabs and pages. ⌂ is the front page of the tab you're in.
-  const NAVB = `<span class="nv-bh"><button type="button" class="nv-b nv-back" aria-label="Back" title="Back to the previous view"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></button><button type="button" class="nv-b nv-home" aria-label="Home" title="Front page of this tab"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg></button></span>`;
+  const NAVB = `<span class="nv-bh"><button type="button" class="nv-b nv-home" aria-label="Home" title="Front page of this tab"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg></button><button type="button" class="nv-b nv-back" aria-label="Back" title="Back to the previous view"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></button><button type="button" class="nv-b nv-fwd" aria-label="Forward" title="Forward again (redo the view change)" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button></span>`;
   let depth = 0;
-  const push = st => { st = Object.assign({}, st, { d: depth = ((history.state && history.state.d) || 0) + 1 }); history.pushState(st, ""); };
+  // ⟶ redoes a view change you went back from: on if the browser can go forward (its navigation API, else the furthest depth
+  // this tab has reached, which a new view change cuts back to itself)
+  const maxD = v => { try { if (v != null) sessionStorage.setItem("kcgm_maxd", v); return +sessionStorage.getItem("kcgm_maxd") || 0; } catch (e) { return 0; } };
+  const curD = () => (history.state && history.state.d) || 0;
+  function fwdState(){ const can = window.navigation && "canGoForward" in navigation ? navigation.canGoForward : curD() < maxD();
+    if (el) el.querySelectorAll(".nv-fwd").forEach(b => b.disabled = !can); }
+  const push = st => { st = Object.assign({}, st, { d: depth = curD() + 1 }); history.pushState(st, ""); maxD(depth); fwdState(); };
   const replace = st => history.replaceState(Object.assign({}, history.state || {}, st, { d: (history.state && history.state.d) || 0 }), "");
   const sameSite = () => { try { return document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) { return false; } };
   function goBack(){
@@ -197,8 +203,10 @@ window.Tabs = (() => {
   }
   function goHome(){ more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true;
     if (O.onHome && O.onHome(active) !== false) return; const t = TABS.find(x => x[0] === active); if (t) location.href = t[2]; }
-  addEventListener("popstate", e => { if (mo && !mo.hidden) more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true; if (O.onPop) O.onPop(e.state || {}); });
-  function wireNav(){ el.querySelectorAll(".nv-back").forEach(b => b.onclick = goBack); el.querySelectorAll(".nv-home").forEach(b => b.onclick = goHome); }
+  function goFwd(){ history.forward(); }
+  addEventListener("pageshow", () => setTimeout(fwdState, 0));
+  addEventListener("popstate", e => { fwdState(); if (mo && !mo.hidden) more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true; if (O.onPop) O.onPop(e.state || {}); });
+  function wireNav(){ el.querySelectorAll(".nv-back").forEach(b => b.onclick = goBack); el.querySelectorAll(".nv-home").forEach(b => b.onclick = goHome); el.querySelectorAll(".nv-fwd").forEach(b => b.onclick = goFwd); fwdState(); }
   function more(on){
     if (!mo) return; mo.hidden = !on; const inp = el.querySelector(".mo-q");
     [...el.querySelector(".ph-slot").children].forEach(c => { if (c !== inp) c.classList.toggle("mo-off", on); });
@@ -268,6 +276,8 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 /* back and home: before the tabs (desktop) and at the start of the phone's top row */
 .nv-bh{display:flex;gap:6px;flex:none;margin-right:8px}
 .nv-b{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card,var(--panel));color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer;flex:none}
+.nv-b svg{width:18px;height:18px;display:block;flex:none;cursor:inherit}   /* (a page's own svg rules must not resize these) */
+.nv-b:disabled{opacity:.35;cursor:default}.nv-b:disabled:hover{border-color:var(--line);color:var(--ink)}
 .nv-b:hover{border-color:var(--gold,var(--accent));color:var(--gold,var(--accent))}
 .ph-top .nv-bh{margin-right:2px;gap:4px}.ph-top .nv-b{width:34px;height:34px}
 /* everything that can be clicked shows the hand, and list items light up under the mouse */
