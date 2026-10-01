@@ -162,9 +162,9 @@
   L.listName = it => it.t === "line" ? L.lineText(it) : headName(it);
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
-    let h = `<div class="lk-head"><div class="lk-kind">${esc(typeName(it.t))}</div>` +
+    let h = `<div class="lk-head"><div class="lk-hs"><div class="lk-kind">${esc(typeName(it.t))}</div><span class="lk-slot"></span></div><div class="lk-hb">` +
       (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + (it.t === "pid" ? (PHONE() && dwg && dwg.title ? `<div class="lk-name">${esc(dwg.title)}</div>` : "") : it.r && !PHONE() || it.t === "spec" || it.t === "line" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
-      (PHONE() ? figs(it) : "") + `</div>`;
+      (PHONE() ? figs(it) : "") + `</div></div>`;
     // a drawing: no summary lines (the preview beside it shows the number and title); the phone has no preview, so the title stays there
     if (!dwg && it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
     const pfd = opts.pfd && opts.pfd(it);
@@ -388,7 +388,8 @@
       const from = it.t === "pid" ? (stack.length && stack[stack.length - 1].it ? stack[stack.length - 1].it.key : null) : it.key;
       const hv = (d, t) => `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
       body.innerHTML = `<div class="lk-nav"><button class="lk-home" title="Home" aria-label="Home">${hv('<path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/>')}</button>` +
-        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button>` + stepHTML(it) + `</div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
+        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button>` + `</div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
+      const slot = body.querySelector(".lk-slot"); if (slot) slot.outerHTML = stepHTML(it);   // the stepper sits in the card's gold header
       body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from, { page: +a.dataset.page || 1 }); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
       body.querySelector(".lk-back").onclick = back; body.querySelector(".lk-home").onclick = home;
@@ -571,7 +572,10 @@ body.sp-on{overflow:hidden}
 .lk-d summary{list-style:none}.lk-d summary::-webkit-details-marker{display:none}.lk-d summary::before{content:"▸";display:inline-block;width:14px;color:var(--lk-a);transition:transform .15s}
 .lk-d[open]>summary::before{transform:rotate(90deg)}.sp-c{font-weight:600;color:var(--mute);font-size:var(--fb,15px);margin-left:4px}
 .sp-head{margin:14px 0 2px;font-size:var(--fb,15px);line-height:1.35}.sp-head b{color:var(--lk-a)}.sp-sub{font-size:var(--fb,15px);color:var(--mute);margin-bottom:2px}
-:root.phone .lk-head{background:var(--lk-c);border:1px solid var(--lk-l);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.lk-head{background:var(--lk-c);border:1px solid var(--lk-l);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.lk-hs{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px;padding:5px 6px 5px 14px;background:color-mix(in srgb,var(--lk-a) 28%,var(--lk-c))}
+.lk-hs .lk-kind{color:color-mix(in srgb,var(--lk-a) 70%,var(--ink))}.lk-hb{padding:8px 14px 12px}.lk-hb .lk-key{margin-top:0}
+.lk-head .lk-step{margin-left:0;height:30px}
 :root.phone .lk-head .lk-name{margin:0}.lk-figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
 .lk-figs b{display:block;font-size:var(--fb,15px);font-weight:800;overflow-wrap:anywhere}.lk-figs span{display:block;font-size:var(--fl,13px);color:var(--mute)}
 .acc{background:var(--lk-c);border:1px solid var(--lk-l);border-radius:14px;overflow:hidden}
