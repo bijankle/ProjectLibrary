@@ -162,7 +162,7 @@
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
     let h = `<div class="lk-head"><div class="lk-hs"><div class="lk-kind">${esc(typeName(it.t))}</div><span class="lk-slot"></span></div><div class="lk-hb">` +
       `<div class="lk-kr">` + (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + `<span class="lk-vslot"></span></div>` + (it.t === "pid" ? (PHONE() && dwg && dwg.title ? `<div class="lk-name">${esc(dwg.title)}</div>` : "") : it.r && !PHONE() || it.t === "spec" || it.t === "line" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
-      (PHONE() ? figs(it) : "") + `</div></div>`;
+      `</div></div>`;
     // a drawing: no summary lines (the preview beside it shows the number and title); the phone has no preview, so the title stays there
     if (!dwg && it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
     const pfd = opts.pfd && opts.pfd(it);
@@ -231,19 +231,6 @@
   const NOMEN = { line: /^(area|service|service description|size \(dn\)|pipe spec)$/i, mel: /^area$/i, ins: /^(instrument type|loop number)$/i,
     cv: /^valve type$/i, mv: /^area$/i, spi: /^type$/i };
   const inTag = (it, l) => !!(NOMEN[it.t] && NOMEN[it.t].test(String(l).trim()) && (it.t !== "ins" || /^[A-Z]{1,5}\s*\d/.test(it.key)));
-  // phone header card: up to three key figures for the item's kind, never one its tag or name already says
-  const FIG = { mel: ["Installed power (kW)", "Design duty point", "Nominal duty point", "Size / description", "Duty / standby", "Status"],
-    ins: ["Instrument type", "Range / units", "Process fluid", "Loop number", "Make"], cv: ["Valve size (mm)", "Fail position", "Actuator type", "Fluid", "Flow max (m³/h)"],
-    line: ["Size (DN)", "Pipe spec", "Design pressure (kPag)", "Operating pressure (kPag)", "Insulation", "Pipe length (m)"], mv: ["Size (DN)", "Valve type", "Spec", "Manufacturer", "Model"],
-    spi: ["Size (DN)", "Total qty", "Pipe spec", "Make / model"], hose: ["Size (DN)", "Length (m)", "Internal diameter (mm)", "Pipe spec", "Service"] };
-  function figs(it){
-    const want = FIG[it.t]; if (!it.r || !want) return "";
-    const rows = want.map(n => ({ l: n, v: L.get(it, n) })).filter(r => r.v && String(r.v).trim() && String(r.v).length <= 22 && !inTag(it, r.l));
-    const kept = L.dedupe(rows, { heads: [it.key, headName(it)] }).slice(0, 3); if (!kept.length) return "";
-    const show = r => { const u = (/\(([^)]+)\)\s*$/.exec(r.l) || [])[1], l = r.l.replace(/\s*\([^)]*\)\s*$/, "");
-      return [u === "DN" ? "DN" + r.v : u && /^[\d.,\s]+$/.test(r.v) ? r.v + " " + u : r.v, l]; };
-    return `<div class="lk-figs">${kept.map(r => { const [v, l] = show(r); return `<div><b>${esc(v)}</b><span>${esc(l)}</span></div>`; }).join("")}</div>`;
-  }
   // spec section (pipe class for a line, datasheet for a valve), filled once spec/index.json is loaded
   L.fillSpec = (root, it) => { const el = root.querySelector(".lk-spec"); if (!el || !window.Spec) return;
     if (el.dataset.k) it = L.find(el.dataset.k, el.dataset.t) || it;   // the spec may come from the same tag in another list
@@ -582,8 +569,7 @@ body.sp-on{overflow:hidden}
 .lk-hs{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px;padding:5px 6px 5px 14px;background:color-mix(in srgb,var(--lk-a) 28%,var(--lk-c))}
 .lk-hs .lk-kind{color:color-mix(in srgb,var(--lk-a) 70%,var(--ink))}.lk-hb{padding:8px 14px 12px}.lk-hb .lk-key{margin-top:0}
 .lk-head .lk-step{margin-left:0;height:30px}
-:root.phone .lk-head .lk-name{margin:0}.lk-figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
-.lk-figs b{display:block;font-size:var(--fb,15px);font-weight:800;overflow-wrap:anywhere}.lk-figs span{display:block;font-size:var(--fl,13px);color:var(--mute)}
+:root.phone .lk-head .lk-name{margin:0}
 .lk-ocr{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);font-family:inherit;font-size:var(--fb,15px);padding:8px}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   window.Lookup = L;
