@@ -580,6 +580,7 @@ window.PFDLayout = (() => {
   return {
     init(a){ api = a; },
     show, active: () => on, zoom: z => map && (z == null ? map.getZoom() : map.setZoom(z, { animate: false })), sync: z => on && sync(z), panelHtml, bindPanel, declutter: () => map && declutter(),
-    zoomBy: d => map && (d > 0 ? map.zoomIn(.75) : map.zoomOut(.75)), home: () => map && home(true)
+    zoomBy: d => map && (d > 0 ? map.zoomIn(.75) : map.zoomOut(.75)), home: () => map && home(true),
+    focus: id => { if (map && LAYOUT.nodes[id]) map.flyTo(pos(id), Math.max(map.getZoom(), 19), { duration: .6 }); }
   };
 })();

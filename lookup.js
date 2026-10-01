@@ -388,7 +388,7 @@
       const from = it.t === "pid" ? (stack.length && stack[stack.length - 1].it ? stack[stack.length - 1].it.key : null) : it.key;
       const hv = (d, t) => `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
       body.innerHTML = `<div class="lk-nav"><button class="lk-home" title="Home" aria-label="Home">${hv('<path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/>')}</button>` +
-        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button>` + `</div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
+        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button>` + viewsHTML(it) + `</div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
       const slot = body.querySelector(".lk-slot"); if (slot) slot.outerHTML = stepHTML(it);   // the stepper sits in the card's gold header
       body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from, { page: +a.dataset.page || 1 }); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
@@ -400,6 +400,9 @@
       if (opts.onOpen) opts.onOpen(it);
     };
     let cur = null;
+    // the item on the other views: PFD and Layout as one split control at the right of the row (only the views it is on)
+    const viewsHTML = it => { const v = opts.views && opts.views(it); if (!v || !(v.pfd || v.layout)) return "";
+      return `<span class="lk-vw">${v.pfd ? `<a href="${esc(v.pfd)}" title="Show it on the Smart PFD">PFD<sup>smart</sup></a>` : ""}${v.layout ? `<a href="${esc(v.layout)}" title="Show it on the plant layout">Layout<sup>smart</sup></a>` : ""}</span>`; };
     // previous / next item in the list it came from: one gold block, ‹ 12 of 147 ›
     const stepHTML = it => { const a = stepList(it), i = a.indexOf(it); if (i < 0 || a.length < 2) return "";
       return `<span class="lk-step"><button class="lk-st" data-s="-1"${i > 0 ? ` title="${esc(a[i - 1].key)}"` : " disabled"} aria-label="Previous item">‹</button><span class="lk-sn"><b>${(i + 1).toLocaleString()}</b> of ${a.length.toLocaleString()}</span><button class="lk-st" data-s="1"${i < a.length - 1 ? ` title="${esc(a[i + 1].key)}"` : " disabled"} aria-label="Next item">›</button></span>`; };
@@ -490,7 +493,9 @@
 .lk-empty{color:var(--mute);font-size:var(--fb,15px);padding:10px 2px;line-height:1.45}
 .lk-nav{display:flex;gap:8px;margin:2px 0 12px}
 .lk-home,.lk-back{width:34px;height:34px;border-radius:50%;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer}
-.lk-nav{align-items:center}.lk-step{display:inline-flex;align-items:stretch;height:34px;border-radius:9px;overflow:hidden;background:var(--lk-a);margin-left:6px}
+.lk-nav{align-items:center}.lk-vw{margin-left:auto;display:inline-flex;border:1.5px solid var(--lk-a);border-radius:9px;overflow:hidden;background:var(--lk-c)}
+.lk-vw a{display:flex;align-items:center;padding:0 11px;height:31px;color:var(--ink);text-decoration:none;font-weight:800;font-size:var(--fb,15px);white-space:nowrap}.lk-vw a+a{border-left:1.5px solid var(--lk-a)}
+.lk-vw a:hover{background:color-mix(in srgb,var(--lk-a) 22%,var(--lk-c))}.lk-vw sup{font-size:.6em;font-weight:700;font-style:italic;margin-left:2px;opacity:.75}.lk-step{display:inline-flex;align-items:stretch;height:34px;border-radius:9px;overflow:hidden;background:var(--lk-a);margin-left:6px}
 .lk-st{border:0;background:var(--lk-a);color:#1a1307;font:inherit;font-size:20px;font-weight:800;padding:0 11px;cursor:pointer;line-height:1}.lk-st:hover:not(:disabled){filter:brightness(1.1)}.lk-st:disabled{opacity:.4;cursor:default}
 .lk-sn{display:flex;align-items:center;padding:0 8px;background:color-mix(in srgb,var(--lk-a) 55%,#fff);color:#1a1307;font-size:var(--fl,13px);white-space:nowrap}.lk-sn b{margin-right:3px}
 .lk-home:hover,.lk-back:hover{border-color:var(--lk-a);color:var(--lk-a)}

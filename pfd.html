@@ -1588,7 +1588,10 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
   $("search").addEventListener("input", e => { const q = e.target.value; if (q.trim().length >= 2){ openSearch(q); e.target.value = ""; } });
   $("camBtn").onclick = () => { openSearch(""); setTimeout(() => $("lkPanel").querySelector(".lk-cam").click(), 40); };
   window.addEventListener("keydown", e => { if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); openSearch(""); } });
-  { const f = new URLSearchParams(location.search).get("find"); if (f) setTimeout(() => { Lookup.load().then(() => { const k = Lookup.norm(f), hit = onPfd.get(k); if (hit) hit.go(); else openSearch(f, true); }); }, 300); }
+  // ?find=TAG opens with that item selected; with #layout it is shown on the layout map, flown to
+  { const f = new URLSearchParams(location.search).get("find"); if (f) setTimeout(() => { Lookup.load().then(() => { const k = Lookup.norm(f), hit = onPfd.get(k); if (!hit){ openSearch(f, true); return; }
+      hit.go(); if (location.hash === "#layout"){ const nid = Object.keys(EQUIP_DATA).find(id => EQUIP_DATA[id].eq.some(r => Lookup.norm(r.tag) === k) || EQUIP_DATA[id].ins.some(i => Lookup.norm(i.tag) === k));
+        setView("map"); if (nid) setTimeout(() => PFDLayout.focus(nid), 700); } }); }, 300); }
 
   window.addEventListener("keydown", e => { if (e.key === "Escape"){ closeInfo(); if (focusFlow) setFlow(null); clearSel(); } });
 
