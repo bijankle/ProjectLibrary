@@ -77,7 +77,9 @@ h2{font-size:var(--fl,13px);text-transform:uppercase;letter-spacing:1.2px;color:
   border-radius:14px;padding:14px 16px;font-size:var(--fb,15px);font-weight:700;cursor:pointer;flex:1}
 .btn:active{transform:scale(.98)}
 .btn.primary{background:var(--gold);color:#1a1307;border-color:var(--gold)}
-.topics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.topics{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.topic .nm{padding-right:62px}
+.tg-h{grid-column:1/-1;margin:8px 0 0;font-size:var(--fl,13px);letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}.tg-h:first-child{margin-top:0}
 .topic{border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:12px;
   cursor:pointer;user-select:none;position:relative;min-height:84px}
 .topic .ic{font-size:22px}
@@ -423,6 +425,8 @@ body.searching #homeMain{display:none}
   const TAB_OF = { home: "assets", gloss: "assets", quiz: "quiz", deck: "quiz", end: "quiz", history: "quiz" };
   let cur = "home";
   const show = id => {
+    // desktop: the quiz's front is the deck itself (its settings are in the left column), with the saved settings
+    if (id === "quiz" && !Tabs.phone){ if (run && !run.finished){ id = "deck"; } else { const l = pick(); if (l.length){ start(l); return; } } }
     if (id !== "settings") cur = id;
     if (TAB_OF[id]) Tabs.set(TAB_OF[id]);
     document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
@@ -467,13 +471,14 @@ body.searching #homeMain{display:none}
   }
   function renderHome(){
     const tp = $("topics"); tp.innerHTML = "";
-    Object.entries(TOPICS).forEach(([k, t]) => {
+    TGROUPS.forEach(([g, gn]) => { const h = document.createElement("h3"); h.className = "tg-h"; h.textContent = gn; tp.appendChild(h);
+    Object.entries(TOPICS).filter(([, t]) => t.g === g).forEach(([k, t]) => {
       const d = document.createElement("div");
       d.className = "topic" + (sel.has(k) ? " sel" : "");
       d.innerHTML = `<div class="nm">${t.name}</div><div class="bl">${t.blurb}</div><div class="pc">${topicInfo(k)}</div>`;
       d.onclick = () => { sel.has(k) ? sel.delete(k) : sel.add(k); store.set("kcgm_topics", [...sel]); renderHome(); };
       tp.appendChild(d);
-    });
+    }); });
     const seen = CARDS.filter(c => hist[c.q]).length;
     const known = CARDS.filter(c => hist[c.q] && hist[c.q].last).length;
     const again = CARDS.filter(c => hist[c.q] && !hist[c.q].last).length;
@@ -704,17 +709,19 @@ body.searching #homeMain{display:none}
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   function drawDesk(){
     if (Tabs.phone || !run) return;
-    const nT = Object.keys(TOPICS).length, all = sel.size === nT, done = Object.values(run.done), kn = done.filter(Boolean).length;
+    const done = Object.values(run.done), kn = done.filter(Boolean).length;
     const seg = (key, opts, val) => `<div class="qd-sg" data-k="${key}">` + opts.map(([v, t]) => `<button type="button" data-v="${v}" class="${String(v) === String(val) ? "on" : ""}">${t}</button>`).join("") + `</div>`;
-    $("qdSide").innerHTML = `<h4>Topics <button type="button" data-all>${all ? "None" : "All"}</button></h4>` +
-      Object.entries(TOPICS).map(([k, t]) => `<button type="button" class="qd-tp${sel.has(k) ? " on" : ""}" data-t="${k}"><i>${sel.has(k) ? "✓" : ""}</i>${t.name}<small>${topicInfo(k)}</small></button>`).join("") +
+    const inG = g => Object.keys(TOPICS).filter(k => TOPICS[k].g === g);
+    $("qdSide").innerHTML = TGROUPS.map(([g, gn]) => { const ks = inG(g), full = ks.every(k => sel.has(k));
+      return `<h4>${gn} <button type="button" data-grp="${g}" data-on="${full ? 0 : 1}">${full ? "None" : "All"}</button></h4>` +
+        ks.map(k => `<button type="button" class="qd-tp${sel.has(k) ? " on" : ""}" data-t="${k}"><i>${sel.has(k) ? "✓" : ""}</i>${TOPICS[k].name}<small>${topicInfo(k)}</small></button>`).join(""); }).join("") +
       `<h4>Order</h4>` + seg("mode", [["mix", "Shuffled"], ["weak", "Revisit first"], ["new", "Unseen"]], mode) +
       `<h4>Deck length</h4>` + seg("len", [[10, "10"], [20, "20"], [40, "40"], [9999, "All"]], len) +
       `<h4>This deck</h4><div class="qd-st"><div><b>${done.length}</b><span>scored</span></div><div><b style="color:var(--ok)">${kn}</b><span>knew it</span></div><div><b style="color:var(--bad)">${done.length - kn}</b><span>revisit</span></div></div>` +
       `<button type="button" class="qd-act" data-new>▶ New deck</button>` + (done.length ? `<button type="button" class="qd-act" data-end>End and see the score</button>` : "");
     const S = $("qdSide");
     S.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { const k = b.dataset.t; sel.has(k) ? sel.delete(k) : sel.add(k); store.set("kcgm_topics", [...sel]); renderHome(); rebuild(); });
-    S.querySelector("[data-all]").onclick = () => { sel = all ? new Set() : new Set(Object.keys(TOPICS)); store.set("kcgm_topics", [...sel]); renderHome(); rebuild(); };
+    S.querySelectorAll("[data-grp]").forEach(b => b.onclick = () => { inG(b.dataset.grp).forEach(k => b.dataset.on === "1" ? sel.add(k) : sel.delete(k)); store.set("kcgm_topics", [...sel]); renderHome(); rebuild(); });
     S.querySelectorAll("[data-k] button").forEach(b => b.onclick = () => { if (b.parentNode.dataset.k === "mode"){ mode = b.dataset.v; store.set("kcgm_mode", mode); } else { len = +b.dataset.v; store.set("kcgm_len", len); }
       document.querySelectorAll("#modeSeg button").forEach(x => x.classList.toggle("on", x.dataset.m === mode)); document.querySelectorAll("#lenSeg button").forEach(x => x.classList.toggle("on", +x.dataset.n === len)); renderHome(); rebuild(); });
     S.querySelector("[data-new]").onclick = () => { const l = pick(); if (l.length) start(l); };

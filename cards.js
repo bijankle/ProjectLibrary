@@ -5,22 +5,26 @@
 // and Stage 2 (2000-F00-REP-PR-10002).
 
 const TOPICS = {
-  big: {name: "Big Picture", blurb: "Why the flowsheet looks the way it does"},
-  codes: {name: "Area Codes", blurb: "F12, F16, F21... what people mean"},
-  tags: {name: "Reading Tags", blurb: "Equipment, motor, cable and instrument tags"},
-  acro: {name: "Acronyms & Slang", blurb: "The words you hear on the radio"},
-  crush: {name: "Crushing", blurb: "ROM pad to coarse ore stockpile"},
-  mill: {name: "Milling & Classification", blurb: "SAG, ball mill, pebbles, cyclones"},
-  grav: {name: "Gravity & ILR", blurb: "Knelsons, intensive leach, gravity EW"},
-  flot: {name: "Flotation", blurb: "Roughers, scavengers, Jamesons"},
-  conc: {name: "Concentrate & UFG", blurb: "Thickening, IsaMills, CIL2/3"},
-  cil4: {name: "Tails Leach (CIL4)", blurb: "Flotation tails thickener and CIL4"},
-  elu: {name: "Elution, Regen & Goldroom", blurb: "Stripping carbon and pouring doré"},
-  util: {name: "Water, Air & Reagents", blurb: "Services that keep it all running"},
-  nums: {name: "Key Numbers", blurb: "Throughput, grades, recoveries"},
-  ctrl: {name: "Controls & DCS", blurb: "Modes, interlocks, loops and trips"},
-  hand: {name: "Shift Handover Scenarios", blurb: "What does that report actually mean?"},
+  big: {name: "Big Picture", blurb: "Why the flowsheet looks the way it does", g: "proj"},
+  codes: {name: "Area Codes", blurb: "F12, F16, F21... what people mean", g: "proj"},
+  tags: {name: "Reading Tags", blurb: "Equipment, motor, cable and instrument tags", g: "proj"},
+  acro: {name: "Acronyms & Slang", blurb: "The words you hear on the radio", g: "gen"},
+  crush: {name: "Crushing", blurb: "ROM pad to coarse ore stockpile", g: "gen"},
+  mill: {name: "Milling & Classification", blurb: "SAG, ball mill, pebbles, cyclones", g: "gen"},
+  grav: {name: "Gravity & ILR", blurb: "Knelsons, intensive leach, gravity EW", g: "gen"},
+  flot: {name: "Flotation", blurb: "Roughers, scavengers, Jamesons", g: "gen"},
+  conc: {name: "Concentrate & UFG", blurb: "Thickening, IsaMills, CIL2/3", g: "gen"},
+  cil4: {name: "Tails Leach (CIL4)", blurb: "Flotation tails thickener and CIL4", g: "gen"},
+  elu: {name: "Elution, Regen & Goldroom", blurb: "Stripping carbon and pouring doré", g: "gen"},
+  util: {name: "Water, Air & Reagents", blurb: "Services that keep it all running", g: "gen"},
+  nums: {name: "Key Numbers", blurb: "Throughput, grades, recoveries", g: "proj"},
+  ctrl: {name: "Controls & DCS", blurb: "Modes, interlocks, loops and trips", g: "proj"},
+  hand: {name: "Shift Handover Scenarios", blurb: "What does that report actually mean?", g: "gen"},
 };
+
+// the two groups the topics are listed under: how the process works in general, and this project's own codes, tags,
+// numbers and control system
+const TGROUPS = [["gen", "General"], ["proj", "Project specific"]];
 
 const CARDS = [
 
