@@ -163,7 +163,7 @@
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
     let h = `<div class="lk-head"><div class="lk-hs"><div class="lk-kind">${esc(typeName(it.t))}</div><span class="lk-slot"></span></div><div class="lk-hb">` +
-      (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + (it.t === "pid" ? (PHONE() && dwg && dwg.title ? `<div class="lk-name">${esc(dwg.title)}</div>` : "") : it.r && !PHONE() || it.t === "spec" || it.t === "line" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
+      `<div class="lk-kr">` + (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + `<span class="lk-vslot"></span></div>` + (it.t === "pid" ? (PHONE() && dwg && dwg.title ? `<div class="lk-name">${esc(dwg.title)}</div>` : "") : it.r && !PHONE() || it.t === "spec" || it.t === "line" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
       (PHONE() ? figs(it) : "") + `</div></div>`;
     // a drawing: no summary lines (the preview beside it shows the number and title); the phone has no preview, so the title stays there
     if (!dwg && it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
@@ -388,8 +388,10 @@
       const from = it.t === "pid" ? (stack.length && stack[stack.length - 1].it ? stack[stack.length - 1].it.key : null) : it.key;
       const hv = (d, t) => `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
       body.innerHTML = `<div class="lk-nav">` + (opts.noNav ? "" : `<button class="lk-home" title="Home" aria-label="Home">${hv('<path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/>')}</button>` +
-        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button>`) + viewsHTML(it) + `</div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
+        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button>`) + `</div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
       const slot = body.querySelector(".lk-slot"); if (slot) slot.outerHTML = stepHTML(it);   // the stepper sits in the card's gold header
+      const vs = body.querySelector(".lk-vslot"); if (vs) vs.outerHTML = viewsHTML(it);   // PFD / Layout on the tag's line, right
+      const nv = body.querySelector(".lk-nav"); if (nv && !nv.children.length) nv.remove();
       body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from, { page: +a.dataset.page || 1 }); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
       if (!opts.noNav){ body.querySelector(".lk-back").onclick = back; body.querySelector(".lk-home").onclick = home; }
@@ -494,7 +496,7 @@
 .lk-empty{color:var(--mute);font-size:var(--fb,15px);padding:10px 2px;line-height:1.45}
 .lk-nav{display:flex;gap:8px;margin:2px 0 12px}
 .lk-home,.lk-back{width:34px;height:34px;border-radius:50%;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer}
-.lk-nav{align-items:center}.lk-vw{margin-left:auto;display:inline-flex;border:1.5px solid var(--lk-a);border-radius:9px;overflow:hidden;background:var(--lk-c)}
+.lk-nav{align-items:center}.lk-kr{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px}.lk-kr .lk-key{margin:0;min-width:0}.lk-vw{margin-left:auto;display:inline-flex;border:1.5px solid var(--lk-a);border-radius:9px;overflow:hidden;background:var(--lk-c)}
 .lk-vw a{display:flex;align-items:center;padding:0 11px;height:31px;color:var(--ink);text-decoration:none;font-weight:800;font-size:var(--fb,15px);white-space:nowrap}.lk-vw a+a{border-left:1.5px solid var(--lk-a)}
 .lk-vw a:hover{background:color-mix(in srgb,var(--lk-a) 22%,var(--lk-c))}.lk-vw sup{font-size:.6em;font-weight:700;font-style:italic;margin-left:2px;opacity:.75}.lk-step{display:inline-flex;align-items:stretch;height:34px;border-radius:9px;overflow:hidden;background:var(--lk-a);margin-left:6px}
 .lk-st{border:0;background:var(--lk-a);color:#1a1307;font:inherit;font-size:20px;font-weight:800;padding:0 11px;cursor:pointer;line-height:1}.lk-st:hover:not(:disabled){filter:brightness(1.1)}.lk-st:disabled{opacity:.4;cursor:default}
