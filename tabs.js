@@ -124,25 +124,31 @@ window.Tabs = (() => {
     if (at){ at.scrollIntoView({ block: "start" }); at.classList.add("hl"); } else if (desk()) inp.focus();
   }
 
+  // The bar is drawn as soon as tabs.js runs (it sits at the top of <body>, data-early), so nothing below it jumps while
+  // the page's own scripts load; mount(o) then hands over the page's handlers and draws the menus.
   function mount(o = {}){
     O = o;
+    if (!el) build();
+    if (phone){ drawMore(); set(o.active); if (o.active === "more" && o.openMore !== false) more(true); }
+    else { drawMenus(); set(o.active); }
+  }
+  function build(){
     el = document.createElement("div"); el.className = "tbw";
-    if (phone) return mountPhone(o);
+    if (phone) return buildPhone();
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
     el.innerHTML = `<div class="lg lg-big" title="Project Library">${mark(60)}</div><nav class="mb" aria-label="Menu"><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-v"><button type="button" class="mn-b">View</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
       `<nav class="tb" aria-label="App sections"><div class="tb-seg">${tabs}</div></nav>`;
     document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", true);
-    el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (o.onTab && o.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
+    el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (O.onTab && O.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
     el.querySelectorAll(".mn").forEach(m => { const b = m.querySelector(".mn-b");
       b.onclick = e => { e.stopPropagation(); openM === m ? close() : open(m); };
       b.onmouseenter = () => { if (openM && openM !== m) open(m); };   // menu bar: moving across opens the next one
       m.querySelector(".mn-d").addEventListener("click", e => e.stopPropagation()); });
     document.addEventListener("click", close); addEventListener("keydown", e => { if (e.key === "Escape") close(); });
-    drawMenus(); set(o.active);
   }
   // ---------- phone ----------
   // top: the P, the section's name and a slot for that section's search (Tabs.slot); bottom: the five sections
-  function mountPhone(o){
+  function buildPhone(){
     el.classList.add("ph");
     el.innerHTML = `<nav class="ph-top"><div class="lg lg-m" title="Project Library">${mark(30)}</div><b class="ph-n"></b><div class="ph-slot"><input class="mo-q" type="search" placeholder="Search the app" aria-label="Search the app" autocomplete="off" hidden></div></nav>`;
     bn = document.createElement("nav"); bn.className = "bn"; bn.setAttribute("aria-label", "App sections");
@@ -152,9 +158,7 @@ window.Tabs = (() => {
     bn.querySelectorAll(".tb-t").forEach(a => a.onclick = e => {
       if (a.dataset.t === "more"){ e.preventDefault(); mo.hidden ? more(true) : more(false); return; }
       const was = !mo.hidden; more(false);
-      if (o.onTab && o.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } else if (was && a.dataset.t === active){ e.preventDefault(); } });
-    drawMore(); set(o.active);
-    if (o.active === "more" && o.openMore !== false) more(true);
+      if (O.onTab && O.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } else if (was && a.dataset.t === active){ e.preventDefault(); } });
   }
   const row = (a, icon, label, sub) => `<button type="button" class="mo-i" data-a="${a}"><i>${icon}</i><span>${label}${sub ? `<small>${sub}</small>` : ""}</span><em>›</em></button>`;
   function drawMore(){
@@ -272,6 +276,13 @@ button:disabled{cursor:default}
 :root.phone .hw-b{border:0;border-radius:0;width:100%;max-height:none;height:100%;box-shadow:none}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   const title = t => { O.title = t; set(active); };
+  // early: draw the bar now, with the section the address names (the page's mount fills in the rest)
+  const me = document.currentScript, early = me && me.dataset.early;
+  if (early && document.body && (early === "all" || phone)){
+    const h = location.hash, pg = location.pathname.split("/").pop();
+    const guess = /issues/.test(pg) ? "more" : /pfd/.test(pg) ? (h === "#layout" ? "layout" : "pfd") : h === "#quiz" ? "quiz" : "assets";
+    if (guess === "more") O.title = h === "#sources" ? "Sources" : "Checks";
+    build(); set(guess); }
   return { mount, set, help, slot, more, phone, desk, title };
 })();
 

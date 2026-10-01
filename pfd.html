@@ -343,6 +343,7 @@ svg.focus .ctl, svg.focus .ilk{opacity:.12}
 .lab rect{stroke:var(--cc) !important}
 #case{font-weight:600;color:var(--ink)!important;opacity:1;border-color:var(--line)!important;border-width:1px;padding-left:28px;background-image:radial-gradient(circle at 14px 50%,var(--cc) 0 5px,transparent 5.5px);background-repeat:no-repeat}   /* grey border, a dot in the case colour before the name */
 #case option{font-weight:700;background:#fff}
+@media (min-width:901px){#case{min-width:240px}}   /* (no jump when the case list fills in after the data loads) */
 #info .sc .cur{background:color-mix(in srgb,var(--cc) 35%,transparent)}
 #info .sc th.cur{color:var(--ink)}
 .casenote{font-size:var(--fb,15px);background:color-mix(in srgb,var(--cc) 35%,transparent);border:1px solid var(--cc);border-radius:8px;padding:7px 9px;margin:8px 0}
@@ -456,6 +457,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 </style>
 </head>
 <body>
+<script src="tabs.js" data-early="all"></script>
 <header>
   <button class="hbtn m-only" id="menuBtn" aria-label="Menu" title="Menu">☰</button>
   <button class="hbtn" id="setBtn" title="Settings: update the app, offline downloads, checks and sources" aria-label="Settings">Settings</button>
@@ -515,7 +517,6 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 <script src="offline.js"></script>
 <script src="lookup.js"></script>
 <script src="textsize.js"></script>
-<script src="tabs.js"></script>
 <script src="app-update.js"></script>
 <script src="pfd-layout-data.js"></script>
 <script src="pfd-layout.js"></script>
