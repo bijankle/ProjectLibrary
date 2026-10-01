@@ -2,6 +2,7 @@
 (2000-F00-STS-PP-10001): a cleaned copy of the PDF for the in-app viewer and an index of its datasheets.
 
 Usage: python3 tools/build_spec.py <spec pdf>   (the original stays out of the repo; only the cleaned copy is published)
+       then python3 tools/spec_notes.py   (marks the superscript note numbers and reads each pipe class's notes)
 Output:
   spec/pvs.pdf     the spec without its cover page, with the people's names on the revision / sign off blocks blacked out
                    and the file properties cleared (page n of this file = page n + 1 of the original)
