@@ -655,7 +655,7 @@ body.searching #homeMain{display:none}
     onOpen: it => { if (window.AssetViz) AssetViz.item(it); }, onList: () => { if (window.AssetViz) AssetViz.list(); },
     within: v => window.Browse ? Browse.query(v) : false,   // with Browse filters set, typing narrows the filtered list
     // PFD and Layout links: only for tags the Smart PFD or the layout really shows (pfd-tags.json, tools/build_pfd_tags.js)
-    views: it => { const id = PT && PT.pfd[it.k]; if (!id) return null; const u = "pfd.html?find=" + encodeURIComponent(it.key);
+    views: it => { const id = PT && (PT.pfd[it.k] || (PT.assoc || {})[it.k]); if (!id) return null; const u = "pfd.html?find=" + encodeURIComponent(it.key) + (PT.pfd[it.k] ? "" : "&node=" + encodeURIComponent(id));
       return { pfd: u + "#pfd", layout: !/^L:/.test(id) && PT.layout.includes(id) ? u + "#layout" : null }; } });
   let PT = null; fetch("pfd-tags.json").then(r => r.ok ? r.json() : null).then(d => { PT = d; }).catch(() => {});
   window.kcgmOpenTag = k => { show("home"); Tabs.set("assets"); lk.openKey(k); };   // a tag tapped on a drawing
