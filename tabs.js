@@ -216,12 +216,13 @@ window.Tabs = (() => {
   }
   // a section's own search box goes into the top row (phone only); false on a desktop
   const slot = node => { if (!phone || !el || !node) return false; const s = el.querySelector(".ph-slot"); s.insertBefore(node, s.firstChild); return true; };
-  const css = `:root{--tb:calc(44px + env(safe-area-inset-top));--fh:22px;--fl:13px;--fb:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  const css = `/* the camera / status strip at the top: half its height is enough to clear the camera hole */
+:root{--sat:calc(env(safe-area-inset-top) * .5);--tb:calc(44px + var(--sat));--fh:22px;--fl:13px;--fb:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 /* one font everywhere, only three sizes */
 body,button,input,select,textarea,code,kbd,pre,svg,.leaflet-container{font-family:var(--ff)}   /* the three text sizes: titles, section labels, body */
 @media (pointer:coarse){input,select,textarea{font-size:16px}}   /* (a phone zooms in on a smaller text box) */
-:root.has-mb{--tb:calc(75px + env(safe-area-inset-top))}
-.tbw{position:fixed;left:0;right:0;top:0;z-index:60;background:var(--panel,var(--card));border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+:root.has-mb{--tb:calc(75px + var(--sat))}
+.tbw{position:fixed;left:0;right:0;top:0;z-index:60;background:var(--panel,var(--card));border-bottom:1px solid var(--line);padding-top:var(--sat)}
 .mb{height:30px;display:flex;align-items:stretch;gap:2px;padding:0 max(6px,env(safe-area-inset-right)) 0 max(6px,env(safe-area-inset-left));border-bottom:1px solid var(--line);font-size:var(--fb,15px)}
 .tb{height:44px;padding:0 max(6px,env(safe-area-inset-right)) 0 max(6px,env(safe-area-inset-left));display:flex;align-items:stretch;gap:2px}
 /* the sections as a segmented control: one grey track, the open one a raised chip */
@@ -236,7 +237,7 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .mn{position:relative;display:flex}
 .lg{display:flex;align-items:center;gap:6px;padding:0 12px 0 4px;margin-right:4px;border-right:1px solid var(--line);color:var(--ink)}
 /* desktop: the app tile spans both rows (menu and sections), left of them */
-.lg-big{position:absolute;left:max(8px,env(safe-area-inset-left));top:calc(env(safe-area-inset-top) + 7px);bottom:7px;width:60px;border:0!important;padding:0!important;margin:0!important;z-index:1}
+.lg-big{position:absolute;left:max(8px,env(safe-area-inset-left));top:calc(var(--sat) + 7px);bottom:7px;width:60px;border:0!important;padding:0!important;margin:0!important;z-index:1}
 .lg-big svg{width:60px;height:60px}
 :root.has-mb .mb{margin-left:calc(max(8px,env(safe-area-inset-left)) + 70px);padding-left:4px}:root.has-mb .tb{padding-left:calc(max(8px,env(safe-area-inset-left)) + 72px)}
 .lg b{font:900 var(--fl,13px)/1 var(--ff);letter-spacing:.08em;white-space:nowrap}.mb .lg{margin:6px 4px 6px 0}.lg-m{border:0;padding:0 4px 0 2px;margin:0}
@@ -287,7 +288,7 @@ button:disabled{cursor:default}
   .bw-cr:hover,.bw-cr:hover{filter:brightness(1.08)}.bw-any:hover,.bp-any:hover{border-color:var(--gold,var(--accent));color:var(--ink)}}
 /* ---------- phone: top row, bottom tab bar, More page ---------- */
 :root{--bn:0px}
-:root.phone{--tb:calc(52px + env(safe-area-inset-top));--bn:calc(58px + env(safe-area-inset-bottom))}
+:root.phone{--tb:calc(52px + var(--sat));--bn:calc(58px + env(safe-area-inset-bottom))}
 .tbw.ph{border-bottom:1px solid var(--line)}
 .ph-top{height:52px;display:flex;align-items:center;gap:8px;padding:0 max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))}
 .ph-top .lg-m{flex:none;display:flex}.ph-top .lg-m svg{width:30px;height:30px}
