@@ -174,7 +174,7 @@
     // the same tag in other lists (e.g. an instrument that is also in the control valve list) merges into Details
     const same = (byKey.get(it.k) || []).filter(x => x !== it), twins = same.filter(x => x.r && DB.types[x.t]), others = same.filter(x => !twins.includes(x));
     if (it.r){
-      // Details: every attribute of the item itself in one table, key fields first, blank fields named once at the end
+      // Details: every attribute of the item itself in one table, key fields first
       const f = DB.types[it.t].f, key = KEYF[it.t] || f.slice(1, 7);
       const top = key.map(n => f.indexOf(n)).filter(i => i > 0 && it.r[i]);
       const rest = f.map((n, i) => i).filter(i => i > 0 && it.r[i] && !top.includes(i));
@@ -191,12 +191,7 @@
       if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
         h += `<div class="lk-dw">` + dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
           return `<div class="lk-dr"><span>${r.l === "PFD" ? "PFD" : "P&amp;ID"}</span><div>` + (ns.length ? ns.map(n => `<div>${dwgA(n)}${dwgTitle(n) ? ` <i>${esc(dwgTitle(n))}</i>` : ""}</div>`).join("") : r.h) + `</div></div>`; }).join("") + `</div>`; }
-      const filled = new Set(rows.map(r => canon(r.l)));
-      // a missing line number isn't worth a mention when the item's P&ID is given (the drawing shows the line)
-      const onPid = rows.some(r => /P&ID/i.test(r.l) && /PID/.test(r.v));
-      const blank = [...new Set([it, ...twins].flatMap(x => DB.types[x.t].f.filter((n, i) => i > 0 && !x.r[i])))].filter(n => !filled.has(canon(n)) && !(onPid && /^line number$/i.test(n)));
-      secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` +
-        (blank.length ? `<div class="lk-ns">Blank in the list: ${esc([...new Set(blank)].join(", "))}.</div>` : "") });
+      secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` });
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
       if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
     }
