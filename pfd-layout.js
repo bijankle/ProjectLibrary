@@ -9,7 +9,6 @@ window.PFDLayout = (() => {
   const KEY = "kcgm_layout_pos", SVC = new Set(["water", "cnw", "reag", "air"]);
   const TILES = {
     sat: ["https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", { subdomains: ["mt0", "mt1", "mt2", "mt3"], maxNativeZoom: 21, attribution: "Imagery © Google" }],
-    hyb: ["https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", { subdomains: ["mt0", "mt1", "mt2", "mt3"], maxNativeZoom: 21, attribution: "Imagery © Google" }],
     esri: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxNativeZoom: 19, attribution: "Imagery © Esri, Maxar" }]
   };
   let api = null, map = null, rend = null, on = false, ready = null, base = null, moving = null, lastHl = "";
@@ -56,7 +55,7 @@ window.PFDLayout = (() => {
       m.querySelector(".lo-wh").onclick = () => { m.classList.toggle("shut"); dispatchEvent(new Event("resize")); }; return m; };
     menu("loFF", "lo-ff", "Flow filters", "");
     const mo = menu("loMO", "lo-mo", "Map options",
-      `<div class="lo-seg">${[["sat", "Satellite"], ["hyb", "Hybrid"], ["esri", "Esri"]].map(([k, t]) => `<button data-b="${k}">${t}</button>`).join("")}</div>
+      `<div class="lo-seg">${[["sat", "Satellite"], ["esri", "Esri"]].map(([k, t]) => `<button data-b="${k}">${t}</button>`).join("")}</div>
        <button class="lo-b" id="loDim" title="Dim the photo so the overlay reads better">Dim</button>
        <button class="lo-b" id="loFlows" title="The PFD streams drawn on the plant (a flow picked in the list always shows)"></button>
        <button class="lo-b" id="loMinor" title="Items not on the layout drawings, placed beside the equipment they work with (dashed boxes)"></button>
