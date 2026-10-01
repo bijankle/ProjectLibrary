@@ -642,7 +642,7 @@ body.searching #homeMain{display:none}
   const LK_INTRO_UNUSED = `<div class="lk-empty">Type any part of a code, e.g. <b>13-PP-401</b>, <b>FCV16011</b>, <b>0716</b>, <b>SP-HS-001</b>, a P&amp;ID number, or words like <b>cyclone feed pump</b>. Spaces and hyphens don't matter. The camera button reads a tag from a photo.<br><br>Covers the MEL, instrument list, control valve list, manual valve list, line list, SPI list, slurry hose lists and the glossary.</div>`;
   // Search lives in the top bar: type straight in, results replace the home content until the bar is cleared
   Lookup.addExtra(GLOSSARY.map(([k, v]) => ({ t: "gloss", key: k, name: v, text: v })));
-  lk = Lookup.mount($("lkRoot"), { placeholder: "Search tags, lines, valves…", intro: "", scrollTop: () => window.scrollTo(0, 0),
+  lk = Lookup.mount($("lkRoot"), { placeholder: "Search tags, lines, valves…", intro: "", noRecent: true, scrollTop: () => window.scrollTo(0, 0),
     home: () => { if (window.Browse) Browse.reset(); window.scrollTo(0, 0); },
     onOpen: it => { if (window.AssetViz) AssetViz.item(it); }, onList: () => { if (window.AssetViz) AssetViz.list(); },
     within: v => window.Browse ? Browse.query(v) : false,   // with Browse filters set, typing narrows the filtered list

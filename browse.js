@@ -127,7 +127,7 @@ window.Browse = (() => {
       az = [...new Set(vals.map(v => azKey(st[0] === "t" ? TN[v] : v === "?" ? "Other" : v)))].sort((a, b) => a.localeCompare(b));   // shown only if the list runs off the screen
     } else opts = "";   // every step set (how to change one is in Help)
     const hits = list.slice(0, shownN).map(r => r.it);
-    el.innerHTML = `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts stack" style="--qw:${qw}ch">${opts}</div></div></div>
+    el.innerHTML = recBar() + `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts stack" style="--qw:${qw}ch">${opts}</div></div></div>
       <div class="bw-r"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
       ${hits.map((it, i) => `<button class="bw-it${it.t === "line" ? " ln" : ""}" data-i="${i}"><b>${esc(it.key)}</b> <span>(${esc(resDesc(it))})</span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
@@ -137,7 +137,7 @@ window.Browse = (() => {
     el.querySelectorAll(".bw-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i]); });
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
     if (az) bindAZ();
-    fit(); fitLayout();
+    wireRec(); fit(); fitLayout();
   }
   // ---------- phone ----------
   // the words a description is shortened with when its row doesn't fit on one line (then it shrinks, then it's cut)
@@ -167,6 +167,11 @@ window.Browse = (() => {
         const cur = parseFloat(s.style.fontSize) || max, over = b.scrollWidth - b.clientWidth, w = s.getBoundingClientRect().width;
         s.style.fontSize = Math.max(Math.min(11, max), cur * Math.max(0, w - over - 2) / w).toFixed(2) + "px"; } });
   }
+  // desktop: recent searches as a short row of chips over the filters (the phone has them in its chip bar)
+  const recBar = () => { const rc = recents().slice(0, 8); return rc.length ? `<div class="bw-rec"><span>Recent</span>${rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("")}<button class="bw-rclr" title="Clear the recent searches">Clear</button></div>` : ""; };
+  function wireRec(){ const rc = recents().slice(0, 8), bar = el.querySelector(".bw-rec"); if (!bar) return;
+    bar.querySelectorAll(".bp-r").forEach(b => b.onclick = () => { const x = rc[+b.dataset.r]; if (x.q) lk.search(x.q); else lk.openKey(x.key); });
+    bar.querySelector(".bw-rclr").onclick = () => { try { localStorage.removeItem("kcgm_recent_lookups"); } catch (e) {} bar.remove(); fit(); }; }
   const recents = () => { try { return JSON.parse(localStorage.getItem("kcgm_recent_lookups") || "[]"); } catch (e) { return []; } };
   function drawPhone(list, st){
     const hits = list.slice(0, shownN).map(r => r.it), rc = recents().slice(0, 8);
@@ -275,8 +280,14 @@ window.Browse = (() => {
       .catch(e => { el.innerHTML = `<div class="bw-note">Couldn't load the lists (${esc(e.message)}). Check the connection and reopen the app.</div>`; });
   }
   // back from an item: the list where it was
-  const restore = () => { fit(); if (PH()) fitPhone(); else fitLayout(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
+  const restore = () => { if (!PH() && el){ const old = el.querySelector(".bw-rec"), nb = document.createElement("div"); nb.innerHTML = recBar();
+      if (old) old.replaceWith(...nb.childNodes); else if (nb.firstChild) el.prepend(nb.firstChild); wireRec(); }
+    fit(); if (PH()) fitPhone(); else fitLayout(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
   const css = `.bw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px;min-height:260px}
+.bw-rec{grid-column:1 / -1;display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}.bw-rec::-webkit-scrollbar{display:none}
+.bw-rec>span{flex:none;font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.bw-rec .bp-c{padding:3px 10px}.bw-rclr{flex:none;border:0;background:none;color:var(--gold);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:3px 6px}
+.bw:has(>.bw-rec){grid-template-rows:auto minmax(0,1fr)}
 .bw-l,.bw-r{overflow-y:auto;overscroll-behavior:contain;min-height:0;-webkit-overflow-scrolling:touch}
 .bw-lw{position:relative;display:flex;min-height:0;min-width:0}
 .bw-lw .bw-l{flex:1;min-width:0}

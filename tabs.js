@@ -50,7 +50,7 @@ window.Tabs = (() => {
     { t: "Settings", k: "settings preferences app size text zoom ai key full screen", run: () => O.onSettings && O.onSettings() },
     { t: "Theme: dark", k: "theme dark mode colours colors", run: () => theme("dark") },
     { t: "Theme: light", k: "theme light mode colours colors", run: () => theme("light") },
-    { t: "Text size", k: "text size font bigger smaller larger small large", run: () => O.onSettings ? O.onSettings() : location.href = "index.html?cards#settings" },
+    { t: "Text size (View menu)", k: "text size font bigger smaller larger small large view", run: () => O.onSettings ? O.onSettings() : location.href = "index.html?cards#settings" },
     { t: "Theme: follow device", k: "theme device system auto", run: () => theme("device") },
     { t: "Offline downloads", k: "offline download documents pids spec", run: () => O.onSettings && O.onSettings() },
     { t: "Update app", k: "update version refresh latest", run: () => window.AppUpdate && AppUpdate.update() },
@@ -74,8 +74,15 @@ window.Tabs = (() => {
     `<hr>` + item("checks", "Checks") + item("sources", "Sources");
   const helpItems = () => `<div class="mn-s"><input type="search" placeholder="Search the app: settings, features, how to…" aria-label="Search the app"><div class="mn-r"></div></div>` +
     item("howto", "How to use…") + item("gloss", "Glossary", "Plant terms and abbreviations") + `<hr><button type="button" class="mn-i" data-a="update">Update app<small class="mn-ver">Checking the version…</small></button>` + item("about", "About this app");
+  // View: text size (the same five steps as Settings, kcgmText in each page's head) and theme
+  const TXT = [["xs", "Extra small"], ["s", "Small"], ["n", "Normal"], ["l", "Large"], ["xl", "Extra large"]];
+  const curText = () => { try { return localStorage.getItem("kcgm_text") || "n"; } catch (e) { return "n"; } };
+  const textSize = v => { try { localStorage.setItem("kcgm_text", v); } catch (e) {} if (window.kcgmText) kcgmText(v); dispatchEvent(new Event("resize")); drawMenus(); };
+  const viewItems = () => `<div class="mn-h">Text size</div>` + TXT.map(([k, t]) => `<button type="button" class="mn-i mn-ck${curText() === k ? " on" : ""}" data-tx="${k}">${t}</button>`).join("") +
+    `<hr><div class="mn-h">Theme</div>` + [["dark", "Dark"], ["light", "Light"], ["device", "Follow device"]].map(([k, t]) => `<button type="button" class="mn-i mn-ck${curTheme() === k ? " on" : ""}" data-th="${k}">${t}</button>`).join("");
   function drawMenus(){
     if (!el) return;
+    const v = el.querySelector(".mn-v .mn-d"); if (v) v.innerHTML = viewItems();
     const f = el.querySelector(".mn-f .mn-d"); if (f) f.innerHTML = fileItems();
     const h = el.querySelector(".mn-h2 .mn-d"); if (h) h.innerHTML = helpItems();
     const one = el.querySelector(".mn-one .mn-d"); if (one) one.innerHTML = `<div class="mn-h">File</div>` + fileItems() + `<hr><div class="mn-h">Help</div>` + helpItems();
@@ -83,6 +90,7 @@ window.Tabs = (() => {
   }
   function wire(){
     el.querySelectorAll("[data-th]").forEach(b => b.onclick = () => theme(b.dataset.th));
+    el.querySelectorAll("[data-tx]").forEach(b => b.onclick = () => textSize(b.dataset.tx));
     el.querySelectorAll(".mn-i[data-a]").forEach(b => b.onclick = () => { close(); ({
       settings: () => O.onSettings && O.onSettings(), checks: () => location.href = "issues.html", sources: () => location.href = "issues.html#sources",
       howto: () => help(), about: () => help("about"), gloss: glossary, update: () => { b.disabled = true; window.AppUpdate && AppUpdate.update(); } })[b.dataset.a](); });
@@ -121,7 +129,7 @@ window.Tabs = (() => {
     el = document.createElement("div"); el.className = "tbw";
     if (phone) return mountPhone(o);
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
-    el.innerHTML = `<div class="lg lg-big" title="Project Library">${mark(60)}</div><nav class="mb" aria-label="Menu"><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
+    el.innerHTML = `<div class="lg lg-big" title="Project Library">${mark(60)}</div><nav class="mb" aria-label="Menu"><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-v"><button type="button" class="mn-b">View</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
       `<nav class="tb" aria-label="App sections"><div class="tb-seg">${tabs}</div></nav>`;
     document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", true);
     el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (o.onTab && o.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
@@ -209,7 +217,8 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .mn.open>.mn-d{display:block}.mn-dr{left:auto;right:0}.mn-dh{min-width:330px}
 .mn-i{display:block;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:7px 10px;border-radius:6px;cursor:pointer}
 .mn-i:hover,.mn-i:focus-visible{background:var(--panel2,var(--card2))}.mn-i:disabled{opacity:.6}
-.mn-i small{display:none}   /* no hover hints in the menus */
+.mn-i small{display:none}
+.mn-ck{padding-left:28px;position:relative}.mn-ck.on::before{content:"✓";position:absolute;left:10px;color:var(--gold,var(--accent));font-weight:800}   /* no hover hints in the menus */
 .mn-d hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
 .mn-h{font-size:var(--fl,13px);font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:6px 10px 2px}
 .mn-th{display:flex;align-items:center;padding:5px 10px}.mn-th span{flex:1;font-size:var(--fb,15px)}

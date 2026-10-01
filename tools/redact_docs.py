@@ -216,6 +216,10 @@ def run(path, out=None):
     if base in DOCS: DOCS[base](doc)
     else: drawing(doc)
     doc.set_metadata({}); doc.del_xml_metadata()
+    # page level XMP and named destinations can carry the CAD file path (project folder, site name): drop them too
+    for pg in doc: doc.xref_set_key(pg.xref, "Metadata", "null")
+    cat = doc.pdf_catalog()
+    if doc.xref_get_key(cat, "Names")[0] != "null": doc.xref_set_key(cat, "Names", "null")
     tmp = (out or path) + ".tmp"; doc.save(tmp, garbage=4, deflate=True, clean=True); doc.close(); os.replace(tmp, out or path)
 
 def titles():

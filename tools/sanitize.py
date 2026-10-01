@@ -17,7 +17,7 @@ RULES = [
     (r"\bMinproc(?: Engineers(?: Limited)?)?\b", "Engineer"), (r"\bMINPROC(?: ENGINEERS(?: LIMITED)?)?\b", "ENGINEER"),
     (r"\bWorley\b", "Engineer"), (r"\bDRA\b", "Engineer"), (r"\bOMC\b", "Consultant"),
     (r"(?<=[\[,])23517(?=[,\]])", '""'), (r"\b23517[ _-]?", ""),   # (a bare number in the JSON tables becomes an empty string)
-    (r"Fimiston", "FIM"), (r"FIMISTON", "FIM"),
+    (r"Fimiston", "FIM"), (r"FIMISTON", "FIM"), (r"Fimistion", "FIM"), (r"FIMISTION", "FIM"),   # (a misspelling in the equipment list)
     (r"\b(to|at|from|in) Gidji\b", r"\1 the offsite roaster"), (r"\bGidji\b", "offsite roaster"), (r"\bGIDJI\b", "OFFSITE ROASTER"),
     (r",? (?:in )?Kalgoorlie(?: WA)?\b", ""), (r"\bKALGOORLIE\b", ""),
 ]

@@ -335,6 +335,7 @@
     const remember = it => { try { const r = recents().filter(x => !(x.k === it.k && x.t === it.t) && x.q !== inp.value.trim()); r.unshift({ k: it.k, t: it.t, key: it.key, name: it.name });
       localStorage.setItem(RK, JSON.stringify(r.slice(0, 12))); } catch (e) {} };
     const showRecent = () => {
+      if (opts.noRecent){ showingRecent = false; status(""); body.innerHTML = opts.intro || ""; return; }   // the page shows them itself (Assets: chips above the filters)
       const r = recents(); status(""); showingRecent = true;
       body.innerHTML = `<div class="lk-rh"><span>Recent searches</span>${r.length ? '<button type="button" class="lk-clr">Clear</button>' : ""}</div>` +
         (r.length ? r.map((x, i) => x.q ? `<button type="button" class="lk-hit lk-rec" data-r="${i}"><span class="lk-hb"><b>${esc(x.q)}</b><em>search</em></span></button>`
