@@ -197,7 +197,9 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
   const dcell = (a, b) => !a ? "–" : `<span class="${b && a > b ? "newer" : ""}"${b && a > b ? ' title="Newer document"' : ""}>${fmt(a)}</span>`;
   AppUpdate.mount($("updBtn"), $("ver"));
   const PHONE = window.Tabs && Tabs.phone;
-  if (PHONE){ Tabs.mount({ active: "more", openMore: false, title: location.hash === "#sources" ? "Sources" : "Checks" }); Tabs.slot($("q")); $("q").placeholder = "Filter the checks";
+  if (PHONE){ Tabs.mount({ active: "more", openMore: false, title: location.hash === "#sources" ? "Sources" : "Checks",
+      onPop: st => { if (st.s === "sources" || st.s === "checks"){ popping = true; tab(st.s === "sources" ? "docs" : "checks"); popping = false; } },
+      onHome: () => { popping = true; tab("checks"); popping = false; $("q").value = ""; off = new Set(); shown = 200; chips(); draw(); scrollTo(0, 0); return true; } }); Tabs.slot($("q")); $("q").placeholder = "Filter the checks";
     $("about").onclick = () => { const on = $("checksPane").classList.toggle("about"); $("about").textContent = on ? "Hide the explanation" : "About these checks"; };
     $("rows").addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) tr.classList.toggle("open"); }); }
 
@@ -257,10 +259,15 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
     const docs = which === "docs";
     $("tabDocs").setAttribute("aria-selected", docs); $("tabChecks").setAttribute("aria-selected", !docs);
     $("docsPane").hidden = !docs; $("checksPane").hidden = docs;
-    history.replaceState(null, "", docs ? "#sources" : location.pathname + location.search);
+    const st = { s: docs ? "sources" : "checks" }, url = docs ? "#sources" : location.pathname + location.search;
+    if (PHONE && !popping && history.state && history.state.s && history.state.s !== st.s) history.pushState(Object.assign(st, { d: (history.state.d || 0) + 1 }), "", url);
+    else history.replaceState(Object.assign({}, history.state || {}, st), "", url);
     if (PHONE){ Tabs.title(docs ? "Sources" : "Checks"); $("q").placeholder = docs ? "Filter the sources" : "Filter the checks"; }
   }
   $("tabChecks").onclick = () => tab("checks"); $("tabDocs").onclick = () => tab("docs");
+  // Back between Checks and Sources (phone, More → the other one); a link to #sources on this page switches too
+  let popping = false;
+  addEventListener("hashchange", () => tab(location.hash === "#sources" ? "docs" : "checks"));
   if (location.hash === "#sources") tab("docs");
   const docSheet = () => ({ name: "Sources", widths: [30, 50, 12, 6, 14, 40, 26, 60, 60],
     rows: [["Document number", "Title", "Type", "Rev", "Revision date", "Status", "Client review", "Used in the app for", "Note"],

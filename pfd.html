@@ -99,6 +99,9 @@ body.layout #fHead,body.layout #narBtn,body.layout #fluids,body.layout #oHead,bo
 /* ---------- layout (map) view ---------- */
 #mapView{position:fixed;left:270px;right:0;top:calc(54px + var(--tb,0px));bottom:0;background:#20242a;z-index:0}
 body.layout #stage{visibility:hidden}
+/* the layout shows equipment and flows only: no control loops or interlocks (header toggles, overlay pills, lists) */
+body.layout #side{display:none!important}body.layout #mapView{left:0}   /* (nothing left in the sidebar on the layout) */
+body.layout #tLoops,body.layout #tIlk,body.layout .fp[data-ov=tLoops],body.layout .fp[data-ov=tIlk],body.layout #legend,body.layout #side .lg-sub,body.layout #side .lg-list{display:none!important}
 body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opacity:.45}
 #mapView.dim .leaflet-tile-pane{filter:brightness(.62) saturate(.75)}
 #mapView .leaflet-control-attribution{font-size:var(--fb,15px);background:rgba(0,0,0,.45);color:#ccc}
@@ -974,7 +977,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     { id: "tSvc", name: "Service lines", short: "Services", c: "#95a1ae", sym: `<line x1="1" y1="8" x2="15" y2="8"/><circle cx="8" cy="8" r="1.6" style="fill:var(--c)"/>` },
     { id: "tAnim", name: "Animate all", short: "Animate", c: "#e8b44a", sym: `<path d="M5 3 13 8 5 13Z" style="fill:var(--c);stroke:none"/>` }];
   function overlayPill(o, label){
-    const c = document.createElement("button"); c.type = "button"; c.className = "fp"; c.style.setProperty("--c", o.c); c.title = $(o.id).title;
+    const c = document.createElement("button"); c.type = "button"; c.className = "fp"; c.dataset.ov = o.id; c.style.setProperty("--c", o.c); c.title = $(o.id).title;
     c.innerHTML = `<svg viewBox="0 0 16 16" style="stroke:var(--c);stroke-width:1.6;fill:none">${o.sym}</svg>${esc(label || o.name)}`;
     const src = $(o.id), sync = () => c.classList.toggle("on", src.classList.contains("on"));
     c.onclick = () => src.click(); new MutationObserver(sync).observe(src, { attributes: true, attributeFilter: ["class"] }); sync(); return c;
@@ -1049,14 +1052,23 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     hlIds: () => { const h = new Set(); for (const id in nEls) if (nEls[id].classList.contains("hl")) h.add(id); for (const id in sEls) if (sEls[id].classList.contains("hl")) h.add(id); return h; },
     selIds: () => new Set(sel.filter(x => x.k === "n" || x.k === "s").map(x => x.id)),
     nodeState: id => gState(byId[id] && byId[id].g), streamState: id => gState(sById[id] && sById[id].g) });
-  const setView = v => { document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v); Tabs.set(v === "map" ? "layout" : "pfd");
+  // each switch between PFD and Layout is a history entry (Back returns to the other one)
+  let curView = location.hash === "#layout" ? "layout" : "pfd";
+  const setView = (v, pop) => { const s2 = v === "map" ? "layout" : "pfd"; if (!pop && curView && curView !== s2 && Tabs.push) Tabs.push({ s: s2 }); else if (Tabs.replace) Tabs.replace({ s: s2 }); curView = s2;
+    document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v); Tabs.set(v === "map" ? "layout" : "pfd");
     if (PHONE) $("search").placeholder = v === "map" ? "Search the layout" : "Search the PFD";
     PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); });
     if (v !== "map") setVB(); };
   document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
   // the tab strip: PFD and Layout switch here, Assets and Quiz open the phone app page
-  Tabs.mount({ active: "pfd", onSettings: () => showSettings(), settingsPage: !PHONE, onTab: t => { if (t !== "pfd" && t !== "layout") return false; setView(t === "layout" ? "map" : "pfd"); return true; } });
+  Tabs.mount({ active: "pfd", onSettings: () => showSettings(), settingsPage: !PHONE,
+    onPop: st => { if (st.s === "layout" || st.s === "pfd") setView(st.s === "layout" ? "map" : "pfd", true); },
+    // ⌂: the PFD fitted with nothing selected, no story; the Layout zoomed out to the plant
+    onHome: t => { if (focusFlow) setFlow(null); if (narr) setNarr(false); clearSel(true); closeInfo();
+      if (t === "layout") PFDLayout.home(); else $("zFit").click(); return true; },
+    onTab: t => { if (t !== "pfd" && t !== "layout") return false; setView(t === "layout" ? "map" : "pfd"); return true; } });
   if (Tabs.slot($("search"))) $("search").placeholder = "Search the PFD";
+  if (Tabs.replace && !(history.state && history.state.s)) Tabs.replace({ s: curView });
   const openHash = () => { if (location.hash === "#layout") setView("map"); else if (location.hash === "#pfd" && PFDLayout.active()) setView("pfd"); };
   window.addEventListener("hashchange", openHash); if (location.hash === "#layout") setTimeout(openHash, 0);
   $("tSvc").addEventListener("click", () => $("mapView").classList.toggle("svcon", $("tSvc").classList.contains("on")));

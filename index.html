@@ -386,7 +386,32 @@ body.searching #homeMain{display:none}
     const qz = TAB_OF[id] === "quiz"; $("lkRoot").classList.toggle("ph-hide", qz); if ($("qSearch")) $("qSearch").classList.toggle("ph-hide", !qz);
     if (id === "settings" && window.Offline) Offline.mount($("offRoot"));
     if (id === "home" && window.Browse) requestAnimationFrame(() => Browse.fit());   // e.g. after the text size changed
+    nav(true);
   };
+  // ---------- history: every view is an entry, so Back (← and the phone's back) returns to it ----------
+  let restoring = false;
+  const snap = () => { const it = lk && lk.current && lk.current(); return { s: cur === "settings" ? cur : document.querySelector(".screen.on, #deck.on") ? (document.querySelector("#deck.on") ? "deck" : document.querySelector(".screen.on").id) : "home",
+    item: it ? { k: it.k, t: it.t } : null, path: window.Browse && Browse.getPath ? Browse.getPath() : [], q: lk ? lk.input.value : "" }; };
+  let lastSig = "";
+  function nav(isNew){ if (restoring || !window.Tabs || !Tabs.push) return; const st = snap(), sig = st.s + "|" + (st.item ? st.item.k : "");
+    if (isNew && sig !== lastSig) Tabs.push(st); else Tabs.replace(st); lastSig = sig; }
+  function restore(st){
+    restoring = true;
+    const done = () => { restoring = false; lastSig = (st.s || "home") + "|" + (st.item ? st.item.k : ""); };
+    const sc = st.s || "home";
+    if (sc === "deck"){ if (run && !run.finished) show("deck"); else show("quiz"); return done(); }
+    if (sc === "end"){ show(run && run.finished ? "end" : "quiz"); return done(); }
+    if (sc === "settings"){ openSettings(); return done(); }
+    if (sc === "gloss"){ openGloss(); return done(); }
+    if (sc !== "home"){ show(sc); return done(); }
+    show("home");
+    Lookup.load().then(() => { restoring = true;
+      if (window.Browse && Browse.setPath) Browse.setPath(st.path || []);
+      lk.input.value = st.q || "";
+      const it = st.item && Lookup.find(st.item.k, st.item.t);
+      if (it) lk.openItem(it); else lk.close();
+      done(); }).catch(done);
+  }
 
   // ---------- HOME ----------
   function topicInfo(t){
@@ -652,7 +677,8 @@ body.searching #homeMain{display:none}
   Lookup.addExtra(GLOSSARY.map(([k, v]) => ({ t: "gloss", key: k, name: v, text: v })));
   lk = Lookup.mount($("lkRoot"), { placeholder: "Search tags, lines, valves…", intro: "", noRecent: true, scrollTop: () => window.scrollTo(0, 0),
     home: () => { if (window.Browse) Browse.reset(); window.scrollTo(0, 0); },
-    onOpen: it => { if (window.AssetViz) AssetViz.item(it); }, onList: () => { if (window.AssetViz) AssetViz.list(); },
+    noNav: true,
+    onOpen: (it, how) => { if (window.AssetViz) AssetViz.item(it); if (!restoring && cur !== "home") show("home"); nav(how !== "step"); }, onList: () => { if (window.AssetViz) AssetViz.list(); },
     within: v => window.Browse ? Browse.query(v) : false,   // with Browse filters set, typing narrows the filtered list
     // PFD and Layout links: only for tags the Smart PFD or the layout really shows (pfd-tags.json, tools/build_pfd_tags.js)
     views: it => { const id = PT && (PT.pfd[it.k] || (PT.assoc || {})[it.k]); if (!id) return null; const u = "pfd.html?find=" + encodeURIComponent(it.key) + (PT.pfd[it.k] ? "" : "&node=" + encodeURIComponent(id));
@@ -678,7 +704,8 @@ body.searching #homeMain{display:none}
       try { localStorage.setItem("kcgm_split", parseInt(getComputedStyle(home).getPropertyValue("--lw")) || DEF); } catch (e) {} dispatchEvent(new Event("resize")); };
     sp.addEventListener("pointerup", end); sp.addEventListener("pointercancel", end);
     sp.addEventListener("dblclick", () => { setW(DEF); try { localStorage.removeItem("kcgm_split"); } catch (e) {} dispatchEvent(new Event("resize")); }); }
-  Browse.mount($("browse"), lk);
+  Browse.mount($("browse"), lk); Browse.onChange(() => nav(false));
+  lk.input.addEventListener("input", () => setTimeout(() => nav(false), 200));
   $("glossBtn").onclick = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
   $("glossBack").onclick = () => show("home");
   $("gSearch").oninput = e => renderGloss(e.target.value);
@@ -734,8 +761,12 @@ body.searching #homeMain{display:none}
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   renderHome();
   // the tab strip: Assets and Quiz switch here, PFD and Layout open pfd.html; a quiz left half way resumes
-  Tabs.mount({ active: "assets", onSettings: openSettings, onGlossary: () => openGloss(), onTab: t => {
-    if (t === "assets"){ show("home"); Browse.reset(); return true; }
+  Tabs.mount({ active: "assets", onSettings: openSettings, onGlossary: () => openGloss(), onPop: restore,
+    // ⌂: Assets with no filter, search or item; the quiz home
+    onHome: t => { if (t === "quiz"){ renderHome(); show("quiz"); return true; }
+      restoring = true; lk.input.value = ""; Browse.reset(); if (lk.current()) lk.close(); show("home"); restoring = false; nav(true); return true; },
+    onTab: t => {
+    if (t === "assets"){ show("home"); Browse.reset(); if (lk.current()) lk.close(); return true; }
     if (t === "quiz"){ openQuiz(); return true; }
     return false; } });
   // the Quiz tab opens on a card: the deck in progress, or a fresh one with the last choices
@@ -749,7 +780,9 @@ body.searching #homeMain{display:none}
       q.blur(); if (hit.length) start(shuffle(hit)); else { q.value = ""; q.placeholder = "No question has all those words"; } };
     if (Tabs.slot($("lkRoot"))) Tabs.slot(q); }
   const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#gloss") openGloss(); else if (location.hash === "#settings") openSettings(); };
-  openHash(); window.addEventListener("hashchange", openHash);
+  // back here from another page: the view this entry was left on; else the address (#quiz, #settings…)
+  if (history.state && history.state.s) restore(history.state); else { restoring = true; openHash(); restoring = false; nav(false); }
+  window.addEventListener("hashchange", openHash);
 })();
 </script>
 </body>

@@ -264,7 +264,8 @@ window.Browse = (() => {
     const end = () => { down = false; bub.style.display = ""; if (strip.dataset.clear && !moved) show(null); strip.dataset.clear = ""; };
     strip.addEventListener("pointerup", end); strip.addEventListener("pointercancel", end);
   }
-  const after = () => { shownN = 60; save(); draw(); };
+  let changed = null;
+  const after = () => { shownN = 60; save(); draw(); if (changed) changed(); };
   // the two panes fill the screen below the search bar and scroll on their own
   function fit(){ if (!el || !el.offsetParent) return; const z = window.TextSize ? TextSize.z() : 1;   // inside a zoomed page, CSS pixels are scaled by the text size
     const bn = document.querySelector(".bn"), b = bn ? bn.offsetHeight : 0;
@@ -347,5 +348,9 @@ window.Browse = (() => {
   const reset = () => { if (!path.length) return; path = []; q = ""; if (lk) lk.input.value = ""; if (B) after(); };
   // the search box's text while filters are set (index.html hands it over); returns true when Browse took it
   const query = v => { q = v || ""; if (!path.length) return false; if (B){ shownN = 60; draw(); } return q.trim().length >= 2; };
-  return { reset, query, mount, restore, fit: () => fit() };
+  // the filter as history keeps it (Back returns to it, also from another page)
+  const getPath = () => path.map(p => ({ f: p.f, v: p.v, n: p.n }));
+  const setPath = p => { path = Array.isArray(p) ? p.map(x => Object.assign({}, x)) : []; if (B){ if (path.length && (path[0].f !== "t" || !TN[path[0].v])) path = []; shownN = 60; draw(); } };
+  const onChange = fn => { changed = fn; };
+  return { reset, query, mount, restore, fit: () => fit(), getPath, setPath, onChange };
 })();

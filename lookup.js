@@ -381,23 +381,23 @@
     const ORD = new Intl.Collator(undefined, { numeric: true });
     const stepList = it => { if (ctx && ctx.includes(it)) return ctx;
       const all = items.filter(x => x.t === it.t && x.r !== undefined).sort((a, b) => ORD.compare(a.key, b.key)); ctx = all; return all; };
-    const open = (it, push) => {
+    const open = (it, push, how) => {
       if (!it) return; remember(it); showingRecent = false; if (it.go){ it.go(); return; } if (push) stack.push({ q: inp.value, scroll: body.scrollTop, it: cur });
       cur = it;
       // the tag to mark on a drawing: the item itself, or on a drawing's own page the item you came from
       const from = it.t === "pid" ? (stack.length && stack[stack.length - 1].it ? stack[stack.length - 1].it.key : null) : it.key;
       const hv = (d, t) => `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
-      body.innerHTML = `<div class="lk-nav"><button class="lk-home" title="Home" aria-label="Home">${hv('<path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/>')}</button>` +
-        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button>` + viewsHTML(it) + `</div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
+      body.innerHTML = `<div class="lk-nav">` + (opts.noNav ? "" : `<button class="lk-home" title="Home" aria-label="Home">${hv('<path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/>')}</button>` +
+        `<button class="lk-back" title="Back to ${stack.length && stack[stack.length - 1].it ? "previous" : "results"}" aria-label="Back">${hv('<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>')}</button>`) + viewsHTML(it) + `</div>` + L.itemHTML(it, Object.assign({}, opts, { find: from }));
       const slot = body.querySelector(".lk-slot"); if (slot) slot.outerHTML = stepHTML(it);   // the stepper sits in the card's gold header
       body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from, { page: +a.dataset.page || 1 }); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
-      body.querySelector(".lk-back").onclick = back; body.querySelector(".lk-home").onclick = home;
-      body.querySelectorAll(".lk-st[data-s]").forEach(b => b.onclick = () => { const a = stepList(cur), i = a.indexOf(cur), x = a[i + +b.dataset.s]; if (x) open(x, false); });
+      if (!opts.noNav){ body.querySelector(".lk-back").onclick = back; body.querySelector(".lk-home").onclick = home; }
+      body.querySelectorAll(".lk-st[data-s]").forEach(b => b.onclick = () => { const a = stepList(cur), i = a.indexOf(cur), x = a[i + +b.dataset.s]; if (x) open(x, false, "step"); });
 
       const pb = body.querySelector("[data-pfd]"); if (pb) pb.onclick = () => opts.pfd(it).go();
       L.fillSpec(body, it);
-      if (opts.onOpen) opts.onOpen(it);
+      if (opts.onOpen) opts.onOpen(it, how);
     };
     let cur = null;
     // the item on the other views: PFD and Layout as one split control at the right of the row (only the views it is on)
@@ -429,7 +429,8 @@
       `<h4 class="lk-h">Text read</h4><textarea class="lk-ocr" rows="4">${esc(res.text)}</textarea><button class="lk-btn lk-ocrgo">Search this text</button>`;
     inp.value = opts.initial || ""; if (opts.initial) ensure().then(() => showList(inp.value)); else body.innerHTML = opts.intro || "";
     return { input: inp, search: q => { inp.value = q; ensure().then(() => showList(q)); }, openKey: k => ensure().then(() => open(L.find(norm(k)), true)),
-      openItem: (it, list) => { stack.length = 0; cur = null; ctx = list || null; open(it, true); } };
+      openItem: (it, list, how) => { stack.length = 0; cur = null; ctx = list || null; open(it, true, how); },
+      close: () => { stack.length = 0; cur = null; showList(inp.value); }, current: () => cur };
   };
 
   // ---------- photo text recognition ----------

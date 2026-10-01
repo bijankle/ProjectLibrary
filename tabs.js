@@ -137,7 +137,7 @@ window.Tabs = (() => {
     if (phone) return buildPhone();
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
     el.innerHTML = `<div class="lg lg-big" title="Project Library">${mark(60)}</div><nav class="mb" aria-label="Menu"><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-v"><button type="button" class="mn-b">View</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
-      `<nav class="tb" aria-label="App sections"><div class="tb-seg">${tabs}</div></nav>`;
+      `<nav class="tb" aria-label="App sections">${NAVB}<div class="tb-seg">${tabs}</div></nav>`;
     document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", true);
     el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (O.onTab && O.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
     el.querySelectorAll(".mn").forEach(m => { const b = m.querySelector(".mn-b");
@@ -145,16 +145,18 @@ window.Tabs = (() => {
       b.onmouseenter = () => { if (openM && openM !== m) open(m); };   // menu bar: moving across opens the next one
       m.querySelector(".mn-d").addEventListener("click", e => e.stopPropagation()); });
     document.addEventListener("click", close); addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+    wireNav();
   }
   // ---------- phone ----------
   // top: the P, the section's name and a slot for that section's search (Tabs.slot); bottom: the five sections
   function buildPhone(){
     el.classList.add("ph");
-    el.innerHTML = `<nav class="ph-top"><div class="lg lg-m" title="Project Library">${mark(30)}</div><b class="ph-n"></b><div class="ph-slot"><input class="mo-q" type="search" placeholder="Search the app" aria-label="Search the app" autocomplete="off" hidden></div></nav>`;
+    el.innerHTML = `<nav class="ph-top">${NAVB}<b class="ph-n"></b><div class="ph-slot"><input class="mo-q" type="search" placeholder="Search the app" aria-label="Search the app" autocomplete="off" hidden></div></nav>`;
     bn = document.createElement("nav"); bn.className = "bn"; bn.setAttribute("aria-label", "App sections");
     bn.innerHTML = [...TABS, ["more", "More", "#"]].map(([id, n, href]) => `<a class="tb-t bn-t" data-t="${id}" href="${href}"><i>${ico(id)}</i><span>${n}</span></a>`).join("");
     mo = document.createElement("div"); mo.className = "mo"; mo.hidden = true; mo.setAttribute("role", "dialog"); mo.setAttribute("aria-label", "More");
     document.body.prepend(el); document.body.append(bn, mo); document.documentElement.classList.add("has-tb", "has-bn");
+    wireNav();
     bn.querySelectorAll(".tb-t").forEach(a => a.onclick = e => {
       if (a.dataset.t === "more"){ e.preventDefault(); mo.hidden ? more(true) : more(false); return; }
       const was = !mo.hidden; more(false);
@@ -180,6 +182,23 @@ window.Tabs = (() => {
   // settings: the Assets page has the settings screen; from another page, go there
   const settings = () => { if (O.onSettings && O.settingsPage !== false) O.onSettings(); else location.href = "index.html?cards#settings"; };
   // More as a page of its own between the top row and the tab bar; the top row's search becomes the app search
+  // ---------- back and home (every page, every tab) ----------
+  // Every view change is a browser history entry (Tabs.push / Tabs.replace, the page restores it in Tabs.onPop), so ←
+  // and the phone's own back go to the previous view, across tabs and pages. ⌂ is the front page of the tab you're in.
+  const NAVB = `<span class="nv-bh"><button type="button" class="nv-b nv-back" aria-label="Back" title="Back to the previous view"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></button><button type="button" class="nv-b nv-home" aria-label="Home" title="Front page of this tab"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg></button></span>`;
+  let depth = 0;
+  const push = st => { st = Object.assign({}, st, { d: depth = ((history.state && history.state.d) || 0) + 1 }); history.pushState(st, ""); };
+  const replace = st => history.replaceState(Object.assign({}, history.state || {}, st, { d: (history.state && history.state.d) || 0 }), "");
+  const sameSite = () => { try { return document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) { return false; } };
+  function goBack(){
+    if (mo && !mo.hidden){ more(false); return; }
+    const h = document.getElementById("helpWin"); if (h && !h.hidden){ h.hidden = true; return; }
+    if ((history.state && history.state.d > 0) || sameSite()) history.back(); else goHome();
+  }
+  function goHome(){ more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true;
+    if (O.onHome && O.onHome(active) !== false) return; const t = TABS.find(x => x[0] === active); if (t) location.href = t[2]; }
+  addEventListener("popstate", e => { if (mo && !mo.hidden) more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true; if (O.onPop) O.onPop(e.state || {}); });
+  function wireNav(){ el.querySelectorAll(".nv-back").forEach(b => b.onclick = goBack); el.querySelectorAll(".nv-home").forEach(b => b.onclick = goHome); }
   function more(on){
     if (!mo) return; mo.hidden = !on; const inp = el.querySelector(".mo-q");
     [...el.querySelector(".ph-slot").children].forEach(c => { if (c !== inp) c.classList.toggle("mo-off", on); });
@@ -246,6 +265,11 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 ::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--mute) 75%,transparent);border-width:2px}
 ::-webkit-scrollbar-thumb:active{background-color:var(--gold,var(--accent));border-width:2px}
 @supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:transparent transparent}*:hover{scrollbar-color:color-mix(in srgb,var(--mute) 45%,transparent) transparent}}
+/* back and home: before the tabs (desktop) and at the start of the phone's top row */
+.nv-bh{display:flex;gap:6px;flex:none;margin-right:8px}
+.nv-b{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card,var(--panel));color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer;flex:none}
+.nv-b:hover{border-color:var(--gold,var(--accent));color:var(--gold,var(--accent))}
+.ph-top .nv-bh{margin-right:2px;gap:4px}.ph-top .nv-b{width:34px;height:34px}
 /* everything that can be clicked shows the hand, and list items light up under the mouse */
 button:not(:disabled),a[href],summary,select,label[for],[role=button],[role=tab],input[type=range],input[type=checkbox],input[type=radio],[data-k],[data-dwg]{cursor:pointer}
 button:disabled{cursor:default}
@@ -283,7 +307,7 @@ button:disabled{cursor:default}
     const guess = /issues/.test(pg) ? "more" : /pfd/.test(pg) ? (h === "#layout" ? "layout" : "pfd") : h === "#quiz" ? "quiz" : "assets";
     if (guess === "more") O.title = h === "#sources" ? "Sources" : "Checks";
     build(); set(guess); }
-  return { mount, set, help, slot, more, phone, desk, title };
+  return { mount, set, help, slot, more, phone, desk, title, push, replace, back: goBack, home: goHome };
 })();
 
 // Property tables (label | value): the label column is set, per table, to the width that makes the whole table take
