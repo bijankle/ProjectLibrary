@@ -23,6 +23,27 @@ window.Spec = (() => {
     315: 300, 355: 300, 400: 350, 450: 400, 500: 450, 560: 500, 630: 600, 710: 700, 800: 800, 900: 900, 1000: 1000, 1200: 1200 };
   // one component per line, comma separated: item: type / rating, ends, standard ("Elbow, 90°: SDR17, Plain end, AS/NZS 4129")
   const part = (c, withSize) => `<div class="sp-p"><b>${esc(c.d.replace(/\s\d{1,2}$/, ""))}</b>: ${esc([withSize && c.size, c.type, c.ends, c.dim].map(x => String(x || "").trim()).filter(x => x && x !== "-" && x !== "N/A").join(", "))}</div>`;
+  // the parts for one size: pipe, bolting, gaskets and the like as rows; the fittings and the flanges each with what
+  // they all share in one box ("All fittings: SDR17 · Manufacturer Std"), then a heading per remaining difference
+  // (usually the end type) with the parts under it. Only where it saves rows; otherwise the rows as they were.
+  const val = x => { x = String(x || "").trim(); return x && x !== "-" && x !== "N/A" ? x : ""; };
+  const nm = c => c.d.replace(/\s\d{1,2}$/, "");
+  const KIND = c => /^pipe\b/i.test(c.d) ? "" : /flange/i.test(c.d) ? "flanges" : /bolt|nut|washer|gasket|lining|stud/i.test(c.d) ? "" : "fittings";
+  function group(fits, label){
+    if (!fits.length) return "";
+    const F = ["type", "ends", "dim"], same = f => { const v = val(fits[0][f]).toLowerCase(); return v && fits.every(c => val(c[f]).toLowerCase() === v); };
+    const shared = F.filter(same), rest = F.filter(f => !shared.includes(f)), groups = new Map();
+    fits.forEach(c => { const k = rest.map(f => val(c[f])).filter(Boolean).join(", "); if (!groups.has(k)) groups.set(k, []); const g = groups.get(k); if (!g.includes(nm(c))) g.push(nm(c)); });
+    if (fits.length < 2 || (!shared.length && groups.size >= fits.length)) return fits.map(c => part(c, false)).join("");
+    return (shared.length ? `<div class="sp-all"><b>All ${label}:</b> ${esc(shared.map(f => val(fits[0][f])).join(" · "))}</div>` : "") +
+      [...groups].map(([k, ns]) => ns.length < 2 && k ? `<div class="sp-p"><b>${esc(ns[0])}</b>: ${esc(k)}</div>`   // a group of one: an ordinary row
+        : (k ? `<div class="sp-gh">${esc(k)}</div>` : "") + `<div class="sp-gl">${ns.map(esc).join(" · ")}</div>`).join("");
+  }
+  function grouped(comps){
+    const by = k => comps.filter(c => KIND(c) === k);
+    return comps.filter(c => /^pipe\b/i.test(c.d)).map(c => part(c, false)).join("") + group(by("fittings"), "fittings") + group(by("flanges"), "flanges") +
+      comps.filter(c => !KIND(c) && !/^pipe\b/i.test(c.d)).map(c => part(c, false)).join("");
+  }
   // ---------- piping class ----------
   // one line always visible (class, title, the datasheet button); everything else in tap-to-open sections
   function pipeHTML(cls, size, service, parts){
@@ -36,7 +57,7 @@ window.Spec = (() => {
     const S = [];
     if (size != null)
       S.push(sec("fit", `${unit}${size}`, fit.length, fit.length
-        ? `<div class="sp-cl">${fit.map(c => part(c, false)).join("")}</div>`
+        ? `<div class="sp-cl">${grouped(fit)}</div>`
         : `<div class="lk-ns">No component row in ${esc(cls)} covers ${esc(unit)}${esc(size)}: check the datasheet (the size may be non preferred).</div>`));
     const sv = service ? IX.services.filter(r => r.code === service && r.sys === cls) : [];
     // valves: only the datasheets whose size range covers this line (HDPE OD sizes compared as the matching DN)

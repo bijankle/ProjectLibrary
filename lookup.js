@@ -510,6 +510,9 @@
 .lk-t td.lk-sub{color:var(--lk-a);font-size:var(--fl,13px);font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}
 .sp-self .sp-head{display:none}
 .sp-cl{display:flex;flex-direction:column}.sp-p{padding:6px 2px;border-bottom:1px solid var(--lk-l);font-size:var(--fb,15px);line-height:1.4;color:var(--mute)}.sp-p b{color:var(--ink);font-weight:600}
+.sp-all{background:color-mix(in srgb,var(--lk-a) 14%,var(--lk-c));border:1px solid var(--lk-a);border-radius:10px;padding:7px 10px;margin:8px 0 4px;font-size:var(--fb,15px)}.sp-all b{color:var(--lk-a)}
+.sp-gh{margin:12px 2px 2px;font-size:var(--fb,15px);font-weight:700;color:var(--mute)}
+.sp-gl{padding:0 2px 8px;border-bottom:1px solid var(--lk-l);font-size:var(--fb,15px);line-height:1.5}
 .sp-sc{overflow-x:auto;-webkit-overflow-scrolling:touch}.sp-dt td,.sp-ct td,.sp-ct th{white-space:nowrap}.sp-dt td:first-child{width:auto}
 .sp-ct th{font-size:var(--fb,15px);text-align:left;color:var(--mute);padding:4px;border-bottom:1px solid var(--lk-l)}.sp-ct td:first-child{color:var(--ink);width:auto;white-space:normal;min-width:120px}
 .sp-n{font-size:var(--fb,15px);line-height:1.4;margin:6px 0}.sp-n b{color:var(--lk-a);margin-right:4px}
