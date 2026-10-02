@@ -14,10 +14,9 @@ window.Browse = (() => {
   const SPI = { EB: "Blower header", FR: "Not used", FS: "Deluge system", HS: "Slurry hose", MC: "Service / flushing coupling", MS: "Filter, trap, breather",
     MV: "Gland water valve", OP: "Orifice plate", SC: "Straub coupling", SP: "Spray nozzle / bar", SS: "Special spool / injector", ST: "Strainer", VC: "Victaulic coupling" };
   const KEY = "kcgm_browse2";
-  // phone: one full width list; the filter steps open in a sheet from the Filter chip, the chosen steps and recent
+  // phone: one full width list; the filter steps sit over it (drawPhone), the chosen steps and recent
   // searches sit as chips above the list
   const PH = () => document.documentElement.classList.contains("phone");
-  let sheet = false;
   let B = null, rows = [], path = [], shownN = 60, names = {}, q = "", ph0 = "";
 
   const area = s => { const m = /\bF(\d{2})\b/.exec(s || ""); return m ? "F" + m[1] : ""; };
@@ -173,44 +172,33 @@ window.Browse = (() => {
     bar.querySelectorAll(".bp-r").forEach(b => b.onclick = () => { const x = rc[+b.dataset.r]; if (x.q) lk.search(x.q); else lk.openKey(x.key); });
     bar.querySelector(".bw-rclr").onclick = () => { try { localStorage.removeItem("kcgm_recent_lookups"); } catch (e) {} bar.remove(); fit(); }; }
   const recents = () => { try { return JSON.parse(localStorage.getItem("kcgm_recent_lookups") || "[]"); } catch (e) { return []; } };
+  // phone: the filters at the top of the page, no pop-up. The chosen steps as chips with ✕ (tap to remove that step and
+  // the ones after it), then the options of the next step in a three-line block that scrolls sideways (Any first);
+  // nothing chosen yet: the asset types in that block, and recent searches in a row above it. The results fill the rest.
   function drawPhone(list, st){
     const hits = list.slice(0, shownN).map(r => r.it), rc = recents().slice(0, 8);
     const lab = (p, i) => p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : (p.v === "?" ? "Other" : p.v);
-    const chips = path.map((p, i) => `<button class="bp-c on" data-i="${i}">${esc(lab(p, i))} <b>×</b></button>`).join("");
-    const rec = rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("");
-    const nSet = path.filter(p => p.v != null).length;
-    // the sheet: the steps chosen (tap one to change it), the step to choose now with its options, the steps still to come
-    let sh = "";
-    if (sheet){
-      const all = [["t", "Asset type"], ...steps()];
-      sh = `<div class="bp-scrim"></div><div class="bp-sh" role="dialog" aria-label="Filter"><div class="bp-grip"></div><div class="bp-sht"><b>Filter</b>${path.length ? `<button class="bp-clr">Clear</button>` : ""}</div><div class="bp-steps">` +
-        all.map(([f, l], i) => { if (i < path.length) return `<button class="bp-st" data-i="${i}"><span>${esc(l)}</span><em>${esc(lab(path[i], i))}</em></button>`;
-          if (i > path.length) return `<div class="bp-st off"><span>${esc(l)}</span></div>`;
-          const c = {}; for (const r of list) c[r[f]] = (c[r[f]] || 0) + 1;
-          const vals = f === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => ALPHA.compare(TN[x], TN[y])) : order(f, c);
-          const sn = f === "t" ? () => "" : shortAll(vals.filter(v => v !== "?"), v => nameOf(f, t(), v));
-          return `<div class="bp-st open"><span>${esc(l)}</span>${f !== "t" ? `<button class="bp-any">Any</button>` : ""}</div><div class="bp-opts">` +
-            vals.map(v => { const n = f === "t" || v === "?" ? "" : sn(v); return `<button class="bp-o" data-v="${esc(v)}" data-n="${c[v]}"><b>${esc(f === "t" ? TN[v] : v === "?" ? "Other" : v)}</b>${n ? ` <span>${esc(n)}</span>` : ""}</button>`; }).join("") + `</div>`; }).join("") +
-        `</div><button class="bp-go">Show ${list.length.toLocaleString()} ${list.length === 1 ? "item" : "items"}</button></div>`;
+    const chips = path.map((p, i) => `<button class="bp-c on" data-i="${i}">${esc(lab(p, i))}<i class="bp-x" aria-label="Remove">✕</i></button>`).join("");
+    const nx = nextStep(), q = lk && lk.input ? lk.input.value.trim() : "";
+    let opts = "";
+    if (nx){
+      const f = nx[0], c = {}; for (const r of list) c[r[f]] = (c[r[f]] || 0) + 1;
+      const vals = f === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => ALPHA.compare(TN[x], TN[y])) : order(f, c);
+      const sn = f === "t" ? () => "" : shortAll(vals.filter(v => v !== "?"), v => nameOf(f, t(), v));
+      opts = (path.length ? `<div class="bp-nx">${esc(nx[1])} ›</div>` : "") + `<div class="bp-g">` + (f !== "t" ? `<button class="bp-o bp-any">Any</button>` : "") +
+        vals.map(v => { const n = f === "t" || v === "?" ? "" : sn(v); return `<button class="bp-o" data-v="${esc(v)}" data-n="${c[v]}"><b>${esc(f === "t" ? TN[v] : v === "?" ? "Other" : v)}</b>${n ? ` <span>${esc(n)}</span>` : ""}</button>`; }).join("") + `</div>`;
     }
-    el.innerHTML = `<div class="bp-bar"><button class="bp-c bp-f${nSet ? " set" : ""}">⚲ Filter${nSet ? " " + nSet : ""}</button>${chips}${rec ? `<i class="bp-sep"></i>${rec}` : ""}</div>
+    const rec = !path.length && !q && rc.length ? `<div class="bp-bar bp-recs">${rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("")}</div>` : "";
+    el.innerHTML = `<div class="bp-top">${rec}${chips ? `<div class="bp-bar">${chips}</div>` : ""}${opts}</div>
       <div class="bw-r bp-l"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
       ${hits.map((it, i) => `<button class="bw-it bp-it" data-i="${i}"><b>${esc(it.key)}</b> <span data-full="${esc(resDesc(it))}"></span></button>`).join("")}
-      ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>${sh}`;
-    const go = () => { sheet = false; after(); };
-    el.querySelector(".bp-f").onclick = () => { sheet = true; draw(); };
+      ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bp-c.on").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
     el.querySelectorAll(".bp-r").forEach(b => b.onclick = () => { const x = rc[+b.dataset.r]; if (x.q) lk.search(x.q); else lk.openKey(x.key); });
+    el.querySelectorAll(".bp-o[data-v]").forEach(b => b.onclick = () => { path.push({ f: nx[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
+    const any = el.querySelector(".bp-any"); if (any) any.onclick = () => { path.push({ f: nx[0], v: null }); after(); };
     el.querySelectorAll(".bp-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i], list.map(r => r.it)); });
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
-    if (sheet){
-      el.querySelector(".bp-scrim").onclick = go; el.querySelector(".bp-go").onclick = go;
-      const clr = el.querySelector(".bp-clr"); if (clr) clr.onclick = () => { path = []; after(); };
-      el.querySelectorAll(".bp-st[data-i]").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
-      el.querySelectorAll(".bp-o").forEach(b => b.onclick = () => { const f = (path.length ? steps()[path.length - 1] : ["t"])[0]; path.push({ f, v: b.dataset.v, n: +b.dataset.n }); if (!nextStep()) sheet = false; after(); });
-      const any = el.querySelector(".bp-any"); if (any) any.onclick = () => { path.push({ f: steps()[path.length - 1][0], v: null }); if (!nextStep()) sheet = false; after(); };
-      const sc = el.querySelector(".bp-steps"), o = sc.querySelector(".bp-st.open"); if (o) sc.scrollTop = Math.max(0, o.offsetTop - sc.offsetTop - 8);
-    }
     fit(); fitPhone();
   }
   // one row per result: code (description); a line reads code (from Name (tag), to Name (tag))
@@ -328,21 +316,13 @@ window.Browse = (() => {
 .bp-f{font-weight:800}.bp-r{color:var(--mute)}.bp-sep{flex:none;width:1px;height:22px;background:var(--line)}
 :root.phone .bw-r.bp-l{flex:1;min-height:0;border-left:0;padding:0}
 .bp-it{display:block}.bp-it span{font-size:var(--fb,15px)}
-.bp-scrim{position:fixed;inset:0;background:#0007;z-index:61}
-.bp-sh{position:fixed;left:0;right:0;bottom:0;z-index:62;max-height:82vh;display:flex;flex-direction:column;background:var(--card);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px #0006;
-  padding:6px 14px calc(12px + env(safe-area-inset-bottom))}
-.bp-grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:2px auto 8px}
-.bp-sht{display:flex;justify-content:space-between;align-items:center;font-size:var(--fb,15px);margin-bottom:4px}
-.bp-clr{border:0;background:none;color:var(--gold);font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;padding:4px}
-.bp-steps{overflow-y:auto;min-height:0;flex:1;overscroll-behavior:contain}
-.bp-st{display:flex;align-items:center;gap:8px;width:100%;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:11px 2px;text-align:left}
-.bp-st span{flex:1}.bp-st em{font-style:normal;background:var(--gold);color:#1a1307;border-radius:99px;padding:2px 10px;font-weight:700;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bp-st.off{color:var(--mute);font-weight:600}.bp-st.open{border-bottom:0}
-.bp-any{border:1px solid var(--line);background:none;color:var(--mute);border-radius:8px;padding:3px 10px;font:inherit;font-size:var(--fb,15px)}
-.bp-opts{display:flex;flex-wrap:wrap;gap:6px;padding:0 0 12px;border-bottom:1px solid var(--line)}
-.bp-o{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:7px 10px;font:inherit;font-size:var(--fb,15px);text-align:left;cursor:pointer;max-width:100%}
-.bp-o span{color:var(--mute)}
-.bp-go{flex:none;margin-top:10px;border:0;border-radius:12px;background:var(--gold);color:#1a1307;font:inherit;font-size:var(--fb,15px);font-weight:800;padding:13px}`;
+.bp-top{flex:none;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.bp-x{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;margin-left:7px;border-radius:50%;background:rgba(0,0,0,.18);font-size:11px;font-weight:900;vertical-align:1px}
+.bp-c.on{padding-right:6px}
+.bp-nx{font-size:var(--fl,13px);font-weight:800;color:var(--mute);margin:2px 2px 4px}
+.bp-g{display:grid;grid-auto-flow:column;grid-template-rows:repeat(3,auto);gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0;justify-content:start;overscroll-behavior-x:contain}.bp-g::-webkit-scrollbar{display:none}
+.bp-o{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:var(--fb,15px);font-weight:700;text-align:left;cursor:pointer;white-space:nowrap}
+.bp-o b{font-weight:800}.bp-o span{color:var(--mute);font-weight:600}.bp-any{color:var(--mute)}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   // back to no filter (the Assets tab calls this each time it opens)
   const reset = () => { if (!path.length && !q) return; path = []; q = ""; if (lk) lk.input.value = ""; if (B) after(); };
