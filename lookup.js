@@ -566,6 +566,7 @@ body.sp-on{overflow:hidden}
 :root.phone .sp-view .sp-pg{font-size:var(--fl,13px)}
 :root.phone .sp-view .sp-body{padding:0}
 :root.phone .lk-st{font-size:calc(var(--fb,15px) * 1.35)}:root.phone .lk-vw sup{font-size:max(.6em, calc(var(--fl,13px) * .8))}   /* phone: these follow the text size */
+:root.phone .lk-hb .lk-key.lk-dwg::after{content:"";display:inline-block;width:.8em;height:.8em;margin-left:.3em;vertical-align:-.05em;background:var(--lk-a,#b67d12);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4h6v6'/%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4h6v6'/%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'/%3E%3C/svg%3E") center/contain no-repeat}   /* a drawing's number opens it: a small open icon after it */
 :root.phone .lk-hb .lk-key{white-space:nowrap;word-break:normal;overflow:hidden;color:var(--ink)!important;text-decoration:none}   /* phone: every tag the same, one line */
 .lk-dwg{display:inline-block;color:#2f7cf6 !important;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.lk-dwg:hover{color:#5b9bff !important}
 .lk-dwgnote{font-size:var(--fb,15px);color:var(--mute);margin:-4px 0 8px;line-height:1.4}
@@ -576,7 +577,7 @@ body.sp-on{overflow:hidden}
 .lk-head{background:var(--lk-c);border:1px solid var(--lk-l);border-radius:14px;margin-bottom:10px;overflow:hidden}
 .lk-hs{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px;padding:5px 6px 5px 14px;background:color-mix(in srgb,var(--lk-a) 28%,var(--lk-c))}
 .lk-hs .lk-kind{color:color-mix(in srgb,var(--lk-a) 70%,var(--ink))}.lk-hb{padding:8px 14px 12px}.lk-hb .lk-key{margin-top:0}
-.lk-head .lk-step{margin-left:0;height:30px}
+.lk-head .lk-step{margin-left:0;height:30px;flex:none}.lk-hs .lk-kind{min-width:0;overflow-wrap:anywhere}:root.phone .lk-hs .lk-kind{letter-spacing:.03em}:root.phone .lk-head .lk-st{padding:0 8px}:root.phone .lk-head .lk-sn{padding:0 6px}   /* the stepper keeps its full width; the kind wraps */
 :root.phone .lk-head .lk-name{margin:0}
 .lk-ocr{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);font-family:inherit;font-size:var(--fb,15px);padding:8px}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
