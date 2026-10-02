@@ -25,7 +25,7 @@ kcgmTheme();
 window.kcgmText = function(v){ try { var ph = matchMedia("(pointer: coarse)").matches;
   if (ph && !localStorage.getItem("kcgm_text_m")) { var o = localStorage.getItem("kcgm_text"); if (o) localStorage.setItem("kcgm_text", { xs: "s", s: "n", n: "l", l: "xl", xl: "xl" }[o] || "n"); localStorage.setItem("kcgm_text_m", "1"); }
   v = v || localStorage.getItem("kcgm_text") || "n"; var k = (ph ? { xs: .55, s: .65, n: .75, l: .85, xl: 1 } : { xs: .65, s: .75, n: .9, l: 1, xl: 1.15 })[v] || (ph ? .75 : .9), s = document.documentElement.style;
-  s.setProperty("--fh", 22 * k + "px"); s.setProperty("--fl", 13 * k + "px"); s.setProperty("--fb", 15 * k + "px"); } catch (e) {} };
+  s.setProperty("--fh", 22 * k + "px"); s.setProperty("--fl", (ph ? 35 / 3 : 13) * k + "px"); s.setProperty("--fb", 15 * k + "px"); } catch (e) {} };
 kcgmText();
 try { addEventListener("storage", function(e){ if (e.key === "kcgm_text") { kcgmText(); dispatchEvent(new Event("resize")); } }); } catch (e) {}
 try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){ kcgmTheme(); });
@@ -207,8 +207,9 @@ body.searching #homeMain{display:none}
 :root.phone .appbar{display:none}
 :root.phone .page{padding-bottom:16px}
 :root.phone #lkRoot{display:flex;margin:8px 0 8px}:root.phone #lkRoot .lk-bar{flex:1;gap:6px;min-width:0}
-:root.phone #lkCam{margin-left:auto;flex:none}
-:root.phone #lkRoot .lk-in{height:40px;border-width:1.5px;border-radius:18px;padding:0 10px 0 32px;font-size:16px;
+:root.phone #lkCam{margin-left:auto;flex:none;height:29px;width:34px}
+:root.phone .x{font-size:calc(var(--fb,15px) * 1.4)}   /* (the quiz's ✕ follows the text size) */
+:root.phone #lkRoot .lk-in{height:31px;border-width:1.5px;font-size:var(--fb,15px)!important;border-radius:18px;padding:0 10px 0 32px;font-size:16px;
   background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") 10px 50%/16px no-repeat}
 :root.phone #lkRoot .lk-cam{width:36px;height:36px;border-radius:50%;font-size:17px}
 :root.phone #qSearch{height:36px}

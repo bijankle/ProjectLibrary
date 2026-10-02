@@ -377,6 +377,7 @@
       const slot = body.querySelector(".lk-slot"); if (slot) slot.outerHTML = stepHTML(it);   // the stepper sits in the card's gold header
       const vs = body.querySelector(".lk-vslot"); if (vs) vs.outerHTML = viewsHTML(it);   // PFD / Layout on the tag's line, right
       const nv = body.querySelector(".lk-nav"); if (nv && !nv.children.length) nv.remove();
+      if (PHONE() && window.Tabs && Tabs.fit){ const k = body.querySelector(".lk-hb .lk-key"); if (k) Tabs.fit(k, k.closest(".lk-kr")); }   // a long tag shrinks to fit the width
       body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from, { page: +a.dataset.page || 1 }); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
       if (!opts.noNav){ body.querySelector(".lk-back").onclick = back; body.querySelector(".lk-home").onclick = home; }
@@ -564,6 +565,8 @@ body.sp-on{overflow:hidden}
 :root.phone .sp-view.find-on .sp-q{display:block}
 :root.phone .sp-view .sp-pg{font-size:var(--fl,13px)}
 :root.phone .sp-view .sp-body{padding:0}
+:root.phone .lk-st{font-size:calc(var(--fb,15px) * 1.35)}:root.phone .lk-vw sup{font-size:max(.6em, calc(var(--fl,13px) * .8))}   /* phone: these follow the text size */
+:root.phone .lk-hb .lk-key{white-space:nowrap;word-break:normal;overflow:hidden;color:var(--ink)!important;text-decoration:none}   /* phone: every tag the same, one line */
 .lk-dwg{display:inline-block;color:#2f7cf6 !important;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.lk-dwg:hover{color:#5b9bff !important}
 .lk-dwgnote{font-size:var(--fb,15px);color:var(--mute);margin:-4px 0 8px;line-height:1.4}
 .lk-dwgb{color:#2f7cf6;text-decoration:none;white-space:nowrap;font-size:var(--fb,15px);font-weight:700;margin-left:4px;cursor:pointer}

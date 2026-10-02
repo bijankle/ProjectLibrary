@@ -156,6 +156,7 @@ window.Browse = (() => {
   const ABM = new Map(AB.map(([w, a]) => [w, a]));
   const abbr = t => String(t).replace(/[A-Za-z]+/g, w => { const a = ABM.get(w.toLowerCase()); return a && a !== w ? a : w; });
   // a row: TAG (description) on one line: full words if they fit, else shortened words, then smaller (not under 11 px), then cut with …
+  const sm = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fl")) || 11;   // never smaller than the small text
   function fitPhone(){
     el.querySelectorAll(".bp-it").forEach(b => { const s = b.querySelector("span"); if (!s) return;
       s.textContent = "(" + s.dataset.full + ")"; s.style.fontSize = "";
@@ -164,7 +165,7 @@ window.Browse = (() => {
       const max = parseFloat(getComputedStyle(s).fontSize);
       for (let k = 0; k < 3 && b.scrollWidth > b.clientWidth + 1; k++){
         const cur = parseFloat(s.style.fontSize) || max, over = b.scrollWidth - b.clientWidth, w = s.getBoundingClientRect().width;
-        s.style.fontSize = Math.max(Math.min(11, max), cur * Math.max(0, w - over - 2) / w).toFixed(2) + "px"; } });
+        s.style.fontSize = Math.max(Math.min(sm(), max), cur * Math.max(0, w - over - 2) / w).toFixed(2) + "px"; } });
   }
   // desktop: recent searches as a short row of chips over the filters (the phone has them in its chip bar)
   const recBar = () => { const rc = recents().slice(0, 8); return rc.length ? `<div class="bw-rec"><span>Recent</span>${rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("")}<button class="bw-rclr" title="Clear the recent searches">Clear</button></div>` : ""; };
@@ -322,6 +323,7 @@ window.Browse = (() => {
 .bp-nx{font-size:var(--fl,13px);font-weight:800;color:var(--mute);margin:2px 2px 4px}
 .bp-g{display:grid;grid-auto-flow:column;grid-template-rows:repeat(3,auto);gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0;justify-content:start;overscroll-behavior-x:contain}.bp-g::-webkit-scrollbar{display:none}
 .bp-o{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:var(--fb,15px);font-weight:700;text-align:left;cursor:pointer;white-space:nowrap}
+:root.phone .bp-o,:root.phone .bp-c{padding:4px 11px;min-height:26px}:root.phone .bp-it{padding:6px 0}
 .bp-o b{font-weight:800}.bp-o span{color:var(--mute);font-weight:600}.bp-any{color:var(--mute)}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   // back to no filter (the Assets tab calls this each time it opens)

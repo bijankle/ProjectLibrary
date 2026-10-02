@@ -26,7 +26,7 @@ window.Tabs = (() => {
   let active = "";
   const set = id => { if (!el) return; active = id;
     [...el.querySelectorAll(".tb-t"), ...(bn ? bn.querySelectorAll(".tb-t") : [])].forEach(a => { const on = a.dataset.t === (mo && !mo.hidden ? "more" : id); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
-    const n = el.querySelector(".ph-n"); if (n) n.textContent = mo && !mo.hidden ? "More" : O.title || NAME[id] || ""; };
+    const n = el.querySelector(".ph-n"); if (n){ n.textContent = mo && !mo.hidden ? "More" : O.title || NAME[id] || ""; fitText(n); } };
   const theme = v => { try { localStorage.setItem("kcgm_theme", v); } catch (e) {} if (window.kcgmTheme) kcgmTheme(v); drawMenus(); };
   const curTheme = () => { try { return localStorage.getItem("kcgm_theme") || "device"; } catch (e) { return "device"; } };
   const tab = id => () => { const a = el.querySelector(`.tb-t[data-t="${id}"]`); if (a) a.click(); };
@@ -182,6 +182,10 @@ window.Tabs = (() => {
   // settings: the Assets page has the settings screen; from another page, go there
   const settings = () => { if (O.onSettings && O.settingsPage !== false) O.onSettings(); else location.href = "index.html?cards#settings"; };
   // More as a page of its own between the top row and the tab bar; the top row's search becomes the app search
+  // big text that must stay on one line (the page name, an item's tag): one step smaller at a time, never below body text
+  function fitText(e, box){ if (!e) return; e.style.fontSize = ""; const min = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fb")) || 11;
+    requestAnimationFrame(() => { let f = parseFloat(getComputedStyle(e).fontSize), w = () => (box || e).clientWidth;
+      for (let k = 0; k < 30 && e.scrollWidth > w() + 1 && f > min; k++){ f = Math.max(min, f - .5); e.style.fontSize = f + "px"; } }); }
   // ---------- back and home (every page, every tab) ----------
   // Every view change is a browser history entry (Tabs.push / Tabs.replace, the page restores it in Tabs.onPop), so ←
   // and the phone's own back go to the previous view, across tabs and pages. ⌂ is the Assets front page.
@@ -281,7 +285,7 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .nv-b svg{width:18px;height:18px;display:block;flex:none;cursor:inherit}   /* (a page's own svg rules must not resize these) */
 .nv-b:disabled{opacity:.35;cursor:default}.nv-b:disabled:hover{border-color:var(--line);color:var(--ink)}
 .nv-b:hover{border-color:var(--gold,var(--accent));color:var(--gold,var(--accent))}
-.ph-top .nv-bh{margin-right:2px;gap:4px}.ph-top .nv-b{width:34px;height:34px}
+.ph-top .nv-bh{margin-right:2px;gap:4px}.ph-top .nv-b{width:29px;height:29px}.ph-top .nv-b svg{width:16px;height:16px}
 :root.phone .nv-b{border-width:1.5px;border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}:root.phone .nv-b svg{stroke-width:2.6}   /* phone: firmer buttons */
 :root.phone :is(.btn,.pf-b,.lk-pill,.lk-btn,.lk-vw,.ts-r,.x,#qBtns button){border-width:1.5px;border-style:solid;border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}
 :root.phone :is(.btn,.pf-b,.lk-pill,.lk-btn,.ts-r,#qBtns button){font-weight:800}
@@ -297,7 +301,7 @@ button:disabled{cursor:default}
 .tbw.ph{border-bottom:1px solid var(--line)}
 .ph-top{height:52px;display:flex;align-items:center;gap:8px;padding:0 max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))}
 .ph-top .lg-m{flex:none;display:flex}.ph-top .lg-m svg{width:30px;height:30px}
-.ph-n{flex:none;font-size:var(--fb,15px);font-weight:800;white-space:nowrap}
+.ph-n{flex:0 1 auto;min-width:0;font-size:var(--fh,22px);font-weight:800;white-space:nowrap;overflow:hidden;line-height:1.1}   /* the page's name, like an item's tag (fitted to the row) */
 .ph-slot{flex:1;min-width:0;display:flex;align-items:center;gap:6px}.ph-slot>*{min-width:0}.ph-slot>.mo-off{display:none!important}
 .ph-slot input[type=search],.ph-slot .mo-q{flex:1;width:100%;height:36px;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:18px;padding:0 12px;font:inherit;font-size:16px}
 .bn{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:var(--panel,var(--card));border-top:1px solid var(--line);
@@ -323,7 +327,7 @@ button:disabled{cursor:default}
     const guess = /issues/.test(pg) ? "more" : /pfd/.test(pg) ? (h === "#layout" ? "layout" : "pfd") : h === "#quiz" ? "quiz" : "assets";
     if (guess === "more") O.title = h === "#sources" ? "Sources" : "Checks";
     build(); set(guess); }
-  return { mount, set, help, slot, more, phone, desk, title, push, replace, back: goBack, home: goHome };
+  return { mount, set, help, slot, more, phone, desk, title, push, replace, back: goBack, home: goHome, fit: fitText };
 })();
 
 // Property tables (label | value): the label column is set, per table, to the width that makes the whole table take
