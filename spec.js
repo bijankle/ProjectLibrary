@@ -73,20 +73,22 @@ window.Spec = (() => {
   // A value the documents don't give is left out. The standard drawing's link sits at the top.
   const DNS = [15, 20, 25, 32, 40, 50, 65, 80, 90, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 900, 1000, 1050, 1200];
   const ODS = [20, 25, 32, 40, 50, 63, 75, 90, 110, 125, 140, 160, 180, 200, 225, 250, 280, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000, 1200];
-  const ITEMS = [   // [label, test on the part's description, needs a second size]
+  // only the fittings that need a table (branches and laterals); elbows, bends and reducers are plain rows in the pipe spec
+  const ITEMS = [   // [label, test on the part's description, second size label, or "std" when it is only on the standard drawing]
     ["90° branch", /^(tee|tees\b)|olet\b|tapping saddle/i, "Branch size"],
     ["45° lateral", /^lateral, 45|junction.*45/i], ["60° lateral", /^lateral, 60|junction.*60/i],
-    ["Y piece", /^wye|^y piece/i],
-    ["Reducer, concentric", /^reducer(, concentric)?(\^\d+)?$/i, "Small end"], ["Reducer, eccentric", /^reducer, eccentric/i, "Small end"]];
+    ["30° lateral", null, null, "lateral30"], ["Y piece", /^wye|^y piece/i], ["Tangential tee", null, "Branch size", "tangential"]];
   const sizeN = s => parseFloat(String(s).replace("*", ""));
   const clean = d => String(d).replace(/\^\d{1,2}/g, "").trim();
   // the fittings the class's spec calls for at size n (all sizes when n is null): a branch where its chart or a tee covers it
   function items(P, n){
     const comps = P.comps || [], has = re => comps.some(c => re.test(clean(c.d)) && (n == null || (c.lo != null && n >= c.lo && n <= c.hi))), out = [];
-    ITEMS.forEach(([l, re, two]) => { if (has(re) || (l === "90° branch" && P.branch && (n == null || branchSizes(P, n).length))) out.push({ l, re, two }); });
-    // elbows and bends, each as the spec names it
-    [...new Set(comps.filter(c => /elbow|bend/i.test(c.d) && !/street/i.test(c.d)).map(c => clean(c.d)))].forEach(d => {
-      const re = new RegExp("^" + d.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i"); if (has(re)) out.push({ l: d, re }); });
+    const S = P.std && IX.std[P.std];
+    ITEMS.forEach(([l, re, two, std]) => {
+      // (on the standard drawing only: offered to the classes that refer to it, at the sizes its table covers)
+      const ok = std ? S && (std === "lateral30" ? n == null || S.lateral30[n] : n == null || (n >= 50 && n <= 900))
+        : has(re) || (l === "90° branch" && P.branch && (n == null || branchSizes(P, n).length));
+      if (ok) out.push({ l, re: re || /^tee|^tees\b/i, two, std }); });
     return out;
   }
   // branch sizes for a header size: the chart's cells, else the sizes a tee row covers
@@ -109,13 +111,16 @@ window.Spec = (() => {
         title = (P.branch && P.branch.codes[code]) || { ET: "Equal tee", RT: "Reducing tee" }[code] || code;
         const base = code.split("+")[0], re = { ET: /^tee, equal|^tees\b/i, RT: /^tee, reducing|^tees\b/i, SO: /sockolet/i, TO: /threadolet|thredolet/i, WO: /weldolet/i }[base];
         if (re) rows = allAt(comps, re, /O$/.test(base) ? b : h);   // (an olet's size range is its branch size)
-        if (/RED/.test(code)) rows = rows.concat(allAt(comps, /^reducer/i, h).slice(0, 1));
+        if (/RED/.test(code)) rows = rows.concat(allAt(comps, /^reducer/i, h).slice(0, 1));   // (the chart's "+ reducer")
         if (S && (base === "ET" || base === "RT") && S.tee[h] && S.tee[h][b]){ kv(top, "A, centre to run end", S.tee[h][b][0] + " mm"); if (S.tee[h][b][1]) kv(top, "B, centre to branch end", S.tee[h][b][1] + " mm"); }
       }
+    } else if (it.std === "tangential"){
+      rows = allAt(comps, b === h ? /^tee, equal|^tees\b/i : /^tee, reducing|^tees\b/i, h);
+      kv(top, "C, run outside to branch end", band(S.tangential, b) + " mm");
+      note = "Straight or tangential connection: see the piping isometric.";
     } else {
-      rows = allAt(comps, it.re, h);
-      if (/reducer/i.test(it.l) && S){ kv(top, "A, straight each end", band(S.reducer.A, h) + " mm"); kv(top, "B, taper", S.reducer.B); note = S.reducer.note; }
-      const t = S && (/lateral/i.test(it.l) ? S.lateral : /y piece/i.test(it.l) ? S.y : null);
+      rows = it.std ? [] : allAt(comps, it.re, h);
+      const t = S && (it.std === "lateral30" ? S.lateral30 : /lateral/i.test(it.l) ? S.lateral : /y piece/i.test(it.l) ? S.y : null);
       if (t && t[h]){ kv(top, "A, run end to branch", t[h][0] + " mm"); kv(top, "B, branch to run end", t[h][1] + " mm"); kv(top, "Flush port, optional", "DN50, " + band(S.flush, h) + " mm"); }
     }
     const pipe = pipeAt(comps, h);
@@ -145,7 +150,7 @@ window.Spec = (() => {
         q("it").innerHTML = its.map(x => `<option${x === it ? " selected" : ""}>${esc(x.l)}</option>`).join("");   // only what this size has
         const two = it && it.two, bw = q("b").parentElement; bw.style.display = two ? "" : "none"; bw.querySelector(".sp-l2").textContent = two || "";
         if (two){
-          const prev = +q("b").value, ns = it.l === "90° branch" ? (branchSizes(P, h) || list.filter(n => n <= h).reverse()) : list.filter(n => n < h && allAt(P.comps, it.re, h).length).reverse();
+          const prev = +q("b").value, ns = it.l === "90° branch" ? (branchSizes(P, h) || list.filter(n => n <= h).reverse()) : list.filter(n => n <= h).reverse();
           const sel = ns.includes(prev) ? prev : ns[0]; q("b").innerHTML = opts(ns, sel);
         }
         out.innerHTML = it ? fittingOut(f.dataset.cls, it.l, h, two ? +q("b").value : null) : "";
