@@ -97,7 +97,7 @@ window.Browse = (() => {
     return v => m.get(v) || ""; };
   function draw(){
     // typed text with filters set: the same search as the search box, only among the filtered assets
-    let list = rows.filter(match); const st = nextStep();
+    let list = rows.filter(r => match(r) && Lookup.inProj(r.it)); const st = nextStep();
     if (path.length && q.trim().length >= 2){ const hit = new Set(Lookup.search(q, 100000)); list = list.filter(r => hit.has(r.it)); }
     if (lk){ if (!ph0) ph0 = lk.input.placeholder;
       lk.input.placeholder = path.length ? "Search in " + path.filter(p => p.v != null).map(p => p.f === "t" ? TN[p.v] : p.v === "?" ? "Other" : p.v).join(" › ") + "…" : ph0; }
@@ -128,7 +128,7 @@ window.Browse = (() => {
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = recBar() + `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts stack" style="--qw:${qw}ch">${opts}</div></div></div>
       <div class="bw-r"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
-      ${hits.map((it, i) => `<button class="bw-it${it.t === "line" ? " ln" : ""}" data-i="${i}"><b>${esc(it.key)}</b> <span>(${esc(resDesc(it))})</span></button>`).join("")}
+      ${hits.map((it, i) => `<button class="bw-it${it.t === "line" ? " ln" : ""}" data-i="${i}"><b>${esc(it.key)}</b>${Lookup.tsfTag(it)} <span>(${esc(resDesc(it))})</span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bw-o").forEach(b => b.onclick = () => { path.push({ f: st[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
     const any = el.querySelector(".bw-any"); if (any) any.onclick = () => { path.push({ f: st[0], v: null }); after(); };
@@ -192,7 +192,7 @@ window.Browse = (() => {
     const rec = !path.length && !q && rc.length ? `<div class="bp-bar bp-recs">${rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("")}</div>` : "";
     el.innerHTML = `<div class="bp-top">${rec}${chips ? `<div class="bp-bar">${chips}</div>` : ""}${opts}</div>
       <div class="bw-r bp-l"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
-      ${hits.map((it, i) => `<button class="bw-it bp-it" data-i="${i}"><b>${esc(it.key)}</b> <span data-full="${esc(resDesc(it))}"></span></button>`).join("")}
+      ${hits.map((it, i) => `<button class="bw-it bp-it" data-i="${i}"><b>${esc(it.key)}</b>${Lookup.tsfTag(it)} <span data-full="${esc(resDesc(it))}"></span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bp-c.on").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
     el.querySelectorAll(".bp-r").forEach(b => b.onclick = () => { const x = rc[+b.dataset.r]; if (x.q) lk.search(x.q); else lk.openKey(x.key); });
@@ -263,6 +263,7 @@ window.Browse = (() => {
   const save = () => {};   // the filter is not kept between visits
   function mount(root, box){
     el = root; lk = box; el.classList.add("bw");
+    Lookup.onProj(() => { if (!B) return; shownN = 60; draw(); });   // the project picker (Main plant / TSF)
     path = [];   // every visit starts unfiltered (the search box keeps its own history)
     el.innerHTML = `<div class="bw-note">Loading the plant lists…</div>`;
     Promise.all([Lookup.load(), fetch("browse.json").then(r => { if (!r.ok) throw new Error("browse.json " + r.status); return r.json(); })])
@@ -334,5 +335,5 @@ window.Browse = (() => {
   const getPath = () => path.map(p => ({ f: p.f, v: p.v, n: p.n }));
   const setPath = p => { path = Array.isArray(p) ? p.map(x => Object.assign({}, x)) : []; if (B){ if (path.length && (path[0].f !== "t" || !TN[path[0].v])) path = []; shownN = 60; draw(); } };
   const onChange = fn => { changed = fn; };
-  return { reset, query, mount, restore, fit: () => fit(), getPath, setPath, onChange };
+  return { reset, query, mount, restore, fit: () => fit(), getPath, setPath, onChange, projCount: p => rows.filter(r => r.it.p === p).length };
 })();

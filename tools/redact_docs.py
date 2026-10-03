@@ -113,6 +113,9 @@ BOXED = ["TECH APP", "ACCEPTANCE DOES NOT", "Approved as Noted", "AS CONSTRUCTED
 # a drafting company's logo block in the bottom right corner, just above the band: from its name to the corner
 LOGO = re.compile(r"(?i)^(WILSHAW|SEDGMAN|JMD|.*jmdengineering.*)$")
 BOXED_DARK = ["CLIENT APPROVED"]   # (the old sheets' client sign off box, drawn in black)
+# scanned sheets whose logo block the text layer can't read (a picture, misread by OCR): the block's place on the sheet,
+# as fractions of its width and height (left, top, right, bottom)
+SCAN_LOGO = {n: (.80, .84, .995, .95) for n in ("2000-F75-PID-PR-40022", "2000-F75-PID-PR-40023", "2000-F75-PID-PR-40024", "2000-F75-PID-PR-40025")}
 
 def names(page, clip=None):
     """Company, project and site names as words: [(rect, replacement text)]."""
@@ -152,10 +155,11 @@ def replace(page, hits, fill=WHITE):
             else: page.insert_text((r.x0, r.y1 - fs * .22), new, fontsize=fs, fontname="helv")
         except Exception: pass
 
-def drawing(doc):
+def drawing(doc, base=""):
     for page in doc:
         W, H = page.rect.width, page.rect.height; L, T, R, band, B = frame(page)
         boxes = [pymupdf.Rect(0, 0, W, T), pymupdf.Rect(0, 0, L, H), pymupdf.Rect(R, 0, W, H), pymupdf.Rect(0, band, W, H)] + stamps(page, band)
+        if base in SCAN_LOGO: x0, y0, x1, y1 = SCAN_LOGO[base]; boxes.append(pymupdf.Rect(W * x0, H * y0, W * x1, H * y1))
         for k in BOXED + BOXED_DARK:
             for hit in page.search_for(k):
                 if hit.y1 < band and not any(b.contains(hit) for b in boxes):
@@ -214,7 +218,7 @@ DOCS = {"2000-F00-DCR-PR-10002": pdc, "pvs": spec}
 def run(path, out=None):
     doc = pymupdf.open(path); base = os.path.splitext(os.path.basename(path))[0]
     if base in DOCS: DOCS[base](doc)
-    else: drawing(doc)
+    else: drawing(doc, base)
     doc.set_metadata({}); doc.del_xml_metadata()
     # page level XMP and named destinations can carry the CAD file path (project folder, site name): drop them too
     for pg in doc: doc.xref_set_key(pg.xref, "Metadata", "null")

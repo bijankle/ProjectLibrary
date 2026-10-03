@@ -23,10 +23,26 @@
     // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
     return (window.Pid ? Pid.load().then(() => Pid.all().forEach(d => { const k = norm(d.number); if (byKey.has(k)) return;
-      const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => dtLoad).then(() => { done = true; return L; }); }));
+      const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null, p: dwgProj(k) }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => dtLoad).then(() => { done = true; return L; }); }));
   L.ready = () => !!DB;
+  // Projects: Main plant and the tailings storage facility (TSF). Each list item and P&ID belongs to one (search-data.json:
+  // the "Project" field, and tsf_dwg for the drawings; tools/build_tsf.py); the picker shows either or both (kept between
+  // visits). Items without a project (PFD streams, glossary, pipe spec) always show.
+  let TSFD = new Set(), PJ = { main: true, tsf: true }; const pjFns = [];
+  try { const v = JSON.parse(localStorage.getItem("kcgm_proj") || "null"); if (v && (v.main || v.tsf)) PJ = { main: !!v.main, tsf: !!v.tsf }; } catch (e) {}
+  const dwgProj = k => TSFD.has(k) ? "tsf" : "main";
+  L.proj = () => ({ ...PJ });
+  L.both = () => PJ.main && PJ.tsf;
+  L.inProj = it => !it.p || PJ[it.p];
+  L.setProj = v => { if (!v.main && !v.tsf) return; PJ = { main: !!v.main, tsf: !!v.tsf }; try { localStorage.setItem("kcgm_proj", JSON.stringify(PJ)); } catch (e) {} pjFns.forEach(f => f()); };
+  L.onProj = f => pjFns.push(f);
+  L.projCount = p => items.filter(it => it.p === p).length;
+  // the small green TSF tag after a code, while both projects show
+  L.tsfTag = it => it && it.p === "tsf" && L.both() ? `<i class="pj-tsf">TSF</i>` : "";
   function build(){
-    Object.entries(DB.data).forEach(([t, rows]) => rows.forEach(r => { const it = { t, r, key: r[0], k: norm(r[0]), name: nameOf(t, r) }; items.push(it); addKey(it.k, it); }));
+    TSFD = new Set((DB.tsf_dwg || []).map(norm));
+    Object.entries(DB.data).forEach(([t, rows]) => { const pj = DB.types[t].f.indexOf("Project");
+      rows.forEach(r => { const it = { t, r, key: r[0], k: norm(r[0]), name: nameOf(t, r), p: r[pj] === "TSF" ? "tsf" : "main" }; items.push(it); addKey(it.k, it); }); });
     // cross references: any field that mentions a known code (or a P&ID) links back to this item
     const pids = new Map();
     items.forEach(it => { if (!it.r) return;
@@ -35,7 +51,7 @@
         if (/^2000/.test(m) && /PID/.test(m)) { if (!pids.has(k)) pids.set(k, m); }
         else if (!byKey.has(k)) return m;
         let a = refs.get(k); if (!a) refs.set(k, a = []); if (a[a.length - 1] !== it) a.push(it); return m; }); }); });
-    pids.forEach((m, k) => { const it = { t: "pid", key: m, k, name: "P&ID drawing: everything shown on it", r: null }; items.push(it); addKey(k, it); });
+    pids.forEach((m, k) => { const it = { t: "pid", key: m, k, name: "P&ID drawing: everything shown on it", r: null, p: dwgProj(k) }; items.push(it); addKey(k, it); });
     indexExtras(extras);
   }
   function nameOf(t, r){
@@ -57,6 +73,7 @@
     const words = String(q).toLowerCase().split(/\s+/).filter(w => w.length > 1);
     const out = [];
     for (const it of items){
+      if (it.p && !PJ[it.p]) continue;
       let s = 0;
       if (it.k === nq) s = 100; else if (it.k.startsWith(nq)) s = 80 - Math.min(10, it.k.length - nq.length) / 2; else if (nq.length >= 3 && it.k.includes(nq)) s = 60 - Math.min(10, it.k.length - nq.length) / 2;
       if (!s && words.length && words.every(w => textOf(it).includes(w))) s = 30 + (words.every(w => String(it.name).toLowerCase().includes(w)) ? 8 : 0);
@@ -76,7 +93,7 @@
     if (!hits.length) return `<div class="lk-empty">No match for “${esc(q)}”. Try fewer characters, e.g. the number only.</div>`;
     // one line per result: icon, code, description (the pill shows the list it comes from)
     const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
-    return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><b>${esc(it.key)}</b><span>${esc(L.listName(it))}</span></button>`).join("");
+    return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><b>${esc(it.key)}</b>${L.tsfTag(it)}<span>${esc(L.listName(it))}</span></button>`).join("");
   };
   const PILLN = { mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
   const KEYF = {
@@ -474,6 +491,7 @@
 .lk-row1:hover,.lk-row1:focus{background:var(--lk-c)}.lk-ic1{flex:none;font-size:13px;width:18px;text-align:center}
 .lk-row1 b{flex:none;font-family:inherit;font-size:var(--fb,15px);color:var(--lk-a);max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lk-row1.txt b{font-family:inherit;font-size:var(--fb,15px);max-width:62%}.lk-row1.txt span{color:var(--mute)}
+.pj-tsf{flex:none;align-self:center;font-style:normal;font-size:max(9px,calc(var(--fl,13px) * .8));font-weight:800;letter-spacing:.04em;line-height:1.35;color:#fff;background:#2f7d6b;border-radius:5px;padding:0 5px;margin:0 2px;vertical-align:1px}
 .lk-row1 span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
 .lk-more{width:100%;margin:8px 0;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:10px;padding:8px;font:inherit;font-weight:700;cursor:pointer}.lk-ic{font-size:18px;line-height:1.2}.lk-hb{display:flex;flex-direction:column;gap:2px;min-width:0}
 .lk-hb b{font-family:inherit;font-size:var(--fb,15px);color:var(--lk-a);word-break:break-all}.lk-hb span{font-size:var(--fb,15px);line-height:1.3}.lk-hb em{font-size:var(--fb,15px);color:var(--mute);font-style:normal}

@@ -1,7 +1,9 @@
 """Adds a better searchable text layer to the P&IDs so the app can find and mark a tag on the sheet (pdfview.js).
 The uploaded sheets carry a weak OCR layer that misses boxed tags and vertical line numbers. Each sheet is rendered at
-500 dpi and read with Tesseract in sparse text + orientation mode (psm 12), and every word is written back onto the page
-as invisible text (vertical words rotated to match). Nothing visible changes.
+500 dpi and read with Tesseract twice: in sparse text + orientation mode (psm 12, which finds the vertical words) and in
+plain sparse text mode (psm 11; orientation detection can take a whole sheet for upside down and misread every word).
+Every word is written back onto the page as invisible text (vertical words rotated to match), except one the page
+already carries in the same place (the other reading, or an earlier run). Nothing visible changes.
 
 Usage: python3 tools/ocr_pids.py [PIDs/2000-F24-PID-PR-10004.pdf …]   (default: every PID; run after tools/build_pids.py)
 Needs the tesseract command. Uses all CPU cores; about 20 s per sheet per core.
@@ -14,15 +16,17 @@ DPI = 500
 MARK = "ocr500"
 
 def words(page):
+    tsv = ""
     with tempfile.TemporaryDirectory() as d:
         f = os.path.join(d, "p.png"); page.get_pixmap(dpi=DPI, colorspace=pymupdf.csGRAY).save(f)
-        try: tsv = subprocess.run(["tesseract", f, "-", "--psm", "12", "tsv"], capture_output=True, text=True, timeout=300,
-                                  env=dict(os.environ, OMP_THREAD_LIMIT="1")).stdout   # one thread each: the pool uses the cores
-        except subprocess.TimeoutExpired: return []
+        for psm in ("12", "11"):
+            try: tsv += subprocess.run(["tesseract", f, "-", "--psm", psm, "tsv"], capture_output=True, text=True, timeout=300,
+                                       env=dict(os.environ, OMP_THREAD_LIMIT="1")).stdout   # one thread each: the pool uses the cores
+            except subprocess.TimeoutExpired: pass
     k = DPI / 72; out = []
-    for row in tsv.splitlines()[1:]:
+    for row in tsv.splitlines():
         c = row.split("\t")
-        if len(c) != 12 or not c[11].strip() or float(c[10]) < 35: continue
+        if len(c) != 12 or c[0] == "level" or not c[11].strip() or float(c[10]) < 35: continue
         t = c[11].strip()
         if len(t) < 2 or not re.search(r"[A-Za-z0-9]", t): continue
         x, y, w, h = (int(v) for v in c[6:10])
@@ -34,7 +38,10 @@ def one(path):
     if MARK in (doc.metadata.get("keywords") or ""): return path, 0
     font = pymupdf.Font("helv"); n = 0
     for page in doc:
+        have = [(pymupdf.Rect(w[:4]), w[4]) for w in page.get_text("words")]
         for r, t in words(page):
+            if any(t == u and (r & q).get_area() > .5 * r.get_area() for q, u in have): continue
+            have.append((r, t))
             vertical = r.height > r.width * 1.6 and len(t) > 3
             size = (r.width if vertical else r.height) * .8
             L = font.text_length(t, fontsize=size) or 1
