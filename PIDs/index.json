@@ -1095,7 +1095,7 @@
    "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 127411,
+   "size": 120791,
    "proj_src": "TSF P&IDs"
   },
   "2000-F23-PID-PR-40003": {
@@ -1104,7 +1104,7 @@
    "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 71456,
+   "size": 65482,
    "proj_src": "TSF P&IDs"
   },
   "2000-F23-PID-PR-40005": {
@@ -1113,7 +1113,7 @@
    "rev": "3",
    "date": "2026-02-04",
    "pages": 1,
-   "size": 115048,
+   "size": 108048,
    "proj_src": "TSF P&IDs"
   },
   "2000-F23-PID-PR-40006": {
@@ -1122,7 +1122,7 @@
    "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 71471,
+   "size": 66242,
    "proj_src": "TSF P&IDs"
   },
   "2000-F23-PID-PR-40007": {
@@ -1131,7 +1131,7 @@
    "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 53233,
+   "size": 49370,
    "proj_src": "TSF P&IDs"
   },
   "2000-F23-PID-PR-40008": {
@@ -1140,7 +1140,7 @@
    "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 42183,
+   "size": 40096,
    "proj_src": "TSF P&IDs"
   },
   "2000-F24-PID-PR-10001": {
@@ -1655,7 +1655,7 @@
    "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 46514,
+   "size": 41216,
    "proj_src": "TSF P&IDs"
   },
   "2000-F34-PID-PR-10001": {
@@ -1995,7 +1995,7 @@
    "rev": "",
    "date": "",
    "pages": 1,
-   "size": 385730
+   "size": 303904
   },
   "2000-F75-PID-PR-10002": {
    "file": "PIDs/2000-F75-PID-PR-10002.pdf",
@@ -2110,7 +2110,7 @@
    "rev": "",
    "date": "",
    "pages": 1,
-   "size": 145377,
+   "size": 129345,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-25008": {
@@ -2119,7 +2119,7 @@
    "rev": "",
    "date": "",
    "pages": 1,
-   "size": 226762,
+   "size": 212518,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-25010": {
@@ -2128,7 +2128,7 @@
    "rev": "",
    "date": "",
    "pages": 1,
-   "size": 104293,
+   "size": 102584,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40001": {
@@ -2137,7 +2137,7 @@
    "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 40313,
+   "size": 35994,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40002": {
@@ -2146,7 +2146,7 @@
    "rev": "3",
    "date": "2026-02-04",
    "pages": 1,
-   "size": 64665,
+   "size": 62649,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40003": {
@@ -2155,7 +2155,7 @@
    "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 56220,
+   "size": 48156,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40004": {
@@ -2164,7 +2164,7 @@
    "rev": "3",
    "date": "2025-12-12",
    "pages": 1,
-   "size": 149065,
+   "size": 135283,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40006": {
@@ -2173,7 +2173,7 @@
    "rev": "1",
    "date": "",
    "pages": 1,
-   "size": 24510,
+   "size": 24335,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40007": {
@@ -2182,7 +2182,7 @@
    "rev": "1",
    "date": "2025-04-17",
    "pages": 1,
-   "size": 77085,
+   "size": 70971,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40008": {
@@ -2191,7 +2191,7 @@
    "rev": "1",
    "date": "",
    "pages": 1,
-   "size": 36896,
+   "size": 35630,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40009": {
@@ -2200,7 +2200,7 @@
    "rev": "1",
    "date": "2025-04-17",
    "pages": 1,
-   "size": 36640,
+   "size": 35286,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40011": {
@@ -2209,7 +2209,7 @@
    "rev": "2",
    "date": "2025-04-17",
    "pages": 1,
-   "size": 32231,
+   "size": 30033,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40012": {
@@ -2218,7 +2218,7 @@
    "rev": "1",
    "date": "2025-04-17",
    "pages": 1,
-   "size": 168894,
+   "size": 157076,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40014": {
@@ -2227,7 +2227,7 @@
    "rev": "2",
    "date": "2024-12-05",
    "pages": 1,
-   "size": 83446,
+   "size": 77895,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40016": {
@@ -2236,7 +2236,7 @@
    "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 45065,
+   "size": 30598,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40020": {
@@ -2245,7 +2245,7 @@
    "rev": "",
    "date": "",
    "pages": 1,
-   "size": 97895,
+   "size": 91674,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40021": {
@@ -2254,7 +2254,7 @@
    "rev": "1",
    "date": "2025-11-11",
    "pages": 1,
-   "size": 131547,
+   "size": 121592,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40022": {
@@ -2263,7 +2263,7 @@
    "rev": "1",
    "date": "2025-11-11",
    "pages": 1,
-   "size": 208735,
+   "size": 142525,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40023": {
@@ -2272,7 +2272,7 @@
    "rev": "1",
    "date": "2025-12-16",
    "pages": 1,
-   "size": 114511,
+   "size": 107167,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40024": {
@@ -2281,7 +2281,7 @@
    "rev": "",
    "date": "",
    "pages": 1,
-   "size": 58102,
+   "size": 40024,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40025": {
@@ -2290,7 +2290,7 @@
    "rev": "1",
    "date": "2025-11-20",
    "pages": 1,
-   "size": 65734,
+   "size": 47405,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40026": {
@@ -2299,7 +2299,7 @@
    "rev": "1",
    "date": "2025-11-20",
    "pages": 1,
-   "size": 68915,
+   "size": 55040,
    "proj_src": "TSF P&IDs"
   },
   "2000-F75-PID-PR-40027": {
@@ -2324,7 +2324,7 @@
    "rev": "",
    "date": "",
    "pages": 1,
-   "size": 62154,
+   "size": 59538,
    "ocr": 1,
    "proj_src": "TSF P&IDs"
   },
@@ -2342,7 +2342,7 @@
    "rev": "1",
    "date": "2025-11-11",
    "pages": 1,
-   "size": 77417,
+   "size": 71515,
    "ocr": 1,
    "proj_src": "TSF P&IDs"
   },
@@ -2352,7 +2352,7 @@
    "rev": "1",
    "date": "2025-07-18",
    "pages": 1,
-   "size": 135007,
+   "size": 131591,
    "proj_src": "TSF P&IDs"
   },
   "2000-F81-PID-PR-10001": {
@@ -2405,7 +2405,7 @@
    "rev": "",
    "date": "",
    "pages": 1,
-   "size": 231729,
+   "size": 220547,
    "proj_src": "TSF P&IDs"
   }
  }
