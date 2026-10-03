@@ -27,7 +27,7 @@ def clean(s):
     return s
 
 TEXT = ["search-data.json", "issues.json", "browse.json", "PIDs/index.json", "pfd-data.js", "pfd-equip.js", "pfd-streams.js", "pfd-layout-data.js",
-        "cards.js", "facts.js", "glossary.js", "sources/index.json"] + glob.glob("sources/*/*.json")
+        "cards.js", "facts.js", "glossary.js", "followups.json", "sources/index.json"] + glob.glob("sources/*/*.json")
 if __name__ == "__main__":
     n = 0
     for f in TEXT:

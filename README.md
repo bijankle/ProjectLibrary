@@ -28,7 +28,7 @@ The Assets tab is split: filters in the left third, the items that match so far 
 
 ## Follow up questions (AI)
 
-On the answer side of each card there is a "Dig deeper" section with three suggested follow up questions and a box for your own.
+On the answer side of each card there is a "Dig deeper" section with three suggested follow up questions and a box for your own. The suggested questions have written answers two levels deep (`followups.json`, built by `python3 tools/build_followups.py <batch folder>` then `tools/sanitize.py`): each card's 3 questions are answered, each answer suggests 3 more that are also answered, and those suggest 3 more that Gemini answers when tapped. Written answers need no key and work offline; your own typed questions and anything deeper go to Gemini.
 Answers come from Google Gemini using your own free key from aistudio.google.com (Settings on the home screen). The key is stored only on your phone.
 Every question is sent with `facts.js` (a condensed plant reference from the design criteria and control philosophies), the glossary and the cards in the same topic,
 and each answer is tagged as coming from the plant docs, docs plus general knowledge, general knowledge only, or not covered.

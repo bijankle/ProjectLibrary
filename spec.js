@@ -24,11 +24,11 @@ window.Spec = (() => {
   // one component per line, comma separated: item: type / rating, ends, standard ("Elbow, 90°: SDR17, Plain end, AS/NZS 4129")
   // a note number written into the spec text as ^10 (tools/spec_notes.py) shows as a superscript
   const tx = t => esc(t).replace(/\^(\d{1,2})/g, "<sup>$1</sup>");
-  // the attributes always in one order: type / wall / rating · ends · standard · material, " · " between them (a value
+  // the attributes always in one order (type / wall / rating, ends, standard, material), plain words with commas (a value
   // can hold commas of its own: "STD WT, ERW"); a value repeated in the same row shows once
   const F4 = ["type", "ends", "dim", "mat"];
   const vals = (c, fs) => { const out = []; fs.forEach(f => { const v = val(c[f]); if (v && !out.some(o => o.toLowerCase() === v.toLowerCase())) out.push(v); }); return out; };
-  const part = (c, withSize) => `<div class="sp-p"><b>${tx(c.d.replace(/\s\d{1,2}$/, ""))}</b>: ${tx([withSize && val(c.size)].concat(vals(c, F4)).filter(Boolean).join(" · "))}</div>`;
+  const part = (c, withSize) => `<div class="sp-p"><b>${tx(c.d.replace(/\s\d{1,2}$/, ""))}</b>: ${tx([withSize && val(c.size)].concat(vals(c, F4)).filter(Boolean).join(", "))}</div>`;
   // "As per pipe" (and "As per pipe WT", "As per large end piping": a reducer's wall is the bigger pipe's) written out as
   // the pipe's own value at this size, so a header names the spec instead of pointing at another row; a note on the
   // reference stays ("As per pipe^2" → "ASME B36.10M^2")
@@ -54,9 +54,9 @@ window.Spec = (() => {
     if (!fits.length) return "";
     const F = F4, same = f => { const v = val(fits[0][f]).toLowerCase(); return v && fits.every(c => val(c[f]).toLowerCase() === v); };
     const shared = F.filter(same), rest = F.filter(f => !shared.includes(f)), groups = new Map();
-    fits.forEach(c => { const k = vals(c, rest).join(" · "); if (!groups.has(k)) groups.set(k, []); const g = groups.get(k); if (!g.includes(nm(c))) g.push(nm(c)); });
+    fits.forEach(c => { const k = vals(c, rest).join(", "); if (!groups.has(k)) groups.set(k, []); const g = groups.get(k); if (!g.includes(nm(c))) g.push(nm(c)); });
     if (fits.length < 2 || (!shared.length && groups.size >= fits.length)) return fits.map(c => part(c, false)).join("");
-    return (shared.length ? `<div class="sp-all"><b>All ${label}:</b> ${tx(vals(fits[0], shared).join(" · "))}</div>` : "") +
+    return (shared.length ? `<div class="sp-all"><b>All ${label}:</b> ${tx(vals(fits[0], shared).join(", "))}</div>` : "") +
       [...groups].map(([k, ns]) => ns.length < 2 && k ? `<div class="sp-p"><b>${tx(ns[0])}</b>: ${tx(k)}</div>`   // a group of one: an ordinary row
         : (k ? `<div class="sp-gh">${tx(k)}</div>` : "") + `<div class="sp-gl">${ns.map(tx).join(" · ")}</div>`).join("");
   }

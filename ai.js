@@ -78,7 +78,7 @@ Rules:
     ];
     thread.forEach((t, i) => {
       if (i > 0) contents.push({ role: "user", parts: [{ text: t.q }] });
-      contents.push({ role: "model", parts: [{ text: JSON.stringify({ answer: t.a, source: t.s, followups: t.f }) }] });
+      contents.push({ role: "model", parts: [{ text: JSON.stringify({ answer: t.a, source: t.s, followups: (t.f || []).map(x => x.q || x) }) }] });
     });
     if (thread.length) contents.push({ role: "user", parts: [{ text: question }] });
 

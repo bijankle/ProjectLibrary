@@ -610,6 +610,13 @@ body.searching #homeMain{display:none}
   const SRC = { "plant docs": ["docs", "FROM PLANT DOCS"], "docs + general": ["mixed", "DOCS + GENERAL"],
                 "general knowledge": ["gen", "GENERAL KNOWLEDGE"], "not covered": ["none", "NOT IN YOUR DOCS"] };
   let busy = false;
+  // Written follow ups (followups.json, tools/build_followups.py): for each card, its 3 starter questions answered, 3 more
+  // questions under each answer (answered too), and 3 questions under each of those (not answered: Gemini answers them).
+  // A chip is a written node {q, a, s, f} or a plain question; written answers show with no key, offline. Typed
+  // questions and anything past the written levels go to Gemini.
+  let FU = null; const fuLoad = () => FU ? Promise.resolve(FU) : fetch("followups.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => FU = d);
+  const chipsOf = (c, thread) => { if (thread.length) return thread[thread.length - 1].f || [];
+    const w = FU && FU[c.q]; return (c.f || []).map((q, i) => w && w[i] && w[i].q === q ? w[i] : q); };
   function saveThread(c, thread){
     let all = store.get("kcgm_threads", []);
     all = all.filter(x => x.q !== c.q);
@@ -635,12 +642,13 @@ body.searching #homeMain{display:none}
     if (err){
       const e = document.createElement("div"); e.className = "bub err"; e.textContent = err; box.appendChild(e);
     }
-    const sugg = thread.length ? thread[thread.length - 1].f : (c.f || []);
+    const sugg = chipsOf(c, thread);
     const chips = document.createElement("div"); chips.className = "chips";
-    (sugg || []).forEach(s => {
-      const b = document.createElement("button"); b.className = "chipq"; b.textContent = s;
-      b.onclick = () => submit(el, c, thread, s); chips.appendChild(b);
+    sugg.forEach(s => {
+      const b = document.createElement("button"); b.className = "chipq"; b.textContent = s.q || s;
+      b.onclick = () => submit(el, c, thread, s.q || s, s.a ? s : null); chips.appendChild(b);
     });
+    if (!FU && !thread.length) fuLoad().then(() => { if (card === el && !busy && !el.querySelector(".qa .bub")) renderQA(el, c, thread); });
     box.appendChild(chips);
     const row = document.createElement("form"); row.className = "ask";
     row.innerHTML = '<input type="text" enterkeyhint="send" placeholder="Ask your own question"><button type="submit">Ask</button>';
@@ -649,11 +657,18 @@ body.searching #homeMain{display:none}
     box.appendChild(row);
     return box;
   }
-  async function submit(el, c, thread, question){
+  async function submit(el, c, thread, question, node){
     if (busy) return;
     if (document.activeElement) document.activeElement.blur();
+    if (node){   // a written answer: no key, no wait
+      const next = thread.concat([{ q: question, a: node.a, s: node.s, f: node.f || [] }]);
+      saveThread(c, next);
+      const b2 = renderQA(el, c, next); const bubbles = b2.querySelectorAll(".bub.me");
+      bubbles[bubbles.length - 1].scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     if (!AI.ready()){
-      renderQA(el, c, thread, null, "Add your free Google AI key in Settings (home screen) to ask follow up questions.");
+      renderQA(el, c, thread, null, "This one goes to Gemini. Add your free Google AI key in Settings to ask it.");
       return;
     }
     busy = true;
@@ -835,7 +850,7 @@ body.searching #homeMain{display:none}
   // ---------- SETTINGS ----------
   function renderSettings(){
     $("keyIn").value = AI.key();
-    $("keyStatus").textContent = AI.ready() ? "Key saved. Using " + (AI.model() || "auto") + "." : "No key yet. Follow up questions need one.";
+    $("keyStatus").textContent = AI.ready() ? "Key saved. Using " + (AI.model() || "auto") + "." : "No key yet. The suggested follow ups have written answers; a key lets Gemini answer your own questions and go deeper.";
     $("modelWrap").style.display = AI.ready() && AI.model() ? "block" : "none";
     if (AI.model()) $("modelSel").innerHTML = `<option>${AI.model()}</option>`;
   }
