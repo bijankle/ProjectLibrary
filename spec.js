@@ -24,7 +24,22 @@ window.Spec = (() => {
   // one component per line, comma separated: item: type / rating, ends, standard ("Elbow, 90°: SDR17, Plain end, AS/NZS 4129")
   // a note number written into the spec text as ^10 (tools/spec_notes.py) shows as a superscript
   const tx = t => esc(t).replace(/\^(\d{1,2})/g, "<sup>$1</sup>");
-  const part = (c, withSize) => `<div class="sp-p"><b>${tx(c.d.replace(/\s\d{1,2}$/, ""))}</b>: ${tx([withSize && c.size, c.type, c.ends, c.dim].map(x => String(x || "").trim()).filter(x => x && x !== "-" && x !== "N/A").join(", "))}</div>`;
+  // the attributes always in one order: type / wall / rating · ends · standard · material, " · " between them (a value
+  // can hold commas of its own: "STD WT, ERW"); a value repeated in the same row shows once
+  const F4 = ["type", "ends", "dim", "mat"];
+  const vals = (c, fs) => { const out = []; fs.forEach(f => { const v = val(c[f]); if (v && !out.some(o => o.toLowerCase() === v.toLowerCase())) out.push(v); }); return out; };
+  const part = (c, withSize) => `<div class="sp-p"><b>${tx(c.d.replace(/\s\d{1,2}$/, ""))}</b>: ${tx([withSize && val(c.size)].concat(vals(c, F4)).filter(Boolean).join(" · "))}</div>`;
+  // "As per pipe" (and "As per pipe WT", "As per large end piping": a reducer's wall is the bigger pipe's) written out as
+  // the pipe's own value at this size, so a header names the spec instead of pointing at another row; a note on the
+  // reference stays ("As per pipe^2" → "ASME B36.10M^2")
+  const PIPE = c => /^pipe(\^\d{1,2})*$/i.test(String(c.d).trim());
+  const wall = t => { const w = String(t || "").split(/,\s*/).filter(x => /\b(WT|SCH|SDR|PN|Class)\b|^\d+(\.\d+)?\s*mm\b/i.test(x)); return w.length ? w.join(", ") : t; };
+  function resolve(c, pipe){
+    if (!pipe) return c; const r = { ...c };
+    F4.forEach(f => { const m = /^(as per pipe( wt)?|as per large end piping)((?:\^\d{1,2})*)\s*$/i.exec(val(c[f])); if (!m) return;
+      const ref = val(m[2] || /large/i.test(m[1]) ? wall(pipe.type) : pipe[f]); if (ref) r[f] = ref + m[3]; });
+    return r; }
+  const pipeAt = (comps, size) => comps.find(c => PIPE(c) && c.lo != null && size >= c.lo && size <= c.hi);
   // the notes the parts shown point to, one per line under them
   const refNotes = (P, comps) => { const ns = new Set(comps.flatMap(c => ["d", "type", "ends", "dim", "mat"].flatMap(f => (String(c[f] || "").match(/\^\d{1,2}/g) || []).map(x => x.slice(1)))));
     const N = (P.notes || []).filter(n => ns.has(String(n[0])));
@@ -37,15 +52,16 @@ window.Spec = (() => {
   const KIND = c => /^pipe\b/i.test(c.d) ? "" : /flange/i.test(c.d) ? "flanges" : /bolt|nut|washer|gasket|lining|stud/i.test(c.d) ? "" : "fittings";
   function group(fits, label){
     if (!fits.length) return "";
-    const F = ["type", "ends", "dim"], same = f => { const v = val(fits[0][f]).toLowerCase(); return v && fits.every(c => val(c[f]).toLowerCase() === v); };
+    const F = F4, same = f => { const v = val(fits[0][f]).toLowerCase(); return v && fits.every(c => val(c[f]).toLowerCase() === v); };
     const shared = F.filter(same), rest = F.filter(f => !shared.includes(f)), groups = new Map();
-    fits.forEach(c => { const k = rest.map(f => val(c[f])).filter(Boolean).join(", "); if (!groups.has(k)) groups.set(k, []); const g = groups.get(k); if (!g.includes(nm(c))) g.push(nm(c)); });
+    fits.forEach(c => { const k = vals(c, rest).join(" · "); if (!groups.has(k)) groups.set(k, []); const g = groups.get(k); if (!g.includes(nm(c))) g.push(nm(c)); });
     if (fits.length < 2 || (!shared.length && groups.size >= fits.length)) return fits.map(c => part(c, false)).join("");
-    return (shared.length ? `<div class="sp-all"><b>All ${label}:</b> ${tx(shared.map(f => val(fits[0][f])).join(" · "))}</div>` : "") +
+    return (shared.length ? `<div class="sp-all"><b>All ${label}:</b> ${tx(vals(fits[0], shared).join(" · "))}</div>` : "") +
       [...groups].map(([k, ns]) => ns.length < 2 && k ? `<div class="sp-p"><b>${tx(ns[0])}</b>: ${tx(k)}</div>`   // a group of one: an ordinary row
         : (k ? `<div class="sp-gh">${tx(k)}</div>` : "") + `<div class="sp-gl">${ns.map(tx).join(" · ")}</div>`).join("");
   }
-  function grouped(comps){
+  function grouped(comps, size){
+    const pipe = comps.find(PIPE); comps = comps.map(c => resolve(c, pipe));
     const by = k => comps.filter(c => KIND(c) === k);
     return comps.filter(c => /^pipe\b/i.test(c.d)).map(c => part(c, false)).join("") + group(by("fittings"), "fittings") + group(by("flanges"), "flanges") +
       comps.filter(c => !KIND(c) && !/^pipe\b/i.test(c.d)).map(c => part(c, false)).join("");
@@ -63,7 +79,7 @@ window.Spec = (() => {
     const S = [];
     if (size != null)
       S.push(sec("fit", `${unit}${size}`, fit.length, fit.length
-        ? `<div class="sp-cl">${grouped(fit)}</div>` + refNotes(P, fit)
+        ? `<div class="sp-cl">${grouped(fit, size)}</div>` + refNotes(P, fit)
         : `<div class="lk-ns">No component row in ${esc(cls)} covers ${esc(unit)}${esc(size)}: check the datasheet (the size may be non preferred).</div>`));
     const sv = service ? IX.services.filter(r => r.code === service && r.sys === cls) : [];
     // valves: only the datasheets whose size range covers this line (HDPE OD sizes compared as the matching DN)
@@ -82,7 +98,7 @@ window.Spec = (() => {
     }
     S.push(sec("cd", "Class", null, cd));
     if (comps.length && size == null)   // the whole table only when no size is known (the class opened on its own); sizes that don't apply stay in the PDF
-      S.push(sec("all", "All parts", comps.length, `<div class="sp-cl">${comps.map(c => part(c, true)).join("")}</div>` + refNotes(P, comps)));
+      S.push(sec("all", "All parts", comps.length, `<div class="sp-cl">${comps.map(c => part(resolve(c, c.lo != null && pipeAt(comps, c.lo)), true)).join("")}</div>` + refNotes(P, comps)));
     if (P.notes && P.notes.length) S.push(sec("notes", "Notes", P.notes.length, P.notes.map(n => `<div class="sp-n"><sup>${esc(n[0])}</sup> ${esc(n[1])}</div>`).join("")));
     return parts ? { head: h, S } : pills(S, "spec-pipe", h);
   }

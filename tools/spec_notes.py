@@ -4,6 +4,7 @@ Usage: python3 tools/spec_notes.py   (after tools/build_spec.py; needs only the 
   - a superscript note number on a datasheet ("Electrofusion Sockets" + small "10", "Elbow" + small "10" + ", 90°…")
     is written into the part's text as ^10 at the spot it sits ("Electrofusion Sockets^10", "Elbow^10, 90°…"), so
     the app can show it as a superscript; table extraction had run it into the text ("Electrofusion Sockets 10")
+  - a size whose note number was run into it (OD903 for OD90 + note 3) gets its size range read again (lo, hi)
   - the class's numbered notes (the NOTES block, its numbers in a column left of the text) become notes: [[n, text]]
 """
 import json, os, re
@@ -78,6 +79,11 @@ for code, P in IX["pipe"].items():
                 w = re.sub(pat, lambda m: B + "^" + n, v)
                 if w != v: v = w; tot_s += 1
             c[f] = v
+        # a note number run into a size ("OD903" for OD90 + note 3) was read by build_spec as part of the size: once the
+        # note is marked (OD90^3), the size range is read again without it
+        if "^" in c.get("size", ""):
+            n = re.findall(r"\d+(?:\.\d+)?", re.sub(r"\^\d{1,2}", "", c["size"]))
+            if n: c["lo"], c["hi"] = float(n[0]), float(n[-1])
     N = notes(pages)
     if N: P["notes"] = N; tot_n += len(N)
 json.dump(IX, open(os.path.join(ROOT, "index.json"), "w"), ensure_ascii=False, separators=(",", ":"))
