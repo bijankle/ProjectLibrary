@@ -80,19 +80,27 @@ window.Spec = (() => {
     ["Reducer, concentric", /^reducer(, concentric)?(\^\d+)?$/i, "Small end"], ["Reducer, eccentric", /^reducer, eccentric/i, "Small end"]];
   const sizeN = s => parseFloat(String(s).replace("*", ""));
   const clean = d => String(d).replace(/\^\d{1,2}/g, "").trim();
-  function items(P){
-    const comps = P.comps || [], out = [];
-    ITEMS.forEach(([l, re, two]) => { if (comps.some(c => re.test(clean(c.d))) || (l === "90° branch" && P.branch)) out.push({ l, re, two }); });
+  // the fittings the class's spec calls for at size n (all sizes when n is null): a branch where its chart or a tee covers it
+  function items(P, n){
+    const comps = P.comps || [], has = re => comps.some(c => re.test(clean(c.d)) && (n == null || (c.lo != null && n >= c.lo && n <= c.hi))), out = [];
+    ITEMS.forEach(([l, re, two]) => { if (has(re) || (l === "90° branch" && P.branch && (n == null || branchSizes(P, n).length))) out.push({ l, re, two }); });
     // elbows and bends, each as the spec names it
-    [...new Set(comps.filter(c => /elbow|bend/i.test(c.d) && !/street/i.test(c.d)).map(c => clean(c.d)))].forEach(d => out.push({ l: d, re: new RegExp("^" + d.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") }));
+    [...new Set(comps.filter(c => /elbow|bend/i.test(c.d) && !/street/i.test(c.d)).map(c => clean(c.d)))].forEach(d => {
+      const re = new RegExp("^" + d.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i"); if (has(re)) out.push({ l: d, re }); });
     return out;
   }
-  const at = (comps, re, n) => comps.find(c => re.test(clean(c.d)) && c.lo != null && n >= c.lo && n <= c.hi);
+  // branch sizes for a header size: the chart's cells, else the sizes a tee row covers
+  function branchSizes(P, h){
+    const g = P.branch && P.branch.g;
+    if (g){ const hk = Object.keys(g).find(k => sizeN(k) === h); return hk ? Object.keys(g[hk]).map(sizeN).sort((a, b) => b - a) : []; }
+    return null;
+  }
+  const allAt = (comps, re, n) => comps.filter(c => re.test(clean(c.d)) && c.lo != null && n >= c.lo && n <= c.hi);
   const band = (rules, n) => (rules.find(r => n <= r[0]) || [])[1];
   function fittingOut(cls, il, h, b){
-    const P = IX.pipe[cls], comps = P.comps || [], it = items(P).find(x => x.l === il); if (!it) return "";
-    const S = P.std && IX.std[P.std], rows = []; let title = it.l, code = "", row = null, note = "";
-    const kv = (k, v) => { if (v != null && v !== "") rows.push([k, v]); };
+    const P = IX.pipe[cls], comps = P.comps || [], it = items(P, h).find(x => x.l === il); if (!it) return "";
+    const S = P.std && IX.std[P.std], top = []; let title = it.l, code = "", rows = [], note = "";
+    const kv = (a, k, v) => { if (v != null && v !== "") a.push([k, v]); };
     if (it.l === "90° branch"){
       const g = P.branch && P.branch.g, hk = g && Object.keys(g).find(k => sizeN(k) === h), bk = hk && Object.keys(g[hk]).find(k => sizeN(k) === b);
       code = bk ? g[hk][bk] : P.branch ? "" : b === h ? "ET" : "RT";
@@ -100,39 +108,49 @@ window.Spec = (() => {
       else if (code){
         title = (P.branch && P.branch.codes[code]) || { ET: "Equal tee", RT: "Reducing tee" }[code] || code;
         const base = code.split("+")[0], re = { ET: /^tee, equal|^tees\b/i, RT: /^tee, reducing|^tees\b/i, SO: /sockolet/i, TO: /threadolet|thredolet/i, WO: /weldolet/i }[base];
-        if (re) row = at(comps, re, /OLET/i.test(title) || /O$/.test(base) ? b : h);
-        if (S && (base === "ET" || base === "RT") && S.tee[h] && S.tee[h][b]){ kv("A, centre to run end", S.tee[h][b][0] + " mm"); if (S.tee[h][b][1]) kv("B, centre to branch end", S.tee[h][b][1] + " mm"); }
-      } else if (P.branch) note = "The branch chart has no fitting for this pair of sizes.";
-    } else if (/reducer/i.test(it.l)){
-      row = at(comps, it.re, h);
-      if (S){ kv("A, straight each end", band(S.reducer.A, h) + " mm"); kv("B, taper", S.reducer.B); note = S.reducer.note; }
+        if (re) rows = allAt(comps, re, /O$/.test(base) ? b : h);   // (an olet's size range is its branch size)
+        if (/RED/.test(code)) rows = rows.concat(allAt(comps, /^reducer/i, h).slice(0, 1));
+        if (S && (base === "ET" || base === "RT") && S.tee[h] && S.tee[h][b]){ kv(top, "A, centre to run end", S.tee[h][b][0] + " mm"); if (S.tee[h][b][1]) kv(top, "B, centre to branch end", S.tee[h][b][1] + " mm"); }
+      }
     } else {
-      row = at(comps, it.re, h);
+      rows = allAt(comps, it.re, h);
+      if (/reducer/i.test(it.l) && S){ kv(top, "A, straight each end", band(S.reducer.A, h) + " mm"); kv(top, "B, taper", S.reducer.B); note = S.reducer.note; }
       const t = S && (/lateral/i.test(it.l) ? S.lateral : /y piece/i.test(it.l) ? S.y : null);
-      if (t && t[h]){ kv("A, run end to branch", t[h][0] + " mm"); kv("B, branch to run end", t[h][1] + " mm"); kv("Flush port, optional", "DN50, " + band(S.flush, h) + " mm"); }
+      if (t && t[h]){ kv(top, "A, run end to branch", t[h][0] + " mm"); kv(top, "B, branch to run end", t[h][1] + " mm"); kv(top, "Flush port, optional", "DN50, " + band(S.flush, h) + " mm"); }
     }
-    if (row){ const r = resolve(row, pipeAt(comps, h)); [["Wall / rating", r.type], ["Ends", r.ends], ["Standard", r.dim], ["Material", r.mat]].forEach(([k, v]) => kv(k, val(v))); }
-    if (!rows.length && !note && !code) note = "Not in " + cls + " at this size.";
-    return `<div class="sp-fo"><h4>${code ? `<span class="sp-fc">${esc(code)}</span>` : ""}${tx(title)}</h4>${rows.map(([k, v]) => `<div class="sp-kv"><span>${esc(k)}</span><b>${tx(String(v))}</b></div>`).join("")}${note ? `<div class="sp-fn">${esc(note)}</div>` : ""}</div>`;
+    const pipe = pipeAt(comps, h);
+    // one block per spec row that covers this size: the spec can offer two ways of making the same fitting
+    const blocks = rows.map(c => { const r = resolve(c, pipe), a = []; if (clean(c.d).toLowerCase() !== String(title).toLowerCase()) kv(a, "Part", clean(c.d)); kv(a, "Sizes", val(c.size)); [["Wall / rating", r.type], ["Ends", r.ends], ["Standard", r.dim], ["Material", r.mat]].forEach(([k, v]) => kv(a, k, val(v))); return a; });
+    const kvh = a => a.map(([k, v]) => `<div class="sp-kv"><span>${esc(k)}</span><b>${tx(String(v))}</b></div>`).join("");
+    return `<div class="sp-fo"><h4>${code ? `<span class="sp-fc">${esc(code)}</span>` : ""}${tx(title)}</h4>${kvh(top)}` +
+      blocks.map((a, k) => (blocks.length > 1 ? `<div class="sp-fv">Option ${k + 1} of ${blocks.length}</div>` : "") + kvh(a)).join("") +
+      (note ? `<div class="sp-fn">${esc(note)}</div>` : "") + `</div>`;
   }
   function fittingsHTML(cls, size){
-    const P = IX.pipe[cls], its = items(P); if (!its.length) return "";
-    const comps = P.comps || [], unit = comps.find(c => c.u) ? comps.find(c => c.u).u : "DN", list = (unit === "OD" ? ODS : DNS).filter(n => comps.some(c => c.lo != null && n >= c.lo && n <= c.hi));
+    const P = IX.pipe[cls]; if (!items(P, null).length) return "";
+    const comps = P.comps || [], unit = comps.find(c => c.u) ? comps.find(c => c.u).u : "DN";
+    const list = (unit === "OD" ? ODS : DNS).filter(n => items(P, n).length);   // only sizes something is listed for
+    if (!list.length) return "";
     const S = P.std && IX.std[P.std], h0 = list.includes(size) ? size : list.reduce((a, n) => size != null && Math.abs(n - size) < Math.abs(a - size) ? n : a, list[0]);
-    const opt = (ns, sel) => ns.map(n => `<option value="${n}"${n === sel ? " selected" : ""}>${unit}${n}</option>`).join("");
     return (S ? `<button class="lk-btn sp-std" data-file="${esc(S.file)}" data-title="${esc(P.std)}">Standard drawing ${esc(P.std)} <span>${esc(S.title.replace(/^Piping standards, (.)/, (m, c) => c.toUpperCase()))}</span></button>` : "") +
-      `<div class="sp-ff" data-cls="${esc(cls)}" data-list="${list.join(",")}" data-unit="${unit}"><label class="sp-f w"><span>Item</span><select data-k="it">${its.map(x => `<option>${esc(x.l)}</option>`).join("")}</select></label>` +
-      `<label class="sp-f"><span>Size</span><select data-k="h">${opt(list, h0)}</select></label><label class="sp-f"><span class="sp-l2"></span><select data-k="b"></select></label></div><div class="sp-out"></div>`;
+      `<div class="sp-ff" data-cls="${esc(cls)}" data-list="${list.join(",")}" data-unit="${unit}" data-h="${h0}"><label class="sp-f w"><span>Item</span><select data-k="it"></select></label>` +
+      `<label class="sp-f"><span>Size</span><select data-k="h">${list.map(n => `<option value="${n}"${n === h0 ? " selected" : ""}>${unit}${n}</option>`).join("")}</select></label><label class="sp-f"><span class="sp-l2"></span><select data-k="b"></select></label></div><div class="sp-out"></div>`;
   }
   function bindFit(root){
     root.querySelectorAll(".sp-ff").forEach(f => {
-      const cls = f.dataset.cls, list = f.dataset.list.split(",").map(Number), unit = f.dataset.unit, q = k => f.querySelector(`[data-k="${k}"]`), out = f.nextElementSibling;
-      const run = (keepB) => { const it = items(IX.pipe[cls]).find(x => x.l === q("it").value), h = +q("h").value, two = it && it.two, bw = q("b").parentElement;
-        bw.style.display = two ? "" : "none"; bw.querySelector(".sp-l2").textContent = two || "";
-        if (two){ const prev = +q("b").value, ns = list.filter(n => n <= h && (it.l !== "90° branch" || true)).reverse(), sel = keepB && ns.includes(prev) ? prev : ns[it.l === "90° branch" ? 0 : Math.min(1, ns.length - 1)];
-          q("b").innerHTML = ns.map(n => `<option value="${n}"${n === sel ? " selected" : ""}>${unit}${n}</option>`).join(""); }
-        out.innerHTML = fittingOut(cls, q("it").value, h, two ? +q("b").value : null); };
-      q("it").onchange = () => run(false); q("h").onchange = () => run(true); q("b").onchange = () => run(true); run(false);
+      const P = IX.pipe[f.dataset.cls], list = f.dataset.list.split(",").map(Number), unit = f.dataset.unit, q = k => f.querySelector(`[data-k="${k}"]`), out = f.nextElementSibling;
+      const opts = (ns, sel) => ns.map(n => `<option value="${n}"${n === sel ? " selected" : ""}>${unit}${n}</option>`).join("");
+      const run = () => {
+        const h = +q("h").value, its = items(P, h), was = q("it").value, it = its.find(x => x.l === was) || its[0];
+        q("it").innerHTML = its.map(x => `<option${x === it ? " selected" : ""}>${esc(x.l)}</option>`).join("");   // only what this size has
+        const two = it && it.two, bw = q("b").parentElement; bw.style.display = two ? "" : "none"; bw.querySelector(".sp-l2").textContent = two || "";
+        if (two){
+          const prev = +q("b").value, ns = it.l === "90° branch" ? (branchSizes(P, h) || list.filter(n => n <= h).reverse()) : list.filter(n => n < h && allAt(P.comps, it.re, h).length).reverse();
+          const sel = ns.includes(prev) ? prev : ns[0]; q("b").innerHTML = opts(ns, sel);
+        }
+        out.innerHTML = it ? fittingOut(f.dataset.cls, it.l, h, two ? +q("b").value : null) : "";
+      };
+      q("it").onchange = run; q("h").onchange = run; q("b").onchange = run; run();
     });
     root.querySelectorAll(".sp-std").forEach(b => b.onclick = e => { e.preventDefault(); PdfView.open({ url: b.dataset.file, page: 1, title: b.dataset.title, fit: "width", download: b.dataset.title + ".pdf" }); });
   }
