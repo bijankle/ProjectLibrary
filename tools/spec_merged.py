@@ -44,5 +44,13 @@ for code, P in IX["pipe"].items():
     for c in P.get("comps", []):
         for f in blank.get((key(c["d"]), skey(c["size"])), ()):
             if c.get(f): c[f] = ""; cleared += 1
+# a cell merged down over two rows can come back split between them ("ASTM A53 Gr B / API 5L" over "Grade B", CL1 pipe):
+# both rows get the joined text
+for P in IX["pipe"].values():
+    cs = P.get("comps", [])
+    for a, b in zip(cs, cs[1:]):
+        for f in ("type", "ends", "dim", "mat"):
+            x, y = a.get(f) or "", b.get(f) or ""
+            if re.search(r"(/|API 5L)\s*$", x) and re.match(r"^(Grade|Gr\.?\s)", y): a[f] = b[f] = x + " " + y; cleared += 1
 json.dump(IX, open(os.path.join(ROOT, "index.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 print(cleared, "values cleared")

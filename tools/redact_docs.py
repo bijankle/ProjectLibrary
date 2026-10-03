@@ -116,6 +116,8 @@ BOXED_DARK = ["CLIENT APPROVED"]   # (the old sheets' client sign off box, drawn
 # scanned sheets whose logo block the text layer can't read (a picture, misread by OCR): the block's place on the sheet,
 # as fractions of its width and height (left, top, right, bottom)
 SCAN_LOGO = {n: (.80, .84, .995, .95) for n in ("2000-F75-PID-PR-40022", "2000-F75-PID-PR-40023", "2000-F75-PID-PR-40024", "2000-F75-PID-PR-40025")}
+# the piping standard drawing: its client approval stamp (with the logo) and the sign off strokes left in the title band
+SCAN_LOGO["2000-F00-STD-PP-10004"] = [(.655, .72, .762, .862), (0, .872, 1, 1)]
 
 def names(page, clip=None):
     """Company, project and site names as words: [(rect, replacement text)]."""
@@ -159,7 +161,8 @@ def drawing(doc, base=""):
     for page in doc:
         W, H = page.rect.width, page.rect.height; L, T, R, band, B = frame(page)
         boxes = [pymupdf.Rect(0, 0, W, T), pymupdf.Rect(0, 0, L, H), pymupdf.Rect(R, 0, W, H), pymupdf.Rect(0, band, W, H)] + stamps(page, band)
-        if base in SCAN_LOGO: x0, y0, x1, y1 = SCAN_LOGO[base]; boxes.append(pymupdf.Rect(W * x0, H * y0, W * x1, H * y1))
+        bx = SCAN_LOGO.get(base, []); bx = [bx] if bx and not isinstance(bx[0], (list, tuple)) else bx
+        boxes += [pymupdf.Rect(W * x0, H * y0, W * x1, H * y1) for x0, y0, x1, y1 in bx]
         for k in BOXED + BOXED_DARK:
             for hit in page.search_for(k):
                 if hit.y1 < band and not any(b.contains(hit) for b in boxes):
@@ -175,6 +178,10 @@ def drawing(doc, base=""):
                 b = redbox(page, hit, band, True)
                 if b and b.width < W * .4 and b.height < H * .2: boxes.append(b)
         boxes += [r + (-2, -2, 2, 2) for r in page.search_for("Docusign Envelope ID")]
+        # sign off stamps, initials and signatures added as annotations (a redaction box leaves those): any stamp, and any
+        # markup that sits where something is whited out
+        for a in list(page.annots() or []):
+            if a.type[1] == "Stamp" or any(a.rect.intersects(b) for b in boxes): page.delete_annot(a)
         for b in boxes: page.add_redact_annot(b, fill=WHITE)
         page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_PIXELS, graphics=pymupdf.PDF_REDACT_LINE_ART_REMOVE_IF_COVERED)
         replace(page, names(page))
@@ -222,6 +229,9 @@ def run(path, out=None):
     doc.set_metadata({}); doc.del_xml_metadata()
     # page level XMP and named destinations can carry the CAD file path (project folder, site name): drop them too
     for pg in doc: doc.xref_set_key(pg.xref, "Metadata", "null")
+    for pg in doc:   # markup notes kept: their author (a person's name) goes
+        for a in list(pg.annots() or []):
+            for k in ("T", "Subj"): doc.xref_set_key(a.xref, k, "null")
     cat = doc.pdf_catalog()
     if doc.xref_get_key(cat, "Names")[0] != "null": doc.xref_set_key(cat, "Names", "null")
     tmp = (out or path) + ".tmp"; doc.save(tmp, garbage=4, deflate=True, clean=True); doc.close(); os.replace(tmp, out or path)

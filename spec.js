@@ -66,6 +66,76 @@ window.Spec = (() => {
     return comps.filter(c => /^pipe\b/i.test(c.d)).map(c => part(c, false)).join("") + group(by("fittings"), "fittings") + group(by("flanges"), "flanges") +
       comps.filter(c => !KIND(c) && !/^pipe\b/i.test(c.d)).map(c => part(c, false)).join("");
   }
+  // ---------- fittings table ----------
+  // Pick a fitting the class's spec calls for, its run size (starts on the line's size) and, for a branch or reducer, the
+  // second size; every value the documents give for it shows below: the fitting the branch chart names (tools/spec_branch.py),
+  // its spec row (written out as above), and its lengths where the class points to a piping standard drawing (spec_std.py).
+  // A value the documents don't give is left out. The standard drawing's link sits at the top.
+  const DNS = [15, 20, 25, 32, 40, 50, 65, 80, 90, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 900, 1000, 1050, 1200];
+  const ODS = [20, 25, 32, 40, 50, 63, 75, 90, 110, 125, 140, 160, 180, 200, 225, 250, 280, 315, 355, 400, 450, 500, 560, 630, 710, 800, 900, 1000, 1200];
+  const ITEMS = [   // [label, test on the part's description, needs a second size]
+    ["90° branch", /^(tee|tees\b)|olet\b|tapping saddle/i, "Branch size"],
+    ["45° lateral", /^lateral, 45|junction.*45/i], ["60° lateral", /^lateral, 60|junction.*60/i],
+    ["Y piece", /^wye|^y piece/i],
+    ["Reducer, concentric", /^reducer(, concentric)?(\^\d+)?$/i, "Small end"], ["Reducer, eccentric", /^reducer, eccentric/i, "Small end"]];
+  const sizeN = s => parseFloat(String(s).replace("*", ""));
+  const clean = d => String(d).replace(/\^\d{1,2}/g, "").trim();
+  function items(P){
+    const comps = P.comps || [], out = [];
+    ITEMS.forEach(([l, re, two]) => { if (comps.some(c => re.test(clean(c.d))) || (l === "90° branch" && P.branch)) out.push({ l, re, two }); });
+    // elbows and bends, each as the spec names it
+    [...new Set(comps.filter(c => /elbow|bend/i.test(c.d) && !/street/i.test(c.d)).map(c => clean(c.d)))].forEach(d => out.push({ l: d, re: new RegExp("^" + d.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", "i") }));
+    return out;
+  }
+  const at = (comps, re, n) => comps.find(c => re.test(clean(c.d)) && c.lo != null && n >= c.lo && n <= c.hi);
+  const band = (rules, n) => (rules.find(r => n <= r[0]) || [])[1];
+  function fittingOut(cls, il, h, b){
+    const P = IX.pipe[cls], comps = P.comps || [], it = items(P).find(x => x.l === il); if (!it) return "";
+    const S = P.std && IX.std[P.std], rows = []; let title = it.l, code = "", row = null, note = "";
+    const kv = (k, v) => { if (v != null && v !== "") rows.push([k, v]); };
+    if (it.l === "90° branch"){
+      const g = P.branch && P.branch.g, hk = g && Object.keys(g).find(k => sizeN(k) === h), bk = hk && Object.keys(g[hk]).find(k => sizeN(k) === b);
+      code = bk ? g[hk][bk] : P.branch ? "" : b === h ? "ET" : "RT";
+      if (/^Note (\d+)/.test(code)){ const nn = code.slice(5); note = ((P.notes || []).find(x => String(x[0]) === nn) || [])[1] || ""; title = "See note " + nn; code = ""; }
+      else if (code){
+        title = (P.branch && P.branch.codes[code]) || { ET: "Equal tee", RT: "Reducing tee" }[code] || code;
+        const base = code.split("+")[0], re = { ET: /^tee, equal|^tees\b/i, RT: /^tee, reducing|^tees\b/i, SO: /sockolet/i, TO: /threadolet|thredolet/i, WO: /weldolet/i }[base];
+        if (re) row = at(comps, re, /OLET/i.test(title) || /O$/.test(base) ? b : h);
+        if (S && (base === "ET" || base === "RT") && S.tee[h] && S.tee[h][b]){ kv("A, centre to run end", S.tee[h][b][0] + " mm"); if (S.tee[h][b][1]) kv("B, centre to branch end", S.tee[h][b][1] + " mm"); }
+      } else if (P.branch) note = "The branch chart has no fitting for this pair of sizes.";
+    } else if (/reducer/i.test(it.l)){
+      row = at(comps, it.re, h);
+      if (S){ kv("A, straight each end", band(S.reducer.A, h) + " mm"); kv("B, taper", S.reducer.B); note = S.reducer.note; }
+    } else {
+      row = at(comps, it.re, h);
+      const t = S && (/lateral/i.test(it.l) ? S.lateral : /y piece/i.test(it.l) ? S.y : null);
+      if (t && t[h]){ kv("A, run end to branch", t[h][0] + " mm"); kv("B, branch to run end", t[h][1] + " mm"); kv("Flush port, optional", "DN50, " + band(S.flush, h) + " mm"); }
+    }
+    if (row){ const r = resolve(row, pipeAt(comps, h)); [["Wall / rating", r.type], ["Ends", r.ends], ["Standard", r.dim], ["Material", r.mat]].forEach(([k, v]) => kv(k, val(v))); }
+    if (!rows.length && !note && !code) note = "Not in " + cls + " at this size.";
+    return `<div class="sp-fo"><h4>${code ? `<span class="sp-fc">${esc(code)}</span>` : ""}${tx(title)}</h4>${rows.map(([k, v]) => `<div class="sp-kv"><span>${esc(k)}</span><b>${tx(String(v))}</b></div>`).join("")}${note ? `<div class="sp-fn">${esc(note)}</div>` : ""}</div>`;
+  }
+  function fittingsHTML(cls, size){
+    const P = IX.pipe[cls], its = items(P); if (!its.length) return "";
+    const comps = P.comps || [], unit = comps.find(c => c.u) ? comps.find(c => c.u).u : "DN", list = (unit === "OD" ? ODS : DNS).filter(n => comps.some(c => c.lo != null && n >= c.lo && n <= c.hi));
+    const S = P.std && IX.std[P.std], h0 = list.includes(size) ? size : list.reduce((a, n) => size != null && Math.abs(n - size) < Math.abs(a - size) ? n : a, list[0]);
+    const opt = (ns, sel) => ns.map(n => `<option value="${n}"${n === sel ? " selected" : ""}>${unit}${n}</option>`).join("");
+    return (S ? `<button class="lk-btn sp-std" data-file="${esc(S.file)}" data-title="${esc(P.std)}">Standard drawing ${esc(P.std)} <span>${esc(S.title.replace(/^Piping standards, (.)/, (m, c) => c.toUpperCase()))}</span></button>` : "") +
+      `<div class="sp-ff" data-cls="${esc(cls)}" data-list="${list.join(",")}" data-unit="${unit}"><label class="sp-f w"><span>Item</span><select data-k="it">${its.map(x => `<option>${esc(x.l)}</option>`).join("")}</select></label>` +
+      `<label class="sp-f"><span>Size</span><select data-k="h">${opt(list, h0)}</select></label><label class="sp-f"><span class="sp-l2"></span><select data-k="b"></select></label></div><div class="sp-out"></div>`;
+  }
+  function bindFit(root){
+    root.querySelectorAll(".sp-ff").forEach(f => {
+      const cls = f.dataset.cls, list = f.dataset.list.split(",").map(Number), unit = f.dataset.unit, q = k => f.querySelector(`[data-k="${k}"]`), out = f.nextElementSibling;
+      const run = (keepB) => { const it = items(IX.pipe[cls]).find(x => x.l === q("it").value), h = +q("h").value, two = it && it.two, bw = q("b").parentElement;
+        bw.style.display = two ? "" : "none"; bw.querySelector(".sp-l2").textContent = two || "";
+        if (two){ const prev = +q("b").value, ns = list.filter(n => n <= h && (it.l !== "90° branch" || true)).reverse(), sel = keepB && ns.includes(prev) ? prev : ns[it.l === "90° branch" ? 0 : Math.min(1, ns.length - 1)];
+          q("b").innerHTML = ns.map(n => `<option value="${n}"${n === sel ? " selected" : ""}>${unit}${n}</option>`).join(""); }
+        out.innerHTML = fittingOut(cls, q("it").value, h, two ? +q("b").value : null); };
+      q("it").onchange = () => run(false); q("h").onchange = () => run(true); q("b").onchange = () => run(true); run(false);
+    });
+    root.querySelectorAll(".sp-std").forEach(b => b.onclick = e => { e.preventDefault(); PdfView.open({ url: b.dataset.file, page: 1, title: b.dataset.title, fit: "width", download: b.dataset.title + ".pdf" }); });
+  }
   // ---------- piping class ----------
   // one line always visible (class, title, the datasheet button); everything else in tap-to-open sections
   function pipeHTML(cls, size, service, parts){
@@ -81,6 +151,7 @@ window.Spec = (() => {
       S.push(sec("fit", `${unit}${size}`, fit.length, fit.length
         ? `<div class="sp-cl">${grouped(fit, size)}</div>` + refNotes(P, fit)
         : `<div class="lk-ns">No component row in ${esc(cls)} covers ${esc(unit)}${esc(size)}: check the datasheet (the size may be non preferred).</div>`));
+    const ft = fittingsHTML(cls, size); if (ft) S.push(sec("ft", "Fittings table", null, ft));
     const sv = service ? IX.services.filter(r => r.code === service && r.sys === cls) : [];
     // valves: only the datasheets whose size range covers this line (HDPE OD sizes compared as the matching DN)
     const dn = size == null ? null : unit === "OD" ? OD_DN[size] || size : size;
@@ -164,7 +235,7 @@ window.Spec = (() => {
 
   // ---------- PDF viewer (pdfview.js) ----------
   const open = (page, title) => load().then(() => PdfView.open({ url: IX.meta.file, page, title: title || IX.meta.title, fit: "width", download: "2000-F00-STS-PP-10001 Rev 3 Piping Materials and Valves.pdf" }));
-  function bind(root){ root.querySelectorAll(".sp-open").forEach(b => b.onclick = e => { e.preventDefault(); open(+b.dataset.page, b.dataset.title); }); }
+  function bind(root){ root.querySelectorAll(".sp-open").forEach(b => b.onclick = e => { e.preventDefault(); open(+b.dataset.page, b.dataset.title); }); bindFit(root); }
 
   return { load, ready: () => !!IX, html, wanted, note, extras, bind, open, forCode };
 })();
