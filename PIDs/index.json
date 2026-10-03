@@ -1093,7 +1093,7 @@
    "file": "PIDs/2000-F23-PID-PR-40002.pdf",
    "title": "FIM III booster station, sheet 1 of 2",
    "rev": "2",
-   "date": "",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 120791,
    "proj_src": "TSF P&IDs"
@@ -1102,7 +1102,7 @@
    "file": "PIDs/2000-F23-PID-PR-40003.pdf",
    "title": "FIM III booster station, sheet 2 of 2",
    "rev": "2",
-   "date": "",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 65482,
    "proj_src": "TSF P&IDs"
@@ -1120,7 +1120,7 @@
    "file": "PIDs/2000-F23-PID-PR-40006.pdf",
    "title": "FIM III deposition cell 1",
    "rev": "2",
-   "date": "",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 66242,
    "proj_src": "TSF P&IDs"
@@ -1129,7 +1129,7 @@
    "file": "PIDs/2000-F23-PID-PR-40007.pdf",
    "title": "FIM III deposition cell 2",
    "rev": "2",
-   "date": "",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 49370,
    "proj_src": "TSF P&IDs"
@@ -1138,7 +1138,7 @@
    "file": "PIDs/2000-F23-PID-PR-40008.pdf",
    "title": "FIM III deposition cell 3",
    "rev": "2",
-   "date": "",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 40096,
    "proj_src": "TSF P&IDs"
@@ -1653,7 +1653,7 @@
    "file": "PIDs/2000-F30-PID-PR-40003.pdf",
    "title": "FIM II extension deposition cell G",
    "rev": "2",
-   "date": "",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 41216,
    "proj_src": "TSF P&IDs"
@@ -2107,8 +2107,8 @@
   "2000-F75-PID-PR-25007": {
    "file": "PIDs/2000-F75-PID-PR-25007.pdf",
    "title": "Tailings and water services, sheet 1 of 3",
-   "rev": "",
-   "date": "",
+   "rev": "3",
+   "date": "2025-12-16",
    "pages": 1,
    "size": 129345,
    "proj_src": "TSF P&IDs"
@@ -2116,8 +2116,8 @@
   "2000-F75-PID-PR-25008": {
    "file": "PIDs/2000-F75-PID-PR-25008.pdf",
    "title": "Tailings and water services, sheet 2 of 3",
-   "rev": "",
-   "date": "",
+   "rev": "4",
+   "date": "2025-12-16",
    "pages": 1,
    "size": 212518,
    "proj_src": "TSF P&IDs"
@@ -2125,8 +2125,8 @@
   "2000-F75-PID-PR-25010": {
    "file": "PIDs/2000-F75-PID-PR-25010.pdf",
    "title": "Tailings and water services, sheet 3 of 3",
-   "rev": "",
-   "date": "",
+   "rev": "3",
+   "date": "2025-12-16",
    "pages": 1,
    "size": 102584,
    "proj_src": "TSF P&IDs"
@@ -2135,7 +2135,7 @@
    "file": "PIDs/2000-F75-PID-PR-40001.pdf",
    "title": "FIM II cell G decant",
    "rev": "2",
-   "date": "",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 35994,
    "proj_src": "TSF P&IDs"
@@ -2153,7 +2153,7 @@
    "file": "PIDs/2000-F75-PID-PR-40003.pdf",
    "title": "FIM III decant, sheet 2 of 2",
    "rev": "2",
-   "date": "",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 48156,
    "proj_src": "TSF P&IDs"
@@ -2162,7 +2162,7 @@
    "file": "PIDs/2000-F75-PID-PR-40004.pdf",
    "title": "Decant dam 4",
    "rev": "3",
-   "date": "2025-12-12",
+   "date": "2026-02-04",
    "pages": 1,
    "size": 135283,
    "proj_src": "TSF P&IDs"
@@ -2171,7 +2171,7 @@
    "file": "PIDs/2000-F75-PID-PR-40006.pdf",
    "title": "FIM II cell G seepage water",
    "rev": "1",
-   "date": "",
+   "date": "2025-04-17",
    "pages": 1,
    "size": 24335,
    "proj_src": "TSF P&IDs"
@@ -2189,7 +2189,7 @@
    "file": "PIDs/2000-F75-PID-PR-40008.pdf",
    "title": "FIM III typical seepage pump arrangement",
    "rev": "1",
-   "date": "",
+   "date": "2025-04-17",
    "pages": 1,
    "size": 35630,
    "proj_src": "TSF P&IDs"
@@ -2207,7 +2207,7 @@
    "file": "PIDs/2000-F75-PID-PR-40011.pdf",
    "title": "FIM III toe drain pump",
    "rev": "2",
-   "date": "2025-04-17",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 30033,
    "proj_src": "TSF P&IDs"
@@ -2225,7 +2225,7 @@
    "file": "PIDs/2000-F75-PID-PR-40014.pdf",
    "title": "FIM III booster station seal water",
    "rev": "2",
-   "date": "2024-12-05",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 77895,
    "proj_src": "TSF P&IDs"
@@ -2234,7 +2234,7 @@
    "file": "PIDs/2000-F75-PID-PR-40016.pdf",
    "title": "FIM II valve station no. 1",
    "rev": "2",
-   "date": "",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 30598,
    "proj_src": "TSF P&IDs"
@@ -2242,8 +2242,8 @@
   "2000-F75-PID-PR-40020": {
    "file": "PIDs/2000-F75-PID-PR-40020.pdf",
    "title": "FIM I booster pump",
-   "rev": "",
-   "date": "",
+   "rev": "2",
+   "date": "2025-12-16",
    "pages": 1,
    "size": 91674,
    "proj_src": "TSF P&IDs"
@@ -2251,7 +2251,7 @@
   "2000-F75-PID-PR-40021": {
    "file": "PIDs/2000-F75-PID-PR-40021.pdf",
    "title": "Tails TSF recommissioning, Kearns Corner",
-   "rev": "1",
+   "rev": "1A",
    "date": "2025-11-11",
    "pages": 1,
    "size": 121592,
@@ -2260,8 +2260,8 @@
   "2000-F75-PID-PR-40022": {
    "file": "PIDs/2000-F75-PID-PR-40022.pdf",
    "title": "Pipeline, FIM II booster station upgrade",
-   "rev": "1",
-   "date": "2025-11-11",
+   "rev": "2",
+   "date": "2025-12-16",
    "pages": 1,
    "size": 142525,
    "proj_src": "TSF P&IDs"
@@ -2269,7 +2269,7 @@
   "2000-F75-PID-PR-40023": {
    "file": "PIDs/2000-F75-PID-PR-40023.pdf",
    "title": "Tails pipeline, Kaltails booster station upgrade",
-   "rev": "1",
+   "rev": "2",
    "date": "2025-12-16",
    "pages": 1,
    "size": 107167,
@@ -2278,8 +2278,8 @@
   "2000-F75-PID-PR-40024": {
    "file": "PIDs/2000-F75-PID-PR-40024.pdf",
    "title": "FIM II booster station hub",
-   "rev": "",
-   "date": "",
+   "rev": "1",
+   "date": "2025-04-17",
    "pages": 1,
    "size": 40024,
    "proj_src": "TSF P&IDs"
@@ -2287,8 +2287,8 @@
   "2000-F75-PID-PR-40025": {
    "file": "PIDs/2000-F75-PID-PR-40025.pdf",
    "title": "TSF extension, valve station no. 2",
-   "rev": "1",
-   "date": "2025-11-20",
+   "rev": "2",
+   "date": "2025-12-16",
    "pages": 1,
    "size": 47405,
    "proj_src": "TSF P&IDs"
@@ -2296,8 +2296,8 @@
   "2000-F75-PID-PR-40026": {
    "file": "PIDs/2000-F75-PID-PR-40026.pdf",
    "title": "FIM 2 extension, valve station no. 3",
-   "rev": "1",
-   "date": "2025-11-20",
+   "rev": "2",
+   "date": "2025-12-16",
    "pages": 1,
    "size": 55040,
    "proj_src": "TSF P&IDs"
@@ -2321,8 +2321,8 @@
   "2000-F75-PID-PR-40029": {
    "file": "PIDs/2000-F75-PID-PR-40029.pdf",
    "title": "TSF extension, seepage headers",
-   "rev": "",
-   "date": "",
+   "rev": "1",
+   "date": "2025-04-17",
    "pages": 1,
    "size": 59538,
    "ocr": 1,
@@ -2339,8 +2339,8 @@
   "2000-F75-PID-PR-40031": {
    "file": "PIDs/2000-F75-PID-PR-40031.pdf",
    "title": "Decant dam 3 pump upgrade, sheet 1",
-   "rev": "1",
-   "date": "2025-11-11",
+   "rev": "2",
+   "date": "2025-12-16",
    "pages": 1,
    "size": 71515,
    "ocr": 1,
@@ -2349,8 +2349,8 @@
   "2000-F75-PID-PR-40032": {
    "file": "PIDs/2000-F75-PID-PR-40032.pdf",
    "title": "Decant dam 3 pump upgrade, sheet 2",
-   "rev": "1",
-   "date": "2025-07-18",
+   "rev": "3",
+   "date": "2025-12-16",
    "pages": 1,
    "size": 131591,
    "proj_src": "TSF P&IDs"
@@ -2402,8 +2402,8 @@
   "2000-F75-PID-PR-25009": {
    "file": "PIDs/2000-F75-PID-PR-25009.pdf",
    "title": "Saline dam 3 water distribution",
-   "rev": "",
-   "date": "",
+   "rev": "5",
+   "date": "2025-12-12",
    "pages": 1,
    "size": 220547,
    "proj_src": "TSF P&IDs"
