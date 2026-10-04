@@ -7,7 +7,7 @@
 // View history: every view (document, page, zoom, where on the sheet) is a browser history entry, so the app's back /
 // forward, the mouse's back / forward buttons and the phone's back gesture step through them; back past the first
 // view of a run returns to the app page it was opened from. Zooming and panning make a new view only once they settle
-// and moved a fair way (zoom by a fifth, or most of a screen); smaller moves update the view you're on.
+// and moved a little way (zoom by a tenth, or a fifth of the screen); smaller moves update the view you're on.
 window.PdfView = (() => {
   // OCR'd sheets: , ; : read for - or ., $ for S, O for 0 in numbers, so both sides are folded the same way
   const norm = s => String(s || "").toUpperCase().replace(/\$/g, "S").replace(/[\s\-_/.,;:|]+/g, "").replace(/(?<=\d)O|O(?=\d)/g, "0");
@@ -26,10 +26,10 @@ window.PdfView = (() => {
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="fit" title="Fit">⤢</button><button data-a="in" title="Zoom in">+</button></div>
       <button class="sp-fb" data-a="find" title="Find in this drawing">⌕</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
-      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-refs"></div></div></div><div class="sp-msg"></div>`;
+      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-text textLayer"></div></div></div><div class="sp-msg"></div>`;
     document.body.appendChild(el);
     V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
-      msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
+      msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), textEl: el.querySelector(".sp-text"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
       fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close,
       find: () => { const on = !el.classList.contains("find-on"); el.classList.toggle("find-on", on); const q = el.querySelector(".sp-q"); if (on){ q.focus(); q.select(); } else q.blur(); }, back: () => history.back(), fwd: () => history.forward() })[b.dataset.a]());
@@ -59,30 +59,60 @@ window.PdfView = (() => {
       const r = V.body.getBoundingClientRect(); V.sheet.style.transformOrigin = `${pin.cx - r.left + V.body.scrollLeft}px ${pin.cy - r.top + V.body.scrollTop}px`; V.sheet.style.transform = `scale(${pin.f})`; } });
     const up = e => { pts.delete(e.pointerId); if (pin && pts.size < 2){ const p = pin; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx, p.cy); } };
     V.body.addEventListener("pointerup", up); V.body.addEventListener("pointercancel", up);
-    // mouse drag pans a drawing
+    // mouse: middle button drag pans a drawing
     let dr = null;
-    V.body.addEventListener("mousedown", e => { if (e.button) return; dr = { x: e.clientX, y: e.clientY, l: V.body.scrollLeft, t: V.body.scrollTop }; V.body.classList.add("drag"); });
+    // (the left button selects text like any PDF; holding the middle button pans)
+    V.body.addEventListener("mousedown", e => { if (e.button !== 1) return; e.preventDefault(); dr = { x: e.clientX, y: e.clientY, l: V.body.scrollLeft, t: V.body.scrollTop }; V.body.classList.add("drag"); });
+    V.body.addEventListener("auxclick", e => { if (e.button === 1) e.preventDefault(); });
+    // left drag over the text selects it (done here, from the press point to the pointer, as the browser's own drag
+    // selection drops out over the layer's pieces); a plain click still taps whatever tag is under it
+    let selA = null;
+    const caret = (x, y) => { const c = document.caretRangeFromPoint ? document.caretRangeFromPoint(x, y) : document.caretPositionFromPoint && (p => p && { startContainer: p.offsetNode, startOffset: p.offset })(document.caretPositionFromPoint(x, y)); return c && V.textEl.contains(c.startContainer) ? c : null; };
+    V.textEl.addEventListener("mousedown", e => { if (e.button === 2 && String(getSelection()).trim()){ e.preventDefault(); return; }   // (a right click keeps the selection for Copy)
+      if (e.button !== 0) return; const c = caret(e.clientX, e.clientY); e.preventDefault(); getSelection().removeAllRanges();
+      selA = c ? { n: c.startContainer, o: c.startOffset, x: e.clientX, y: e.clientY } : { x: e.clientX, y: e.clientY }; });
+    addEventListener("mousemove", e => { if (!selA || !(e.buttons & 1)) return; if (!selA.n){ const c = caret(e.clientX, e.clientY); if (c){ selA.n = c.startContainer; selA.o = c.startOffset; } return; }
+      const c = caret(e.clientX, e.clientY); if (c) try { getSelection().setBaseAndExtent(selA.n, selA.o, c.startContainer, c.startOffset); } catch (x) {} });
+    addEventListener("mouseup", () => { selA = null; });
     addEventListener("mousemove", e => { if (!dr) return; V.body.scrollLeft = dr.l - (e.clientX - dr.x); V.body.scrollTop = dr.t - (e.clientY - dr.y); });
     addEventListener("mouseup", () => { dr = null; V.body.classList.remove("drag"); });
     V.body.style.touchAction = "pan-x pan-y";
     let down = null; V.body.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; }, true);
-    // right click (long press on a phone) on a highlighted tag: copy its text
+    // right click (long press on a phone) anywhere on the sheet: Save as PDF, and on a highlighted tag, copy its text
     V.body.addEventListener("contextmenu", e => {
-      const a = e.target.closest && e.target.closest(".sp-ref"); if (!a) return;
-      const r = V.pageRefs[+a.dataset.i]; if (!r) return; e.preventDefault();
-      const tags = String(r[5]).split("|"); pickClose(); const p = document.createElement("div"); p.className = "sp-pick sp-copy";
-      p.innerHTML = tags.map(t => `<button type="button" data-t="${esc(t)}">⧉ Copy ${esc(t)}</button>`).join("");
+      if (!cur || !V.pg) return; e.preventDefault();
+      const a = refAt(e.clientX, e.clientY), r = a && V.pageRefs[+a.dataset.i], sel = String(getSelection() || "").replace(/\s+/g, " ").trim();
+      const tags = (sel ? [sel] : []).concat(r ? String(r[5]).split("|").filter(t => t !== sel) : []);
+      pickClose(); const p = document.createElement("div"); p.className = "sp-pick sp-copy";
+      p.innerHTML = tags.map(t => `<button type="button" data-t="${esc(t)}">⧉ Copy ${esc(t.length > 40 ? t.slice(0, 38) + "…" : t)}</button>`).join("") + `<button type="button" data-save="1">⤓ Save as PDF…</button>`;
       V.el.appendChild(p); const q = V.el.getBoundingClientRect();
       p.style.left = Math.max(6, Math.min(q.width - p.offsetWidth - 6, e.clientX - q.left)) + "px"; p.style.top = Math.max(50, Math.min(q.height - p.offsetHeight - 6, e.clientY - q.top + 8)) + "px";
-      p.querySelectorAll("button").forEach(b => b.onclick = ev => { ev.stopPropagation(); const t = b.dataset.t;
+      p.querySelectorAll("button[data-t]").forEach(b => b.onclick = ev => { ev.stopPropagation(); const t = b.dataset.t;
         const done = () => { pickClose(); toast("Copied " + t); };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => { fallbackCopy(t); done(); }); else { fallbackCopy(t); done(); } });
+      p.querySelector("[data-save]").onclick = ev => { ev.stopPropagation(); pickClose(); savePdf(); };
     });
+    // Save as: the browser's own Save As window where it has one (desktop Chrome / Edge), else a normal download
+    async function savePdf(){
+      const name = cur.download || cur.url.split("/").pop();
+      if (window.showSaveFilePicker){
+        try {
+          const h = await showSaveFilePicker({ suggestedName: name, types: [{ description: "PDF", accept: { "application/pdf": [".pdf"] } }] });
+          const blob = await (await fetch(cur.url)).blob(), w = await h.createWritable(); await w.write(blob); await w.close(); toast("Saved " + h.name); return;
+        } catch (err){ if (err && err.name === "AbortError") return; }
+      }
+      const l = document.createElement("a"); l.href = cur.url; l.download = name; document.body.appendChild(l); l.click(); l.remove();
+    }
     const fallbackCopy = t => { const x = document.createElement("textarea"); x.value = t; x.style.position = "fixed"; x.style.opacity = "0"; document.body.appendChild(x); x.select(); try { document.execCommand("copy"); } catch (e) {} x.remove(); };
+    // the tag under a point on the screen (the boxes sit under the text layer, so found by position)
+    const refAt = (x, y) => { if (!V.boxes || !V.boxes.length) return null; const q = V.refsEl.getBoundingClientRect(); if (!q.width) return null;
+      const i = PdfView.nearest(V.boxes, (x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4); return i >= 0 ? V.refsEl.children[i] : null; };
+    let hv = null; V.body.addEventListener("mousemove", e => { const a = refAt(e.clientX, e.clientY); if (a === hv) return;
+      if (hv) hv.classList.remove("hv"); hv = a; if (a) a.classList.add("hv"); V.body.classList.toggle("on-ref", !!a); });
     V.body.addEventListener("click", e => {
-      let a = e.target.closest && e.target.closest(".sp-ref"); if (!e.target.closest || !e.target.closest(".sp-pick")) pickClose();
-      if (a && V.boxes){ const q = V.refsEl.getBoundingClientRect(), i = PdfView.nearest(V.boxes, (e.clientX - q.left) / q.width * 1e4, (e.clientY - q.top) / q.height * 1e4);
-        if (i >= 0) a = V.refsEl.children[i] || a; }
+      if (!e.target.closest || !e.target.closest(".sp-pick")) pickClose(); else return;
+      const sel = getSelection(); if (sel && !sel.isCollapsed && String(sel).trim()) return;   // (finishing a text selection, not a tap)
+      const a = refAt(e.clientX, e.clientY);
       if (!a || (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8)) return;
       const r = V.pageRefs[+a.dataset.i]; if (!r || !cur.onRef) return;
       a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
@@ -114,7 +144,7 @@ window.PdfView = (() => {
     V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
     V.zoom = 1; await go(cur.page);
     const r = cur.restore; if (r && cur === me){ quiet(); V.zoom = r.zoom; layout(false); V.body.scrollLeft = r.sl; V.body.scrollTop = r.st; sharp(); }
-    if (cur === me && REG.get(curId) && !REG.get(curId).snap) REG.get(curId).snap = state();
+    if (cur === me && REG.get(curId) && !REG.get(curId).snap){ REG.get(curId).snap = state(); REG.get(curId).at = REG.get(curId).snap; }
   }
   // a red see-through arrow pointing down at a box on the sheet (fractions of the sheet), 1.8% of its width
   function arrowAt(h, cls){ const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), A = vp.width / vp.height, aw = .018, ah = aw * 1.7 * A;
@@ -130,14 +160,15 @@ window.PdfView = (() => {
     history.pushState({ sp: 1, id }, ""); fwdBtn();
   }
   const fwdBtn = () => { const me = REG.get(curId), b = V && V.el.querySelector(".sp-fwd"); if (b) b.disabled = !me || ![...REG.values()].some(v => v.seq > me.seq); };
-  function settleSoon(){ if (!V || V.el.hidden) return; clearTimeout(st8); st8 = setTimeout(settle, 650); }
+  function settleSoon(){ if (!V || V.el.hidden) return; clearTimeout(st8); st8 = setTimeout(settle, 500); }
   function settle(){
     if (Date.now() < hush || !V || V.el.hidden || !V.pg) return;
     const me = REG.get(curId), s = state(); if (!me || !s) return;
-    const o = me.snap; if (!o){ me.snap = s; return; }
-    const big = s.page !== o.page || Math.abs(Math.log(s.zoom / o.zoom)) > Math.log(1.2) ||
-      Math.abs(s.sl - o.sl) > V.body.clientWidth * .45 || Math.abs(s.st - o.st) > V.body.clientHeight * .45;
-    if (big) push({ o: me.o, snap: s }); else me.snap = s;
+    // compared with where this view started (small moves add up), not with the last small move
+    if (!me.snap){ me.snap = s; me.at = s; return; } const o = me.at || me.snap;
+    const big = s.page !== o.page || Math.abs(Math.log(s.zoom / o.zoom)) > Math.log(1.1) ||
+      Math.abs(s.sl - o.sl) > V.body.clientWidth * .2 || Math.abs(s.st - o.st) > V.body.clientHeight * .2;
+    if (big) push({ o: me.o, snap: s, at: s }); else me.snap = s;
   }
   async function restore(id){
     const v = REG.get(id); if (!v) return; curId = id; fwdBtn(); quiet();
@@ -176,7 +207,7 @@ window.PdfView = (() => {
       if (!document.fullscreenElement && document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen({ navigationUI: "hide" });
       rotated = !rotated; await so.lock(rotated ? "landscape" : "any"); freed = !rotated;
     } catch (e){   // the phone won't turn the screen for us (iPhone, some Androids): turn the drawing instead
-      rotated = false; V.rot = V.rot ? 0 : 90; V.zoom = 1; layout(true); V.body.scrollTo(0, 0);
+      rotated = false; V.rot = V.rot ? 0 : 90; V.zoom = 1; layout(true); textLayer(); V.body.scrollTo(0, 0);
       if (cur.find) mark(cur.find);
       if (V.rot) toast("Drawing turned: hold the phone sideways. Tap ⟲ again to turn it back.");
     }
@@ -189,9 +220,18 @@ window.PdfView = (() => {
     if (!fromPop && V.pg && n !== V.page){ const me = REG.get(curId); if (me) me.snap = state(); quiet(); V.page = n; push({ o: me ? me.o : cur, snap: null }); }
     V.page = n;
     V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
-    V.pg = await d.getPage(n); V.body.scrollTo(0, 0); V.size(); layout(true);
+    V.pg = await d.getPage(n); V.body.scrollTo(0, 0); V.size(); layout(true); textLayer();
     if (cur.find) mark(cur.find); drawTap();
-    const me = REG.get(curId); if (me && !me.snap && !fromPop) me.snap = state();
+    const me = REG.get(curId); if (me && !me.snap && !fromPop){ me.snap = state(); me.at = me.snap; }
+  }
+  // the page's text as an invisible, selectable layer over the picture (PDF.js text layer; OCR'd sheets included),
+  // laid out once per page at scale 1 and sized by --scale-factor at every zoom
+  let tlGen = 0;
+  async function textLayer(){
+    const g = ++tlGen, el = V.textEl; el.innerHTML = ""; if (!V.pg || !window.pdfjsLib || !pdfjsLib.renderTextLayer) return;
+    try { const tc = await V.pg.getTextContent(); if (g !== tlGen) return;
+      await pdfjsLib.renderTextLayer({ textContentSource: tc, container: el, viewport: V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), textDivs: [] }).promise;
+    } catch (e) {}
   }
   // zoom 1 fits the page width (spec) or the whole sheet (drawings)
   function layout(bg){
@@ -200,6 +240,7 @@ window.PdfView = (() => {
     V.base = Math.max(.05, cur.fit === "page" ? Math.min(W / vp1.width, H / vp1.height) : W / vp1.width); const s = V.base * V.zoom;
     const w = Math.round(vp1.width * s) + "px", h = Math.round(vp1.height * s) + "px";
     // the sharp layer no longer matches a new size: hide it (the background layer stretches) until its redraw is ready
+    V.textEl.style.setProperty("--scale-factor", s);
     if (V.sheet.style.width !== w || V.sheet.style.height !== h || bg){ V.hi.style.visibility = "hidden"; V.sheet.style.width = w; V.sheet.style.height = h; }
     if (bg){ drawBg(); drawRefs(); } sharp();
   }
