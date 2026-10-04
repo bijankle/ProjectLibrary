@@ -332,10 +332,10 @@
     const stack = []; let hits = [], showingRecent = false;
     // recent searches (items opened), shown when the empty bar gets focus
     const RK = opts.recent || "kcgm_recent_lookups";
-    const recents = () => { try { return JSON.parse(localStorage.getItem(RK) || "[]"); } catch (e) { return []; } };
+    // recent searches: only text that was searched (Enter, or a result opened from it), never the items opened
+    const recents = () => { try { return JSON.parse(localStorage.getItem(RK) || "[]").filter(x => x && x.q); } catch (e) { return []; } };
     const rememberQ = q => { q = q.trim(); if (q.length < 2) return; try { const r = recents().filter(x => x.q !== q && !(x.k && x.k === norm(q))); r.unshift({ q }); localStorage.setItem(RK, JSON.stringify(r.slice(0, 12))); } catch (e) {} };
-    const remember = it => { try { const r = recents().filter(x => !(x.k === it.k && x.t === it.t) && x.q !== inp.value.trim()); r.unshift({ k: it.k, t: it.t, key: it.key, name: it.name });
-      localStorage.setItem(RK, JSON.stringify(r.slice(0, 12))); } catch (e) {} };
+    const remember = () => rememberQ(inp.value);   // (opening a result keeps the text it was found with)
     const showRecent = () => {
       if (opts.noRecent){ showingRecent = false; status(""); body.innerHTML = opts.intro || ""; return; }   // the page shows them itself (Assets: chips above the filters)
       const r = recents(); status(""); showingRecent = true;

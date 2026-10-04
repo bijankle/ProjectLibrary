@@ -24,7 +24,7 @@ window.AssetViz = (() => {
       if (m.dataset.f === "open") ctx.open(m.dataset.v); else ctx.choose(m.dataset.f, m.dataset.v); });
     addEventListener("resize", () => { if (ctx) draw(true); });
   }
-  function update(list, c){ ctx = Object.assign({ list }, c); draw(); }
+  function update(list, c){ ctx = Object.assign({ list }, c); if (!cur) draw(); }   // (a drawing on show isn't redrawn by the list)
 
   // ---------- an open item: its P&ID (or PFD sheet) instead of the charts ----------
   // the whole sheet fits the space with the item marked; drawing number tabs above when there are several; a click on
@@ -32,8 +32,14 @@ window.AssetViz = (() => {
   let cur = null, shown = null, hist = [], gen = 0;
   const ORD = new Intl.Collator(undefined, { numeric: true });
   const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
-  function item(it){ cur = it; shown = null; hist = []; lastSig = ""; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
-  function list(){ if (!cur) return; cur = null; lastSig = ""; draw(true); }
+  // A drawing on show stays while you search (you may be reading tags off it): it changes only when an item with a
+  // drawing of its own opens, and goes back to the charts on Home.
+  function item(it){
+    const own = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(it) : [];
+    if (!own.length && cur && shown && (!window.Pid || Pid.ready())) return;   // (an item with no drawing: keep the one on show)
+    cur = it; shown = null; hist = []; lastSig = ""; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
+  function list(){}
+  function home(){ if (!cur) return; cur = null; shown = null; lastSig = ""; draw(true); }
   // a drawing's series: the sheets whose title differs only by the sheet number ("Plant air, sheet 3" → "Plant air"),
   // P&IDs with P&IDs, PFDs with PFDs, in sheet order
   const SH = /,?\s*sheet\s+(\d+)(\s+of\s+\d+)?/i;
@@ -259,5 +265,5 @@ window.AssetViz = (() => {
 .vz-tip{position:fixed;z-index:200;pointer-events:none;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:var(--fb,15px);line-height:1.35;box-shadow:0 6px 18px #0006;max-width:260px}
 .vz-tip[hidden]{display:none}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  return { mount, update, item, list };
+  return { mount, update, item, list, home };
 })();

@@ -792,7 +792,7 @@ body.searching #homeMain{display:none}
   // Search lives in the top bar: type straight in, results replace the home content until the bar is cleared
   Lookup.addExtra(GLOSSARY.map(([k, v]) => ({ t: "gloss", key: k, name: v, text: v })));
   lk = Lookup.mount($("lkRoot"), { placeholder: "Search tags, lines, valves…", intro: "", noRecent: true, scrollTop: () => window.scrollTo(0, 0),
-    home: () => { if (window.Browse) Browse.reset(); window.scrollTo(0, 0); },
+    home: () => { if (window.Browse) Browse.reset(); if (window.AssetViz) AssetViz.home(); window.scrollTo(0, 0); },
     noNav: true,
     onOpen: (it, how) => { if (window.AssetViz) AssetViz.item(it); if (!restoring && cur !== "home") show("home"); nav(how !== "step"); }, onList: () => { if (window.AssetViz) AssetViz.list(); },
     within: v => window.Browse ? Browse.query(v) : false,   // with Browse filters set, typing narrows the filtered list
@@ -893,7 +893,7 @@ body.searching #homeMain{display:none}
     if (t === "quiz"){ openQuiz(); return true; }
     return false; } });
   // ⌂ (from any tab or page): Assets with no search, no filter and no item open
-  function assetsHome(){ restoring = true; lk.input.value = ""; Browse.reset(); if (lk.current()) lk.close(); show("home"); restoring = false; }
+  function assetsHome(){ if (window.AssetViz) AssetViz.home(); restoring = true; lk.input.value = ""; Browse.reset(); if (lk.current()) lk.close(); show("home"); restoring = false; }
   // the Quiz tab opens on a card: the deck in progress, or a fresh one with the last choices
   function openQuiz(){ if (run && !run.finished) show("deck"); else start(pick()); }
   const openGloss = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };

@@ -172,7 +172,7 @@ window.Browse = (() => {
   function wireRec(){ const rc = recents().slice(0, 8), bar = el.querySelector(".bw-rec"); if (!bar) return;
     bar.querySelectorAll(".bp-r").forEach(b => b.onclick = () => { const x = rc[+b.dataset.r]; if (x.q) lk.search(x.q); else lk.openKey(x.key); });
     bar.querySelector(".bw-rclr").onclick = () => { try { localStorage.removeItem("kcgm_recent_lookups"); } catch (e) {} bar.remove(); fit(); }; }
-  const recents = () => { try { return JSON.parse(localStorage.getItem("kcgm_recent_lookups") || "[]"); } catch (e) { return []; } };
+  const recents = () => { try { return JSON.parse(localStorage.getItem("kcgm_recent_lookups") || "[]").filter(x => x && x.q); } catch (e) { return []; } };   // (searched text only)
   // phone: the filters at the top of the page, no pop-up. The chosen steps as chips with ✕ (tap to remove that step and
   // the ones after it), then the options of the next step in a three-line block that scrolls sideways (Any first);
   // nothing chosen yet: the asset types in that block, and recent searches in a row above it. The results fill the rest.
