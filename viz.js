@@ -57,7 +57,7 @@ window.AssetViz = (() => {
     // over the sheet only the series' sheet tabs (when it has more than one sheet)
     el.innerHTML = `<div class="vz-pv">` + (ser.length > 1 ? `<div class="vz-hd"><div class="vz-tabs">` +
       ser.map(x => `<button type="button" class="vz-tab${x === n ? " on" : ""}" data-n="${esc(x)}" title="${esc(x)}">Sheet ${sheetOf(x)}</button>`).join("") + `</div></div>` : "") +
-      `<div class="vz-sheet"><div class="vz-stage"><canvas></canvas><div class="vz-mk"></div><div class="vz-rf"></div></div>` +
+      `<div class="vz-sheet"><div class="vz-dn">${esc(n)}</div><div class="vz-stage"><canvas></canvas><div class="vz-mk"></div><div class="vz-rf"></div></div>` +
       `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Open full screen"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button><button type="button" data-z="fit" class="vz-ze" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>` +
       `<p class="vz-note">Loading the drawing…</p></div></div>`;
     el.querySelectorAll(".vz-tab[data-n]").forEach(b => b.onclick = () => { if (b.dataset.n) go(b.dataset.n); });
@@ -246,6 +246,7 @@ window.AssetViz = (() => {
 .vz-tab{border:1px solid var(--line);background:var(--card,var(--panel));color:var(--mute);border-radius:8px;padding:5px 10px;font:inherit;font-size:var(--fb,15px);cursor:pointer}
 .vz-tab.on{border-color:var(--gold);color:var(--ink);font-weight:700}
 .vz-hd{display:flex;align-items:center;gap:12px;min-width:0}.vz-hd .vz-tabs{flex:none;flex-wrap:nowrap}
+.vz-dn{position:absolute;left:5px;top:4px;z-index:3;font:700 11px/1.2 system-ui,sans-serif;letter-spacing:.02em;color:#3b4552;pointer-events:none}   /* the drawing number, snug in the page corner */
 .vz-sheet{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;touch-action:none;cursor:default;user-select:none}
 .vz-sheet.drag{cursor:default}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}

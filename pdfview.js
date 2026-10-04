@@ -1,5 +1,5 @@
 // In-app PDF viewer shared by the pipe and valve spec (spec.js) and the P&IDs (pid.js).
-// PdfView.open({ url, page, title, fit: "width" | "page", find, download, name, refs, onRef, restore, back })
+// PdfView.open({ url, page, title, number, fit: "width" | "page", find, download, name, refs, onRef, restore, back })
 //   The visible part of the page is redrawn from the PDF's own vectors at every zoom, so it stays sharp.
 //   find: a tag to mark on the page (a line number, valve, instrument…). The mark stays until another document or
 //   another search is opened; spaces, hyphens and slashes are ignored and a tag split over several text pieces is found.
@@ -26,7 +26,7 @@ window.PdfView = (() => {
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="in" title="Zoom in">+</button></div>
       <button class="sp-fb" data-a="find" title="Find in this drawing">⌕</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
-      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-text textLayer"></div></div></div><div class="sp-msg"></div>
+      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-text textLayer"></div><div class="sp-dn"></div></div></div><div class="sp-msg"></div>
       <button class="sp-ze" data-a="fit" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>`;
     document.body.appendChild(el);
     V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
@@ -57,7 +57,7 @@ window.PdfView = (() => {
     const pts = new Map(); let pin = null;
     V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ const [a, b] = [...pts.values()]; pin = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1 }; } });
     V.body.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e); if (pin && pts.size === 2){ const [a, b] = [...pts.values()]; pin.f = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pin.d;
-      const r = V.body.getBoundingClientRect(); V.sheet.style.transformOrigin = `${pin.cx - r.left + V.body.scrollLeft}px ${pin.cy - r.top + V.body.scrollTop}px`; V.sheet.style.transform = `scale(${pin.f})`; } });
+      if (!pin.o){ const q = V.sheet.getBoundingClientRect(); pin.o = `${pin.cx - q.left}px ${pin.cy - q.top}px`; } V.sheet.style.transformOrigin = pin.o; V.sheet.style.transform = `scale(${pin.f})`; } });
     const up = e => { pts.delete(e.pointerId); if (pin && pts.size < 2){ const p = pin; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx, p.cy); } };
     V.body.addEventListener("pointerup", up); V.body.addEventListener("pointercancel", up);
     // mouse: middle button drag pans a drawing
@@ -131,6 +131,9 @@ window.PdfView = (() => {
   async function open(o){
     ui(); freeRotate(); const wasOpen = !V.el.hidden; cur = Object.assign({ page: 1, fit: "width" }, o);
     V.el.hidden = false; document.body.classList.add("sp-on"); V.el.querySelector(".sp-tt").textContent = cur.title || "";
+    // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
+    V.el.querySelector(".sp-dn").textContent = cur.number || "";
+    if (cur.number && document.documentElement.classList.contains("phone")) V.el.querySelector(".sp-tt").textContent = (cur.title || "").replace(cur.number, "").replace(/^\s*·\s*/, "").trim() || cur.number;
     const dl = V.el.querySelector(".sp-dl"); dl.href = cur.url; dl.download = cur.download || cur.url.split("/").pop();
     // a new view entry, unless this open is a step back / forward through the history
     if (!o._pop){ const was = curId && REG.get(curId), st0 = state(); if (was && st0 && wasOpen) was.snap = st0; push({ o, snap: null }); }
@@ -259,7 +262,7 @@ window.PdfView = (() => {
   // zoom 1 fits the page width (spec) or the whole sheet (drawings)
   function layout(bg){
     if (!V.pg) return;
-    const vp1 = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16;
+    const vp1 = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), cs = getComputedStyle(V.body), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16 - Math.max(0, (parseFloat(cs.paddingTop) || 0) - 8);
     V.base = Math.max(.05, cur.fit === "page" ? Math.min(W / vp1.width, H / vp1.height) : W / vp1.width); const s = V.base * V.zoom;
     const w = Math.round(vp1.width * s) + "px", h = Math.round(vp1.height * s) + "px";
     // the sharp layer no longer matches a new size: hide it (the background layer stretches) until its redraw is ready
@@ -291,9 +294,10 @@ window.PdfView = (() => {
   function zoomTo(z, cx, cy){
     z = Math.max(1, Math.min(cur.fit === "page" ? 24 : 10, z)); if (!V.pg || Math.abs(z - V.zoom) < .001) return;
     const r = V.body.getBoundingClientRect(); cx = cx == null ? r.left + r.width / 2 : cx; cy = cy == null ? r.top + r.height / 2 : cy;
-    const fx = (V.body.scrollLeft + cx - r.left - 8) / V.sheet.offsetWidth, fy = (V.body.scrollTop + cy - r.top - 8) / V.sheet.offsetHeight;
+    // the point under (cx, cy) as a fraction of the page stays under it (measured from the page itself, so the body's padding doesn't matter)
+    const q = V.sheet.getBoundingClientRect(), fx = (cx - q.left) / q.width, fy = (cy - q.top) / q.height;
     V.zoom = z; layout(false);
-    V.body.scrollLeft = fx * V.sheet.offsetWidth - (cx - r.left - 8); V.body.scrollTop = fy * V.sheet.offsetHeight - (cy - r.top - 8); sharp(); settleSoon();
+    const q2 = V.sheet.getBoundingClientRect(); V.body.scrollLeft += q2.left + fx * q2.width - cx; V.body.scrollTop += q2.top + fy * q2.height - cy; sharp(); settleSoon();
   }
 
   // ---------- mark a tag on the page ----------
