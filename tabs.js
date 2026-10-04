@@ -347,7 +347,7 @@ button:disabled{cursor:default}
 .tbw.ph{border-bottom:1px solid var(--line)}
 .ph-top{height:52px;display:flex;align-items:center;gap:8px;padding:0 max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))}
 .ph-top .lg-m{flex:none;display:flex}.ph-top .lg-m svg{width:30px;height:30px}
-:root.phone .pj-m{left:auto;right:-60px}:root.phone .pj-b{width:112px;height:36px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b b{font-size:16px}
+:root.phone .pj-m{left:auto;right:-60px}:root.phone .pj-b{width:112px;height:36px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b b{font-size:var(--fb,15px);font-weight:700}   /* the same size as the rest of the text (it follows the text size setting) */
 .ph-top .ph-n{display:none}:root.in-settings .ph-top .ph-n{display:block}:root.in-settings .ph-top .pj{display:none}   /* (the page name only on Settings) */
 .ph-n{flex:0 1 auto;min-width:0;font-size:var(--fh,22px);font-weight:800;white-space:nowrap;overflow:hidden;line-height:1.1}   /* the page's name, like an item's tag (fitted to the row) */
 .ph-slot{flex:1;min-width:0;display:flex;align-items:center;gap:6px}.ph-slot>*{min-width:0}.ph-slot>.mo-off{display:none!important}
