@@ -564,9 +564,10 @@
 body.sp-on{overflow:hidden}
 .sp-top button{font-size:18px;line-height:1}   /* the symbols 40% larger, the buttons the same size */
 .sp-top button[hidden]{display:none}.sp-refs{position:absolute;inset:0;pointer-events:none}
-.sp-ref{position:absolute;pointer-events:auto;cursor:pointer;background:rgba(232,180,74,.13);border-radius:2px;box-shadow:inset 0 0 0 1px rgba(214,158,46,.35)}
-.sp-ref.d{background:rgba(232,180,74,.24);box-shadow:inset 0 0 0 1px rgba(214,158,46,.7)}
-.sp-ref::after{content:"";position:absolute;inset:-5px}.sp-ref:hover,.sp-ref.hit{background:rgba(232,180,74,.45)}
+/* tappable tags: a very light grey wash (links to other drawings a little darker), darker grey when hovered or tapped */
+.sp-ref{position:absolute;pointer-events:auto;cursor:pointer;background:rgba(90,100,115,.06);border-radius:2px}
+.sp-ref.d{background:rgba(90,100,115,.11)}
+.sp-ref::after{content:"";position:absolute;inset:-5px}.sp-ref:hover,.sp-ref.hit{background:rgba(90,100,115,.22)}
 .sp-pick{position:absolute;z-index:5;display:flex;flex-direction:column;gap:4px;padding:6px;background:#1d222a;border:1px solid #3a434f;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.4);max-height:50vh;overflow:auto}
 .sp-pick button{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;padding:7px 12px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;text-align:left}
 .sp-pick button:hover{border-color:#e8b44a}
