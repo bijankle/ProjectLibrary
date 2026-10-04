@@ -555,15 +555,15 @@
 .sp-top button,.sp-dl{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;min-width:34px;height:32px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px}
 .sp-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}.sp-sheet{position:relative;background:#fff;margin:0 auto;box-shadow:0 2px 14px #0008;transform-origin:0 0}
 .sp-bg{position:absolute;inset:0;width:100%;height:100%}.sp-hi{position:absolute}
-.sp-marks{position:absolute;inset:0;pointer-events:none}.sp-arrow{position:absolute;fill:#e0201b;opacity:.6;overflow:visible}
-.sp-marks .sp-arrow:not(.on){opacity:.3}.sp-marks .sp-arrow:only-child{opacity:.6}   /* (with several places, the one stepped to is the stronger) */
+.sp-marks,.sp-tap{position:absolute;inset:0;pointer-events:none}.sp-arrow{position:absolute;fill:#e0201b;opacity:.6;overflow:visible}
+.sp-marks .sp-arrow:not(.on){opacity:.3}.sp-tap .sp-arrow{opacity:.6}.sp-marks .sp-arrow:only-child{opacity:.6}   /* (with several places, the one stepped to is the stronger) */
 @keyframes spPulse{0%{box-shadow:0 0 0 0 rgba(255,45,85,.7)}100%{box-shadow:0 0 0 22px rgba(255,45,85,0)}}
 .sp-body.drag{cursor:grabbing}.sp-fn{min-width:0 !important;padding:0 4px;white-space:nowrap;max-width:210px;overflow:hidden;text-overflow:ellipsis}
 .sp-toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#171b21;color:#e9edf2;border:1px solid #e8b44a;border-radius:10px;padding:8px 12px;font-size:var(--fb,15px);max-width:90vw}.sp-toast[hidden]{display:none}
 .sp-msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font-size:var(--fb,15px)}.sp-msg[hidden]{display:none}
 body.sp-on{overflow:hidden}
 .sp-top button{font-size:18px;line-height:1}   /* the symbols 40% larger, the buttons the same size */
-.sp-top button[hidden]{display:none}.sp-refs{position:absolute;inset:0;pointer-events:none}
+.sp-top button[hidden]{display:none}.sp-top .sp-fwd:disabled{opacity:.4;cursor:default}.sp-refs{position:absolute;inset:0;pointer-events:none}
 /* tappable tags: a very light grey wash (links to other drawings a little darker), darker grey when hovered or tapped */
 .sp-ref{position:absolute;pointer-events:auto;cursor:pointer;background:rgba(90,100,115,.06);border-radius:2px}
 .sp-ref.d{background:rgba(90,100,115,.11)}
@@ -580,12 +580,11 @@ body.sp-on{overflow:hidden}
   flex-wrap:nowrap;gap:2px;padding:4px;border:1px solid #3a434f;border-radius:26px;background:#171b21f0;box-shadow:0 4px 16px #0008;z-index:3}
 :root.phone .sp-view .sp-top button{min-width:40px;height:40px;border:0;background:none;border-radius:20px;font-size:21px;padding:0 6px}
 :root.phone .sp-view .sp-top .sp-nav{gap:0}:root.phone .sp-view .sp-top .sp-nav+.sp-nav,:root.phone .sp-view .sp-top .sp-fb{border-left:1px solid #3a434f}
-:root.phone .sp-view .sp-x,:root.phone .sp-view .sp-back{position:fixed;top:calc(10px + var(--sat, env(safe-area-inset-top)));left:10px;width:42px;height:42px!important;border-radius:50%!important;
+:root.phone .sp-view .sp-x,:root.phone .sp-view .sp-back,:root.phone .sp-view .sp-fwd{position:fixed;top:calc(10px + var(--sat, env(safe-area-inset-top)));left:10px;width:42px;height:42px!important;border-radius:50%!important;
   background:#171b21f0!important;border:1px solid #3a434f!important;box-shadow:0 2px 10px #0008;margin:0!important;z-index:4}
-:root.phone .sp-view .sp-back{left:60px}
+:root.phone .sp-view .sp-back{left:60px}:root.phone .sp-view .sp-fwd{left:110px}:root.phone .sp-view .sp-fwd:disabled{opacity:.45}
 :root.phone .sp-view .sp-tt{position:fixed;top:calc(15px + var(--sat, env(safe-area-inset-top)));left:62px;max-width:calc(100vw - 74px);flex:none;order:0;font-size:var(--fl,13px);color:#e9edf2;background:#171b21e0;border:1px solid #3a434f;border-radius:16px;padding:6px 12px;pointer-events:none;z-index:4}
-:root.phone .sp-view .sp-back:not([hidden])~.sp-tt{max-width:calc(100vw - 124px)}
-:root.phone .sp-view .sp-back:not([hidden])~.sp-tt{left:112px}
+:root.phone .sp-view .sp-tt{left:162px;max-width:calc(100vw - 174px)}
 :root.phone .sp-view .sp-fb{display:inline-flex!important}:root.phone .sp-view .sp-dl{display:none}:root.phone .sp-view [data-a=fit]{display:inline-flex}
 :root.phone .sp-view .sp-q{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));width:auto;max-width:none;height:42px;display:none;z-index:4;font-size:16px;box-shadow:0 4px 16px #0008}
 :root.phone .sp-view.find-on .sp-q{display:block}

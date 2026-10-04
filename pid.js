@@ -11,19 +11,18 @@ window.Pid = (() => {
   const key = n => byN.get(norm(n));
   const info = n => { const k = key(n); return k ? Object.assign({ number: k }, IX.pids[k]) : null; };
   // references printed on the sheets (pid-refs.json, tools/build_pid_refs.py): tapping another drawing opens it with the
-  // way back marked, tapping a tag opens it in the lookup (window.kcgmOpenTag, set by the page). ← steps back.
-  let REFS = null; const back = [];
+  // way back marked, tapping a tag opens it in the lookup (window.kcgmOpenTag, set by the page). Back steps through the
+  // views (pdfview.js keeps them as browser history).
+  let REFS = null;
   const refs = () => REFS || (REFS = fetch("pid-refs.json").then(r => r.ok ? r.json() : {}).catch(() => { REFS = null; return {}; }));
   function open(n, find, o = {}){
     const d = info(n); if (!d) return false;
-    if (!o.keep) back.length = 0;
     const r = o.restore;
     PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc && !d.layout ? "width" : "page", find: find || null, download: d.number + ".pdf", restore: r || null,
       title: d.number + (d.rev ? " Rev " + d.rev : "") + (d.title ? " · " + d.title : ""),
-      refs: refs().then(R => R[d.number] || []), back: back.length > 0,
-      onBack: () => { const b = back.pop(); if (b) open(b.n, b.find, { keep: true, restore: b.state }); },
+      refs: refs().then(R => R[d.number] || []),
       onRef: (t, k) => {
-        if (k === "dwg"){ if (!key(t)) return; back.push({ n: d.number, find, state: PdfView.state() }); open(t, d.number, { keep: true }); return; }
+        if (k === "dwg"){ if (!key(t)) return; open(t, d.number, { keep: true }); return; }
         if (window.kcgmOpenTag){ PdfView.close(); setTimeout(() => kcgmOpenTag(t), 60); }
       } });
     return true;

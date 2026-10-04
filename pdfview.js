@@ -1,9 +1,13 @@
 // In-app PDF viewer shared by the pipe and valve spec (spec.js) and the P&IDs (pid.js).
-// PdfView.open({ url, page, title, fit: "width" | "page", find, download, name, refs, onRef, back, onBack, restore })
+// PdfView.open({ url, page, title, fit: "width" | "page", find, download, name, refs, onRef, restore })
 //   The visible part of the page is redrawn from the PDF's own vectors at every zoom, so it stays sharp.
 //   find: a tag to mark on the page (a line number, valve, instrument…). The mark stays until another document or
 //   another search is opened; spaces, hyphens and slashes are ignored and a tag split over several text pieces is found.
 // PDF.js is bundled in vendor/pdfjs and loaded on first use.
+// View history: every view (document, page, zoom, where on the sheet) is a browser history entry, so the app's back /
+// forward, the mouse's back / forward buttons and the phone's back gesture step through them; back past the first
+// view of a run returns to the app page it was opened from. Zooming and panning make a new view only once they settle
+// and moved a fair way (zoom by a fifth, or most of a screen); smaller moves update the view you're on.
 window.PdfView = (() => {
   // OCR'd sheets: , ; : read for - or ., $ for S, O for 0 in numbers, so both sides are folded the same way
   const norm = s => String(s || "").toUpperCase().replace(/\$/g, "S").replace(/[\s\-_/.,;:|]+/g, "").replace(/(?<=\d)O|O(?=\d)/g, "0");
@@ -17,18 +21,18 @@ window.PdfView = (() => {
   function ui(){
     if (V) return V;
     const el = document.createElement("div"); el.className = "sp-view"; el.hidden = true;
-    el.innerHTML = `<div class="sp-top"><button class="sp-back" data-a="back" title="Back to the last drawing" hidden>←</button><b class="sp-tt"></b><div class="sp-nav sp-pages"><button data-a="prev" title="Previous page">◀</button><span class="sp-pg"></span><button data-a="next" title="Next page">▶</button></div>
+    el.innerHTML = `<div class="sp-top"><button class="sp-back" data-a="back" title="Back to the previous view (or the page before)">←</button><button class="sp-fwd" data-a="fwd" title="Forward" disabled>→</button><b class="sp-tt"></b><div class="sp-nav sp-pages"><button data-a="prev" title="Previous page">◀</button><span class="sp-pg"></span><button data-a="next" title="Next page">▶</button></div>
       <input class="sp-q" type="search" placeholder="Find in this drawing (Ctrl+F)" aria-label="Find in this drawing" autocomplete="off" spellcheck="false">
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="fit" title="Fit">⤢</button><button data-a="in" title="Zoom in">+</button></div>
       <button class="sp-fb" data-a="find" title="Find in this drawing">⌕</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
-      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div><div class="sp-refs"></div></div></div><div class="sp-msg"></div>`;
+      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-refs"></div></div></div><div class="sp-msg"></div>`;
     document.body.appendChild(el);
     V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
-      msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
+      msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
       fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close,
-      find: () => { const on = !el.classList.contains("find-on"); el.classList.toggle("find-on", on); const q = el.querySelector(".sp-q"); if (on){ q.focus(); q.select(); } else q.blur(); }, back: () => cur.onBack && cur.onBack() })[b.dataset.a]());
+      find: () => { const on = !el.classList.contains("find-on"); el.classList.toggle("find-on", on); const q = el.querySelector(".sp-q"); if (on){ q.focus(); q.select(); } else q.blur(); }, back: () => history.back(), fwd: () => history.forward() })[b.dataset.a]());
     // find: Ctrl+F / ⌘F while a drawing is open searches its text (the page is a picture, so the browser's own find can't)
     const q = el.querySelector(".sp-q"); let qt;
     q.addEventListener("input", () => { clearTimeout(qt); qt = setTimeout(() => findText(q.value), 350); });
@@ -38,14 +42,15 @@ window.PdfView = (() => {
     addEventListener("keydown", e => { if (el.hidden) return;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f"){ e.preventDefault(); q.focus(); q.select(); return; }
       if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
-    addEventListener("popstate", () => { if (!el.hidden) close(true); });
+    addEventListener("popstate", e => { const st = e.state, v = st && st.sp && REG.get(st.id);
+      if (v) restore(st.id); else if (!el.hidden) close(true); });
     // rotating the phone: refit the sheet once the new size has settled (keeps the zoom level)
     // (only a real size change: the browser bar sliding in and out while panning must not redraw everything)
     let rt, lastW = 0, lastH = 0; const refit = () => { clearTimeout(rt); rt = setTimeout(() => { if (el.hidden) return; const w = V.body.clientWidth, h = V.body.clientHeight;
       if (Math.abs(w - lastW) < 2 && Math.abs(h - lastH) < 120) return; lastW = w; lastH = h; layout(true); }, 250); };
     V.size = () => { lastW = V.body.clientWidth; lastH = V.body.clientHeight; };
     addEventListener("resize", refit); if (screen.orientation) screen.orientation.addEventListener("change", refit);
-    let t; V.body.addEventListener("scroll", () => { clearTimeout(t); t = setTimeout(sharp, 70); });
+    let t; V.body.addEventListener("scroll", () => { clearTimeout(t); t = setTimeout(sharp, 70); settleSoon(); });
     V.body.addEventListener("wheel", e => { if (!e.ctrlKey && cur.fit !== "page") return; e.preventDefault(); zoomTo(V.zoom * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025)), e.clientX, e.clientY); }, { passive: false });
     // touch pinch: scale the sheet while pinching, redraw sharp when the fingers lift
     const pts = new Map(); let pin = null;
@@ -68,6 +73,8 @@ window.PdfView = (() => {
       if (!a || (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8)) return;
       const r = V.pageRefs[+a.dataset.i]; if (!r || !cur.onRef) return;
       a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
+      // the red arrow on what was tapped, kept with this view (back here shows where you were)
+      const bx = V.boxes[+a.dataset.i]; if (bx){ V.tap = { page: V.page, l: bx[0] / 1e4, t: bx[1] / 1e4, w: bx[2] / 1e4, h: bx[3] / 1e4 }; drawTap(); const me = REG.get(curId); if (me){ me.snap = state(); me.tap = V.tap; } }
       if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : "tag");
     });
     return V;
@@ -78,13 +85,14 @@ window.PdfView = (() => {
   let freed = false;
   function freeRotate(){ const so = screen.orientation; if (!so || !so.lock || freed) return; so.lock("any").then(() => freed = true).catch(() => {}); }
   async function open(o){
-    ui(); freeRotate(); cur = Object.assign({ page: 1, fit: "width" }, o);
+    ui(); freeRotate(); const wasOpen = !V.el.hidden; cur = Object.assign({ page: 1, fit: "width" }, o);
     V.el.hidden = false; document.body.classList.add("sp-on"); V.el.querySelector(".sp-tt").textContent = cur.title || "";
     const dl = V.el.querySelector(".sp-dl"); dl.href = cur.url; dl.download = cur.download || cur.url.split("/").pop();
-    if (!(history.state && history.state.sp)) history.pushState({ sp: 1 }, "");
+    // a new view entry, unless this open is a step back / forward through the history
+    if (!o._pop){ const was = curId && REG.get(curId), st0 = state(); if (was && st0 && wasOpen) was.snap = st0; push({ o, snap: null }); }
     // refs: the references printed on the sheet ([page, left, top, width, height, target, kind] in 1/10000 of the sheet,
-    // a promise), each a tappable box; onRef(target, kind) acts on a tap. back: show ← (onBack returns to the last sheet).
-    V.el.querySelector(".sp-back").hidden = !cur.back; V.refs = []; V.refsEl.innerHTML = ""; pickClose();
+    // a promise), each a tappable box; onRef(target, kind) acts on a tap.
+    V.refs = []; V.refsEl.innerHTML = ""; pickClose(); V.tap = o._pop && o._tap || null; V.tapEl.innerHTML = "";
     const me = cur; if (cur.refs) Promise.resolve(cur.refs).then(a => { if (cur !== me) return; V.refs = a || []; drawRefs(); });
     V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true;
     V.el.querySelector(".sp-q").value = cur.find || "";
@@ -92,7 +100,38 @@ window.PdfView = (() => {
     let d; try { d = await getDoc(cur.url); } catch (e) { V.msg.textContent = "Couldn't load the PDF (" + e.message + "). Check the connection."; return; }
     V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
     V.zoom = 1; await go(cur.page);
-    const r = cur.restore; if (r && cur === me){ V.zoom = r.zoom; layout(false); V.body.scrollLeft = r.sl; V.body.scrollTop = r.st; sharp(); }
+    const r = cur.restore; if (r && cur === me){ quiet(); V.zoom = r.zoom; layout(false); V.body.scrollLeft = r.sl; V.body.scrollTop = r.st; sharp(); }
+    if (cur === me && REG.get(curId) && !REG.get(curId).snap) REG.get(curId).snap = state();
+  }
+  // a red see-through arrow pointing down at a box on the sheet (fractions of the sheet), 1.8% of its width
+  function arrowAt(h, cls){ const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), A = vp.width / vp.height, aw = .018, ah = aw * 1.7 * A;
+    return `<svg class="sp-arrow ${cls || ""}" viewBox="0 0 10 17" preserveAspectRatio="none" aria-hidden="true" style="left:${(h.l + h.w / 2 - aw / 2) * 100}%;top:${(h.t - .002 * A - ah) * 100}%;width:${aw * 100}%;height:${ah * 100}%"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; }
+  function drawTap(){ if (!V.tapEl) return; V.tapEl.innerHTML = V.tap && V.pg && V.tap.page === V.page ? arrowAt(V.tap, "on") : ""; }
+  // ---------- view history ----------
+  const REG = new Map(); let curId = 0, seq = 0, hush = 0, st8 = null;
+  const quiet = () => { hush = Date.now() + 500; };   // (moves made by a restore are not new views)
+  function push(v){
+    // a new step drops the views ahead of it, as the browser does
+    const me = REG.get(curId); if (me) [...REG.keys()].forEach(k => { if (REG.get(k).seq > me.seq) REG.delete(k); });
+    const id = ++seq; v.seq = id; v.depth = (me && !V.el.hidden ? me.depth : 0) + 1; REG.set(id, v); curId = id;
+    history.pushState({ sp: 1, id }, ""); fwdBtn();
+  }
+  const fwdBtn = () => { const me = REG.get(curId), b = V && V.el.querySelector(".sp-fwd"); if (b) b.disabled = !me || ![...REG.values()].some(v => v.seq > me.seq); };
+  function settleSoon(){ if (!V || V.el.hidden) return; clearTimeout(st8); st8 = setTimeout(settle, 650); }
+  function settle(){
+    if (Date.now() < hush || !V || V.el.hidden || !V.pg) return;
+    const me = REG.get(curId), s = state(); if (!me || !s) return;
+    const o = me.snap; if (!o){ me.snap = s; return; }
+    const big = s.page !== o.page || Math.abs(Math.log(s.zoom / o.zoom)) > Math.log(1.2) ||
+      Math.abs(s.sl - o.sl) > V.body.clientWidth * .45 || Math.abs(s.st - o.st) > V.body.clientHeight * .45;
+    if (big) push({ o: me.o, snap: s }); else me.snap = s;
+  }
+  async function restore(id){
+    const v = REG.get(id); if (!v) return; curId = id; fwdBtn(); quiet();
+    if (V.el.hidden || !cur || cur.url !== v.o.url){ await open(Object.assign({}, v.o, { _pop: true, _tap: v.tap, restore: v.snap, page: v.snap ? v.snap.page : v.o.page })); drawTap(); return; }
+    const s = v.snap; if (!s) return;
+    if (s.page !== V.page) await go(s.page, true);
+    quiet(); V.zoom = s.zoom; layout(false); V.body.scrollLeft = s.sl; V.body.scrollTop = s.st; sharp(); V.tap = v.tap || null; drawTap();
   }
   // where the reader is on the sheet, to come back to it (Back)
   const state = () => V && V.pg ? { page: V.page, zoom: V.zoom, sl: V.body.scrollLeft, st: V.body.scrollTop } : null;
@@ -130,12 +169,16 @@ window.PdfView = (() => {
     }
   }
   async function unrot(){ if (V) V.rot = 0; if (freed){ freed = false; try { screen.orientation.unlock(); } catch (e) {} } if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
-  function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; document.body.classList.remove("sp-on"); if (!fromPop && history.state && history.state.sp) history.back(); }
-  async function go(n){
-    const d = await getDoc(cur.url); n = Math.max(1, Math.min(d.numPages, n)); V.page = n;
+  function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; document.body.classList.remove("sp-on"); clearTimeout(st8);
+    if (!fromPop && history.state && history.state.sp){ const me = REG.get(history.state.id); history.go(-((me && me.depth) || 1)); } }
+  async function go(n, fromPop){
+    const d = await getDoc(cur.url); n = Math.max(1, Math.min(d.numPages, n));
+    if (!fromPop && V.pg && n !== V.page){ const me = REG.get(curId); if (me) me.snap = state(); quiet(); V.page = n; push({ o: me ? me.o : cur, snap: null }); }
+    V.page = n;
     V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
     V.pg = await d.getPage(n); V.body.scrollTo(0, 0); V.size(); layout(true);
-    if (cur.find) mark(cur.find);
+    if (cur.find) mark(cur.find); drawTap();
+    const me = REG.get(curId); if (me && !me.snap && !fromPop) me.snap = state();
   }
   // zoom 1 fits the page width (spec) or the whole sheet (drawings)
   function layout(bg){
@@ -173,7 +216,7 @@ window.PdfView = (() => {
     const r = V.body.getBoundingClientRect(); cx = cx == null ? r.left + r.width / 2 : cx; cy = cy == null ? r.top + r.height / 2 : cy;
     const fx = (V.body.scrollLeft + cx - r.left - 8) / V.sheet.offsetWidth, fy = (V.body.scrollTop + cy - r.top - 8) / V.sheet.offsetHeight;
     V.zoom = z; layout(false);
-    V.body.scrollLeft = fx * V.sheet.offsetWidth - (cx - r.left - 8); V.body.scrollTop = fy * V.sheet.offsetHeight - (cy - r.top - 8); sharp();
+    V.body.scrollLeft = fx * V.sheet.offsetWidth - (cx - r.left - 8); V.body.scrollTop = fy * V.sheet.offsetHeight - (cy - r.top - 8); sharp(); settleSoon();
   }
 
   // ---------- mark a tag on the page ----------
@@ -223,8 +266,7 @@ window.PdfView = (() => {
     V.hits = uniq.map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b); return { l: Math.min(x1, x2) / W, t: Math.min(y1, y2) / H, w: Math.abs(x2 - x1) / W, h: Math.abs(y2 - y1) / H }; });
     // a red see-through arrow pointing down at each place, sized to the sheet (1.8% of its width), so it grows and
     // shrinks with the drawing; it doesn't move
-    const A = W / H, aw = .018, ah = aw * 1.7 * A;
-    V.marks.innerHTML = V.hits.map(h => `<svg class="sp-arrow" viewBox="0 0 10 17" preserveAspectRatio="none" aria-hidden="true" style="left:${(h.l + h.w / 2 - aw / 2) * 100}%;top:${(h.t - .002 * A - ah) * 100}%;width:${aw * 100}%;height:${ah * 100}%"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`).join("");
+    V.marks.innerHTML = V.hits.map(h => arrowAt(h)).join("");
     const f = V.el.querySelector(".sp-finds"); f.hidden = !V.hits.length;
     if (V.hits.length){ V.fi = 0; V.el.querySelector(".sp-fn").textContent = `${tag}: 1 / ${V.hits.length}`; pulse(0); }
     else if (!quiet) toast(`${tag} isn't written as searchable text on this drawing.`);
