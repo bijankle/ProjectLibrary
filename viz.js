@@ -112,8 +112,10 @@ window.AssetViz = (() => {
       it.forEach((t, i) => { const s1 = nk(t.str); if (s1.includes(want)) hits.push(rect(t));
         else if (i + 1 < it.length && (s1 + nk(it[i + 1].str)).includes(want) && !nk(it[i + 1].str).includes(want)){ const r1 = rect(t), r2 = rect(it[i + 1]);
           if (Math.abs(r1[1] - r2[1]) < 20) hits.push([Math.min(r1[0], r2[0]), Math.min(r1[1], r2[1]), Math.max(r1[2], r2[2]), Math.max(r1[3], r2[3])]); } });
-      box.querySelector(".vz-mk").innerHTML = hits.slice(0, 20).map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b);
-        return `<i style="left:${Math.min(x1, x2) - 3}px;top:${Math.min(y1, y2) - 3}px;width:${Math.abs(x2 - x1) + 6}px;height:${Math.abs(y2 - y1) + 6}px"></i>`; }).join("");
+      // the red see-through arrow, as in the full screen viewer: 1.8% of the sheet width, pointing down at the tag
+      const aw = vp.width * .018, ah = aw * 1.7;
+      box.querySelector(".vz-mk").innerHTML = hits.slice(0, 20).map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b), cx = (x1 + x2) / 2, top = Math.min(y1, y2);
+        return `<svg class="sp-arrow" viewBox="0 0 10 17" preserveAspectRatio="none" style="left:${cx - aw / 2}px;top:${top - 2 - ah}px;width:${aw}px;height:${ah}px"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; }).join("");
     }).catch(e => { if (g === gen){ const p = box.querySelector(".vz-note"); if (p) p.textContent = "Couldn't load the drawing (" + (e.message || e) + ")."; } });
   }
 
@@ -235,11 +237,11 @@ window.AssetViz = (() => {
 .vz-sheet{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;touch-action:none;cursor:default;user-select:none}
 .vz-sheet.drag{cursor:default}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
-.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:2px;background:rgba(232,180,74,.13);box-shadow:inset 0 0 0 1px rgba(214,158,46,.35)}   /* as in the full screen viewer */
-.vz-rf i[data-k="d"]{background:rgba(232,180,74,.24);box-shadow:inset 0 0 0 1px rgba(214,158,46,.7)}.vz-rf i:hover{background:rgba(232,180,74,.45)}
+.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:2px;background:rgba(90,100,115,.06)}   /* as in the full screen viewer: a very light grey wash */
+.vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i:hover{background:rgba(90,100,115,.22)}
 .vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
 .vz-zb button:hover{border-color:#b67d12}
-.vz-mk{position:absolute;left:0;top:0;pointer-events:none}.vz-mk i{position:absolute;border:2px solid #e8b44a;background:rgba(232,180,74,.35);border-radius:3px}
+.vz-mk{position:absolute;left:0;top:0;pointer-events:none}.vz-mk .sp-arrow{position:absolute;fill:#e0201b;opacity:.6;overflow:visible}
 .vz-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
 .vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}
 .vz-tile span{font-size:var(--fl,13px);color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}.vz-tile b{font-size:var(--fh,22px);line-height:1.15;font-variant-numeric:tabular-nums}.vz-tile em{font-style:normal;font-size:var(--fb,15px);color:var(--mute)}
