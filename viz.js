@@ -58,7 +58,7 @@ window.AssetViz = (() => {
     el.innerHTML = `<div class="vz-pv">` + (ser.length > 1 ? `<div class="vz-hd"><div class="vz-tabs">` +
       ser.map(x => `<button type="button" class="vz-tab${x === n ? " on" : ""}" data-n="${esc(x)}" title="${esc(x)}">Sheet ${sheetOf(x)}</button>`).join("") + `</div></div>` : "") +
       `<div class="vz-sheet"><div class="vz-stage"><canvas></canvas><div class="vz-mk"></div><div class="vz-rf"></div></div>` +
-      `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="fit" title="Fit">⤢</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Full screen">⛶</button></div>` +
+      `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Open full screen"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button><button type="button" data-z="fit" class="vz-ze" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>` +
       `<p class="vz-note">Loading the drawing…</p></div></div>`;
     el.querySelectorAll(".vz-tab[data-n]").forEach(b => b.onclick = () => { if (b.dataset.n) go(b.dataset.n); });
     const box = el.querySelector(".vz-sheet"), stage = box.querySelector(".vz-stage"), cv = box.querySelector("canvas"), key = cur.key;
@@ -251,7 +251,7 @@ window.AssetViz = (() => {
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
 .vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:2px;background:rgba(90,100,115,.06)}   /* as in the full screen viewer: a very light grey wash */
 .vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i:hover{background:rgba(90,100,115,.22)}
-.vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}.vz-zb .vz-ze{border-radius:50%;border:1.5px solid #b67d12;color:#8a5f0e}   /* zoom extents, in the corner as in the full screen viewer */
 .vz-zb button:hover{border-color:#b67d12}
 .vz-mk{position:absolute;left:0;top:0;pointer-events:none}.vz-mk .sp-arrow{position:absolute;fill:#e0201b;opacity:.6;overflow:visible}
 .vz-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}

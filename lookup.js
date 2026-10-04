@@ -590,9 +590,12 @@ body.sp-on{overflow:hidden}
 :root.phone .sp-view .sp-back{left:60px}:root.phone .sp-view .sp-fwd{left:110px}:root.phone .sp-view .sp-fwd:disabled{opacity:.45}
 :root.phone .sp-view .sp-tt{position:fixed;top:calc(15px + var(--sat, env(safe-area-inset-top)));left:62px;max-width:calc(100vw - 74px);flex:none;order:0;font-size:var(--fl,13px);color:#e9edf2;background:#171b21e0;border:1px solid #3a434f;border-radius:16px;padding:6px 12px;pointer-events:none;z-index:4}
 :root.phone .sp-view .sp-tt{left:162px;max-width:calc(100vw - 174px)}
-:root.phone .sp-view .sp-fb{display:inline-flex!important}:root.phone .sp-view .sp-dl{display:none}:root.phone .sp-view [data-a=fit]{display:inline-flex}
+:root.phone .sp-view .sp-fb{display:inline-flex!important}:root.phone .sp-view .sp-dl{display:none}
 :root.phone .sp-view .sp-q{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));width:auto;max-width:none;height:42px;display:none;z-index:4;font-size:16px;box-shadow:0 4px 16px #0008}
 :root.phone .sp-view.find-on .sp-q{display:block}
+.sp-view .sp-ze{position:fixed;right:22px;bottom:22px;z-index:4;width:52px;height:52px;padding:0;border-radius:50%;background:#fff;color:#8a5f0e;border:1.5px solid #b67d12;box-shadow:0 3px 12px #0005;display:grid;place-items:center;cursor:pointer}
+.sp-view .sp-ze:hover{background:#fbf6ec}   /* zoom extents: the whole sheet in one tap */
+:root.phone .sp-view .sp-ze{right:12px;bottom:calc(76px + env(safe-area-inset-bottom))}:root.phone .sp-view.find-on .sp-ze{bottom:calc(128px + env(safe-area-inset-bottom))}
 :root.phone .sp-view .sp-pg{font-size:var(--fl,13px)}
 :root.phone .sp-view .sp-body{padding:0}
 :root.phone .lk-st{font-size:calc(var(--fb,15px) * 1.35)}:root.phone .lk-vw sup{font-size:max(.6em, calc(var(--fl,13px) * .8))}   /* phone: these follow the text size */
