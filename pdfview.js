@@ -1,5 +1,5 @@
 // In-app PDF viewer shared by the pipe and valve spec (spec.js) and the P&IDs (pid.js).
-// PdfView.open({ url, page, title, fit: "width" | "page", find, download, name, refs, onRef, restore })
+// PdfView.open({ url, page, title, fit: "width" | "page", find, download, name, refs, onRef, restore, back })
 //   The visible part of the page is redrawn from the PDF's own vectors at every zoom, so it stays sharp.
 //   find: a tag to mark on the page (a line number, valve, instrument…). The mark stays until another document or
 //   another search is opened; spaces, hyphens and slashes are ignored and a tag split over several text pieces is found.
@@ -118,7 +118,7 @@ window.PdfView = (() => {
       a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
       // the red arrow on what was tapped, kept with this view (back here shows where you were)
       const bx = V.boxes[+a.dataset.i]; if (bx){ V.tap = { page: V.page, l: bx[0] / 1e4, t: bx[1] / 1e4, w: bx[2] / 1e4, h: bx[3] / 1e4 }; drawTap(); const me = REG.get(curId); if (me){ me.snap = state(); me.tap = V.tap; } }
-      if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : "tag");
+      if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : "tag", r[7]);
     });
     return V;
   }
@@ -145,11 +145,29 @@ window.PdfView = (() => {
     V.zoom = 1; await go(cur.page);
     const r = cur.restore; if (r && cur === me){ quiet(); V.zoom = r.zoom; layout(false); V.body.scrollLeft = r.sl; V.body.scrollTop = r.st; sharp(); }
     if (cur === me && REG.get(curId) && !REG.get(curId).snap){ REG.get(curId).snap = state(); REG.get(curId).at = REG.get(curId).snap; }
+    if (!o._pop && cur.back != null) arrive(me);
+  }
+  // arrived through a continuation: the red arrow on the ribbon pointing back to the drawing you came from (cur.back,
+  // indexes into this drawing's refs; several when the sheets can't tell them apart), on its page and in view
+  async function arrive(me){
+    const all = await Promise.resolve(me.refs); if (cur !== me || !all) return;
+    const rs = [].concat(me.back).map(j => all[j]).filter(r => r && r[0] === (all[[].concat(me.back)[0]] || [])[0]); if (!rs.length) return;
+    if (V.page !== rs[0][0]) await go(rs[0][0], true);
+    if (cur !== me) return; V.refs = all; drawRefs();
+    const bs = rs.map(r => V.boxes[V.pageRefs.indexOf(r)]).filter(Boolean).map(b => ({ page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }));
+    if (!bs.length) return;
+    V.tap = Object.assign({}, bs[0], { more: bs.slice(1) }); drawTap();
+    const h = bs[0]; quiet();
+    // phone: the sheet opens small, so zoom in until the ribbon is about a quarter of the screen wide
+    if (document.documentElement.classList.contains("phone")){ const z = Math.min(6, V.zoom * V.body.clientWidth * .25 / (h.w * V.sheet.offsetWidth || 1));
+      if (z > V.zoom){ V.zoom = z; layout(false); sharp(); } }
+    V.body.scrollTo({ left: (h.l + h.w / 2) * V.sheet.offsetWidth - V.body.clientWidth / 2, top: (h.t + h.h / 2) * V.sheet.offsetHeight - V.body.clientHeight / 2 });
+    const v = REG.get(curId); if (v){ v.tap = V.tap; v.snap = state(); v.at = v.snap; }
   }
   // a red see-through arrow pointing down at a box on the sheet (fractions of the sheet), 1.8% of its width
   function arrowAt(h, cls){ const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), A = vp.width / vp.height, aw = .018, ah = aw * 1.7 * A;
     return `<svg class="sp-arrow ${cls || ""}" viewBox="0 0 10 17" preserveAspectRatio="none" aria-hidden="true" style="left:${(h.l + h.w / 2 - aw / 2) * 100}%;top:${(h.t - .002 * A - ah) * 100}%;width:${aw * 100}%;height:${ah * 100}%"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; }
-  function drawTap(){ if (!V.tapEl) return; V.tapEl.innerHTML = V.tap && V.pg && V.tap.page === V.page ? arrowAt(V.tap, "on") : ""; }
+  function drawTap(){ if (!V.tapEl) return; V.tapEl.innerHTML = V.tap && V.pg && V.tap.page === V.page ? [V.tap, ...(V.tap.more || [])].map(h => arrowAt(h, "on")).join("") : ""; }
   // ---------- view history ----------
   const REG = new Map(); let curId = 0, seq = 0, hush = 0, st8 = null;
   const quiet = () => { hush = Date.now() + 500; };   // (moves made by a restore are not new views)

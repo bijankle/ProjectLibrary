@@ -21,8 +21,11 @@ window.Pid = (() => {
     PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc && !d.layout ? "width" : "page", find: find || null, download: d.number + ".pdf", restore: r || null,
       title: d.number + (d.rev ? " Rev " + d.rev : "") + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []),
-      onRef: (t, k) => {
-        if (k === "dwg"){ if (!key(t)) return; open(t, d.number, { keep: true }); return; }
+      back: o.back,
+      onRef: (t, k, back) => {
+        // another drawing: opened with the ribbon back to this one marked (the way back from pid-refs.json), or, when
+        // the refs don't know it, this drawing's number found on the sheet
+        if (k === "dwg"){ if (!key(t)) return; open(t, back == null ? d.number : null, { keep: true, back }); return; }
         if (window.kcgmOpenTag){ PdfView.close(); setTimeout(() => kcgmOpenTag(t), 60); }
       } });
     return true;

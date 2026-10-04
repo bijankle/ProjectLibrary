@@ -29,7 +29,7 @@ window.AssetViz = (() => {
   // ---------- an open item: its P&ID (or PFD sheet) instead of the charts ----------
   // the whole sheet fits the space with the item marked; drawing number tabs above when there are several; a click on
   // the sheet opens it full screen in the drawing viewer
-  let cur = null, shown = null, hist = [], gen = 0;
+  let cur = null, shown = null, hist = [], gen = 0, arrival = null;
   const ORD = new Intl.Collator(undefined, { numeric: true });
   const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   // A drawing on show stays while you search (you may be reading tags off it): it changes only when an item with a
@@ -92,7 +92,8 @@ window.AssetViz = (() => {
       const q = e.currentTarget.getBoundingClientRect(), i = PdfView.nearest(boxes, (e.clientX - q.left) / q.width * 1e4, (e.clientY - q.top) / q.height * 1e4);
       if (i >= 0) a = e.currentTarget.children[i] || a;   // overlapping boxes: the nearest centre wins
       const t = a.dataset.t, k = a.dataset.k;
-      if (k === "d"){ if (Pid.has(t)){ if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }   // a continuation: that drawing becomes the item on the left
+      // a continuation: that drawing becomes the item on the left, with the ribbon back to this one marked (pid-refs way back)
+      if (k === "d"){ if (Pid.has(t)){ arrival = { to: t, back: a.dataset.b ? JSON.parse(a.dataset.b) : null }; if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }
       const tag = t.split("|")[0]; if (window.kcgmOpenTag) kcgmOpenTag(tag); });
     PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
       if (g !== gen) return; page = pg;
@@ -103,7 +104,13 @@ window.AssetViz = (() => {
       Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
         const A = W / H; boxes = [];
         rf.innerHTML = (R[d.number] || []).filter(r => r[0] === 1).map(r => { const [l, t, w, h] = PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
-          return `<i data-t="${esc(r[5])}" data-k="${esc(r[6])}" title="${esc(String(r[5]).split("|").join(", "))}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%"></i>`; }).join(""); });
+          return `<i data-t="${esc(r[5])}" data-k="${esc(r[6])}"${r[7] != null ? ` data-b="${esc(JSON.stringify(r[7]))}"` : ""} title="${esc(String(r[5]).split("|").join(", "))}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%"></i>`; }).join("");
+        // arrived through a continuation: the red arrow on the ribbon back to the drawing you came from
+        const arr = arrival && arrival.to === d.number && arrival.back != null ? arrival : null; arrival = null;
+        if (arr){ const aw = W * .018, ah = aw * 1.7;
+          box.querySelector(".vz-mk").innerHTML = [].concat(arr.back).map(j => (R[d.number] || [])[j]).filter(r => r && r[0] === 1).map(r => {
+            const cx = (r[1] + r[3] / 2) / 1e4 * W, top = r[2] / 1e4 * H;
+            return `<svg class="sp-arrow" viewBox="0 0 10 17" preserveAspectRatio="none" style="left:${cx - aw / 2}px;top:${top - 2 - ah}px;width:${aw}px;height:${ah}px"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; }).join(""); } });
       // mark the tag: a text piece holding it, or two neighbouring pieces that together do
       const want = nk(key); if (want.length < 3 || cur.t === "pid" || !own.includes(n)) return;
       const tc = await pg.getTextContent(), it = tc.items.filter(t => t.str && t.str.trim()), hits = [];

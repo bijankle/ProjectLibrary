@@ -5,6 +5,11 @@ Output: doc-tags.json (see the end) and pid-refs.json  {drawing number: [[page, 
   box in 1/10000 of the sheet width and height (top left origin); kind "d" = another drawing in the app (continuation
   ribbons, vendor package and reference drawings), "q" = a bubble shared by several list entries (opens a search),
   otherwise the list the tag is in (line, mel, ins, cv, mv, spi, hose).
+  A "d" ref can carry an 8th entry, the way back: which of the target drawing's refs is the ribbon pointing back to this
+  sheet (an index into that drawing's list, or a list of indexes when it can't be told apart), so the viewer can put
+  the red arrow on the ribbon you arrived by. A sheet often has several ribbons to the same drawing; the one that
+  pairs is the one printing the same fluid under the drawing number (e.g. SPILLAGE), then the one on the opposite edge
+  of the sheet, then the one with the same line sequential number printed nearby.
 Read from the sheets' text: the drawn text where the PDF has it, and the OCR text layer on scanned sheets (a sheet can
 carry both, so a place found twice is kept once). Instrument and valve bubbles print the letters above the number
 ("HV" over "12262"): the number picks the instruments and valves listed on that drawing, the letters above pick
@@ -49,7 +54,18 @@ for t in ("ins", "cv"):
         m = re.fullmatch(r"([A-Z]{1,5})(\d{5})([A-Z]{0,2})", norm(r[0]))
         if m: BYNUM.setdefault(m.group(2), []).append((m.group(1), r[0], norm(" ".join(str(x) for x in r if x))))
 
-out, stats = {}, {"d": 0}
+def ribbon_text(words, box):
+    """the words printed under a continuation ribbon's drawing number (fluid first, then the far end's name), by row"""
+    x0, y0, x1, y1 = box; w, h = x1 - x0, y1 - y0
+    ws = sorted((x for x in words if x0 - w * .15 <= (x[0] + x[2]) / 2 <= x1 + w * .15 and y1 - h * .2 <= (x[1] + x[3]) / 2 <= y1 + h * 2.6),
+                key=lambda x: (x[1], x[0]))
+    rows = []
+    for x in ws:
+        if rows and abs(x[1] - rows[-1][0]) < h * .5: rows[-1][1].append(x[4])
+        else: rows.append((x[1], [x[4]]))
+    return [set(re.findall(r"[A-Z0-9]{2,}", " ".join(r).upper())) for _, r in rows]
+
+out, stats, LAB = {}, {"d": 0}, {}
 for num, d in sorted(ix.items()):
     if d.get("layout"): continue   # the layout drawings open as plain PDFs
     doc = pymupdf.open(os.path.join(ROOT, d["file"])); own = norm(num); refs = []
@@ -87,9 +103,37 @@ for num, d in sorted(ix.items()):
             if len(got) == 1: add(box, KEYS[norm(got[0][1])])
             elif got: add(box, ("|".join(sorted(c[1] for c in got)), "q"))
         for (x0, y0, x1, y1), (tgt, kind) in found:
+            if kind == "d": LAB[(num, len(refs))] = ribbon_text(words, (x0, y0, x1, y1))
             refs.append([pno, round(x0 / W * 1e4), round(y0 / H * 1e4), round((x1 - x0) / W * 1e4), round((y1 - y0) / H * 1e4), tgt, kind])
             stats[kind] = stats.get(kind, 0) + 1
     if refs: out[num] = refs
+# the way back for each continuation ribbon (see the top)
+def seqs_near(num, r, rad=800):
+    cx, cy = r[1] + r[3] / 2, r[2] + r[4] / 2
+    return {m.group(1) for x in out[num] if x[0] == r[0] and x[6] == "line" and abs(x[1] + x[3] / 2 - cx) + abs(x[2] + x[4] / 2 - cy) < rad
+            for m in [re.match(r"\d{2}-(\d{3,4})-", x[5])] if m}
+back_n = {"one": 0, "tied": 0}
+for a, refs in out.items():
+    for i, r in enumerate(refs):
+        b = r[5]
+        if r[6] != "d" or b not in out: continue
+        back = [j for j, x in enumerate(out[b]) if x[6] == "d" and x[5] == a]
+        if not back: continue
+        if len(back) > 1:
+            la = LAB.get((a, i)) or [set()]; fa, wa = la[0], set().union(*la[:3])
+            def score(j):
+                lb = LAB.get((b, j)) or [set()]; fb, wb = lb[0], set().union(*lb[:3])
+                return len(fa & wb) / (len(fa) or 1) + len(fb & wa) / (len(fb) or 1)
+            sc = {j: score(j) for j in back}; top = max(sc.values())
+            if top > 0: back = [j for j in back if sc[j] == top]
+            side = lambda x: "L" if x[1] < 2500 else "R" if x[1] + x[3] > 7500 else None
+            opp = [j for j in back if side(r) and side(out[b][j]) and side(out[b][j]) != side(r)]   # a ribbon off one edge enters the next sheet at the other
+            if len(back) > 1 and opp: back = opp
+            if len(back) > 1:
+                sa = seqs_near(a, r); same = [j for j in back if sa & seqs_near(b, out[b][j])]
+                if same: back = same
+        r.append(back[0] if len(back) == 1 else back); back_n["one" if len(back) == 1 else "tied"] += 1
+print("ways back:", back_n)
 json.dump(out, open(os.path.join(ROOT, "pid-refs.json"), "w"), separators=(",", ":"))
 # where each tag appears on the PFD sheets and in the documents (the PDC…), for the item pages in lookup.js:
 # doc-tags.json {tag: [[drawing number, page], ...]} (P&IDs left out: the lists already name those)
