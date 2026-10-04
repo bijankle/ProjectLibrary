@@ -221,7 +221,10 @@ window.PdfView = (() => {
     // drop duplicates (the same place found from overlapping starts)
     const uniq = hits.filter((b, k) => !hits.slice(0, k).some(o => Math.abs(o[0] - b[0]) < 2 && Math.abs(o[1] - b[1]) < 2));
     V.hits = uniq.map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b); return { l: Math.min(x1, x2) / W, t: Math.min(y1, y2) / H, w: Math.abs(x2 - x1) / W, h: Math.abs(y2 - y1) / H }; });
-    V.marks.innerHTML = V.hits.map(h => `<i style="left:${h.l * 100}%;top:${h.t * 100}%;width:${h.w * 100}%;height:${h.h * 100}%"></i>`).join("");
+    // a red see-through arrow pointing down at each place, sized to the sheet (1.8% of its width), so it grows and
+    // shrinks with the drawing; it doesn't move
+    const A = W / H, aw = .018, ah = aw * 1.7 * A;
+    V.marks.innerHTML = V.hits.map(h => `<svg class="sp-arrow" viewBox="0 0 10 17" preserveAspectRatio="none" aria-hidden="true" style="left:${(h.l + h.w / 2 - aw / 2) * 100}%;top:${(h.t - .002 * A - ah) * 100}%;width:${aw * 100}%;height:${ah * 100}%"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`).join("");
     const f = V.el.querySelector(".sp-finds"); f.hidden = !V.hits.length;
     if (V.hits.length){ V.fi = 0; V.el.querySelector(".sp-fn").textContent = `${tag}: 1 / ${V.hits.length}`; pulse(0); }
     else if (!quiet) toast(`${tag} isn't written as searchable text on this drawing.`);

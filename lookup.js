@@ -34,7 +34,7 @@
   L.proj = () => ({ ...PJ });
   L.both = () => PJ.main && PJ.tsf;
   L.inProj = it => !it.p || PJ[it.p];
-  L.setProj = v => { if (!v.main && !v.tsf) return; PJ = { main: !!v.main, tsf: !!v.tsf }; try { localStorage.setItem("kcgm_proj", JSON.stringify(PJ)); } catch (e) {} pjFns.forEach(f => f()); };
+  L.setProj = v => { if (!v.main && !v.tsf) return; PJ = { main: !!v.main, tsf: !!v.tsf }; try { localStorage.setItem("kcgm_proj", JSON.stringify(PJ)); } catch (e) {} pjFns.forEach(f => f()); try { dispatchEvent(new Event("kcgm-proj")); } catch (e) {} };
   L.onProj = f => pjFns.push(f);
   L.projCount = p => items.filter(it => it.p === p).length;
   // the small green TSF tag after a code, while both projects show
@@ -555,8 +555,8 @@
 .sp-top button,.sp-dl{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;min-width:34px;height:32px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px}
 .sp-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}.sp-sheet{position:relative;background:#fff;margin:0 auto;box-shadow:0 2px 14px #0008;transform-origin:0 0}
 .sp-bg{position:absolute;inset:0;width:100%;height:100%}.sp-hi{position:absolute}
-.sp-marks{position:absolute;inset:0;pointer-events:none}.sp-marks i{position:absolute;box-sizing:content-box;margin:-4px -7px;padding:4px 7px;border:2.5px solid #ff2d55;background:rgba(255,214,10,.35);border-radius:4px;
-  box-shadow:0 0 0 3px rgba(255,45,85,.25)}.sp-marks i.on{animation:spPulse 1.1s ease-out 4}
+.sp-marks{position:absolute;inset:0;pointer-events:none}.sp-arrow{position:absolute;fill:#e0201b;opacity:.6;overflow:visible}
+.sp-marks .sp-arrow:not(.on){opacity:.3}.sp-marks .sp-arrow:only-child{opacity:.6}   /* (with several places, the one stepped to is the stronger) */
 @keyframes spPulse{0%{box-shadow:0 0 0 0 rgba(255,45,85,.7)}100%{box-shadow:0 0 0 22px rgba(255,45,85,0)}}
 .sp-body.drag{cursor:grabbing}.sp-fn{min-width:0 !important;padding:0 4px;white-space:nowrap;max-width:210px;overflow:hidden;text-overflow:ellipsis}
 .sp-toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#171b21;color:#e9edf2;border:1px solid #e8b44a;border-radius:10px;padding:8px 12px;font-size:var(--fb,15px);max-width:90vw}.sp-toast[hidden]{display:none}

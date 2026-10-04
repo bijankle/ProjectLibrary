@@ -267,16 +267,6 @@ body.searching #homeMain{display:none}
 :root.phone #settings>.page>.topbar,:root.phone #gloss>.page>.topbar,:root.phone #history>.page>.topbar{display:none}   /* the top row names the page */
 :root.phone #settings .sgc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 :root.phone #settings #fsBtn{background:var(--card);text-align:left;border-radius:14px}
-/* project picker (Main plant / TSF) */
-#projBar{position:relative;margin:0 0 8px;z-index:20}
-.pj-btn{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--gold);background:color-mix(in srgb,var(--gold) 13%,var(--card));color:var(--ink);border-radius:99px;padding:4px 12px;font:inherit;font-size:var(--fb,15px);font-weight:800;cursor:pointer;white-space:nowrap}
-.pj-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:230px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.28);overflow:hidden}
-.pj-o{display:flex;align-items:center;gap:12px;width:100%;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:11px 14px;font:inherit;font-size:var(--fb,15px);font-weight:700;text-align:left;cursor:pointer}
-.pj-o:last-child{border-bottom:0}.pj-o span{flex:1}.pj-o em{font-style:normal;font-weight:600;color:var(--mute);font-size:var(--fl,13px)}
-.pj-x{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;font-style:normal;font-weight:900;font-size:14px;color:#1a1307}
-.pj-o.on .pj-x{border-color:var(--gold);background:var(--gold)}
-.pj-no{animation:pjno .3s}@keyframes pjno{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-:root.phone #projBar{margin:0}:root.phone #projBar+#lkRoot{margin-top:6px}
 /* glossary: A to Z with sticky letters and a letter strip */
 .gl-h,.gl-az{display:none}
 :root.phone .gl{display:block;background:none;border-radius:0;overflow:visible}
@@ -292,7 +282,6 @@ body.searching #homeMain{display:none}
 
 <!-- HOME -->
 <section id="home" class="screen on"><div class="page">
-  <div id="projBar"><button class="pj-btn" id="pjBtn" aria-haspopup="true" aria-expanded="false"><span id="pjName">Main plant + TSF</span> ▾</button><div class="pj-menu" id="pjMenu" hidden></div></div>
   <nav class="appbar">
     <div id="lkRoot" class="lktop"></div>
     <button class="ib" id="glossBtn" aria-label="Glossary" title="Glossary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5c2.5-1.3 5.5-1.3 8 .5v14c-2.5-1.8-5.5-1.8-8-.5z"/><path d="M20 5.5c-2.5-1.3-5.5-1.3-8 .5v14c2.5-1.8 5.5-1.8 8-.5z"/></svg></button>
@@ -439,7 +428,7 @@ body.searching #homeMain{display:none}
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const TAB_OF = { home: "assets", gloss: "assets", quiz: "quiz", deck: "quiz", end: "quiz", history: "quiz" };
   let cur = "home";
-  const show = id => {
+  const show = id => { document.documentElement.classList.toggle("in-settings", id === "settings");
     // desktop: the quiz's front is the deck itself (its settings are in the left column), with the saved settings
     if (id === "quiz" && !Tabs.phone){ if (run && !run.finished){ id = "deck"; } else { const l = pick(); if (l.length){ start(l); return; } } }
     if (id !== "settings") cur = id;
@@ -916,22 +905,8 @@ body.searching #homeMain{display:none}
       q.blur(); if (hit.length) start(shuffle(hit)); else { q.value = ""; q.placeholder = "No question has all those words"; } };
     // phone: the Assets search runs full width on the page, over the filters; its camera sits in the top row
     if (Tabs.phone){ const cam = $("lkRoot").querySelector(".lk-cam"); $("lkResults").before($("lkRoot")); Tabs.slot(q); if (cam){ cam.id = "lkCam"; Tabs.slot(cam); } } }
-  // project picker: Main plant and TSF as tick boxes (both by default, at least one stays ticked); the lists, the search
-  // and the drawings show the ticked ones (Lookup.setProj). On the phone it sits over the search.
-  { const btn = $("pjBtn"), menu = $("pjMenu"), N = { main: "Main plant", tsf: "TSF" };
-    if (Tabs.phone) $("lkRoot").before($("projBar"));
-    const label = () => { const p = Lookup.proj(); $("pjName").textContent = p.main && p.tsf ? "Main plant + TSF" : p.main ? "Main plant" : "TSF"; };
-    const draw = () => { const p = Lookup.proj();
-      menu.innerHTML = Object.entries(N).map(([k, n]) => `<button class="pj-o${p[k] ? " on" : ""}" data-k="${k}" role="menuitemcheckbox" aria-checked="${!!p[k]}"><i class="pj-x">${p[k] ? "✓" : ""}</i><span>${n}</span><em>${Lookup.ready() ? (window.Browse ? Browse.projCount(k) : Lookup.projCount(k)).toLocaleString() : ""}</em></button>`).join("");
-      menu.querySelectorAll(".pj-o").forEach(b => b.onclick = e => { e.stopPropagation(); const v = Lookup.proj(); v[b.dataset.k] = !v[b.dataset.k];
-        if (!v.main && !v.tsf){ b.classList.remove("pj-no"); void b.offsetWidth; b.classList.add("pj-no"); return; }   // one stays ticked
-        Lookup.setProj(v); }); };
-    const close = () => { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); };
-    btn.onclick = e => { e.stopPropagation(); if (!menu.hidden) return close(); draw(); menu.hidden = false; btn.setAttribute("aria-expanded", "true"); };
-    document.addEventListener("click", e => { if (!menu.hidden && !$("projBar").contains(e.target)) close(); });
-    document.addEventListener("keydown", e => { if (e.key === "Escape" && !menu.hidden) close(); });
-    Lookup.onProj(() => { label(); draw(); const v = lk.input.value.trim(); if (v && !lk.current() && !(window.Browse && Browse.query(v))) lk.search(v); });
-    label(); }
+  // the project picker lives in the top bar (tabs.js); a search already showing is run again when it changes
+  Lookup.onProj(() => { const v = lk.input.value.trim(); if (v && !lk.current() && !(window.Browse && Browse.query(v))) lk.search(v); });
   const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#home"){ assetsHome(); history.replaceState(history.state, "", "#assets"); } else if (location.hash === "#gloss") openGloss(); else if (location.hash === "#settings") openSettings(); };
   // back here from another page: the view this entry was left on; else the address (#quiz, #settings…)
   if (history.state && history.state.s) restore(history.state); else { restoring = true; openHash(); restoring = false; nav(false); }

@@ -136,9 +136,9 @@ window.Tabs = (() => {
     el = document.createElement("div"); el.className = "tbw";
     if (phone) return buildPhone();
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
-    el.innerHTML = `<div class="lg lg-big" title="Project Library">${mark(60)}</div><nav class="mb" aria-label="Menu"><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-v"><button type="button" class="mn-b">View</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
+    el.innerHTML = `<nav class="mb" aria-label="Menu"><span class="lg-s" title="Project Library">${mark(22)}</span>${PJ}<span class="mb-sep"></span><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-v"><button type="button" class="mn-b">View</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
       `<nav class="tb" aria-label="App sections">${NAVB}<div class="tb-seg">${tabs}</div></nav>`;
-    document.body.prepend(el); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", true);
+    document.body.prepend(el); wirePj(); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", true);
     el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (O.onTab && O.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
     el.querySelectorAll(".mn").forEach(m => { const b = m.querySelector(".mn-b");
       b.onclick = e => { e.stopPropagation(); openM === m ? close() : open(m); };
@@ -151,12 +151,12 @@ window.Tabs = (() => {
   // top: the P, the section's name and a slot for that section's search (Tabs.slot); bottom: the five sections
   function buildPhone(){
     el.classList.add("ph");
-    el.innerHTML = `<nav class="ph-top">${NAVB}<b class="ph-n"></b><div class="ph-slot"><input class="mo-q" type="search" placeholder="Search the app" aria-label="Search the app" autocomplete="off" hidden></div></nav>`;
+    el.innerHTML = `<nav class="ph-top">${NAVB}${PJ}<b class="ph-n"></b><div class="ph-slot"><input class="mo-q" type="search" placeholder="Search the app" aria-label="Search the app" autocomplete="off" hidden></div></nav>`;
     bn = document.createElement("nav"); bn.className = "bn"; bn.setAttribute("aria-label", "App sections");
     bn.innerHTML = [...TABS, ["more", "More", "#"]].map(([id, n, href]) => `<a class="tb-t bn-t" data-t="${id}" href="${href}"><i>${ico(id)}</i><span>${n}</span></a>`).join("");
     mo = document.createElement("div"); mo.className = "mo"; mo.hidden = true; mo.setAttribute("role", "dialog"); mo.setAttribute("aria-label", "More");
     document.body.prepend(el); document.body.append(bn, mo); document.documentElement.classList.add("has-tb", "has-bn");
-    wireNav();
+    wireNav(); wirePj();
     bn.querySelectorAll(".tb-t").forEach(a => a.onclick = e => {
       if (a.dataset.t === "more"){ e.preventDefault(); mo.hidden ? more(true) : more(false); return; }
       const was = !mo.hidden; more(false);
@@ -189,6 +189,31 @@ window.Tabs = (() => {
   // ---------- back and home (every page, every tab) ----------
   // Every view change is a browser history entry (Tabs.push / Tabs.replace, the page restores it in Tabs.onPop), so ←
   // and the phone's own back go to the previous view, across tabs and pages. ⌂ is the Assets front page.
+  // ---------- project picker ----------
+  // Plant and Tailings (the tailings storage facility) as tick boxes: both by default, at least one stays ticked, kept
+  // between visits (localStorage kcgm_proj, read by lookup.js, which filters the lists, the search and the drawings).
+  // The label keeps one width: All, Plant or Tailings. Desktop: left of File; phone: right of the arrows (not on Settings).
+  const PJN = { main: "Plant", tsf: "Tailings" };
+  const pjGet = () => { try { const v = JSON.parse(localStorage.getItem("kcgm_proj") || "null"); if (v && (v.main || v.tsf)) return { main: !!v.main, tsf: !!v.tsf }; } catch (e) {} return { main: true, tsf: true }; };
+  const pjLabel = v => v.main && v.tsf ? "All" : v.main ? PJN.main : PJN.tsf;
+  const PJ = `<div class="pj"><button type="button" class="pj-b" aria-haspopup="true" aria-expanded="false" title="Which project to show"><i>Project</i><b class="pj-v">${pjLabel(pjGet())}</b></button><div class="pj-m" hidden></div></div>`;
+  function wirePj(){
+    const box = el.querySelector(".pj"); if (!box) return; const b = box.querySelector(".pj-b"), m = box.querySelector(".pj-m");
+    const count = k => { try { if (window.Lookup && Lookup.ready()) return (window.Browse && Browse.projCount ? Browse.projCount(k) : Lookup.projCount(k)).toLocaleString(); } catch (e) {} return ""; };
+    const label = () => { box.querySelector(".pj-v").textContent = pjLabel(pjGet()); };
+    const draw = () => { const v = pjGet();
+      m.innerHTML = Object.entries(PJN).map(([k, n]) => `<button type="button" class="pj-o${v[k] ? " on" : ""}" data-k="${k}" role="menuitemcheckbox" aria-checked="${v[k]}"><i>${v[k] ? "✓" : ""}</i><span>${n}</span><em>${count(k)}</em></button>`).join("");
+      m.querySelectorAll(".pj-o").forEach(o => o.onclick = e => { e.stopPropagation(); const w = pjGet(); w[o.dataset.k] = !w[o.dataset.k];
+        if (!w.main && !w.tsf){ o.classList.remove("pj-no"); void o.offsetWidth; o.classList.add("pj-no"); return; }   // one stays ticked
+        if (window.Lookup && Lookup.setProj) Lookup.setProj(w); else { try { localStorage.setItem("kcgm_proj", JSON.stringify(w)); } catch (x) {} }
+        label(); draw(); }); };
+    const shut = () => { m.hidden = true; b.setAttribute("aria-expanded", "false"); };
+    b.onclick = e => { e.stopPropagation(); if (!m.hidden) return shut(); close(); draw(); m.hidden = false; b.setAttribute("aria-expanded", "true"); };
+    document.addEventListener("click", e => { if (!m.hidden && !box.contains(e.target)) shut(); });
+    addEventListener("keydown", e => { if (e.key === "Escape") shut(); });
+    addEventListener("kcgm-proj", () => { label(); if (!m.hidden) draw(); });
+    addEventListener("storage", e => { if (e.key === "kcgm_proj") label(); });
+  }
   const NAVB = `<span class="nv-bh"><button type="button" class="nv-b nv-home" aria-label="Home" title="Assets front page, nothing filtered"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg></button><button type="button" class="nv-b nv-back" aria-label="Back" title="Back to the previous view"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></button><button type="button" class="nv-b nv-fwd" aria-label="Forward" title="Forward again (redo the view change)" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button></span>`;
   let depth = 0;
   // ⟶ redoes a view change you went back from: on if the browser can go forward (its navigation API, else the furthest depth
@@ -244,7 +269,18 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 /* desktop: the app tile spans both rows (menu and sections), left of them */
 .lg-big{position:absolute;left:max(8px,env(safe-area-inset-left));top:calc(var(--sat) + 7px);bottom:7px;width:60px;border:0!important;padding:0!important;margin:0!important;z-index:1}
 .lg-big svg{width:60px;height:60px}
-:root.has-mb .mb{margin-left:calc(max(8px,env(safe-area-inset-left)) + 70px);padding-left:4px}:root.has-mb .tb{padding-left:calc(max(8px,env(safe-area-inset-left)) + 72px)}
+.lg-s{display:flex;align-items:center;padding:0 4px 0 2px}.lg-s svg{width:22px;height:22px}
+.mb-sep{width:1px;margin:7px 4px;background:var(--line)}
+/* project picker: a small labelled box (PROJECT over All / Plant / Tailings), one width whatever is picked */
+.pj{position:relative;display:flex;align-items:center;flex:none}
+.pj-b{position:relative;width:112px;height:26px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:7px;padding:0 22px 0 8px;font:inherit;cursor:pointer;margin:0 4px}
+.pj-b i{font-style:normal;font-size:8.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);line-height:1}.pj-b b{font-size:13px;font-weight:800;line-height:1.15}
+.pj-b:after{content:"▾";position:absolute;right:7px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:11px}
+.pj-m{position:absolute;top:calc(100% + 5px);left:4px;min-width:220px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.28);overflow:hidden;z-index:80}.pj-m[hidden]{display:none}
+.pj-o{display:flex;align-items:center;gap:12px;width:100%;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:10px 14px;font:inherit;font-size:var(--fb,15px);font-weight:700;text-align:left;cursor:pointer}
+.pj-o:last-child{border-bottom:0}.pj-o span{flex:1}.pj-o em{font-style:normal;font-weight:600;color:var(--mute);font-size:var(--fl,13px)}
+.pj-o i{flex:none;width:21px;height:21px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;font-style:normal;font-weight:900;font-size:13px;color:#1a1307}.pj-o.on i{border-color:var(--gold,var(--accent));background:var(--gold,var(--accent))}
+.pj-no{animation:pjno .3s}@keyframes pjno{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .lg b{font:900 var(--fl,13px)/1 var(--ff);letter-spacing:.08em;white-space:nowrap}.mb .lg{margin:6px 4px 6px 0}.lg-m{border:0;padding:0 4px 0 2px;margin:0}
 .mb .mn-b{border:0;background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:0 10px;border-radius:5px;margin:3px 0;cursor:pointer}
 .mb .mn-b:hover,.mn.open>.mn-b{background:var(--panel2,var(--card2))}
@@ -301,6 +337,8 @@ button:disabled{cursor:default}
 .tbw.ph{border-bottom:1px solid var(--line)}
 .ph-top{height:52px;display:flex;align-items:center;gap:8px;padding:0 max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))}
 .ph-top .lg-m{flex:none;display:flex}.ph-top .lg-m svg{width:30px;height:30px}
+:root.phone .pj-m{left:auto;right:-60px}:root.phone .pj-b{width:124px;height:38px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b i{font-size:9px}:root.phone .pj-b b{font-size:15px}
+.ph-top .ph-n{display:none}:root.in-settings .ph-top .ph-n{display:block}:root.in-settings .ph-top .pj{display:none}   /* (the page name only on Settings) */
 .ph-n{flex:0 1 auto;min-width:0;font-size:var(--fh,22px);font-weight:800;white-space:nowrap;overflow:hidden;line-height:1.1}   /* the page's name, like an item's tag (fitted to the row) */
 .ph-slot{flex:1;min-width:0;display:flex;align-items:center;gap:6px}.ph-slot>*{min-width:0}.ph-slot>.mo-off{display:none!important}
 .ph-slot input[type=search],.ph-slot .mo-q{flex:1;width:100%;height:36px;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:18px;padding:0 12px;font:inherit;font-size:16px}
@@ -308,7 +346,9 @@ button:disabled{cursor:default}
   padding:4px max(2px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(2px,env(safe-area-inset-left));height:var(--bn);box-sizing:border-box}
 .bn-t{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--mute);text-decoration:none;font-size:var(--fl,13px);font-weight:600;-webkit-tap-highlight-color:transparent}
 .bn-t i{display:grid;place-items:center;width:56px;height:28px;border-radius:14px;transition:background .15s}
-.bn-t.on,html[data-theme="light"] .bn-t.on{color:var(--ink);font-weight:800;background:none;box-shadow:none}.bn-t.on i{background:color-mix(in srgb,var(--gold,var(--accent)) 30%,transparent)}
+/* the open tab: a short gold bar on its top edge, icon and label gold */
+.bn-t{position:relative}.bn-t.on,html[data-theme="light"] .bn-t.on{color:var(--gold,var(--accent));font-weight:800;background:none;box-shadow:none}
+.bn-t.on:before{content:"";position:absolute;top:-4px;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--gold,var(--accent))}
 .mo{position:fixed;left:0;right:0;top:var(--tb);bottom:var(--bn);z-index:55;background:var(--bg);overflow-y:auto;overscroll-behavior:contain;padding:4px 0 16px}.mo[hidden]{display:none}
 .mo-g{font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding:14px 16px 6px}
 .mo-i{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:var(--panel,var(--card));color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:12px 16px;cursor:pointer}
