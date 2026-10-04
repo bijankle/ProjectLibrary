@@ -29,7 +29,7 @@ window.AssetViz = (() => {
   // ---------- an open item: its P&ID (or PFD sheet) instead of the charts ----------
   // the whole sheet fits the space with the item marked; drawing number tabs above when there are several; a click on
   // the sheet opens it full screen in the drawing viewer
-  let cur = null, shown = null, hist = [], gen = 0, arrival = null;
+  let cur = null, shown = null, hist = [], gen = 0, arrival = null, keepView = null, held = null;
   const ORD = new Intl.Collator(undefined, { numeric: true });
   const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   // A drawing on show stays while you search (you may be reading tags off it): it changes only when an item with a
@@ -37,7 +37,8 @@ window.AssetViz = (() => {
   function item(it){
     const own = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(it) : [];
     if (!own.length && cur && shown && (!window.Pid || Pid.ready())) return;   // (an item with no drawing: keep the one on show)
-    cur = it; shown = null; hist = []; lastSig = ""; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
+    const kv = keepView && own.includes(keepView.n) ? keepView : null; keepView = null;
+    cur = it; shown = kv ? kv.n : null; hist = []; lastSig = ""; held = kv; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
   function list(){}
   function home(){ if (!cur) return; cur = null; shown = null; lastSig = ""; draw(true); }
   // a drawing's series: the sheets whose title differs only by the sheet number ("Plant air, sheet 3" → "Plant air"),
@@ -94,12 +95,14 @@ window.AssetViz = (() => {
       const t = a.dataset.t, k = a.dataset.k;
       // a continuation: that drawing becomes the item on the left, with the ribbon back to this one marked (pid-refs way back)
       if (k === "d"){ if (Pid.has(t)){ arrival = { to: t, back: a.dataset.b ? JSON.parse(a.dataset.b) : null }; if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }
-      const tag = t.split("|")[0]; if (window.kcgmOpenTag) kcgmOpenTag(tag); });
+      // a tag on this sheet: its item opens on the left and the sheet stays as you have it (same zoom and place), only the arrow moves
+      const tag = t.split("|")[0]; keepView = { n, z, tx, ty }; if (window.kcgmOpenTag) kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); });
     PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
       if (g !== gen) return; page = pg;
       const v1 = pg.getViewport({ scale: 1 }), bw = box.clientWidth, bh = Math.max(200, innerHeight - box.getBoundingClientRect().top - 24);
       sc = Math.min(bw / v1.width, bh / v1.height); const vp = pg.getViewport({ scale: sc }); W = vp.width; H = vp.height;
       box.style.height = H + "px"; stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
+      if (held && held.n === n){ z = held.z; tx = held.tx; ty = held.ty; apply(); } held = null;
       rz = 0; await sharp(); if (g !== gen) return; const nt = box.querySelector(".vz-note"); if (nt) nt.remove();
       Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
         const A = W / H; boxes = [];
@@ -121,7 +124,9 @@ window.AssetViz = (() => {
           if (Math.abs(r1[1] - r2[1]) < 20) hits.push([Math.min(r1[0], r2[0]), Math.min(r1[1], r2[1]), Math.max(r1[2], r2[2]), Math.max(r1[3], r2[3])]); } });
       // the red see-through arrow, as in the full screen viewer: 1.8% of the sheet width, pointing down at the tag
       const aw = vp.width * .018, ah = aw * 1.7;
-      box.querySelector(".vz-mk").innerHTML = hits.slice(0, 20).map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b), cx = (x1 + x2) / 2, top = Math.min(y1, y2);
+      // (one arrow per place: a scanned sheet carries the tag twice, drawn and in the OCR layer under it)
+      const same = (o, b) => { const h = Math.max(o[3] - o[1], b[3] - b[1]); return !(b[0] > o[2] || b[2] < o[0] || b[1] > o[3] || b[3] < o[1]) || Math.hypot((o[0] + o[2] - b[0] - b[2]) / 2, (o[1] + o[3] - b[1] - b[3]) / 2) < h * 1.5; };
+      box.querySelector(".vz-mk").innerHTML = hits.filter((b, k) => !hits.slice(0, k).some(o => same(o, b))).slice(0, 20).map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b), cx = (x1 + x2) / 2, top = Math.min(y1, y2);
         return `<svg class="sp-arrow" viewBox="0 0 10 17" preserveAspectRatio="none" style="left:${cx - aw / 2}px;top:${top - 2 - ah}px;width:${aw}px;height:${ah}px"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; }).join("");
     }).catch(e => { if (g === gen){ const p = box.querySelector(".vz-note"); if (p) p.textContent = "Couldn't load the drawing (" + (e.message || e) + ")."; } });
   }

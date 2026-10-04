@@ -167,7 +167,11 @@ window.PdfView = (() => {
   // a red see-through arrow pointing down at a box on the sheet (fractions of the sheet), 1.8% of its width
   function arrowAt(h, cls){ const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), A = vp.width / vp.height, aw = .018, ah = aw * 1.7 * A;
     return `<svg class="sp-arrow ${cls || ""}" viewBox="0 0 10 17" preserveAspectRatio="none" aria-hidden="true" style="left:${(h.l + h.w / 2 - aw / 2) * 100}%;top:${(h.t - .002 * A - ah) * 100}%;width:${aw * 100}%;height:${ah * 100}%"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; }
-  function drawTap(){ if (!V.tapEl) return; V.tapEl.innerHTML = V.tap && V.pg && V.tap.page === V.page ? [V.tap, ...(V.tap.more || [])].map(h => arrowAt(h, "on")).join("") : ""; }
+  function drawTap(){ if (!V.tapEl) return; const on = V.tap && V.pg && V.tap.page === V.page ? [V.tap, ...(V.tap.more || [])] : [];
+    V.tapEl.innerHTML = on.map(h => arrowAt(h, "on")).join("");
+    // a find arrow on the place already marked by the tap arrow: one arrow there, not two
+    const fb = h => [h.l, h.t, h.l + h.w, h.t + h.h];
+    (V.hits || []).forEach((h, i) => { const m = V.marks.children[i]; if (m) m.style.display = on.some(t => samePlace(fb(t), fb(h))) ? "none" : ""; }); }
   // ---------- view history ----------
   const REG = new Map(); let curId = 0, seq = 0, hush = 0, st8 = null;
   const quiet = () => { hush = Date.now() + 500; };   // (moves made by a restore are not new views)
@@ -333,16 +337,19 @@ window.PdfView = (() => {
         if (!go) break;
       }
     }
-    // drop duplicates (the same place found from overlapping starts)
-    const uniq = hits.filter((b, k) => !hits.slice(0, k).some(o => Math.abs(o[0] - b[0]) < 2 && Math.abs(o[1] - b[1]) < 2));
+    // drop duplicates: the same place found from overlapping starts, or twice on a scanned sheet (the drawn text and
+    // the OCR layer under it): boxes that overlap, or whose centres sit within a letter height, are one place
+    const uniq = hits.filter((b, k) => !hits.slice(0, k).some(o => samePlace(o, b)));
     V.hits = uniq.map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b); return { l: Math.min(x1, x2) / W, t: Math.min(y1, y2) / H, w: Math.abs(x2 - x1) / W, h: Math.abs(y2 - y1) / H }; });
     // a red see-through arrow pointing down at each place, sized to the sheet (1.8% of its width), so it grows and
     // shrinks with the drawing; it doesn't move
-    V.marks.innerHTML = V.hits.map(h => arrowAt(h)).join("");
+    V.marks.innerHTML = V.hits.map(h => arrowAt(h)).join(""); drawTap();
     const f = V.el.querySelector(".sp-finds"); f.hidden = !V.hits.length;
     if (V.hits.length){ V.fi = 0; V.el.querySelector(".sp-fn").textContent = `${tag}: 1 / ${V.hits.length}`; pulse(0); }
     else if (!quiet) toast(`${tag} isn't written as searchable text on this drawing.`);
   }
+  function samePlace(o, b){ const h = Math.max(o[3] - o[1], b[3] - b[1]), ov = !(b[0] > o[2] || b[2] < o[0] || b[1] > o[3] || b[3] < o[1]);
+    return ov || Math.hypot((o[0] + o[2] - b[0] - b[2]) / 2, (o[1] + o[3] - b[1] - b[3]) / 2) < h * 1.5; }
   function pulse(k){ [...V.marks.children].forEach((m, i) => m.classList.toggle("on", i === k)); }
   function showHit(k){   // step through the matches, bringing each into view without changing the zoom
     if (!V.hits.length) return; V.fi = (k + V.hits.length) % V.hits.length; const h = V.hits[V.fi];
