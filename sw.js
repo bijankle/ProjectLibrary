@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION when questions change so phones pick up the new bank.
-const VERSION = "kcgm-v203";
+const VERSION = "kcgm-v204";
 // Documents (spec PDF, drawings, source tables) live in their own cache that app updates keep. The spec and drawings
 // are saved there the first time they're opened; Settings > Offline downloads (offline.js) can fetch any of them.
 const DOCS = "kcgm-docs-5",   // bump when a document is rebuilt so devices refetch it
@@ -19,7 +19,9 @@ self.addEventListener("fetch", e => {
     e.respondWith(caches.open(DOCS).then(c => c.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(r => { if (DOC_PDF.test(path) && r.ok && r.status === 200) c.put(e.request, r.clone()); return r; }))));
     return;
   }
-  e.respondWith(fetch(e.request).then(r => {
+  // (always asks the server whether a file changed, so an update shows on the next open, not after the browser's own
+  // copy runs out)
+  e.respondWith(fetch(e.request, { cache: "no-cache" }).then(r => {
     const copy = r.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); return r;
   }).catch(() => caches.match(e.request, { ignoreSearch: true })));
 });

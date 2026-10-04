@@ -66,6 +66,19 @@ window.PdfView = (() => {
     addEventListener("mouseup", () => { dr = null; V.body.classList.remove("drag"); });
     V.body.style.touchAction = "pan-x pan-y";
     let down = null; V.body.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; }, true);
+    // right click (long press on a phone) on a highlighted tag: copy its text
+    V.body.addEventListener("contextmenu", e => {
+      const a = e.target.closest && e.target.closest(".sp-ref"); if (!a) return;
+      const r = V.pageRefs[+a.dataset.i]; if (!r) return; e.preventDefault();
+      const tags = String(r[5]).split("|"); pickClose(); const p = document.createElement("div"); p.className = "sp-pick sp-copy";
+      p.innerHTML = tags.map(t => `<button type="button" data-t="${esc(t)}">⧉ Copy ${esc(t)}</button>`).join("");
+      V.el.appendChild(p); const q = V.el.getBoundingClientRect();
+      p.style.left = Math.max(6, Math.min(q.width - p.offsetWidth - 6, e.clientX - q.left)) + "px"; p.style.top = Math.max(50, Math.min(q.height - p.offsetHeight - 6, e.clientY - q.top + 8)) + "px";
+      p.querySelectorAll("button").forEach(b => b.onclick = ev => { ev.stopPropagation(); const t = b.dataset.t;
+        const done = () => { pickClose(); toast("Copied " + t); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => { fallbackCopy(t); done(); }); else { fallbackCopy(t); done(); } });
+    });
+    const fallbackCopy = t => { const x = document.createElement("textarea"); x.value = t; x.style.position = "fixed"; x.style.opacity = "0"; document.body.appendChild(x); x.select(); try { document.execCommand("copy"); } catch (e) {} x.remove(); };
     V.body.addEventListener("click", e => {
       let a = e.target.closest && e.target.closest(".sp-ref"); if (!e.target.closest || !e.target.closest(".sp-pick")) pickClose();
       if (a && V.boxes){ const q = V.refsEl.getBoundingClientRect(), i = PdfView.nearest(V.boxes, (e.clientX - q.left) / q.width * 1e4, (e.clientY - q.top) / q.height * 1e4);
