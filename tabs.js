@@ -136,8 +136,8 @@ window.Tabs = (() => {
     el = document.createElement("div"); el.className = "tbw";
     if (phone) return buildPhone();
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
-    el.innerHTML = `<nav class="mb" aria-label="Menu"><span class="lg-s" title="Project Library">${mark(22)}</span>${PJ}<span class="mb-sep"></span><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-v"><button type="button" class="mn-b">View</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
-      `<nav class="tb" aria-label="App sections">${NAVB}<div class="tb-seg">${tabs}</div></nav>`;
+    el.innerHTML = `<nav class="mb" aria-label="Menu">${PJ}<span class="mb-sep"></span><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-v"><button type="button" class="mn-b">View</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
+      `<nav class="tb" aria-label="App sections">${NAVB.replace(/(class="nv-b nv-home"[^>]*>)<svg.*?<\/svg>/, (m, b) => b.replace('nv-b nv-home', 'nv-b nv-home nv-logo') + mark(34))}<div class="tb-seg">${tabs}</div></nav>`;
     document.body.prepend(el); wirePj(); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", true);
     el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (O.onTab && O.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
     el.querySelectorAll(".mn").forEach(m => { const b = m.querySelector(".mn-b");
@@ -331,6 +331,7 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .nv-b svg{width:18px;height:18px;display:block;flex:none;cursor:inherit}   /* (a page's own svg rules must not resize these) */
 .nv-b:disabled{opacity:.35;cursor:default}.nv-b:disabled:hover{border-color:var(--line);color:var(--ink)}
 .nv-b:hover{border-color:var(--gold,var(--accent));color:var(--gold,var(--accent))}
+.nv-b.nv-logo,.nv-b.nv-logo:hover{border:0;background:none;border-radius:10px;width:34px;height:34px}.nv-b.nv-logo svg{width:34px!important;height:34px!important}.nv-b.nv-logo:hover{filter:brightness(1.06);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold,var(--accent)) 35%,transparent)}   /* desktop: the P is the home button */
 .ph-top .nv-bh{margin-right:2px;gap:4px}.ph-top .nv-b{width:29px;height:29px}.ph-top .nv-b svg{width:16px;height:16px}
 :root.phone .nv-b{border-width:1.5px;border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}:root.phone .nv-b svg{stroke-width:2.6}   /* phone: firmer buttons */
 :root.phone :is(.btn,.pf-b,.lk-pill,.lk-btn,.lk-vw,.ts-r,.x,#qBtns button){border-width:1.5px;border-style:solid;border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}

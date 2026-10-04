@@ -461,6 +461,38 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 .lo-sh .lo-ff .lo-fb{display:block!important}.lo-sh .lo-mo .lo-fb{gap:8px}
 .lo-sh .lo-b,.lo-sh .lo-seg button{padding:9px 12px}
 
+
+/* desktop side panel (Assets style): search, filters and results beside the PFD / Layout */
+body.fx-on #side{width:600px;padding:14px 18px 0 22px;overflow:hidden;display:flex;flex-direction:column}
+body.fx-on.layout #side{display:flex!important}
+body.fx-on #stage,body.fx-on.layout #mapView{left:600px}
+body.fx-on #search,body.fx-on #camBtn{display:none!important}
+#fx{display:flex;flex-direction:column;min-height:0;flex:1}#fx[hidden]{display:none}
+.fx-q{flex:none;display:flex;align-items:center;gap:10px;height:42px;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:0 12px;color:var(--mute)}
+.fx-q svg{width:18px!important;height:18px!important;flex:none}.fx-q input{flex:1;min-width:0;width:auto!important;height:38px;margin:0;padding:0;border:0!important;background:none!important;box-shadow:none!important;color:var(--ink);font:inherit;font-size:var(--fb,15px);outline:none;position:static!important}
+.fx-note{flex:none;margin-top:10px;padding:8px 11px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);font-size:var(--fb,15px);line-height:1.35}
+.fx-det{border:0;background:none;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;padding:0 2px}
+.fx-cols{flex:1;min-height:0;display:flex;margin-top:12px}
+.fx-f{width:205px;flex:none;overflow-y:auto;padding:0 12px 16px 0;border-right:1px solid var(--line)}
+.fx-r{flex:1;min-width:0;overflow-y:auto;padding:0 2px 16px 10px}
+.fx-h{display:flex;justify-content:space-between;align-items:center;font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:2px 0 7px}
+.fx-clr{border:0;background:none;color:var(--accent);font:inherit;font-size:var(--fl,13px);letter-spacing:0;text-transform:none;font-weight:700;cursor:pointer;padding:0}
+.fx-ps{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.fx-p{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:4px 9px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;white-space:nowrap}
+.fx-p em{font-style:normal;font-weight:500;color:var(--mute);margin-left:4px;font-size:var(--fl,13px)}
+.fx-p.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);color:color-mix(in srgb,var(--accent) 70%,var(--ink))}
+.fx-old{border-top:1px solid var(--line);padding-top:12px}
+.fx-n{color:var(--mute);font-size:var(--fb,15px);margin:0 0 4px}.fx-n b{color:var(--ink)}
+.fx-it{display:flex;align-items:baseline;gap:6px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;padding:7px 4px;cursor:pointer;white-space:nowrap;overflow:hidden}
+.fx-it b{color:var(--accent);font-size:var(--fb,15px);flex:none}.fx-it span{color:var(--mute);font-size:var(--fl,13px);overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.fx-it:hover{background:var(--panel2)}.fx-it.on{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.fx-w{flex:none;font-style:normal;font-size:11px;font-weight:700;color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:0 5px}.fx-w.pfd{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}.fx-w:empty{display:none}
+.fx-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-weight:700;cursor:pointer}
+.fx-none{color:var(--mute);padding:12px 2px}
+svg.focus .frame.pick{opacity:1}
+.frame.pick rect{stroke:#e8b44a;stroke-dasharray:none;stroke-width:3}
+.frame.flash rect{animation:fxfl 1.6s ease-out}
+@keyframes fxfl{0%{stroke-width:3}20%{stroke-width:14;opacity:.9;fill:#e8b44a}45%{stroke-width:4}65%{stroke-width:12;opacity:.8;fill:#f3d79a}100%{stroke-width:3}}
 </style>
 </head>
 <body>
@@ -483,6 +515,9 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 </header>
 
 <aside id="side">
+  <div id="fx" hidden><div class="fx-q"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="fxQ" type="search" placeholder="Search equipment, lines, valves, instruments…  ( / )" autocomplete="off" spellcheck="false" aria-label="Search the plant"></div>
+    <div class="fx-note" id="fxNote" hidden></div>
+    <div class="fx-cols"><div class="fx-f" id="fxF"></div><div class="fx-r"><div class="fx-n" id="fxN"></div><div id="fxL"></div></div></div></div>
   <h2 id="fHead" style="margin-top:0">Fluids</h2>
   <button class="flow nar" id="narBtn" type="button">▶ Narrative mode</button>
   <div class="fps" id="fluids"></div>
@@ -1062,7 +1097,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v); Tabs.set(v === "map" ? "layout" : "pfd");
     if (PHONE) $("search").placeholder = v === "map" ? "Search the layout" : "Search the PFD";
     PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); });
-    if (v !== "map") setVB(); };
+    if (v !== "map") setVB(); if (window.fxRefresh) fxRefresh(); };
   document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
   // the tab strip: PFD and Layout switch here, Assets and Quiz open the phone app page
   Tabs.mount({ active: "pfd", onSettings: () => showSettings(), settingsPage: !PHONE,
@@ -1587,6 +1622,135 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
     if (it.r) for (const v of it.r) { const m = String(v || "").match(/F\d{2}-[A-Z]{1,4}-\d{2,4}[A-Z]?|\b[A-Z]{1,5} ?\d{5}[A-Z]?\b/g); if (m) for (const t of m) { const e = onPfd.get(Lookup.norm(t)); if (e) return e; } }
     return null; };
   let lkUI = null;
+  // ---------- desktop side panel: find any asset on the PFD or the Layout ----------
+  // As on the Assets tab: a search box on top, then filters (WBS, type, and the fluids on the PFD or the status on the
+  // Layout) beside the results. Picking a WBS flies to its zone and flashes it while everything else dims. A result
+  // shows where the asset sits: its own PFD box (or control loop); else the boxes it's tied to (a line's From/To, an
+  // instrument's equipment); else the boxes on the same P&ID; else its WBS zone. The old panel (fluids, overlays,
+  // narrative, loops) carries on below the filters. Phones keep their own layout.
+  if (!PHONE) (() => {
+    const side = $("side"), fx = $("fx"), F = { q: "", wbs: null, type: null, st: null }; let N = 150, cur = null;
+    fx.hidden = false; document.body.classList.add("fx-on");
+    const fxF = $("fxF"), tail = document.createElement("div"); tail.className = "fx-old";
+    [...side.children].filter(c => c !== fx).forEach(c => tail.appendChild(c));
+    const groups = document.createElement("div"); fxF.append(groups, tail);
+    const codesOf = s => String(s || "").match(/F\d\d/g) || [];
+    const WBS = new Set(FRAMES.flatMap(f => codesOf(f.label)));
+    const mid = n => [n.x + (n.w || 0) / 2, n.y + (n.h || 0) / 2];
+    const inFrame = (n, f) => { const [x, y] = mid(n); return x >= f.x && x <= f.x + f.w && y >= f.y && y <= f.y + f.h; };
+    // a WBS code's boxes: the frame it heads (less the boxes marked as one of its other codes), or the boxes marked with it
+    function nodesOf(c){
+      const out = new Set();
+      FRAMES.forEach(f => { const cs = codesOf(f.label); if (!cs.includes(c)) return;
+        const inside = NODES.filter(n => inFrame(n, f)), mine = inside.filter(n => n.area === c || String(n.tag || "").startsWith(c + "-"));
+        (cs[0] === c ? inside.filter(n => !n.area || n.area === c || !cs.includes(n.area)) : mine.length ? mine : inside).forEach(n => out.add(n)); });
+      NODES.filter(n => n.area === c).forEach(n => out.add(n));
+      return [...out];
+    }
+    const framesOf = c => FRAMES.filter(f => codesOf(f.label).includes(c));
+    // where things are: tag → PFD box, loop device → loop, P&ID → the boxes whose MEL rows name it
+    const tagNode = new Map(), loopOf = new Map(), pidNodes = new Map();
+    Object.entries(EQUIP_DATA).forEach(([id, d]) => {
+      d.eq.forEach(r => { tagNode.set(Lookup.norm(r.tag), id); String(r.pid || "").split(/[\s,;]+/).filter(Boolean).forEach(p => { const k = Lookup.norm(p); if (!pidNodes.has(k)) pidNodes.set(k, new Set()); pidNodes.get(k).add(id); }); });
+      d.ins.forEach(i => { const k = Lookup.norm(i.tag); if (!tagNode.has(k)) tagNode.set(k, id); }); });
+    LOOPS.forEach(L => [...(L.m || []), ...(L.f || [])].forEach(t => expandTag(t).forEach(x => { const k = Lookup.norm(x); if (!tagNode.has(k) && !loopOf.has(k)) loopOf.set(k, L); })));
+    const TAGS = /F\d{2}-[A-Z]{1,4}-\d{2,4}[A-Z]?|\b[A-Z]{1,5} ?\d{5}[A-Z]?\b/g, PIDS = /2000-F\d\d-PID-PR-\d{5}|FME-\d+-PI-\d+/g;
+    function wbsOf(it){
+      if (it._w !== undefined) return it._w;
+      const k = String(it.key || ""); let m = k.match(/^F(\d\d)-/) || k.match(/^(\d\d)-[A-Z]?\d{3,4}-/) || k.match(/(?:^|\D)(\d\d)\d{3}(?!\d)/);
+      let c = m ? "F" + m[1] : null;
+      if (!c || !WBS.has(c)){ const p = (String(Lookup.get(it, "P&ID") || Lookup.get(it, "P&IDs")).match(/F(\d\d)/) || [])[1]; if (p && WBS.has("F" + p)) c = "F" + p; }
+      return it._w = c && WBS.has(c) ? c : null;
+    }
+    function locate(it){
+      const k = Lookup.norm(it.key);
+      if (tagNode.has(k)) return { ids: [tagNode.get(k)], how: "pfd" };
+      if (loopOf.has(k)) return { loop: loopOf.get(k), how: "pfd" };
+      for (let i = 1; it.r && i < it.r.length; i++){ const m = String(it.r[i] || "").match(TAGS); if (m) for (const t of m){ const x = Lookup.norm(t); if (x === k) continue;
+        if (tagNode.has(x)) return { ids: [tagNode.get(x)], how: "link", via: t }; if (loopOf.has(x)) return { loop: loopOf.get(x), how: "link", via: t }; } }
+      const ps = String(Lookup.get(it, "P&ID") || "") + " " + String(Lookup.get(it, "P&IDs") || ""), ids = new Set(); let via = null;
+      (ps.match(PIDS) || []).forEach(p => { const s = pidNodes.get(Lookup.norm(p)); if (s){ s.forEach(x => ids.add(x)); via = via || p; } });
+      if (ids.size) return { ids: [...ids], how: "pid", via };
+      const w = wbsOf(it); return w ? { area: w, how: "wbs" } : { how: "none" };
+    }
+    const STAT = it => { const s = String(Lookup.get(it, "Status") || "").toLowerCase(), b = String(Lookup.get(it, "Brownfield / greenfield") || "").toLowerCase();
+      return /future/.test(s) ? "Future" : /new/.test(s) || /green/.test(b) ? "New" : /service|exist/.test(s) || /brown/.test(b) ? "Existing" : null; };
+    const TYPES = [["mel", "Equipment"], ["ins", "Instruments"], ["cv", "Control valves"], ["mv", "Manual valves"], ["line", "Lines"], ["spi", "Specials"], ["hose", "Hoses"]], TN = Object.fromEntries(TYPES);
+    const ORD = new Intl.Collator(undefined, { numeric: true });
+    let base = null;
+    const lay = () => document.body.classList.contains("layout");
+    function list(skip){
+      if (!base) return [];
+      let a = F.q.trim().length >= 2 ? Lookup.search(F.q, 3000).filter(it => it.r && TN[it.t] && Lookup.inProj(it)) : base;
+      if (skip !== "wbs" && F.wbs) a = a.filter(it => wbsOf(it) === F.wbs);
+      if (skip !== "type" && F.type) a = a.filter(it => it.t === F.type);
+      if (skip !== "st" && F.st && lay()) a = a.filter(it => STAT(it) === F.st);
+      return a;
+    }
+    const pill = (g, v, label, n, on) => `<button type="button" class="fx-p${on ? " on" : ""}" data-g="${g}" data-v="${esc(v)}">${esc(label)}${n != null ? `<em>${n.toLocaleString()}</em>` : ""}</button>`;
+    const count = (a, f) => a.reduce((m, it) => { const v = f(it); if (v) m[v] = (m[v] || 0) + 1; return m; }, {});
+    function render(keepN){
+      if (!keepN) N = 150;
+      if (!base){ groups.innerHTML = ""; $("fxN").textContent = "Loading the plant lists…"; $("fxL").innerHTML = ""; return; }
+      const cw = count(list("wbs"), wbsOf), ct = count(list("type"), it => it.t), cs = lay() ? count(list("st"), STAT) : {};
+      const codes = [...WBS].filter(c => cw[c] || c === F.wbs).sort(ORD.compare);
+      groups.innerHTML = `<div class="fx-h">WBS${F.wbs ? `<button type="button" class="fx-clr" data-g="wbs">Clear</button>` : ""}</div><div class="fx-ps">${codes.map(c => pill("wbs", c, c, cw[c] || 0, F.wbs === c)).join("")}</div>` +
+        `<div class="fx-h">Type${F.type ? `<button type="button" class="fx-clr" data-g="type">Clear</button>` : ""}</div><div class="fx-ps">${TYPES.filter(t => ct[t[0]] || F.type === t[0]).map(t => pill("type", t[0], t[1], ct[t[0]] || 0, F.type === t[0])).join("")}</div>` +
+        (lay() ? `<div class="fx-h">Status${F.st ? `<button type="button" class="fx-clr" data-g="st">Clear</button>` : ""}</div><div class="fx-ps">${["New", "Existing", "Future"].filter(s => cs[s] || F.st === s).map(s => pill("st", s, s, cs[s] || 0, F.st === s)).join("")}</div>` : "");
+      const a = list().slice().sort((x, y) => ORD.compare(x.key, y.key));
+      const where = [F.wbs && "WBS " + F.wbs, F.type && TN[F.type].toLowerCase(), lay() && F.st && F.st.toLowerCase()].filter(Boolean).join(", ");
+      $("fxN").innerHTML = `<b>${a.length.toLocaleString()}</b> ${a.length === 1 ? "item" : "items"}${where ? " in " + esc(where) : ""}`;
+      $("fxL").innerHTML = a.slice(0, N).map((it, i) => { const L = locate(it);
+        return `<button type="button" class="fx-it${cur === it ? " on" : ""}" data-i="${i}" title="${esc(it.key + " · " + it.name)}"><b>${esc(it.key)}</b><span>${esc(it.name || "")}</span><i class="fx-w ${L.how}">${{ pfd: "on PFD", link: "linked", pid: "P&ID", wbs: "WBS", none: "" }[L.how]}</i></button>`; }).join("") +
+        (a.length > N ? `<button type="button" class="fx-more">Show ${Math.min(150, a.length - N)} more</button>` : "") +
+        (!a.length ? `<div class="fx-none">Nothing matches. Try another WBS or type, or clear the search.</div>` : "");
+      groups.querySelectorAll(".fx-p").forEach(b => b.onclick = () => { const g = b.dataset.g, v = b.dataset.v;
+        if (g === "wbs"){ F.wbs = F.wbs === v ? null : v; if (F.wbs) wbsGo(F.wbs); else { markFrames(null); clearSel(false); note(""); } }
+        else F[g] = F[g] === v ? null : v; render(); });
+      groups.querySelectorAll(".fx-clr").forEach(b => b.onclick = () => { F[b.dataset.g] = null; if (b.dataset.g === "wbs"){ markFrames(null); clearSel(false); note(""); } render(); });
+      $("fxL").querySelectorAll(".fx-it").forEach(b => b.onclick = () => { const it = a[+b.dataset.i]; cur = it; $("fxL").querySelectorAll(".fx-it.on").forEach(x => x.classList.remove("on")); b.classList.add("on"); show(it); });
+      const mo = $("fxL").querySelector(".fx-more"); if (mo) mo.onclick = () => { N += 150; render(true); };
+    }
+    // the WBS frames: the picked one stays bright while everything else dims; a flash when it's picked
+    function markFrames(c, flash){
+      FRAMES.forEach(f => { const on = !!c && codesOf(f.label).includes(c); f.g.classList.toggle("pick", on);
+        if (on && flash){ f.g.classList.remove("flash"); void f.g.getBBox(); f.g.classList.add("flash"); setTimeout(() => f.g.classList.remove("flash"), 1700); } });
+    }
+    const toStage = st => { if (st && st !== stage){ const b = document.querySelector(`#stageSeg button[data-s="${st}"]`); if (b) b.click(); } };
+    function wbsGo(c){
+      const fr = framesOf(c); if (fr.length && fr.every(f => f.st && f.st !== stage)) toStage(fr[0].st);
+      const ns = nodesOf(c).filter(n => shown(nEls[n.id]));
+      if (focusFlow) setFlow(null);
+      sel = ns.map(n => ({ k: "n", id: n.id })); applySel(false); markFrames(c, true);
+      if (PFDLayout.active()) PFDLayout.area(c);
+      else if (fr.length){ const x1 = Math.min(...fr.map(f => f.x)), y1 = Math.min(...fr.map(f => f.y)), x2 = Math.max(...fr.map(f => f.x + f.w)), y2 = Math.max(...fr.map(f => f.y + f.h)); flyTo({ x: x1, y: y1, w: x2 - x1, h: y2 - y1 }, 1.05, 700); }
+      note(`<b>WBS ${esc(c)}</b> ${esc(wbsName(c))}: ${ns.length} PFD box${ns.length === 1 ? "" : "es"} lit, everything else dimmed.`);
+    }
+    const wbsName = c => { const f = FRAMES.find(fr => codesOf(fr.label)[0] === c); return f ? f.label.replace(/^F\d\d\s*-\s*/, "").replace(/\s*\(.*$/, "").toLowerCase().replace(/(^|[\s/&,])([a-z])/g, (m, a, b) => a + b.toUpperCase()) : ""; };
+    function note(h, it){ const n = $("fxNote"); n.hidden = !h; n.innerHTML = h + (it ? ` <button type="button" class="fx-det">Details ›</button>` : "");
+      const d = n.querySelector(".fx-det"); if (d) d.onclick = () => { openSearch(""); setTimeout(() => lkUI && lkUI.openKey(it.key), 40); }; }
+    function show(it){
+      const L = locate(it); if (focusFlow) setFlow(null); markFrames(null);
+      if (L.loop){ toStage(L.loop.st); sel = [{ k: "loop", id: L.loop.id }]; applySel(true);
+        note(`<b>${esc(it.key)}</b> ${L.how === "pfd" ? "is in" : "is tied to " + esc(L.via) + ", in"} the <b>${esc(L.loop.tag)}</b> control loop (${esc(L.loop.name)}).`, it); return; }
+      if (L.ids){ const ns = L.ids.map(id => byId[id]).filter(Boolean); if (ns.length && !ns.some(n => !n.st || n.st === stage)) toStage(ns[0].st);
+        sel = ns.filter(n => shown(nEls[n.id])).map(n => ({ k: "n", id: n.id })); applySel(true);
+        const names = ns.slice(0, 3).map(n => n.sn || n.n).join(", ") + (ns.length > 3 ? ` and ${ns.length - 3} more` : "");
+        note(L.how === "pfd" ? `<b>${esc(it.key)}</b> is on the PFD as <b>${esc(names)}</b>.`
+          : L.how === "link" ? `<b>${esc(it.key)}</b> isn't drawn on the PFD. Shown at <b>${esc(names)}</b>, which it's tied to (${esc(L.via)}).`
+          : `<b>${esc(it.key)}</b> isn't drawn on the PFD. Roughly here: the boxes on its P&amp;ID ${esc(L.via)} (${esc(names)}).`, it); return; }
+      if (L.area){ wbsGo(L.area); note(`<b>${esc(it.key)}</b> isn't drawn on the PFD. Roughly here: its WBS zone <b>${esc(L.area)}</b> ${esc(wbsName(L.area))}.`, it); return; }
+      clearSel(true); note(`<b>${esc(it.key)}</b> can't be placed on the PFD or the layout (no PFD box, P&amp;ID or WBS for it).`, it);
+    }
+    let qt; $("fxQ").addEventListener("input", e => { clearTimeout(qt); qt = setTimeout(() => { F.q = e.target.value; render(); }, 120); });
+    $("fxQ").addEventListener("keydown", e => { if (e.key === "Escape"){ e.stopPropagation(); e.target.value = ""; F.q = ""; render(); }
+      if (e.key === "Enter"){ const b = $("fxL").querySelector(".fx-it"); if (b) b.click(); } });
+    window.addEventListener("keydown", e => { if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); e.stopImmediatePropagation(); $("fxQ").focus(); } }, true);
+    window.fxRefresh = () => render(true);
+    Lookup.onProj && Lookup.onProj(() => { base = base && Lookup.items().filter(it => it.r && TN[it.t] && Lookup.inProj(it)); render(); });
+    render();
+    Lookup.load().then(() => { base = Lookup.items().filter(it => it.r && TN[it.t] && Lookup.inProj(it)); render(); }).catch(e => { $("fxN").textContent = "Couldn't load the plant lists (" + e.message + ")."; });
+  })();
   window.kcgmOpenTag = k => { openSearch(""); setTimeout(() => lkUI && lkUI.openKey(k), 30); };   // a tag tapped on a drawing
   function openSearch(q, enter){
     const draw = () => {
