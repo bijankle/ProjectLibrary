@@ -192,11 +192,11 @@ window.Tabs = (() => {
   // ---------- project picker ----------
   // Plant and Tailings (the tailings storage facility) as tick boxes: both by default, at least one stays ticked, kept
   // between visits (localStorage kcgm_proj, read by lookup.js, which filters the lists, the search and the drawings).
-  // The label keeps one width: All, Plant or Tailings. Desktop: left of File; phone: right of the arrows (not on Settings).
+  // A one line box that keeps one width: All, Plant or Tailings. Desktop: left of File; phone: right of the arrows (not on Settings).
   const PJN = { main: "Plant", tsf: "Tailings" };
   const pjGet = () => { try { const v = JSON.parse(localStorage.getItem("kcgm_proj") || "null"); if (v && (v.main || v.tsf)) return { main: !!v.main, tsf: !!v.tsf }; } catch (e) {} return { main: true, tsf: true }; };
   const pjLabel = v => v.main && v.tsf ? "All" : v.main ? PJN.main : PJN.tsf;
-  const PJ = `<div class="pj"><button type="button" class="pj-b" aria-haspopup="true" aria-expanded="false" title="Which project to show"><i>Project</i><b class="pj-v">${pjLabel(pjGet())}</b></button><div class="pj-m" hidden></div></div>`;
+  const PJ = `<div class="pj"><button type="button" class="pj-b" aria-haspopup="true" aria-expanded="false" title="Which project to show"><b class="pj-v">${pjLabel(pjGet())}</b></button><div class="pj-m" hidden></div></div>`;
   function wirePj(){
     const box = el.querySelector(".pj"); if (!box) return; const b = box.querySelector(".pj-b"), m = box.querySelector(".pj-m");
     const count = k => { try { if (window.Lookup && Lookup.ready()) return (window.Browse && Browse.projCount ? Browse.projCount(k) : Lookup.projCount(k)).toLocaleString(); } catch (e) {} return ""; };
@@ -273,8 +273,8 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .mb-sep{width:1px;margin:7px 4px;background:var(--line)}
 /* project picker: a small labelled box (PROJECT over All / Plant / Tailings), one width whatever is picked */
 .pj{position:relative;display:flex;align-items:center;flex:none}
-.pj-b{position:relative;width:112px;height:26px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:7px;padding:0 22px 0 8px;font:inherit;cursor:pointer;margin:0 4px}
-.pj-b i{font-style:normal;font-size:8.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);line-height:1}.pj-b b{font-size:13px;font-weight:800;line-height:1.15}
+.pj-b{position:relative;width:104px;height:22px;display:flex;align-items:center;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:0 20px 0 8px;font:inherit;cursor:pointer;margin:0 4px}
+.pj-b b{font-size:13px;font-weight:800;line-height:1;white-space:nowrap}
 .pj-b:after{content:"▾";position:absolute;right:7px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:11px}
 .pj-m{position:absolute;top:calc(100% + 5px);left:4px;min-width:220px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.28);overflow:hidden;z-index:80}.pj-m[hidden]{display:none}
 .pj-o{display:flex;align-items:center;gap:12px;width:100%;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:10px 14px;font:inherit;font-size:var(--fb,15px);font-weight:700;text-align:left;cursor:pointer}
@@ -337,7 +337,7 @@ button:disabled{cursor:default}
 .tbw.ph{border-bottom:1px solid var(--line)}
 .ph-top{height:52px;display:flex;align-items:center;gap:8px;padding:0 max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))}
 .ph-top .lg-m{flex:none;display:flex}.ph-top .lg-m svg{width:30px;height:30px}
-:root.phone .pj-m{left:auto;right:-60px}:root.phone .pj-b{width:124px;height:38px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b i{font-size:9px}:root.phone .pj-b b{font-size:15px}
+:root.phone .pj-m{left:auto;right:-60px}:root.phone .pj-b{width:112px;height:36px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b b{font-size:16px}
 .ph-top .ph-n{display:none}:root.in-settings .ph-top .ph-n{display:block}:root.in-settings .ph-top .pj{display:none}   /* (the page name only on Settings) */
 .ph-n{flex:0 1 auto;min-width:0;font-size:var(--fh,22px);font-weight:800;white-space:nowrap;overflow:hidden;line-height:1.1}   /* the page's name, like an item's tag (fitted to the row) */
 .ph-slot{flex:1;min-width:0;display:flex;align-items:center;gap:6px}.ph-slot>*{min-width:0}.ph-slot>.mo-off{display:none!important}
