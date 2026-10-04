@@ -9,14 +9,14 @@ const TOPICS = {
   codes: {name: "Area Codes", blurb: "F12, F16, F21... what people mean", g: "proj"},
   tags: {name: "Reading Tags", blurb: "Equipment, motor, cable and instrument tags", g: "proj"},
   acro: {name: "Acronyms & Slang", blurb: "The words you hear on the radio", g: "gen"},
-  crush: {name: "Crushing", blurb: "ROM pad to coarse ore stockpile", g: "gen"},
-  mill: {name: "Milling & Classification", blurb: "SAG, ball mill, pebbles, cyclones", g: "gen"},
-  grav: {name: "Gravity & ILR", blurb: "Knelsons, intensive leach, gravity EW", g: "gen"},
-  flot: {name: "Flotation", blurb: "Roughers, scavengers, Jamesons", g: "gen"},
-  conc: {name: "Concentrate & UFG", blurb: "Thickening, IsaMills, CIL2/3", g: "gen"},
-  cil4: {name: "Tails Leach (CIL4)", blurb: "Flotation tails thickener and CIL4", g: "gen"},
-  elu: {name: "Elution, Regen & Goldroom", blurb: "Stripping carbon and pouring doré", g: "gen"},
-  util: {name: "Water, Air & Reagents", blurb: "Services that keep it all running", g: "gen"},
+  crush: {name: "Crushing", blurb: "ROM pad to coarse ore stockpile", g: "circ"},
+  mill: {name: "Milling & Classification", blurb: "SAG, ball mill, pebbles, cyclones", g: "circ"},
+  grav: {name: "Gravity & ILR", blurb: "Knelsons, intensive leach, gravity EW", g: "circ"},
+  flot: {name: "Flotation", blurb: "Roughers, scavengers, Jamesons", g: "circ"},
+  conc: {name: "Concentrate & UFG", blurb: "Thickening, IsaMills, CIL2/3", g: "circ"},
+  cil4: {name: "Tails Leach (CIL4)", blurb: "Flotation tails thickener and CIL4", g: "circ"},
+  elu: {name: "Elution, Regen & Goldroom", blurb: "Stripping carbon and pouring doré", g: "circ"},
+  util: {name: "Water, Air & Reagents", blurb: "Services that keep it all running", g: "circ"},
   nums: {name: "Key Numbers", blurb: "Throughput, grades, recoveries", g: "proj"},
   ctrl: {name: "Controls & DCS", blurb: "Modes, interlocks, loops and trips", g: "proj"},
   hand: {name: "Shift Handover Scenarios", blurb: "What does that report actually mean?", g: "gen"},
@@ -24,7 +24,7 @@ const TOPICS = {
 
 // the two groups the topics are listed under: how the process works in general, and this project's own codes, tags,
 // numbers and control system
-const TGROUPS = [["gen", "General"], ["proj", "Project specific"]];
+const TGROUPS = [["gen", "General"], ["circ", "Specific circuits"], ["proj", "Project topics"]];
 
 const CARDS = [
 

@@ -275,6 +275,23 @@ body.searching #homeMain{display:none}
 :root.phone .gl-e b{display:block;color:var(--ink)}:root.phone .gl-e span{display:block;color:var(--mute)}
 :root.phone .gl-az{display:flex;flex-direction:column;justify-content:space-between;position:fixed;right:2px;top:calc(var(--tb) + 70px);bottom:calc(var(--bn) + 16px);z-index:3;touch-action:none}
 :root.phone .gl-az i{font-style:normal;font-size:var(--fl,13px);font-weight:800;color:var(--gold);padding:0 5px;line-height:1}
+
+/* desktop quiz panel: search, then the topics in two columns (General and Project topics | Specific circuits) with how
+   much of each you know, then order, length and this deck */
+:root:not(.phone) .qd-side{width:600px;padding:14px 18px 14px 22px}
+.qd-q{display:flex;align-items:center;gap:10px;height:42px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:0 12px;color:var(--mute);margin-bottom:10px}
+.qd-q input{flex:1;min-width:0;border:0;background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);outline:none}
+.qd-qn{font-size:var(--fl,13px);color:var(--mute);margin:-2px 0 8px}.qd-qn b{color:var(--ink)}
+.qd-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 22px}.qd-cols .qd-tp{min-width:0}
+.qd-g{display:flex;flex-direction:column;gap:2px;margin-bottom:12px}
+.qd-tp{align-items:flex-start;padding:6px}.qd-tp i{margin-top:1px}
+.qd-tn{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.qd-tt{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.qd-tt b{font-weight:700;font-size:var(--fb,15px);line-height:1.25}
+.qd-tt small{margin-left:0!important;flex:none}
+.qd-bar{display:block;height:5px;border-radius:3px;background:var(--card2);overflow:hidden}.qd-bar u{display:block;height:100%;background:var(--gold);border-radius:3px}
+.qd-opts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 22px;border-top:1px solid var(--line);padding-top:10px}
+.qd-opts>div{display:flex;flex-direction:column;gap:6px}.qd-opts h4{margin:0!important}
+.qd-acts{justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -506,8 +523,10 @@ body.searching #homeMain{display:none}
   $("qfBtn").onclick = () => { const f = $("qFilters"), open = f.hidden; f.hidden = !open; $("qfBtn").classList.toggle("on", open); $("qfBtn").setAttribute("aria-expanded", open);
     if (open) f.scrollIntoView({ behavior: "smooth", block: "start" }); };
 
+  let qtext = "";   // desktop: the search box over the topics narrows the deck to cards that mention it
+  const qhit = c => !qtext || (c.q + " " + c.a + " " + (c.e || "")).toLowerCase().includes(qtext);
   function pick(){
-    let pool = CARDS.filter(c => sel.has(c.t));
+    let pool = CARDS.filter(c => sel.has(c.t) && qhit(c));
     if (mode === "weak") {
       // 'Again' cards first, then least often known, then unseen
       const score = c => { const h = hist[c.q]; if (!h) return 1; return (h.last ? 2 : 0) + h.k / (h.s + 1); };
@@ -731,14 +750,23 @@ body.searching #homeMain{display:none}
     const done = Object.values(run.done), kn = done.filter(Boolean).length;
     const seg = (key, opts, val) => `<div class="qd-sg" data-k="${key}">` + opts.map(([v, t]) => `<button type="button" data-v="${v}" class="${String(v) === String(val) ? "on" : ""}">${t}</button>`).join("") + `</div>`;
     const inG = g => Object.keys(TOPICS).filter(k => TOPICS[k].g === g);
-    $("qdSide").innerHTML = TGROUPS.map(([g, gn]) => { const ks = inG(g), full = ks.every(k => sel.has(k));
-      return `<h4>${gn} <button type="button" data-grp="${g}" data-on="${full ? 0 : 1}">${full ? "None" : "All"}</button></h4>` +
-        ks.map(k => `<button type="button" class="qd-tp${sel.has(k) ? " on" : ""}" data-t="${k}"><i>${sel.has(k) ? "✓" : ""}</i>${TOPICS[k].name}<small>${topicInfo(k)}</small></button>`).join(""); }).join("") +
-      `<h4>Order</h4>` + seg("mode", [["mix", "Shuffled"], ["weak", "Revisit first"], ["new", "Unseen"]], mode) +
-      `<h4>Deck length</h4>` + seg("len", [[10, "10"], [20, "20"], [40, "40"], [9999, "All"]], len) +
-      `<h4>This deck</h4><div class="qd-st"><div><b>${done.length}</b><span>scored</span></div><div><b style="color:var(--ok)">${kn}</b><span>knew it</span></div><div><b style="color:var(--bad)">${done.length - kn}</b><span>revisit</span></div></div>` +
-      `<button type="button" class="qd-act" data-new>▶ New deck</button>` + (done.length ? `<button type="button" class="qd-act" data-end>End and see the score</button>` : "");
-    const S = $("qdSide");
+    // the search box stays put (typing keeps its focus); the topics redraw under it
+    if (!$("qdQ")){ $("qdSide").innerHTML = `<div class="qd-q"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="qdQ" type="search" placeholder="Search cards…" autocomplete="off" aria-label="Search cards"></div><div id="qdSideIn"></div>`;
+      let qt; $("qdQ").addEventListener("input", e => { clearTimeout(qt); qt = setTimeout(() => { qtext = e.target.value.trim().toLowerCase(); rebuild(); }, 200); }); }
+    // each topic: tick box, name, how many of its cards you know, and a bar of that
+    const known = k => { const cs = CARDS.filter(c => c.t === k); return [cs.filter(c => hist[c.q] && hist[c.q].last).length, cs.length]; };
+    const grp = g => { const gn = (TGROUPS.find(x => x[0] === g) || [, g])[1], ks = inG(g), full = ks.every(k => sel.has(k));
+      return `<div class="qd-g"><h4>${gn} <button type="button" data-grp="${g}" data-on="${full ? 0 : 1}">${full ? "None" : "All"}</button></h4>` +
+        ks.map(k => { const [a, n] = known(k);
+          return `<button type="button" class="qd-tp${sel.has(k) ? " on" : ""}" data-t="${k}"><i>${sel.has(k) ? "✓" : ""}</i><span class="qd-tn"><span class="qd-tt"><b>${TOPICS[k].name}</b><small title="${a} of ${n} cards known">${a}/${n}</small></span><span class="qd-bar"><u style="width:${n ? 100 * a / n : 0}%"></u></span></span></button>`; }).join("") + `</div>`; };
+    const nq = qtext ? CARDS.filter(c => sel.has(c.t) && qhit(c)).length : 0;
+    $("qdSideIn").innerHTML = (qtext ? `<div class="qd-qn"><b>${nq}</b> card${nq === 1 ? "" : "s"} in the ticked topics mention “${esc(qtext)}”</div>` : "") +
+      `<div class="qd-cols"><div>${grp("gen")}${grp("proj")}</div><div>${grp("circ")}</div></div>` +
+      `<div class="qd-opts"><div><h4>Order</h4>` + seg("mode", [["mix", "Shuffled"], ["weak", "Revisit first"], ["new", "Unseen"]], mode) + `</div>` +
+      `<div><h4>Deck length</h4>` + seg("len", [[10, "10"], [20, "20"], [40, "40"], [9999, "All"]], len) + `</div>` +
+      `<div><h4>This deck</h4><div class="qd-st"><div><b>${done.length}</b><span>scored</span></div><div><b style="color:var(--ok)">${kn}</b><span>knew it</span></div><div><b style="color:var(--bad)">${done.length - kn}</b><span>revisit</span></div></div></div>` +
+      `<div class="qd-acts"><button type="button" class="qd-act" data-new>▶ New deck</button>` + (done.length ? `<button type="button" class="qd-act" data-end>End and see the score</button>` : "") + `</div></div>`;
+    const S = $("qdSideIn");
     S.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { const k = b.dataset.t; sel.has(k) ? sel.delete(k) : sel.add(k); store.set("kcgm_topics", [...sel]); renderHome(); rebuild(); });
     S.querySelectorAll("[data-grp]").forEach(b => b.onclick = () => { inG(b.dataset.grp).forEach(k => b.dataset.on === "1" ? sel.add(k) : sel.delete(k)); store.set("kcgm_topics", [...sel]); renderHome(); rebuild(); });
     S.querySelectorAll("[data-k] button").forEach(b => b.onclick = () => { if (b.parentNode.dataset.k === "mode"){ mode = b.dataset.v; store.set("kcgm_mode", mode); } else { len = +b.dataset.v; store.set("kcgm_len", len); }
