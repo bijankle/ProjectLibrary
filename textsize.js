@@ -21,7 +21,7 @@ window.TextSize = (() => {
 .ts-th button+button{border-left:1.5px solid var(--line)}
 :root.phone .ts-th{width:100%}:root.phone .ts-th button{flex:1 1 auto;padding:11px 6px;font-weight:800}
 :root.phone #tsRoot .ts{flex-wrap:wrap;row-gap:8px}:root.phone #tsRoot .ts input{flex:1 1 calc(100% - 64px)}:root.phone #tsRoot .ts b{margin-left:auto}   /* the slider on its own line */
-.ts-th button.on{background:var(--gold,var(--accent));color:#111}
+.ts-th button.on{background:var(--card,var(--panel));box-shadow:inset 0 0 0 1.5px var(--gold,var(--accent));color:color-mix(in srgb,var(--gold,var(--accent)) 70%,var(--ink))}
 .ts-tx{width:100%}.ts-tx button{flex:1;padding:7px 4px}.ts-p{font-size:var(--fb,15px);color:var(--mute);margin-top:6px}
 .ts-r{border:1.5px solid var(--line);background:none;color:var(--ink);font-weight:700;border-radius:10px;padding:6px 12px;flex:none;font:inherit;font-size:var(--fb,15px);cursor:pointer}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);

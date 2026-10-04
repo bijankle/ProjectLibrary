@@ -286,10 +286,10 @@ window.Browse = (() => {
 .bw-az{flex:none;width:30px;margin-left:-16px;padding-left:4px;margin-right:2px;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
 .bw-az i{font-style:normal;font-size:10.5px;font-weight:800;line-height:1;color:var(--mute);transition:transform .1s,color .1s}
 .bw-az i.on{color:var(--gold);transform:scale(1.5)}
-.bw-bub{position:absolute;left:18px;width:54px;height:54px;border-radius:50% 50% 50% 10px;background:var(--gold);color:#1a1307;font-size:28px;font-weight:900;display:none;place-items:center;z-index:5;pointer-events:none;box-shadow:0 6px 18px #0008}
+.bw-bub{position:absolute;left:18px;width:54px;height:54px;border-radius:50% 50% 50% 10px;background:var(--card);box-shadow:inset 0 0 0 1.5px var(--gold),0 6px 18px #0008;color:color-mix(in srgb,var(--gold) 70%,var(--ink));font-size:28px;font-weight:900;display:none;place-items:center;z-index:5;pointer-events:none}
 .bw-l{display:flex;flex-direction:column;gap:6px}
 .bw-crs{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}
-.bw-cr{display:flex;align-items:center;gap:5px;max-width:100%;border:1px solid var(--gold);background:var(--gold);color:#1a1307;border-radius:99px;padding:3px 5px 3px 9px;font:inherit;font-size:var(--fb,15px);font-weight:700}
+.bw-cr{display:flex;align-items:center;gap:5px;max-width:100%;border:1px solid var(--gold);background:var(--card);color:color-mix(in srgb,var(--gold) 70%,var(--ink));border-radius:99px;padding:3px 5px 3px 9px;font:inherit;font-size:var(--fb,15px);font-weight:700}
 .bw-cr{border-radius:10px !important;text-align:left}.bw-cr span{white-space:normal;line-height:1.25}.bw-cr i{font-style:normal;font-weight:600;opacity:.75}
 .bw-cr b{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(0,0,0,.18);font-size:var(--fb,15px);line-height:1}
 .bw-opts{display:flex;flex-direction:row;flex-wrap:wrap;gap:4px;align-content:flex-start}
@@ -314,7 +314,7 @@ window.Browse = (() => {
 :root.phone .bw{display:flex;flex-direction:column;gap:0}
 .bp-bar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0 8px;flex:none;align-items:center}.bp-bar::-webkit-scrollbar{display:none}
 .bp-c{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:var(--fb,15px);font-weight:600;white-space:nowrap;cursor:pointer}
-.bp-c.on,.bp-f.set{background:var(--gold);border-color:var(--gold);color:#1a1307;font-weight:700}.bp-c.on b{opacity:.6;margin-left:2px}
+.bp-c.on,.bp-f.set{background:var(--card);border-color:var(--gold);color:color-mix(in srgb,var(--gold) 70%,var(--ink));font-weight:700}.bp-c.on b{opacity:.6;margin-left:2px}
 .bp-f{font-weight:800}.bp-r{color:var(--mute)}.bp-sep{flex:none;width:1px;height:22px;background:var(--line)}
 :root.phone .bw-r.bp-l{flex:1;min-height:0;border-left:0;padding:0}
 .bp-it{display:block}.bp-it span{font-size:var(--fb,15px)}
