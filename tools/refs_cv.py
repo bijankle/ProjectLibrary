@@ -2,6 +2,11 @@
 
 Usage: python3 tools/refs_cv.py [<drawing number> ...] [--preview <folder>]       (after tools/build_pid_refs.py)
 With no drawing given it does the checked sheets, tools/refs_checked.json (add one there once it has been checked).
+To carry on with the sheets not done yet (Oct 2026: 83 of 262 done, the list in tools/refs_checked.json):
+  1. put every P&ID / PFD sheet in tools/refs_checked.json, 2. python3 tools/build_pid_refs.py,
+  3. CVDIR=<a folder kept between runs> python3 tools/refs_cv.py   (four sheets at a time, each kept as it finishes,
+     so a run that stops carries on; about 40 sheets an hour). Every sheet in the list is fitted again from the fresh
+     build, so run it over all of them, or the finished ones lose their fitting.
 For each sheet of the drawing, rendered in grey at 288 dpi:
   1. Bubbles (instrument and valve circles) are found (Hough circles, checked for a drawn ring) and their insides are
      read on their own (Tesseract, letters and digits only, the ring and any divider blanked out), since the OCR of the
@@ -136,7 +141,7 @@ def frame(g, t, gap=1.0):
 def process(num, refs, own, ix, td, preview=None):
     doc = pymupdf.open(os.path.join(ROOT, ix[num]["file"])); stats = {"o": 0, "b": 0, "t": 0, "new": 0, "same": 0}; shots = []
     have = {norm(x) for r in refs for x in r[5].split("|")}
-    rem = {k: v for k, v in own.items() if k not in have and re.search(r"[A-Z]{1,5}\d{5}[A-Z]?$", k)}
+    rem = {k: v for k, v in own.items() if k not in have and re.fullmatch(r"[A-Z]{1,5}\d{5}[A-Z]?", k)}
     for pno, page in enumerate(doc, 1):
         pm = page.get_pixmap(matrix=pymupdf.Matrix(Z, Z), colorspace=pymupdf.csGRAY, alpha=False)
         g = np.frombuffer(pm.samples, dtype=np.uint8).reshape(pm.height, pm.stride)[:, :pm.width].copy()
@@ -144,7 +149,7 @@ def process(num, refs, own, ix, td, preview=None):
         before = [r[:] for r in refs if r[0] == pno]
         cs = circles(g)
         # 1. bubbles the text layer missed (and second drawings of a bubble, e.g. in the field and on the DCS)
-        bub = {k: v for k, v in own.items() if re.search(r"[A-Z]{1,5}\d{5}[A-Z]?$", k)}
+        bub = {k: v for k, v in own.items() if re.fullmatch(r"[A-Z]{1,5}\d{5}[A-Z]?", k)}
         for (x, y, r) in cs:
             if any(rr[0] == pno and abs((rr[1] + rr[3] / 2) * sx - x) < r and abs((rr[2] + rr[4] / 2) * sy - y) < r for rr in refs): continue
             lines = read_bubble(g, x, y, r, td)
@@ -164,7 +169,10 @@ def process(num, refs, own, ix, td, preview=None):
             if not c: continue
             lines = read_bubble(g, *c, td)
             if len(lines) < 2 or not re.fullmatch(r"[A-Z]{1,5}", lines[0]): continue
-            tags = rr[5].split("|"); hit = [t for t in tags if re.match(r"[A-Z]+", norm(t)).group(0) == lines[0]]
+            tags = rr[5].split("|"); L0 = lambda t: (re.match(r"[A-Z]*", norm(t)).group(0))
+            hit = [t for t in tags if L0(t) == lines[0]] or [t for t in tags if lev(L0(t), lines[0], 1) <= 1]
+            if len(hit) > 1: continue
+            if not hit and any(lev(L0(t), lines[0], 2) <= 2 for t in tags): continue   # misread by two: leave the guess
             if len(hit) == 1: rr[5], rr[6] = hit[0], own.get(norm(hit[0]), (hit[0], "ins"))[1]
             elif not hit: rr[6] = "x"; stats["dropped"] = stats.get("dropped", 0) + 1   # kept in place (other drawings' ways back count positions); the viewer skips "x"
         # 3. fit every ref on this sheet
@@ -203,6 +211,12 @@ def draw(g, sx, sy, refs, old=False):
         (d.ellipse if how == "o" and not old else d.rectangle)([x0, y0, x1, y1], outline=col + (210,), width=4, fill=col + (26,))
     return im
 
+def _one(a):
+    num, refs, own = a; ix = json.load(open(os.path.join(ROOT, "PIDs/index.json")))["pids"]
+    try: st, _, rem = process(num, refs, own, ix, tempfile.mkdtemp())
+    except Exception as e: return num, refs, {"error": str(e)[:80]}, {}
+    return num, refs, st, rem
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     prev = sys.argv[sys.argv.index("--preview") + 1] if "--preview" in sys.argv else None
@@ -210,6 +224,18 @@ def main():
     ix = json.load(open(os.path.join(ROOT, "PIDs/index.json")))["pids"]
     R = json.load(open(os.path.join(ROOT, "pid-refs.json"))); OWN = own_items(); td = tempfile.mkdtemp()
     if not args: args = json.load(open(os.path.join(ROOT, "tools/refs_checked.json")))   # the checked sheets
+    if not prev and len(args) > 1:   # several sheets: four at a time
+        from multiprocessing import Pool
+        # each sheet is kept as it finishes (in $CVDIR), so a run that stops can carry on where it left off
+        cd = os.environ.get("CVDIR") or os.path.join(tempfile.gettempdir(), "refs_cv"); os.makedirs(cd, exist_ok=True)
+        f = lambda n: os.path.join(cd, n + ".json")
+        todo = [n for n in args if n in ix and not os.path.exists(f(n))]
+        with Pool(int(os.environ.get("JOBS", "4"))) as pool:
+            for num, refs, st, rem in pool.imap_unordered(_one, [(n, R.get(n, []), OWN.get(n, {})) for n in todo]):
+                json.dump(refs, open(f(num), "w")); print(num, st, "not found:", len(rem), flush=True)
+        for n in args:
+            if os.path.exists(f(n)): R[n] = json.load(open(f(n)))
+        json.dump(R, open(os.path.join(ROOT, "pid-refs.json"), "w"), separators=(",", ":")); return
     for num in (list(R) if args == ["all"] else args):
         n0 = len(R.get(num, []))
         st, shots, rem = process(num, R.setdefault(num, []), OWN.get(num, {}), ix, td, prev)
