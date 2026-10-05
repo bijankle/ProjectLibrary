@@ -348,10 +348,25 @@ button:disabled{cursor:default}
 .tbw.ph{border-bottom:1px solid var(--line)}
 .ph-top{height:52px;display:flex;align-items:center;gap:8px;padding:0 max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))}
 .ph-top .lg-m{flex:none;display:flex}.ph-top .lg-m svg{width:30px;height:30px}
-:root.phone .pj-m{left:auto;right:-60px}:root.phone .pj-b{width:112px;height:36px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b b{font-size:var(--fb,15px);font-weight:700}   /* the same size as the rest of the text (it follows the text size setting) */
+:root.phone .pj-m{left:auto;right:-60px}:root.phone .pj{flex:0 1 112px;min-width:72px}:root.phone .pj-b{width:100%;max-width:112px;min-width:0;height:36px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b b{font-size:var(--fb,15px);font-weight:700}   /* the same size as the rest of the text (it follows the text size setting) */
 .ph-top .ph-n{display:none}:root.in-settings .ph-top .ph-n{display:block}:root.in-settings .ph-top .pj{display:none}   /* (the page name only on Settings) */
 .ph-n{flex:0 1 auto;min-width:0;font-size:var(--fh,22px);font-weight:800;white-space:nowrap;overflow:hidden;line-height:1.1}   /* the page's name, like an item's tag (fitted to the row) */
 .ph-slot{flex:1;min-width:0;display:flex;align-items:center;gap:6px}.ph-slot>*{min-width:0}.ph-slot>.mo-off{display:none!important}
+/* the shared bar's icons keep their size whatever the page's own styles say (the PFD page sizes every svg to fill) */
+.tb-t svg{width:24px!important;height:24px!important;flex:none;cursor:inherit!important;display:block}.mo-i i svg{width:21px!important;height:21px!important;cursor:inherit!important}.mo-i em svg{width:18px!important;height:18px!important;cursor:inherit!important}.nv-b svg,.pj svg{cursor:inherit!important}
+/* phone top row: the right end is one round button on every page: the camera on Assets, a search elsewhere, which
+   opens across the whole row when tapped (and stays open while it holds text) */
+:root.phone .ph-top{position:relative}:root.phone .ph-slot{flex:none;justify-content:flex-end;margin-left:auto;padding-left:6px}
+.bn-t,.bn-t span{line-height:1.2}   /* the same on every page (some set a line height on the body, some don't) */
+:root.phone .ph-slot>input:not(#_){flex:none;width:34px!important;min-width:34px!important;max-width:none!important;height:34px!important;padding:0!important;border-radius:50%!important;border:1.5px solid color-mix(in srgb,var(--ink) 22%,var(--line))!important;background:var(--card,var(--panel)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7480' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E") center/17px no-repeat!important;color:transparent!important;caret-color:transparent;cursor:pointer;box-shadow:none!important;margin:0!important;font-size:16px!important}
+:root.phone .ph-slot>input:not(#_)::placeholder{color:transparent}
+:root.phone .ph-slot>input:not(#_)::-webkit-search-cancel-button{display:none}
+:root.phone .ph-slot>input:not(#_):focus,:root.phone .ph-slot>input:not(#_):not(:placeholder-shown){position:absolute;left:10px;right:10px;top:50%;transform:translateY(-50%);width:auto!important;height:40px!important;border-radius:20px!important;padding:0 14px 0 40px!important;background-position:13px center!important;color:var(--ink)!important;caret-color:auto;z-index:6;box-shadow:0 2px 12px rgba(0,0,0,.18)!important;cursor:text}
+:root.phone .ph-slot>input:not(#_):focus::placeholder{color:var(--mute)}
+:root.phone .ph-slot>input:not(#_):focus::-webkit-search-cancel-button{display:initial}
+:root.phone .ph-slot .lk-cam{flex:none;width:34px;height:34px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--ink) 22%,var(--line));background:var(--card,var(--panel));color:var(--ink);display:grid;place-items:center;padding:0;margin:0}
+:root.phone .ph-slot .lk-cam svg{width:18px!important;height:18px!important}
+:root.in-settings .ph-slot>:not(.mo-q){display:none!important}   /* Settings: just its title */
 .ph-slot input[type=search],.ph-slot .mo-q{flex:1;width:100%;height:36px;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:18px;padding:0 12px;font:inherit;font-size:16px}
 .bn{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:var(--panel,var(--card));border-top:1px solid var(--line);
   padding:4px max(2px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(2px,env(safe-area-inset-left));height:var(--bn);box-sizing:border-box}
