@@ -65,7 +65,30 @@ def ribbon_text(words, box):
         else: rows.append((x[1], [x[4]]))
     return [set(re.findall(r"[A-Z0-9]{2,}", " ".join(r).upper())) for _, r in rows]
 
-out, stats, LAB = {}, {"d": 0}, {}
+# the items each drawing should carry, by their lists' P&ID columns: on a scanned sheet the OCR often gets a character
+# or two wrong (72 read as 12 or 712), so a word that is one or two letters off one of these still counts
+OWN = {}
+for t in ORDER:
+    f = db["types"].get(t, {}).get("f", []); pi = [i for i, n in enumerate(f) if n in ("P&ID", "P&IDs")]
+    for r in db["data"].get(t, []):
+        for i in pi:
+            if i < len(r) and r[i]:
+                for m in re.findall(r"2000-F\d\d-P[IF]D-PR-\d{5}", str(r[i])): OWN.setdefault(m, {}).setdefault(norm(r[0]), (r[0], t))
+# sheets checked one at a time (tools/refs_checked.json): only these get the near matches and the tighter-box rule
+# below, and the box fitting of tools/refs_cv.py; every other sheet stays as it was
+CHECKED = set(json.load(open(os.path.join(ROOT, "tools/refs_checked.json"))))
+def lev(a, b, cap):
+    if abs(len(a) - len(b)) > cap: return cap + 1
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i] + [0] * len(b); lo = i
+        for j, cb in enumerate(b, 1):
+            cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)); lo = min(lo, cur[j])
+        if lo > cap: return cap + 1
+        prev = cur
+    return prev[-1]
+
+out, stats, LAB = {}, {"d": 0, "near": 0}, {}
 for num, d in sorted(ix.items()):
     if d.get("layout"): continue   # the layout drawings open as plain PDFs
     doc = pymupdf.open(os.path.join(ROOT, d["file"])); own = norm(num); refs = []
@@ -76,9 +99,11 @@ for num, d in sorted(ix.items()):
         def add(box, hit):
             if not hit or norm(hit[0]) == own: return
             x0, y0, x1, y1 = box
-            for f in found:   # the same place from the other text layer (or a joined word): keep one
+            for k, f in enumerate(found):   # the same place from the other text layer (or a joined word): keep one, the tighter
                 b = f[0]
-                if f[1][0] == hit[0] and not (x1 < b[0] or x0 > b[2] or y1 < b[1] or y0 > b[3]): return
+                if f[1][0] == hit[0] and not (x1 < b[0] or x0 > b[2] or y1 < b[1] or y0 > b[3]):
+                    if num in CHECKED and (x1 - x0) * (y1 - y0) < (b[2] - b[0]) * (b[3] - b[1]): found[k] = ((x0, y0, x1, y1), f[1])
+                    return
             found.append(((x0, y0, x1, y1), hit))
         for i, w in enumerate(words):
             add(w[:4], match(w[4]))
@@ -102,6 +127,28 @@ for num, d in sorted(ix.items()):
             box = (n[0] - nh * .3, n[1] - nh * 1.3, n[2] + nh * .3, n[3])
             if len(got) == 1: add(box, KEYS[norm(got[0][1])])
             elif got: add(box, ("|".join(sorted(c[1] for c in got)), "q"))
+        # near matches to this drawing's own list items not found yet: single words, two words on a line, and two words
+        # stacked (a bubble's letters over its number, SP over MC-001)
+        own = OWN.get(num, {}) if num in CHECKED else {}
+        have = set()
+        for f in found: have |= {norm(x) for x in f[1][0].split("|")}
+        rem = {k: v for k, v in own.items() if k not in have}
+        if rem:
+            cands = [(w[:4], w[4]) for w in words]
+            for i, w in enumerate(words):
+                for v in words[i + 1:i + 40]:
+                    h = w[3] - w[1]
+                    if abs(v[1] - w[1]) < 3 and 0 <= v[0] - w[2] < 12: cands.append(((w[0], min(w[1], v[1]), v[2], max(w[3], v[3])), w[4] + v[4]))
+                    elif re.fullmatch(r"[A-Z]{1,4}", w[4]) and len(v[4]) <= 8 and 0 <= v[1] - w[3] < h * .8 and min(w[2], v[2]) - max(w[0], v[0]) > .3 * min(w[2] - w[0], v[2] - v[0]): cands.append(((min(w[0], v[0]), w[1], max(w[2], v[2]), v[3]), w[4] + v[4]))
+            for box, txt in cands:
+                k = norm(clean(txt))
+                if k in own: n0 = len(found); add(box, own[k]); rem.pop(k, None); stats["near"] += len(found) - n0; continue   # exact once joined (SP over MC-001), every place it's drawn
+                if len(k) < 5 or k in KEYS or k in DWG: continue
+                cap = 1 if len(k) <= 9 else 2
+                sc = sorted((lev(k, rk, cap), rk) for rk in rem)
+                if not sc or sc[0][0] > cap or (len(sc) > 1 and sc[1][0] == sc[0][0]): continue
+                if sc[0][0] and not re.sub(r"\D", "", sc[0][1])[-3:] in re.sub(r"\D", "", k): continue   # the tag's last digits must be there
+                rk = sc[0][1]; add(box, rem.pop(rk)); stats["near"] += 1
         for (x0, y0, x1, y1), (tgt, kind) in found:
             if kind == "d": LAB[(num, len(refs))] = ribbon_text(words, (x0, y0, x1, y1))
             refs.append([pno, round(x0 / W * 1e4), round(y0 / H * 1e4), round((x1 - x0) / W * 1e4), round((y1 - y0) / H * 1e4), tgt, kind])

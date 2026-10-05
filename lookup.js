@@ -567,7 +567,9 @@ body.sp-on{overflow:hidden}
 /* tappable tags: a very light grey wash (links to other drawings a little darker), darker grey when hovered or tapped */
 .sp-ref{position:absolute;pointer-events:auto;cursor:pointer;background:rgba(90,100,115,.06);border-radius:2px}
 .sp-ref.d{background:rgba(90,100,115,.11)}
-.sp-ref.hv,.sp-ref.hit{background:rgba(90,100,115,.22)}.sp-refs .sp-ref{pointer-events:none}
+.sp-ref.hv,.sp-ref.hit{background:rgba(90,100,115,.22)}
+.sp-ref.fit{box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(224,32,27,.8);background:rgba(224,32,27,.1)}.sp-ref.fit.o{border-radius:50%}
+.sp-ref.fit.off{border-color:rgba(90,100,115,.35);background:rgba(90,100,115,.1)}.sp-ref.fit.hv{background:rgba(224,32,27,.22)}.sp-ref.fit.off.hv{background:rgba(90,100,115,.22)}   /* a checked sheet: red labels, grey when a find leaves them out */.sp-refs .sp-ref{pointer-events:none}
 /* the page's text, invisible but selectable (left drag), on top of everything; a tag under it still opens on a click */
 .sp-text{position:absolute;inset:0;overflow:hidden;line-height:1;text-size-adjust:none;-webkit-text-size-adjust:none;z-index:2;user-select:text;-webkit-user-select:text}
 .sp-text span,.sp-text br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0 0}

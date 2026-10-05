@@ -32,14 +32,16 @@ window.PdfView = (() => {
     V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), textEl: el.querySelector(".sp-text"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
-      fprev: () => showHit(V.fi - 1), fnext: () => showHit(V.fi + 1), rot, close,
+      fprev: () => V.fit ? fitStep(-1) : showHit(V.fi - 1), fnext: () => V.fit ? fitStep(1) : showHit(V.fi + 1), rot, close,
       find: () => { const on = !el.classList.contains("find-on"); el.classList.toggle("find-on", on); const q = el.querySelector(".sp-q"); if (on){ q.focus(); q.select(); } else q.blur(); }, back: () => history.back(), fwd: () => history.forward() })[b.dataset.a]());
     // find: Ctrl+F / ⌘F while a drawing is open searches its text (the page is a picture, so the browser's own find can't)
     const q = el.querySelector(".sp-q"); let qt;
-    q.addEventListener("input", () => { clearTimeout(qt); qt = setTimeout(() => findText(q.value), 350); });
+    q.addEventListener("input", () => { clearTimeout(qt); qt = setTimeout(() => V.fit ? fitFilter(q.value) : findText(q.value), V.fit ? 150 : 350); });
     q.addEventListener("keydown", e => { e.stopPropagation();
-      if (e.key === "Enter"){ e.preventDefault(); clearTimeout(qt); if (V.hits.length && norm(q.value) === norm(cur.find || "")) showHit(V.fi + (e.shiftKey ? -1 : 1)); else findText(q.value); }
-      if (e.key === "Escape"){ q.value = ""; q.blur(); } });
+      if (e.key === "Enter"){ e.preventDefault(); clearTimeout(qt);
+        if (V.fit){ if (String(q.value).trim() !== V.fq) fitFilter(q.value); fitStep(e.shiftKey ? -1 : 1); return; }
+        if (V.hits.length && norm(q.value) === norm(cur.find || "")) showHit(V.fi + (e.shiftKey ? -1 : 1)); else findText(q.value); }
+      if (e.key === "Escape"){ q.value = ""; q.blur(); if (V.fit) fitFilter(""); } });
     addEventListener("keydown", e => { if (el.hidden) return;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f"){ e.preventDefault(); q.focus(); q.select(); return; }
       if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
@@ -140,7 +142,13 @@ window.PdfView = (() => {
     // refs: the references printed on the sheet ([page, left, top, width, height, target, kind] in 1/10000 of the sheet,
     // a promise), each a tappable box; onRef(target, kind) acts on a tap.
     V.refs = []; V.refsEl.innerHTML = ""; pickClose(); V.tap = o._pop && o._tap || null; V.tapEl.innerHTML = "";
-    const me = cur; if (cur.refs) Promise.resolve(cur.refs).then(a => { if (cur !== me) return; V.refs = a || []; drawRefs(); });
+    V.fit = false; V.fq = ""; V.fset = new Set(); V.fmatch = []; V.fstep = -2;
+    const me = cur; if (cur.refs) Promise.resolve(cur.refs).then(a => { if (cur !== me) return; V.refs = a || [];
+      V.fit = V.refs.some(r => typeof r[7] === "string");
+      // opened for an item (cur.find): on a checked sheet that item's labels stay red with the arrow, the rest grey
+      if (V.fit && cur.find){ V.marks.innerHTML = ""; V.hits = []; fitFilter(cur.find, true); const m = V.fmatch.find(r => r[0] === V.page) || V.fmatch[0];
+        if (m && !o._pop && cur.back == null){ const [l, t, w, h] = boxOf(m); V.tap = { page: m[0], l: l / 1e4, t: t / 1e4, w: w / 1e4, h: h / 1e4 }; drawTap(); } }
+      else drawRefs(); });
     V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true;
     V.el.querySelector(".sp-q").value = cur.find || "";
     V.msg.textContent = "Loading…"; V.msg.hidden = false;
@@ -207,12 +215,44 @@ window.PdfView = (() => {
   const state = () => V && V.pg ? { page: V.page, zoom: V.zoom, sl: V.body.scrollLeft, st: V.body.scrollTop } : null;
   function drawRefs(){
     if (!V.pg) return;
-    V.pageRefs = V.refs.filter(r => r[0] === V.page);
+    V.pageRefs = V.refs.filter(r => r[0] === V.page && r[6] !== "x");
+    V.boxes = V.pageRefs.map(boxOf);
+    // a checked sheet (tools/refs_cv.py): every label red, the ones a find leaves out grey; bubbles round
+    V.refsEl.innerHTML = V.pageRefs.map((r, i) => { const [l, t, w, h] = V.boxes[i];
+      const cls = V.fit ? " fit" + (shape(r) === "o" ? " o" : "") + (V.fq && !V.fset.has(r) ? " off" : "") : r[6] === "d" ? " d" : "";
+      return `<a class="sp-ref${cls}" data-i="${i}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%" title="${esc(r[5].replace(/\|/g, ", "))}"></a>`; }).join("");
+  }
+  // how a ref was fitted to the print on a checked sheet: "o" bubble, "b" drawn box (both exact), "t" text (a margin added)
+  const shape = r => typeof r[7] === "string" ? r[7] : V.fit && r[6] === "d" ? "t" : null;
+  // a ref's box on the sheet as shown (turned with it), in 1/10000 of the sheet
+  function boxOf(r){
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), A = vp.width / vp.height;
-    V.boxes = [];
-    V.refsEl.innerHTML = V.pageRefs.map((r, i) => { let [, l, t, w, h] = r; if (V.rot) [l, t, w, h] = [1e4 - t - h, l, h, w];   // sheet turned a quarter
-      [l, t, w, h] = PdfView.grow(l, t, w, h, A); V.boxes.push([l, t, w, h]);
-      return `<a class="sp-ref${r[6] === "d" ? " d" : ""}" data-i="${i}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%" title="${esc(r[5].replace(/\|/g, ", "))}"></a>`; }).join("");
+    let [, l, t, w, h] = r; if (V.rot) [l, t, w, h] = [1e4 - t - h, l, h, w];   // sheet turned a quarter
+    return shape(r) === "o" || shape(r) === "b" ? [l, t, w, h] : PdfView.grow(l, t, w, h, A);
+  }
+  // ---------- find on a checked sheet ----------
+  // Typing narrows the red to the labels whose tag or name holds what is typed (the rest go grey). The first Enter
+  // shows the whole sheet with all of them; each Enter after jumps straight (no slide) to the next one at four times the
+  // whole-sheet zoom with the arrow above it; Shift+Enter goes back. The find bar says how many, then which one.
+  function fitFilter(q, exact){
+    V.fq = String(q || "").trim(); V.fstep = -2; const w = V.fq.toLowerCase(), wn = norm(V.fq);
+    // the tag holds it anywhere; the name only from the start of a word, and for 3 letters or more ("pump", not the pp of "supply")
+    const re = w.length >= 3 ? new RegExp("(^|[^a-z0-9])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) : null;
+    const hit = r => r[6] !== "x" && r[5].split("|").some(t => exact ? norm(t) === wn : (wn && norm(t).includes(wn)) || (re && re.test(((cur.nameOf && cur.nameOf(t)) || "").toLowerCase())));
+    V.fmatch = V.fq ? V.refs.filter(hit).sort((a, b) => a[0] - b[0] || a[2] - b[2] || a[1] - b[1]) : [];
+    V.fset = new Set(V.fmatch); drawRefs();
+    const f = V.el.querySelector(".sp-finds"); f.hidden = !V.fq;
+    V.el.querySelector(".sp-fn").textContent = !V.fq ? "" : V.fmatch.length ? `${V.fmatch.length} result${V.fmatch.length === 1 ? "" : "s"}` : "No matches";
+  }
+  async function fitStep(dir){
+    if (!V.fmatch || !V.fmatch.length) return;
+    if (V.fstep === -2){ V.fstep = -1; quiet(); if (V.page !== V.fmatch[0][0]) await go(V.fmatch[0][0]); V.zoom = 1; layout(false); V.body.scrollTo(0, 0); sharp(); V.tap = null; drawTap(); return; }
+    const n = V.fmatch.length; V.fstep = V.fstep < 0 ? (dir > 0 ? 0 : n - 1) : (V.fstep + dir + n) % n; const r = V.fmatch[V.fstep];
+    if (V.page !== r[0]) await go(r[0]);
+    const [l, t, w, h] = boxOf(r); quiet(); V.zoom = 4; layout(false);
+    V.body.scrollLeft = (l + w / 2) / 1e4 * V.sheet.offsetWidth - V.body.clientWidth / 2; V.body.scrollTop = (t + h / 2) / 1e4 * V.sheet.offsetHeight - V.body.clientHeight / 2; sharp();
+    V.tap = { page: r[0], l: l / 1e4, t: t / 1e4, w: w / 1e4, h: h / 1e4 }; drawTap(); settleSoon();
+    V.el.querySelector(".sp-fn").textContent = `${V.fstep + 1} of ${n}`;
   }
   // a bubble that stands for several tags (YI12000A and B): a small list to pick from
   function pickClose(){ const p = V && V.el.querySelector(".sp-pick"); if (p) p.remove(); }
@@ -267,6 +307,7 @@ window.PdfView = (() => {
     const w = Math.round(vp1.width * s) + "px", h = Math.round(vp1.height * s) + "px";
     // the sharp layer no longer matches a new size: hide it (the background layer stretches) until its redraw is ready
     V.textEl.style.setProperty("--scale-factor", s);
+    V.sheet.style.setProperty("--rbw", Math.max(1, Math.min(2.5, vp1.width * s * .0006)).toFixed(2) + "px");   // the red outline thins as the sheet shrinks
     if (V.sheet.style.width !== w || V.sheet.style.height !== h || bg){ V.hi.style.visibility = "hidden"; V.sheet.style.width = w; V.sheet.style.height = h; }
     if (bg){ drawBg(); drawRefs(); } sharp();
   }
@@ -314,7 +355,7 @@ window.PdfView = (() => {
     toast(`“${t}” isn't in the searchable text of this drawing.`);
   }
   async function mark(tag, quiet){
-    const want = norm(tag); if (want.length < 3) return;
+    const want = norm(tag); if (want.length < 3 || V.fit) return;
     const tc = await V.pg.getTextContent(), vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), W = vp.width, H = vp.height;
     const items = tc.items.filter(t => t.str && t.str.trim()).map(t => { const [a, b, c, d, e, f] = t.transform, h = Math.hypot(c, d) || Math.hypot(a, b);
       const x = e, y = f, w = t.width || h * t.str.length * .5, rot = Math.abs(b) > Math.abs(a);
