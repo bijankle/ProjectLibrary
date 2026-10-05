@@ -38,10 +38,13 @@ window.PdfView = (() => {
     const q = el.querySelector(".sp-q"); let qt;
     // phone: while typing (keyboard up) only the find box and its count show, so the drawing keeps the rest of the screen
     q.addEventListener("focus", () => el.classList.add("typing")); q.addEventListener("blur", () => el.classList.remove("typing"));
-    q.addEventListener("input", () => { clearTimeout(qt); qt = setTimeout(() => V.fit ? fitFilter(q.value) : findText(q.value), V.fit ? 150 : 350); });
+    q.addEventListener("input", () => { clearTimeout(qt); qt = setTimeout(() => { if (!V.fit) return findText(q.value); fitFilter(q.value); if (!V.fmatch.length && q.value.trim()) findText(q.value); }, V.fit ? 150 : 350); });
     q.addEventListener("keydown", e => { e.stopPropagation();
       if (e.key === "Enter"){ e.preventDefault(); clearTimeout(qt);
-        if (V.fit){ if (String(q.value).trim() !== V.fq) fitFilter(q.value); fitStep(e.shiftKey ? -1 : 1); return; }
+        if (V.fit){ if (String(q.value).trim() !== V.fq) fitFilter(q.value);
+          if (V.fmatch.length || !String(q.value).trim()){ fitStep(e.shiftKey ? -1 : 1); return; } }
+        // (a checked sheet with no label matching: the printed words, as on any other sheet)
+        if (V.fit && V.fmatch.length) return;
         if (V.hits.length && norm(q.value) === norm(cur.find || "")) showHit(V.fi + (e.shiftKey ? -1 : 1), e.shiftKey ? -1 : 1); else findText(q.value, true); }
       if (e.key === "Escape"){ q.value = ""; q.blur(); if (V.fit) fitFilter(""); } });
     addEventListener("keydown", e => { if (el.hidden) return;
@@ -237,12 +240,10 @@ window.PdfView = (() => {
   // whole-sheet zoom with the arrow above it; Shift+Enter goes back. The find bar says how many, then which one.
   function fitFilter(q, exact){
     V.fq = String(q || "").trim(); V.fstep = -2; const w = V.fq.toLowerCase(), wn = norm(V.fq);
-    // the tag holds it anywhere; the name only from the start of a word, and for 3 letters or more ("pump", not the pp of "supply")
-    // a search with a digit in it is a tag: tags only (a line named "from F72-PP-668" is not F72-PP-668)
-    const re = w.length >= 3 && !/\d/.test(w) ? new RegExp("(^|[^a-z0-9])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) : null;
-    const hit = r => r[6] !== "x" && r[5].split("|").some(t => exact ? norm(t) === wn : (wn && norm(t).includes(wn)) || (re && re.test(((cur.nameOf && cur.nameOf(t)) || "").toLowerCase())));
+    // literal: what is printed on the sheet, the tag's own text (no names or other details from the lists)
+    const hit = r => r[6] !== "x" && r[5].split("|").some(t => exact ? norm(t) === wn : wn && norm(t).includes(wn));
     V.fmatch = V.fq ? V.refs.filter(hit).sort((a, b) => a[0] - b[0] || a[2] - b[2] || a[1] - b[1]) : [];
-    V.fset = new Set(V.fmatch); drawRefs();
+    V.fset = new Set(V.fmatch); drawRefs(); V.marks.innerHTML = ""; V.hits = []; V.tap = null; drawTap();
     const f = V.el.querySelector(".sp-finds"); f.hidden = !V.fq;
     V.el.querySelector(".sp-fn").textContent = !V.fq ? "" : V.fmatch.length ? `${V.fmatch.length} result${V.fmatch.length === 1 ? "" : "s"}` : "No matches";
   }
@@ -358,7 +359,7 @@ window.PdfView = (() => {
     toast(`“${t}” isn't in the searchable text of this drawing.`);
   }
   async function mark(tag, quiet){
-    const want = norm(tag); if (!want.length || V.fit) return;
+    const want = norm(tag); if (!want.length || (V.fit && V.fmatch && V.fmatch.length) || (V.fit && !quiet)) return;
     const tc = await V.pg.getTextContent(), vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), W = vp.width, H = vp.height;
     const items = tc.items.filter(t => t.str && t.str.trim()).map(t => { const [a, b, c, d, e, f] = t.transform, h = Math.hypot(c, d) || Math.hypot(a, b);
       const x = e, y = f, w = t.width || h * t.str.length * .5, rot = Math.abs(b) > Math.abs(a);

@@ -19,7 +19,6 @@ window.Pid = (() => {
     const d = info(n); if (!d) return false;
     const r = o.restore;
     PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc && !d.layout ? "width" : "page", find: find || null, download: d.number + ".pdf", restore: r || null,
-      nameOf: t => { const it = window.Lookup && Lookup.find && Lookup.find(Lookup.norm(t)); return it ? String(it.name || "").replace(/\s(from|to|on)\s.*$/, "") : ""; },   // its own name, not its line's ends
       number: d.number, title: d.number + (d.rev ? " Rev " + d.rev : "") + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []),
       back: o.back,
