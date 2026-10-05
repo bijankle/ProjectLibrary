@@ -292,6 +292,28 @@ body.searching #homeMain{display:none}
 .qd-opts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 22px;border-top:1px solid var(--line);padding-top:10px}
 .qd-opts>div{display:flex;flex-direction:column;gap:6px}.qd-opts h4{margin:0!important}
 .qd-acts{justify-content:flex-end}
+
+/* continuous quiz: topic pills (three rows, scroll sideways), a hairline of how much of them is seen, the answer blurred
+   under the question until the card is tapped, then Back / Shuffle / Next */
+.qpills{display:none}
+:root.phone .qpills{display:flex;flex-direction:column;gap:6px;overflow-x:auto;scrollbar-width:none;margin:-4px -14px 4px;padding:2px 14px 4px;justify-content:start;flex:none}
+.qpills::-webkit-scrollbar{display:none}
+.qprow{display:flex;gap:6px;width:max-content}
+.qp{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:5px 12px;font:inherit;font-size:var(--fl,13px);font-weight:700;white-space:nowrap;cursor:pointer}
+.qp.on{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);color:color-mix(in srgb,var(--gold) 70%,var(--ink))}
+.qprog{gap:10px;flex:none}.qprog .prog{height:3px}.qprog .count{min-width:0;font-size:var(--fl,13px);white-space:nowrap}
+.card.shown .flip{transform:none}.back{display:none}
+.front .qtext{margin:22px 0 14px}.front .scroll{flex:1}
+:root.phone .card:not(.shown) .scroll{filter:blur(7px);pointer-events:none;user-select:none;-webkit-user-select:none}
+.card:not(.shown) .scroll .qa{display:none}
+:root.phone #qBtns{display:flex!important;gap:10px;flex:none}:root.phone #qdBar{display:none!important}:root:not(.phone) #qBtns{display:none!important}
+.card .hint{display:none}:root:not(.phone) .card:not(.shown) .hint{display:block;margin:6px 0 10px}
+:root:not(.phone) .card:not(.shown) .scroll{visibility:hidden}
+#qdRev.on{color:color-mix(in srgb,var(--gold) 70%,var(--ink));border-color:var(--gold);background:var(--card)}
+#qBtns button{flex:1!important;border:1px solid var(--line)!important;background:var(--card)!important;color:var(--ink)!important;border-radius:14px;padding:12px 8px}
+#qBtns button:disabled{opacity:.4}
+#qBtns #qShuf.on{border-color:var(--gold)!important;box-shadow:inset 0 0 0 1px var(--gold);color:color-mix(in srgb,var(--gold) 70%,var(--ink))!important}
+.q-none{padding:40px 10px;text-align:center;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -340,19 +362,16 @@ body.searching #homeMain{display:none}
 <section id="deck">
   <aside class="qd-side" id="qdSide" aria-label="Deck settings"></aside>
   <div class="qd-main">
-  <div class="topbar">
-    <button class="x" id="quitBtn" aria-label="Finish">✕</button>
-    <div class="prog"><i id="progBar"></i></div>
-    <div class="count" id="count"></div>
-    <button class="x" id="deckSet" aria-label="Quiz settings" title="Deck, length, topics and progress">Filters</button>
-  </div>
+  <div class="qpills" id="qPills" aria-label="Topics"></div>
+  <div class="topbar qprog"><button class="x" id="quitBtn" hidden></button><button class="x" id="deckSet" hidden></button>
+    <div class="prog"><i id="progBar"></i></div><div class="count" id="count"></div></div>
   <div class="stage" id="stage"></div>
   <div class="legend" id="legend"><span class="l">→ swipe right: back</span><span class="r">swipe left or tap: next ←</span></div>
-  <div id="qBtns"><button type="button" id="qLater">↻ Later</button><button type="button" id="qMain">Show answer</button></div>
+  <div id="qBtns"><button type="button" id="qBack">‹ Back</button><button type="button" id="qShuf" aria-pressed="true">⤨ Shuffle</button><button type="button" id="qMain">Next ›</button><button type="button" id="qLater" hidden></button></div>
   <div id="qdBar"><button type="button" class="qd-b" id="qdPrev" title="Previous card (←)" aria-label="Previous card">‹</button><span class="qd-sp"></span>
     <button type="button" class="qd-b qd-rv" id="qdRev">↻ Revisit <kbd>R</kbd></button><button type="button" class="qd-b qd-ok" id="qdKnew">✓ Knew it, next <kbd>→</kbd></button></div>
   </div>
-  <aside class="qd-list" id="qdList" aria-label="This deck"></aside>
+  <aside class="qd-list" id="qdList" aria-label="History"></aside>
 </section>
 
 <!-- END -->
@@ -537,11 +556,34 @@ body.searching #homeMain{display:none}
     } else pool = shuffle(pool);
     return pool.slice(0, len);
   }
-  function start(list){
-    if (!list.length){ alert("Pick at least one topic."); return; }
-    run = { list, i: 0, max: 0, marks: {}, done: {}, got: 0, again: [] };
-    show("deck"); renderCard();
+  // ---------- continuous quiz ----------
+  // No decks: questions keep coming from the topics switched on, the ones seen least first (new ones before seen ones);
+  // Shuffle mixes them within that order, off takes them in the cards' order. Each question shown counts as seen (kept
+  // on this device, kcgm_cards). The topics and shuffle are remembered.
+  let shuf = store.get("kcgm_shuf", true);
+  const seenN = c => (hist[c.q] && hist[c.q].s) || 0;
+  function nextCard(){
+    const pool = CARDS.filter(c => sel.has(c.t)); if (!pool.length) return null;
+    const recent = new Set(run ? run.list.slice(-Math.min(pool.length - 1, 20)).map(c => c.q) : []);
+    const cand = pool.filter(c => !recent.has(c.q)), use = cand.length ? cand : pool, low = Math.min(...use.map(seenN));
+    const g = use.filter(c => seenN(c) === low); return shuf ? g[Math.floor(Math.random() * g.length)] : g[0];
   }
+  function start(){
+    run = { list: [], i: 0, max: 0, marks: {}, done: {}, got: 0, again: [] }; card = null;
+    const c = nextCard(); show("deck"); if (!c){ drawPills(); $("stage").innerHTML = `<div class="q-none">Switch on a topic to get questions.</div>`; return; }
+    run.list.push(c); renderCard();
+  }
+  // topic pills over the card (phone): three rows, scroll sideways for the rest
+  function drawPills(){
+    const P = $("qPills"); if (!P) return; const sc = P.scrollLeft;
+    // Three rows of pills sized to their text, each topic added to the shortest row so the rows end roughly level
+    const rows = [[], [], []], len = [0, 0, 0];
+    TGROUPS.flatMap(([g]) => Object.keys(TOPICS).filter(k => TOPICS[k].g === g)).forEach(k => { const r = len.indexOf(Math.min(...len)); rows[r].push(k); len[r] += TOPICS[k].name.length + 4; });
+    P.innerHTML = rows.map(r => `<div class="qprow">${r.map(k => `<button type="button" class="qp${sel.has(k) ? " on" : ""}" data-t="${k}">${TOPICS[k].name}</button>`).join("")}</div>`).join("");
+    P.scrollLeft = sc;
+    P.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { const k = b.dataset.t; sel.has(k) ? sel.delete(k) : sel.add(k); store.set("kcgm_topics", [...sel]); rebuild(); });
+  }
+  function seenPct(){ const pool = CARDS.filter(c => sel.has(c.t)); if (!pool.length) return 0; const v = 100 * pool.filter(c => seenN(c) > 0).length / pool.length; return v > 0 && v < 1 ? "<1" : Math.round(v); }
   $("startBtn").onclick = () => start(pick());
 
   // ---------- DECK ----------
@@ -550,8 +592,7 @@ body.searching #homeMain{display:none}
   let card = null, shown = false;
   function renderCard(dir = 1){
     const c = run.list[run.i], past = run.i < run.max;
-    $("count").textContent = (run.i + 1) + " / " + run.list.length;
-    $("progBar").style.width = (100 * run.max / run.list.length) + "%";
+    const pc = seenPct(); $("count").textContent = pc + "% of these topics seen"; $("progBar").style.width = pc + "%";
     shown = past;
     const el = document.createElement("div");
     el.className = "card" + (past ? " shown past" : "");   // looking back: the answer only
@@ -560,23 +601,15 @@ body.searching #homeMain{display:none}
       <div class="flip">
         <div class="side front">
           <div class="chip"></div>
-          <div class="qwrap"><div class="qtext"></div></div>
-          <div class="hint">${Tabs.phone ? "Tap or swipe left to reveal" : "Show answer <kbd>Space</kbd>"}</div>
-        </div>
-        <div class="side back">
-          <div class="chip"></div>
-          <div class="qmini"></div>
-          <div class="scroll"><div class="atext"></div><div class="etext"></div>
-            <button type="button" class="again-t" aria-pressed="false">↻ Revisit this one</button><div class="qa"></div></div>
+          <div class="qtext"></div>
+          <button type="button" class="hint">Show answer <kbd>Space</kbd></button>
+          <div class="scroll"><div class="atext"></div><div class="etext"></div><div class="qa"></div></div>
         </div>
       </div>`;
     el.querySelectorAll(".chip").forEach(x => x.textContent = tp.name);
     el.querySelector(".qtext").textContent = c.q;
-    el.querySelector(".qmini").textContent = c.q;
     el.querySelector(".atext").textContent = c.a;
     el.querySelector(".etext").textContent = c.e;
-    const ag = el.querySelector(".again-t"), setAg = () => { const on = !!run.marks[run.i]; ag.classList.toggle("on", on); ag.setAttribute("aria-pressed", on); ag.textContent = on ? "↻ Marked to revisit (tap to undo)" : "↻ Revisit this one"; };
-    ag.onclick = () => { run.marks[run.i] = !run.marks[run.i]; if (run.done[run.i] != null) record(run.i); setAg(); qBtns(); }; setAg();
     if (past) el.querySelector(".flip").style.transition = "none";
     el.style.transform = `translateX(${dir * 40}px)`; el.style.opacity = "0";
     $("stage").innerHTML = ""; $("stage").appendChild(el);
@@ -584,15 +617,19 @@ body.searching #homeMain{display:none}
     card = el; bindSwipe(el);
     renderQA(el, c, []); qBtns();
   }
-  function reveal(){ if (shown) return; shown = true; card.classList.add("shown"); qBtns(); }
+  // a question counts as seen once its answer is shown (kcgm_cards: times seen); the least seen come up first
+  function reveal(){ if (shown) return; shown = true; card.classList.add("shown");
+    if (!run.done[run.i]){ const c = run.list[run.i], h = hist[c.q] || { s: 0, k: 0, last: 0 }; h.s++; hist[c.q] = h; store.set("kcgm_cards", hist); run.done[run.i] = true;
+      const pc = seenPct(); $("count").textContent = pc + "% of these topics seen"; $("progBar").style.width = pc + "%"; }
+    qBtns(); }
   // phone: the two buttons under the card (Later marks the card to see again)
-  function qBtns(){ if (!run) return; const last = run.i + 1 >= run.list.length; drawDesk();
-    $("qMain").textContent = !shown ? "Show answer" : last ? "Finish" : "Next";
-    $("qLater").classList.toggle("on", !!run.marks[run.i]); $("qLater").textContent = run.marks[run.i] ? "↻ Marked" : "↻ Later"; }
-  $("qMain").onclick = () => next();
-  $("qLater").onclick = () => { if (!card) return; run.marks[run.i] = true; if (run.done[run.i] != null) record(run.i);
-    const ag = card.querySelector(".again-t"); if (ag){ ag.classList.add("on"); ag.setAttribute("aria-pressed", true); ag.textContent = "↻ Marked to revisit (tap to undo)"; }
-    if (!shown) reveal(); else next(); qBtns(); };
+  function qBtns(){ if (!run) return; drawDesk(); drawPills(); $("qBack").disabled = $("qdPrev").disabled = run.i === 0;
+    $("qdRev").textContent = shuf ? "⤨ Shuffle on" : "⤨ Shuffle off"; $("qdRev").classList.toggle("on", shuf); $("qdKnew").innerHTML = "Next › <kbd>→</kbd>";
+    $("qShuf").classList.toggle("on", shuf); $("qShuf").setAttribute("aria-pressed", shuf); $("qShuf").textContent = shuf ? "⤨ Shuffle on" : "⤨ Shuffle off"; }
+  $("qMain").onclick = () => next(true); $("qBack").onclick = () => back();
+  // desktop: the same three in its own bar under the card
+  $("qdPrev").onclick = () => back(); $("qdRev").onclick = () => $("qShuf").click(); $("qdKnew").onclick = () => next(true);
+  $("qShuf").onclick = () => { shuf = !shuf; store.set("kcgm_shuf", shuf); rebuild(); };
   // the result for card i (first time past it, or again when its "revisit" tick changes)
   function record(i){
     const c = run.list[i], known = !run.marks[i], h = hist[c.q] || { s: 0, k: 0, last: 0 };
@@ -605,11 +642,11 @@ body.searching #homeMain{display:none}
     el.style.transition = "transform .2s ease-in, opacity .2s ease-in"; el.style.transform = `translateX(${-dir * 110}vw)`; el.style.opacity = "0";
     setTimeout(() => { run.i = to; renderCard(dir); }, 160);
   }
-  function next(){
+  // next question (the Next button moves on whether or not the answer was looked at; Space or a tap shows it first)
+  function next(skip){
     if (!card) return;
-    if (!shown){ reveal(); return; }
-    if (run.done[run.i] == null){ record(run.i); if (navigator.vibrate) navigator.vibrate(10); }
-    if (run.i + 1 >= run.list.length){ run.max = run.list.length; finish(); return; }
+    if (!shown && !skip){ reveal(); return; }
+    if (run.i + 1 >= run.list.length){ const c = nextCard(); if (!c) return; run.list.push(c); }
     run.max = Math.max(run.max, run.i + 1); slide(run.i + 1, 1);
   }
   function back(){ if (card && run.i > 0) slide(run.i - 1, -1); }
@@ -696,7 +733,7 @@ body.searching #homeMain{display:none}
   }
 
   function bindSwipe(el){
-    if (!Tabs.phone){ el.querySelector(".hint").onclick = () => reveal(); return; }   // desktop: buttons and keys, no swipes
+    if (!Tabs.phone){ el.onclick = () => { if (!shown) reveal(); }; return; }   // desktop: click the card to show the answer
     let x0 = 0, y0 = 0, dx = 0, t0 = 0, drag = false, id = null;
     el.addEventListener("pointerdown", e => {
       if (card !== el) return;
@@ -716,7 +753,7 @@ body.searching #homeMain{display:none}
       const fast = Math.abs(dx) / Math.max(1, Date.now() - t0) > 0.5, far = drag && (Math.abs(dx) > 80 || (fast && Math.abs(dx) > 30));
       el.style.transition = "transform .2s ease"; el.style.transform = "";
       if (far) dx < 0 ? next() : back();
-      else if (!drag && e.type === "pointerup" && !e.target.closest(".scroll")) next();   // a tap on the card (not on the answer text) moves on
+      else if (!drag && e.type === "pointerup" && !shown) reveal();   // a tap on the card clears the answer
       drag = false;
     };
     el.addEventListener("pointerup", end);
@@ -724,9 +761,8 @@ body.searching #homeMain{display:none}
   }
   document.addEventListener("keydown", e => {
     if (!$("deck").classList.contains("on") || !card || e.target.tagName === "INPUT") return;
-    if (!Tabs.phone && /^[rR]$/.test(e.key)){ revisit(); e.preventDefault(); return; }
-    if (!Tabs.phone && e.key === "ArrowRight" && shown){ knew(); e.preventDefault(); return; }
-    if (["ArrowRight", " ", "Enter"].includes(e.key)){ next(); e.preventDefault(); }
+    if (e.key === "ArrowRight"){ next(true); e.preventDefault(); }
+    else if ([" ", "Enter"].includes(e.key)){ next(); e.preventDefault(); }
     else if (e.key === "ArrowLeft"){ back(); e.preventDefault(); }
   });
   $("quitBtn").onclick = () => { run && Object.keys(run.done).length ? finish() : (renderHome(), show("quiz")); };
@@ -737,13 +773,12 @@ body.searching #homeMain{display:none}
     const ag = card && card.querySelector(".again-t"); if (ag){ ag.classList.toggle("on", on); ag.setAttribute("aria-pressed", on); ag.textContent = on ? "↻ Marked to revisit (tap to undo)" : "↻ Revisit this one"; } }
   function revisit(){ if (!card) return; if (!shown){ mark(true); reveal(); return; } mark(true); next(); }
   function knew(){ if (!card) return; if (!shown){ reveal(); return; } mark(false); next(); }
-  $("qdPrev").onclick = () => back(); $("qdRev").onclick = revisit; $("qdKnew").onclick = knew;
+  
   function jump(i){ if (!card || i === run.i) return; if (shown && run.done[run.i] == null) record(run.i); run.max = Math.max(run.max, Math.min(i, run.i + (shown ? 1 : 0))); slide(i, i > run.i ? 1 : -1); }
-  function rebuild(){ if (!run || run.finished) return;
-    const keep = run.list.slice(0, Math.max(run.i + 1, run.max)), have = new Set(keep.map(c => c.q));
-    const more = pick().filter(c => !have.has(c.q)), want = len >= 9999 ? keep.length + more.length : Math.max(len, keep.length);
-    run.list = keep.concat(more.slice(0, want - keep.length)); $("count").textContent = (run.i + 1) + " / " + run.list.length;
-    $("progBar").style.width = (100 * run.max / run.list.length) + "%"; drawDesk(); }
+  function rebuild(){ if (!run) return;
+    run.list.length = Math.min(run.list.length, run.i + 1); run.max = Math.min(run.max, run.i);
+    if (!card){ start(); return; }
+    const pc = seenPct(); $("count").textContent = pc + "% of these topics seen"; $("progBar").style.width = pc + "%"; qBtns(); }
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   function drawDesk(){
     if (Tabs.phone || !run) return;
@@ -751,8 +786,8 @@ body.searching #homeMain{display:none}
     const seg = (key, opts, val) => `<div class="qd-sg" data-k="${key}">` + opts.map(([v, t]) => `<button type="button" data-v="${v}" class="${String(v) === String(val) ? "on" : ""}">${t}</button>`).join("") + `</div>`;
     const inG = g => Object.keys(TOPICS).filter(k => TOPICS[k].g === g);
     // the search box stays put (typing keeps its focus); the topics redraw under it
-    if (!$("qdQ")){ $("qdSide").innerHTML = `<div class="qd-q"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="qdQ" type="search" placeholder="Search cards…" autocomplete="off" aria-label="Search cards"></div><div id="qdSideIn"></div>`;
-      let qt; $("qdQ").addEventListener("input", e => { clearTimeout(qt); qt = setTimeout(() => { qtext = e.target.value.trim().toLowerCase(); rebuild(); }, 200); }); }
+    if (!$("qdSideIn")){ $("qdSide").innerHTML = `<div id="qdSideIn"></div>`;
+      }
     // each topic: tick box, name, how many of its cards you know, and a bar of that
     const known = k => { const cs = CARDS.filter(c => c.t === k); return [cs.filter(c => hist[c.q] && hist[c.q].last).length, cs.length]; };
     const grp = g => { const gn = (TGROUPS.find(x => x[0] === g) || [, g])[1], ks = inG(g), full = ks.every(k => sel.has(k));
@@ -762,25 +797,20 @@ body.searching #homeMain{display:none}
     const nq = qtext ? CARDS.filter(c => sel.has(c.t) && qhit(c)).length : 0;
     $("qdSideIn").innerHTML = (qtext ? `<div class="qd-qn"><b>${nq}</b> card${nq === 1 ? "" : "s"} in the ticked topics mention “${esc(qtext)}”</div>` : "") +
       `<div class="qd-cols"><div>${grp("gen")}${grp("proj")}</div><div>${grp("circ")}</div></div>` +
-      `<div class="qd-opts"><div><h4>Order</h4>` + seg("mode", [["mix", "Shuffled"], ["weak", "Revisit first"], ["new", "Unseen"]], mode) + `</div>` +
-      `<div><h4>Deck length</h4>` + seg("len", [[10, "10"], [20, "20"], [40, "40"], [9999, "All"]], len) + `</div>` +
-      `<div><h4>This deck</h4><div class="qd-st"><div><b>${done.length}</b><span>scored</span></div><div><b style="color:var(--ok)">${kn}</b><span>knew it</span></div><div><b style="color:var(--bad)">${done.length - kn}</b><span>revisit</span></div></div></div>` +
-      `<div class="qd-acts"><button type="button" class="qd-act" data-new>▶ New deck</button>` + (done.length ? `<button type="button" class="qd-act" data-end>End and see the score</button>` : "") + `</div></div>`;
+      "";
     const S = $("qdSideIn");
     S.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { const k = b.dataset.t; sel.has(k) ? sel.delete(k) : sel.add(k); store.set("kcgm_topics", [...sel]); renderHome(); rebuild(); });
     S.querySelectorAll("[data-grp]").forEach(b => b.onclick = () => { inG(b.dataset.grp).forEach(k => b.dataset.on === "1" ? sel.add(k) : sel.delete(k)); store.set("kcgm_topics", [...sel]); renderHome(); rebuild(); });
-    S.querySelectorAll("[data-k] button").forEach(b => b.onclick = () => { if (b.parentNode.dataset.k === "mode"){ mode = b.dataset.v; store.set("kcgm_mode", mode); } else { len = +b.dataset.v; store.set("kcgm_len", len); }
+    if (0) S.querySelectorAll("[data-k] button").forEach(b => b.onclick = () => { if (b.parentNode.dataset.k === "mode"){ mode = b.dataset.v; store.set("kcgm_mode", mode); } else { len = +b.dataset.v; store.set("kcgm_len", len); }
       document.querySelectorAll("#modeSeg button").forEach(x => x.classList.toggle("on", x.dataset.m === mode)); document.querySelectorAll("#lenSeg button").forEach(x => x.classList.toggle("on", +x.dataset.n === len)); renderHome(); rebuild(); });
-    S.querySelector("[data-new]").onclick = () => { const l = pick(); if (l.length) start(l); };
-    const e = S.querySelector("[data-end]"); if (e) e.onclick = () => finish();
+
     const L = $("qdList"), sc = L.scrollTop;
-    L.innerHTML = `<h4>This deck · ${run.list.length}</h4>` + run.list.map((c, i) => { const d = run.done[i], st = d == null ? "" : d ? "ok" : "rv";
+    L.innerHTML = `<h4>History · ${run.list.length}</h4>` + run.list.map((c, i) => { const d = run.done[i], st = d == null ? "" : d ? "ok" : "rv";
       return `<button type="button" class="qd-row ${st}${i === run.i ? " on" : ""}" data-i="${i}" title="${esc(c.q)}"><i>${d == null ? "" : d ? "✓" : "↻"}</i><span>${i + 1}. ${esc(c.q)}</span></button>`; }).join("");
     L.scrollTop = sc; L.querySelectorAll("[data-i]").forEach(b => b.onclick = () => jump(+b.dataset.i));
     const on = L.querySelector(".qd-row.on"); if (on){ const r = on.getBoundingClientRect(), R = L.getBoundingClientRect(); if (r.top < R.top + 30 || r.bottom > R.bottom) on.scrollIntoView({ block: "nearest" }); }
     $("qdPrev").disabled = run.i === 0;
-    $("qdRev").classList.toggle("on", !!run.marks[run.i]);
-    $("qdKnew").innerHTML = (run.i + 1 >= run.list.length ? "✓ Knew it, finish" : "✓ Knew it, next") + " <kbd>→</kbd>";
+
   }
   $("deckSet").onclick = () => { renderHome(); $("qFilters").hidden = false; $("qfBtn").classList.add("on"); show("quiz"); };
 
@@ -923,7 +953,7 @@ body.searching #homeMain{display:none}
   // ⌂ (from any tab or page): Assets with no search, no filter and no item open
   function assetsHome(){ if (window.AssetViz) AssetViz.home(); restoring = true; lk.input.value = ""; Browse.reset(); if (lk.current()) lk.close(); show("home"); restoring = false; }
   // the Quiz tab opens on a card: the deck in progress, or a fresh one with the last choices
-  function openQuiz(){ if (run && !run.finished) show("deck"); else start(pick()); }
+  function openQuiz(){ if (run && card) show("deck"); else start(); }
   const openGloss = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
   // phone: the Assets search (with its camera) and a quiz search share the top row; the quiz one starts a deck of the
   // cards whose question or answer has every word typed
@@ -932,7 +962,7 @@ body.searching #homeMain{display:none}
       const hit = CARDS.filter(c => w.every(x => (c.q + " " + c.a + " " + (c.e || "")).toLowerCase().includes(x)));
       q.blur(); if (hit.length) start(shuffle(hit)); else { q.value = ""; q.placeholder = "No question has all those words"; } };
     // phone: the Assets search runs full width on the page, over the filters; its camera sits in the top row
-    if (Tabs.phone){ const cam = $("lkRoot").querySelector(".lk-cam"); $("lkResults").before($("lkRoot")); Tabs.slot(q); if (cam){ cam.id = "lkCam"; Tabs.slot(cam); } } }
+    if (Tabs.phone){ const cam = $("lkRoot").querySelector(".lk-cam"); $("lkResults").before($("lkRoot")); if (cam){ cam.id = "lkCam"; Tabs.slot(cam); } } }
   // the project picker lives in the top bar (tabs.js); a search already showing is run again when it changes
   Lookup.onProj(() => { const v = lk.input.value.trim(); if (v && !lk.current() && !(window.Browse && Browse.query(v))) lk.search(v); });
   const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#home"){ assetsHome(); history.replaceState(history.state, "", "#assets"); } else if (location.hash === "#gloss") openGloss(); else if (location.hash === "#settings") openSettings(); };
