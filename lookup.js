@@ -568,6 +568,7 @@ body.sp-on{overflow:hidden}
 .sp-ref{position:absolute;pointer-events:auto;cursor:pointer;background:rgba(90,100,115,.06);border-radius:2px}
 .sp-ref.d{background:rgba(90,100,115,.11)}
 .sp-ref.hv,.sp-ref.hit{background:rgba(90,100,115,.22)}
+.sp-hb{position:absolute;box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(224,32,27,.8);background:rgba(224,32,27,.1);border-radius:2px;pointer-events:none}   /* a find result on any sheet */
 .sp-ref.fit{box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(224,32,27,.8);background:rgba(224,32,27,.1)}.sp-ref.fit.o{border-radius:50%}
 .sp-ref.fit.off{border-color:rgba(90,100,115,.35);background:rgba(90,100,115,.1)}.sp-ref.fit.hv{background:rgba(224,32,27,.22)}.sp-ref.fit.off.hv{background:rgba(90,100,115,.22)}   /* a checked sheet: red labels, grey when a find leaves them out */.sp-refs .sp-ref{pointer-events:none}
 /* the page's text, invisible but selectable (left drag), on top of everything; a tag under it still opens on a click */
@@ -595,6 +596,7 @@ body.sp-on{overflow:hidden}
 :root.phone .sp-view .sp-fb{display:inline-flex!important}:root.phone .sp-view .sp-dl{display:none}
 :root.phone .sp-view .sp-q{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));width:auto;max-width:none;height:42px;display:none;z-index:4;font-size:16px;box-shadow:0 4px 16px #0008}
 :root.phone .sp-view.find-on .sp-q{display:block}
+:root.phone .sp-view.typing .sp-ze,:root.phone .sp-view.typing .sp-top>:not(.sp-finds):not(.sp-q){display:none!important}:root.phone .sp-view.typing .sp-body{padding-top:0}   /* keyboard up: just the find box and ‹ 1 of 9 › */
 .sp-view .sp-ze{position:fixed;right:22px;bottom:22px;z-index:4;width:52px;height:52px;padding:0;border-radius:50%;background:#fff;color:#8a5f0e;border:1.5px solid #b67d12;box-shadow:0 3px 12px #0005;display:grid;place-items:center;cursor:pointer}
 .sp-view .sp-ze:hover{background:#fbf6ec}   /* zoom extents: the whole sheet in one tap */
 :root.phone .sp-view .sp-ze{right:12px;bottom:calc(76px + env(safe-area-inset-bottom))}:root.phone .sp-view.find-on .sp-ze{bottom:calc(128px + env(safe-area-inset-bottom))}
