@@ -309,10 +309,9 @@ body.searching #homeMain{display:none}
 :root.phone #qBtns{display:flex!important;gap:10px;flex:none}:root.phone #qdBar{display:none!important}:root:not(.phone) #qBtns{display:none!important}
 .card .hint{display:none}:root:not(.phone) .card:not(.shown) .hint{display:block;margin:6px 0 10px}
 :root:not(.phone) .card:not(.shown) .scroll{visibility:hidden}
-#qdRev.on{color:color-mix(in srgb,var(--gold) 70%,var(--ink));border-color:var(--gold);background:var(--card)}
+#qdRev.on,#qBtns #qShuf.on{color:color-mix(in srgb,var(--gold) 70%,var(--ink))!important;border-color:var(--gold)!important;background:var(--card);box-shadow:inset 0 0 0 1px var(--gold)}
 #qBtns button{flex:1!important;border:1px solid var(--line)!important;background:var(--card)!important;color:var(--ink)!important;border-radius:14px;padding:12px 8px}
 #qBtns button:disabled{opacity:.4}
-#qBtns #qShuf.on{border-color:var(--gold)!important;box-shadow:inset 0 0 0 1px var(--gold);color:color-mix(in srgb,var(--gold) 70%,var(--ink))!important}
 .q-none{padding:40px 10px;text-align:center;color:var(--mute)}
 </style>
 </head>
@@ -369,7 +368,7 @@ body.searching #homeMain{display:none}
   <div class="legend" id="legend"><span class="l">→ swipe right: back</span><span class="r">swipe left or tap: next ←</span></div>
   <div id="qBtns"><button type="button" id="qBack">‹ Back</button><button type="button" id="qShuf" aria-pressed="true">⤨ Shuffle</button><button type="button" id="qMain">Next ›</button><button type="button" id="qLater" hidden></button></div>
   <div id="qdBar"><button type="button" class="qd-b" id="qdPrev" title="Previous card (←)" aria-label="Previous card">‹</button><span class="qd-sp"></span>
-    <button type="button" class="qd-b qd-rv" id="qdRev">↻ Revisit <kbd>R</kbd></button><button type="button" class="qd-b qd-ok" id="qdKnew">✓ Knew it, next <kbd>→</kbd></button></div>
+    <button type="button" class="qd-b" id="qdRev">↻ Revisit <kbd>R</kbd></button><button type="button" class="qd-b" id="qdKnew">✓ Knew it, next <kbd>→</kbd></button></div>
   </div>
   <aside class="qd-list" id="qdList" aria-label="History"></aside>
 </section>
@@ -624,8 +623,8 @@ body.searching #homeMain{display:none}
     qBtns(); }
   // phone: the two buttons under the card (Later marks the card to see again)
   function qBtns(){ if (!run) return; drawDesk(); drawPills(); $("qBack").disabled = $("qdPrev").disabled = run.i === 0;
-    $("qdRev").textContent = shuf ? "⤨ Shuffle on" : "⤨ Shuffle off"; $("qdRev").classList.toggle("on", shuf); $("qdKnew").innerHTML = "Next › <kbd>→</kbd>";
-    $("qShuf").classList.toggle("on", shuf); $("qShuf").setAttribute("aria-pressed", shuf); $("qShuf").textContent = shuf ? "⤨ Shuffle on" : "⤨ Shuffle off"; }
+    $("qdRev").textContent = "⤨ Shuffle"; $("qdRev").classList.toggle("on", shuf); $("qdKnew").innerHTML = "Next › <kbd>→</kbd>";
+    $("qShuf").classList.toggle("on", shuf); $("qShuf").setAttribute("aria-pressed", shuf); $("qShuf").textContent = "⤨ Shuffle"; }
   $("qMain").onclick = () => next(true); $("qBack").onclick = () => back();
   // desktop: the same three in its own bar under the card
   $("qdPrev").onclick = () => back(); $("qdRev").onclick = () => $("qShuf").click(); $("qdKnew").onclick = () => next(true);
