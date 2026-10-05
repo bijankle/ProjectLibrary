@@ -238,7 +238,8 @@ window.PdfView = (() => {
   function fitFilter(q, exact){
     V.fq = String(q || "").trim(); V.fstep = -2; const w = V.fq.toLowerCase(), wn = norm(V.fq);
     // the tag holds it anywhere; the name only from the start of a word, and for 3 letters or more ("pump", not the pp of "supply")
-    const re = w.length >= 3 ? new RegExp("(^|[^a-z0-9])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) : null;
+    // a search with a digit in it is a tag: tags only (a line named "from F72-PP-668" is not F72-PP-668)
+    const re = w.length >= 3 && !/\d/.test(w) ? new RegExp("(^|[^a-z0-9])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) : null;
     const hit = r => r[6] !== "x" && r[5].split("|").some(t => exact ? norm(t) === wn : (wn && norm(t).includes(wn)) || (re && re.test(((cur.nameOf && cur.nameOf(t)) || "").toLowerCase())));
     V.fmatch = V.fq ? V.refs.filter(hit).sort((a, b) => a[0] - b[0] || a[2] - b[2] || a[1] - b[1]) : [];
     V.fset = new Set(V.fmatch); drawRefs();
