@@ -1576,8 +1576,13 @@ svg.focus .frame.pick{opacity:1}
     const W = svg.clientWidth, H = svg.clientHeight;
     const phone = matchMedia("(max-width: 900px)").matches, infoOn = $("info").classList.contains("on");
     const right = infoOn && !phone ? Math.min(W * .5, $("info").offsetWidth + 28) : 0;
-    const bottom = infoOn && phone ? $("info").offsetHeight : 0;
-    const top = $("stepbar").classList.contains("on") ? $("stepbar").offsetHeight + 20 : 0;
+    let bottom = infoOn && phone ? $("info").offsetHeight : 0;
+    const story = $("stepbar").classList.contains("on"), top = story ? (PHONE ? $("sbCur").offsetHeight + 10 : $("stepbar").offsetHeight + 20) : 0;
+    // phone: whatever is in focus (a story step, a selection, an area) fills the space left clear between what sits over
+    // the drawing at the top (the step's words) and at the bottom (Back / Next, the details sheet, the Fluids / Layers / Story buttons)
+    if (PHONE){ const r = svg.getBoundingClientRect(), up = el => { const q = el && el.getBoundingClientRect(); return q && q.height && q.top < r.bottom ? r.bottom - q.top + 10 : 0; };
+      bottom = Math.max(bottom, story ? up($("sbNext")) : 0, infoOn ? 0 : up($("pfab")));
+      pad = Math.min(pad, 1.12); minW = Math.min(minW, 240); }
     const uw = W - right, uh = Math.max(80, H - top - bottom);                          // usable screen area (px)
     // corner: the whole box as large as fits, tucked into the top left of the usable area (a flow's overview)
     if (corner){ const m = 24, k = Math.max(b.w / (uw - 2 * m), b.h / (uh - 2 * m), 900 / uw);
