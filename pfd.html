@@ -1079,9 +1079,7 @@ svg.focus .frame.pick{opacity:1}
   function showSettings(){
     lastPanel = showSettings; $("iKind").textContent = "Settings"; $("iName").textContent = "App settings"; $("iTag").textContent = "";
     $("iBody").innerHTML = `
-      <h4>Theme</h4><div id="thRoot2"></div><h4>Text size</h4><div id="txRoot2"></div><h4>App size</h4><div id="tsRoot2"></div><h4>Offline downloads</h4><div id="offRoot"></div>`;
-    TextSize.mount($("tsRoot2"));
-    TextSize.theme($("thRoot2")); TextSize.text($("txRoot2"));
+      <h4>Offline downloads</h4><div id="offRoot"></div>`;
     Offline.mount($("offRoot")); openInfo(); if (matchMedia("(max-width: 900px)").matches) document.body.classList.remove("menu");
   }
   $("setBtn").onclick = showSettings;
@@ -1103,13 +1101,13 @@ svg.focus .frame.pick{opacity:1}
     if (v !== "map") setVB(); if (window.fxRefresh) fxRefresh(); };
   document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
   // the tab strip: PFD and Layout switch here, Assets and Quiz open the phone app page
-  Tabs.mount({ active: "pfd", onSettings: () => showSettings(), settingsPage: !PHONE,
+  Tabs.mount({ active: "pfd", onSettings: () => location.href = "index.html?cards#settings", settingsPage: false,   // (downloads: Sources)
     onPop: st => { if (st.s === "layout" || st.s === "pfd") setView(st.s === "layout" ? "map" : "pfd", true); },
     // ⌂: the PFD fitted with nothing selected, no story; the Layout zoomed out to the plant
     onHome: t => { if (focusFlow) setFlow(null); if (narr) setNarr(false); clearSel(true); closeInfo();
       if (t === "layout") PFDLayout.home(); else $("zFit").click(); return true; },
     onTab: t => { if (t !== "pfd" && t !== "layout") return false; setView(t === "layout" ? "map" : "pfd"); return true; } });
-  if (Tabs.slot($("search"))) $("search").placeholder = "Search the PFD";
+  if (Tabs.slot($("search"), { cam: true })) $("search").placeholder = "Search the PFD";
   if (Tabs.replace && !(history.state && history.state.s)) Tabs.replace({ s: curView });
   const openHash = () => { if (location.hash === "#layout") setView("map"); else if (location.hash === "#pfd" && PFDLayout.active()) setView("pfd"); };
   window.addEventListener("hashchange", openHash); if (location.hash === "#layout") setTimeout(openHash, 0);

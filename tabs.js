@@ -7,7 +7,9 @@
 // Help: a search over everything app wide (settings, features, how-to notes), How to use, Update app, About.
 window.Tabs = (() => {
   const TABS = [["assets", "Assets", "index.html?cards#assets"], ["pfd", "PFD", "pfd.html#pfd"],
-    ["layout", "Layout", "pfd.html#layout"], ["quiz", "Quiz", "index.html?cards#quiz"]];
+    ["layout", "Layout", "pfd.html#layout"], ["quiz", "Learn", "index.html?cards#quiz"]];
+  // desktop: the project's documents, after a gap, as an outlined group of their own
+  const XTABS = [["sources", "Sources", "issues.html#sources"], ["checks", "Checks", "issues.html"]];
   // the app's mark (the yellow P tile, as the app icon) for the logo at the top left
   const mark = s => `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#e8b44a"/><rect x="6" y="6" width="52" height="52" rx="13" fill="none" stroke="#111418" stroke-width="2.5"/><text x="32" y="44.5" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-weight="800" font-size="36" fill="#111418">P</text></svg>`;
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -16,12 +18,12 @@ window.Tabs = (() => {
   // sections as a tab bar along the bottom, with More (settings, checks, sources, help) as a page of its own
   const phone = !desk(); document.documentElement.classList.toggle("phone", phone);
   let el = null, O = {}, openM = null, bn = null, mo = null;
-  const NAME = { assets: "Assets", pfd: "PFD", layout: "Layout", quiz: "Quiz", more: "More" };
+  const NAME = { assets: "Assets", pfd: "PFD", layout: "Layout", quiz: "Learn", more: "Settings" };
   const ICO = { assets: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
     pfd: '<rect x="3" y="4" width="6" height="5" rx="1"/><rect x="15" y="4" width="6" height="5" rx="1"/><rect x="9" y="15" width="6" height="5" rx="1"/><path d="M9 6.5h6M18 9v3.5h-6V15"/>',
     layout: '<path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/>',
     quiz: '<rect x="6" y="3" width="13" height="16" rx="2"/><path d="M4 7v12a2 2 0 0 0 2 2h10"/><path d="M10.5 9.2a2 2 0 1 1 2.6 1.9c-.6.2-1.1.7-1.1 1.4v.5M12 15.8v.1"/>',
-    more: '<path d="M4 7h16M4 12h16M4 17h16"/>' };
+    more: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/>' };
   const ico = id => `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[id]}</svg>`;
   let active = "";
   const set = id => { if (!el) return; active = id;
@@ -43,35 +45,34 @@ window.Tabs = (() => {
     { t: "Layout zoom", k: "layout map zoom wbs areas stack callout boxes", h: "Zoomed out: WBS area zones. At the plant view: every name lined up in columns left and right with a leader to its dot. Zoomed in: name boxes on the equipment. Tap a zone to fly in." },
     { t: "Move a Layout box", k: "layout drag move position hold export moves", h: "Press and hold a box for half a second until it lifts, then drag it. A shorter tap only selects it. Moves are kept on this device; Map options → Moves downloads them to send in." },
     { t: "Layout menus", k: "wbs filters flow filters map options satellite dim minor equipment old new layout drawing", h: "Top left of the map: Plant, WBS filters (fly to an area), Flow filters (fluids and narrative), Map options (imagery, dim, flow lines, minor equipment, moves, the old and new layout drawings)." },
-    { t: "Quiz", k: "quiz flashcards cards swipe revisit deck", h: "Tap or swipe left to see the answer, then again for the next card; swipe right goes back. ↻ Revisit keeps a card for later. Filters on the card sets the deck; ✕ ends the deck." },
+    { t: "Learn", k: "learn quiz flashcards cards glossary shuffle", h: "Quiz: tap the card to see the answer, Next for another (the ones you have seen least come first), Back for the last one, Shuffle to mix them. The topic pills pick what comes up. Glossary: plant terms and abbreviations, with its own search." },
     { t: "Offline use", k: "offline download cache no signal documents", h: "The app, lists and search always work offline. Documents are kept once opened; File → Settings → Offline downloads fetches them all ahead of time." }
   ];
+  // st: the phone Settings tab it lives on (the phone opens that tab, the desktop runs it)
   const FEATURES = () => [
-    { t: "Settings", k: "settings preferences app size text zoom ai key full screen", run: () => O.onSettings && O.onSettings() },
-    { t: "Theme: dark", k: "theme dark mode colours colors", run: () => theme("dark") },
-    { t: "Theme: light", k: "theme light mode colours colors", run: () => theme("light") },
-    { t: "Text size (View menu)", k: "text size font bigger smaller larger small large view", run: () => O.onSettings ? O.onSettings() : location.href = "index.html?cards#settings" },
-    { t: "Theme: follow device", k: "theme device system auto", run: () => theme("device") },
-    { t: "Offline downloads", k: "offline download documents pids spec", run: () => O.onSettings && O.onSettings() },
-    { t: "Update app", k: "update version refresh latest", run: () => window.AppUpdate && AppUpdate.update() },
-    { t: "Checks", k: "checks issues gaps clashes", run: () => location.href = "issues.html" },
-    { t: "Sources", k: "sources documents tables excel revisions", run: () => location.href = "issues.html#sources" },
+    { t: "Sources: save or keep documents", k: "offline download save keep documents pids pfds spec sources lists drawings data excel pdf", st: "src", run: () => location.href = "issues.html#sources" },
+    { t: "Dark mode", k: "theme dark light mode colours colors appearance", st: "look", run: () => viewMenu() },
+    { t: "Text size", k: "text size font bigger smaller larger appearance", st: "look", run: () => viewMenu() },
+    { t: "Button size and spacing", k: "button size spacing bigger smaller gap appearance", st: "look", run: () => viewMenu() },
+    { t: "AI key and other settings", k: "settings preferences ai key gemini google app size", run: () => O.onSettings ? O.onSettings() : location.href = "index.html?cards#settings" },
+    { t: "Update app", k: "update version refresh latest", run: () => { stamp(); window.AppUpdate && AppUpdate.update(); } },
+    ...(phone ? [] : [{ t: "Checks", k: "checks issues gaps clashes", run: () => location.href = "issues.html" }]),
     { t: "Assets", k: "assets browse search", run: tab("assets") },
     { t: "PFD", k: "pfd process flow diagram smart", run: tab("pfd") },
     { t: "Layout", k: "layout map plant satellite", run: tab("layout") },
-    { t: "Quiz", k: "quiz flashcards", run: tab("quiz") },
-    { t: "How to use", k: "help how to tutorial notes", run: () => help() },
-    { t: "Glossary", k: "glossary terms abbreviations words meaning", run: () => glossary() },
-    { t: "About this app", k: "about version sources data", run: () => help("about") }
+    { t: "Learn: quiz and glossary", k: "learn quiz flashcards glossary", run: tab("quiz") },
+    { t: "How to use", k: "help how to tutorial notes", st: "help", run: () => help() },
+    { t: "Glossary (in Learn)", k: "glossary terms abbreviations words meaning learn", run: () => glossary() },
+    { t: "About this app", k: "about version sources data", st: "help", run: () => help("about") }
   ];
+  const viewMenu = () => { const m = el && el.querySelector(".mn-v"); if (m) setTimeout(() => open(m), 0); };
   const find = q => { const w = q.trim().toLowerCase().split(/\s+/).filter(Boolean); if (!w.length) return [];
     const hit = x => w.every(t => (x.t + " " + x.k + " " + (x.h || "")).toLowerCase().includes(t));
     return [...FEATURES().filter(hit).map(x => ({ ...x, f: 1 })), ...TOPICS.filter(hit)].slice(0, 12); };
 
   // ---------- menus ----------
   const item = (id, label, sub) => `<button type="button" class="mn-i" data-a="${id}">${label}${sub ? `<small>${sub}</small>` : ""}</button>`;
-  const fileItems = () => item("settings", "Settings…", "Theme, app size, offline downloads, AI key") +
-    `<hr>` + item("checks", "Checks") + item("sources", "Sources");
+  const fileItems = () => item("settings", "Settings…", "Offline downloads, AI key");
   const helpItems = () => `<div class="mn-s"><input type="search" placeholder="Search the app: settings, features, how to…" aria-label="Search the app"><div class="mn-r"></div></div>` +
     item("howto", "How to use…") + item("gloss", "Glossary", "Plant terms and abbreviations") + `<hr><button type="button" class="mn-i" data-a="update">Update app<small class="mn-ver">Checking the version…</small></button>` + item("about", "About this app");
   // View: text size (the same five steps as Settings, kcgmText in each page's head) and theme
@@ -82,7 +83,7 @@ window.Tabs = (() => {
     `<hr><div class="mn-h">Theme</div>` + [["dark", "Dark"], ["light", "Light"], ["device", "Follow device"]].map(([k, t]) => `<button type="button" class="mn-i mn-ck${curTheme() === k ? " on" : ""}" data-th="${k}">${t}</button>`).join("");
   function drawMenus(){
     if (!el) return;
-    const v = el.querySelector(".mn-v .mn-d"); if (v) v.innerHTML = viewItems();
+    const v = el.querySelector(".mn-v .mn-d"); if (v) appearance(v);
     const f = el.querySelector(".mn-f .mn-d"); if (f) f.innerHTML = fileItems();
     const h = el.querySelector(".mn-h2 .mn-d"); if (h) h.innerHTML = helpItems();
     const one = el.querySelector(".mn-one .mn-d"); if (one) one.innerHTML = `<div class="mn-h">File</div>` + fileItems() + `<hr><div class="mn-h">Help</div>` + helpItems();
@@ -137,7 +138,7 @@ window.Tabs = (() => {
     if (phone) return buildPhone();
     const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
     el.innerHTML = `<nav class="mb" aria-label="Menu">${PJ}<span class="mb-sep"></span><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-v"><button type="button" class="mn-b">View</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
-      `<nav class="tb" aria-label="App sections">${NAVB.replace(/(class="nv-b nv-home"[^>]*>)<svg.*?<\/svg>/, (m, b) => b.replace('nv-b nv-home', 'nv-b nv-home nv-logo') + mark(34))}<div class="tb-seg">${tabs}</div></nav>`;
+      `<nav class="tb" aria-label="App sections">${navLogo(34)}<div class="tb-seg">${tabs}</div><div class="tb-seg tb-x">${XTABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("")}</div></nav>`;
     document.body.prepend(el); wirePj(); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", true);
     el.querySelectorAll(".tb-t").forEach(a => a.onclick = e => { if (O.onTab && O.onTab(a.dataset.t)){ e.preventDefault(); set(a.dataset.t); } });
     el.querySelectorAll(".mn").forEach(m => { const b = m.querySelector(".mn-b");
@@ -151,12 +152,13 @@ window.Tabs = (() => {
   // top: the P, the section's name and a slot for that section's search (Tabs.slot); bottom: the five sections
   function buildPhone(){
     el.classList.add("ph");
-    el.innerHTML = `<nav class="ph-top">${NAVB}${PJ}<b class="ph-n"></b><div class="ph-slot"><input class="mo-q" type="search" placeholder="Search the app" aria-label="Search the app" autocomplete="off" hidden></div></nav>`;
+    el.innerHTML = `<nav class="ph-top">${navLogo(32)}${PJ}<b class="ph-n"></b></nav><div class="ph-sr"><div class="ph-slot"><input class="mo-q" type="search" placeholder="Search" aria-label="Search settings" autocomplete="off" hidden><button type="button" class="ph-upd" hidden>Update</button></div></div>`;
     bn = document.createElement("nav"); bn.className = "bn"; bn.setAttribute("aria-label", "App sections");
-    bn.innerHTML = [...TABS, ["more", "More", "#"]].map(([id, n, href]) => `<a class="tb-t bn-t" data-t="${id}" href="${href}"><i>${ico(id)}</i><span>${n}</span></a>`).join("");
+    bn.innerHTML = [...TABS, ["more", "Settings", "#"]].map(([id, n, href]) => `<a class="tb-t bn-t" data-t="${id}" href="${href}"><i>${ico(id)}</i><span>${n}</span></a>`).join("");
     mo = document.createElement("div"); mo.className = "mo"; mo.hidden = true; mo.setAttribute("role", "dialog"); mo.setAttribute("aria-label", "More");
     document.body.prepend(el); document.body.append(bn, mo); document.documentElement.classList.add("has-tb", "has-bn");
     wireNav(); wirePj();
+    new MutationObserver(() => syncRow()).observe(el.querySelector(".ph-slot"), { attributes: true, subtree: true, childList: true, attributeFilter: ["class", "hidden", "style"] });
     bn.querySelectorAll(".tb-t").forEach(a => a.onclick = e => {
       if (a.dataset.t === "more"){ e.preventDefault(); mo.hidden ? more(true) : more(false); return; }
       const was = !mo.hidden; more(false);
@@ -173,21 +175,63 @@ window.Tabs = (() => {
     about: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>' };
   const svg = (d, w) => `<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const row = (a, icon, label, sub) => `<button type="button" class="mo-i" data-a="${a}"><i>${svg(IC[a] || "", 21)}</i><span>${label}${sub ? `<small>${sub}</small>` : ""}</span><em>${svg('<path d="m9 18 6-6-6-6"/>', 18)}</em></button>`;
+  // ---------- phone Settings (the last tab): underlined tabs Sources, View, How to use, Glossary; the wide
+  // row above holds a search over all of it and Update (when the app was last updated) ----------
+  const ST = [["src", "Sources"], ["look", "View"], ["help", "How to use"]];
+  let SLp = null;   // the Sources list on the Sources tab (the search box filters it while that tab is open)
+  const stGet = () => { try { return localStorage.getItem("kcgm_st") || "src"; } catch (e) { return "src"; } };
+  const need = (src, ok) => ok() ? Promise.resolve() : new Promise(r => { const x = document.createElement("script"); x.src = src; x.onload = x.onerror = () => r(); document.head.appendChild(x); });
   function drawMore(){
-    mo.innerHTML = `<div class="mo-r"></div><div class="mo-l">
-      <div class="mo-g">App</div>${row("settings", "⚙", "Settings")}${row("offline", "⤓", "Offline downloads")}${row("update", "↻", "Update app", '<b class="mn-ver">Checking the version…</b>')}
-      <div class="mo-g">Data</div>${row("checks", "✓", "Checks")}${row("sources", "▤", "Sources")}
-      <div class="mo-g">Help</div>${row("howto", "?", "How to use")}${row("gloss", "Aa", "Glossary")}${row("about", "ⓘ", "About this app")}</div>`;
-    mo.querySelectorAll(".mo-i[data-a]").forEach(b => b.onclick = () => { const a = b.dataset.a; if (a !== "update") more(false); ({
-      settings: settings, offline: settings, checks: () => location.href = "issues.html", sources: () => location.href = "issues.html#sources",
-      howto: () => help(), about: () => help("about"), gloss: glossary, update: () => { b.disabled = true; window.AppUpdate && AppUpdate.update(); } })[a](); });
-    if (window.AppUpdate) Promise.all([AppUpdate.installed(), AppUpdate.latest()]).then(([a, l]) => mo.querySelectorAll(".mn-ver").forEach(v => {
-      v.textContent = l && a && a !== l ? `Installed ${a}, latest ${l}: update available` : l ? `${l}: up to date` : a ? `${a} (offline)` : ""; }));
-    const inp = el.querySelector(".mo-q"), out = mo.querySelector(".mo-r"), list = mo.querySelector(".mo-l");
-    inp.oninput = () => { const r = find(inp.value); list.hidden = !!inp.value.trim();
-      out.innerHTML = r.map((x, i) => `<button type="button" class="mo-i" data-r="${i}"><i>${x.f ? "→" : "?"}</i><span>${esc(x.t)}${x.h ? `<small>${esc(x.h.slice(0, 90))}…</small>` : ""}</span><em>›</em></button>`).join("") || (inp.value.trim() ? `<div class="mn-no">Nothing found.</div>` : "");
-      out.querySelectorAll("[data-r]").forEach(b => b.onclick = () => { const x = r[+b.dataset.r]; more(false); if (x.run) x.run(); else help(x.t); }); };
+    mo.innerHTML = `<div class="st-t" role="tablist">${ST.map(([k, n]) => `<button type="button" role="tab" data-st="${k}">${n}</button>`).join("")}</div><div class="mo-r"></div><div class="mo-l st-b"></div>`;
+    mo.querySelectorAll("[data-st]").forEach(b => b.onclick = () => stTab(b.dataset.st));
+    const inp = el.querySelector(".mo-q"), out = mo.querySelector(".mo-r"), list = mo.querySelector(".mo-l"), tabs = mo.querySelector(".st-t");
+    inp.oninput = () => { if (stGet() === "src" && SLp){ out.innerHTML = ""; list.hidden = tabs.hidden = false; SLp.filter(inp.value); return; }
+      const r = find(inp.value), q = inp.value.trim().toLowerCase(); list.hidden = tabs.hidden = !!q;
+      const gl = false && q.length > 1 && typeof GLOSSARY !== "undefined" ? GLOSSARY.filter(([t, m]) => (t + " " + m).toLowerCase().includes(q)).slice(0, 20) : [];
+      out.innerHTML = r.map((x, i) => `<button type="button" class="mo-i" data-r="${i}"><span>${esc(x.t)}</span><em>›</em></button>`).join("") +
+        gl.map(([t, m]) => `<div class="st-gl"><b>${esc(t)}</b><span>${esc(m)}</span></div>`).join("") || (q ? `<div class="mn-no">Nothing found.</div>` : "");
+      out.querySelectorAll("[data-r]").forEach(b => b.onclick = () => { const x = r[+b.dataset.r]; inp.value = ""; inp.oninput(); if (x.st) stTab(x.st); else if (x.run){ more(false); x.run(); } else { stTab("help", x.t); } }); };
     inp.onkeydown = e => { if (e.key === "Enter"){ const f = out.querySelector("[data-r]"); if (f) f.click(); } };
+    need("glossary.js", () => typeof GLOSSARY !== "undefined");
+    const up = el.querySelector(".ph-upd"); up.onclick = () => { up.disabled = true; up.textContent = "Updating…"; stamp(); window.AppUpdate && AppUpdate.update(); };
+    upLabel();
+  }
+  // when the app was last updated (Update here, or the first open of a new version): "Update (5 min ago)", a date after today
+  const stamp = () => { try { localStorage.setItem("kcgm_updated", Date.now()); } catch (e) {} };
+  function upLabel(){ const up = el && el.querySelector(".ph-upd"); if (!up) return; let t = 0; try { t = +localStorage.getItem("kcgm_updated") || 0; } catch (e) {}
+    const m = Math.round((Date.now() - t) / 6e4), d = new Date(t), today = d.toDateString() === new Date().toDateString();
+    up.textContent = !t ? "Update" : `Update (${m < 1 ? "just now" : m < 60 ? m + " min ago" : today ? Math.round(m / 60) + " h ago" : d.getDate() + "-" + "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[d.getMonth()]})`; }
+  // a new version opened for the first time counts as an update
+  if (window.AppUpdate || true) setTimeout(() => { if (!window.AppUpdate) return; AppUpdate.installed().then(v => { if (!v) return; let o = null; try { o = localStorage.getItem("kcgm_ver"); localStorage.setItem("kcgm_ver", v); } catch (e) {} if (o && o !== v) stamp(); upLabel(); }); }, 1500);
+  function stTab(k, topic){
+    if (!mo) return; lsSet("kcgm_st", k); const body = mo.querySelector(".st-b"); mo.querySelectorAll("[data-st]").forEach(b => { const on = b.dataset.st === k; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
+    body.className = "mo-l st-b st-" + k; body.innerHTML = "";
+    SLp = null; const inp = el.querySelector(".mo-q"); if (inp){ inp.placeholder = k === "src" ? "Search sources" : "Search"; if (inp.value){ inp.value = ""; } }
+    if (k === "src") Promise.all([need("offline.js", () => !!window.Offline), need("sources-view.js", () => !!window.SourceView)]).then(() => need("sources-list.js", () => !!window.SourcesList))
+      .then(() => { if (window.SourcesList && stGet() === "src") SLp = SourcesList.mount(body, { phone: true }); else if (!window.SourcesList) body.innerHTML = `<div class="mn-no">Not available offline.</div>`; });
+    if (k === "look") appearance(body);
+    if (k === "help"){ body.innerHTML = `<div class="st-l">${TOPICS.map((x, i) => `<details class="st-h" data-t="${esc(x.t)}"><summary>${esc(x.t)}</summary><p>${esc(x.h)}</p></details>`).join("")}<details class="st-h"><summary>About this app</summary><p>Project Library: the plant lists, P&amp;IDs, PFD sheets, spec and Stage 2 PDC as a reference with a smart PFD, the layout on the real plant and a quiz. Design values from the project documents, not live plant data.</p></details></div>`;
+      const at = topic && body.querySelector(`[data-t="${CSS.escape(topic)}"]`); if (at){ at.open = true; setTimeout(() => at.scrollIntoView({ block: "start" }), 0); } }
+    if (k === "gloss") need("glossary.js", () => typeof GLOSSARY !== "undefined").then(() => { if (typeof GLOSSARY === "undefined") return;
+      body.innerHTML = `<div class="st-l">${GLOSSARY.map(([t, m]) => `<div class="st-gl"><b>${esc(t)}</b><span>${esc(m)}</span></div>`).join("")}</div>`; });
+    mo.scrollTop = 0;
+  }
+  // ---------- View: the same four controls on the phone's Settings and in the desktop View menu ----------
+  const TXK = ["xs", "s", "n", "l", "xl"];
+  const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const applyBtn = () => { const r = document.documentElement.style; r.setProperty("--bz", (+lsGet("kcgm_bsz", 100) || 100) / 100); r.setProperty("--bsp", (+lsGet("kcgm_bsp", 0) || 0) + "px"); document.documentElement.classList.toggle("bsp", +lsGet("kcgm_bsp", 0) > 0); };
+  applyBtn(); addEventListener("storage", e => { if (e.key === "kcgm_bsz" || e.key === "kcgm_bsp") applyBtn(); });
+  function appearance(box){
+    const dark = document.documentElement.dataset.theme === "dark", tx = Math.max(0, TXK.indexOf(curText()));
+    const sl = (k, label, min, max, step, v) => `<label class="ap-r"><span>${label}</span><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${v}" aria-label="${label}"></label>`;
+    box.innerHTML = `<div class="ap"><label class="ap-r"><span>Dark mode</span><input type="checkbox" class="ap-sw" ${dark ? "checked" : ""} aria-label="Dark mode"></label>` +
+      sl("tx", "Text size", 0, 4, 1, tx) + sl("bz", "Button size", 80, 120, 5, lsGet("kcgm_bsz", 100)) + sl("bp", "Button spacing", 0, 8, 2, lsGet("kcgm_bsp", 0)) + `</div>`;
+    box.querySelector(".ap-sw").onchange = e => { lsSet("kcgm_theme", e.target.checked ? "dark" : "light"); if (window.kcgmTheme) kcgmTheme(); };
+    box.querySelectorAll("input[type=range]").forEach(r => { const fill = () => r.style.setProperty("--p", (r.value - r.min) / (r.max - r.min) * 100 + "%"); fill();
+      r.oninput = () => { fill(); if (r.dataset.k === "bz"){ lsSet("kcgm_bsz", r.value); applyBtn(); } if (r.dataset.k === "bp"){ lsSet("kcgm_bsp", r.value); applyBtn(); } };
+      r.onchange = () => { if (r.dataset.k === "tx"){ lsSet("kcgm_text", TXK[+r.value]); if (window.kcgmText) kcgmText(TXK[+r.value]); } dispatchEvent(new Event("resize")); }; });
+    box.querySelectorAll(".ap-r").forEach(l => l.addEventListener("click", e => e.stopPropagation()));
   }
   // settings: the Assets page has the settings screen; from another page, go there
   const settings = () => { if (O.onSettings && O.settingsPage !== false) O.onSettings(); else location.href = "index.html?cards#settings"; };
@@ -225,6 +269,8 @@ window.Tabs = (() => {
     addEventListener("storage", e => { if (e.key === "kcgm_proj") label(); });
   }
   const NAVB = `<span class="nv-bh"><button type="button" class="nv-b nv-home" aria-label="Home" title="Assets front page, nothing filtered"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg></button><button type="button" class="nv-b nv-back" aria-label="Back" title="Back to the previous view"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></button><button type="button" class="nv-b nv-fwd" aria-label="Forward" title="Forward again (redo the view change)" disabled><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button></span>`;
+  // the P tile as the home button (desktop and phone)
+  const navLogo = w => NAVB.replace(/(class="nv-b nv-home"[^>]*>)<svg.*?<\/svg>/, (m, b) => b.replace('nv-b nv-home', 'nv-b nv-home nv-logo') + mark(w));
   let depth = 0;
   // ⟶ redoes a view change you went back from: on if the browser can go forward (its navigation API, else the furthest depth
   // this tab has reached, which a new view change cuts back to itself)
@@ -249,13 +295,31 @@ window.Tabs = (() => {
   function wireNav(){ el.querySelectorAll(".nv-back").forEach(b => b.onclick = goBack); el.querySelectorAll(".nv-home").forEach(b => b.onclick = goHome); el.querySelectorAll(".nv-fwd").forEach(b => b.onclick = goFwd); fwdState(); }
   function more(on){
     if (!mo) return; mo.hidden = !on; const inp = el.querySelector(".mo-q");
-    [...el.querySelector(".ph-slot").children].forEach(c => { if (c !== inp) c.classList.toggle("mo-off", on); });
-    inp.hidden = !on; if (!on){ inp.value = ""; inp.oninput && inp.oninput(); }
-    if (on){ const h = document.getElementById("helpWin"); if (h) h.hidden = true; }
-    set(active);
+    const up = el.querySelector(".ph-upd");
+    [...el.querySelector(".ph-slot").children].forEach(c => { if (c !== inp && c !== up) c.classList.toggle("mo-off", on); });
+    inp.hidden = up.hidden = !on; if (!on){ inp.value = ""; inp.oninput && inp.oninput(); }
+    if (on){ const h = document.getElementById("helpWin"); if (h) h.hidden = true; upLabel(); stTab(stGet()); }
+    set(active); syncRow();
   }
   // a section's own search box goes into the top row (phone only); false on a desktop
-  const slot = node => { if (!phone || !el || !node) return false; const s = el.querySelector(".ph-slot"); s.insertBefore(node, s.firstChild); return true; };
+  // phone: a section's search box (and its camera) go into the wide row under the top row, in the order given; o.cam
+  // adds a camera that reads a tag from a photo into the box (Lookup's photo reader)
+  const slot = (node, o = {}) => { if (!phone || !el || !node) return false; const s = el.querySelector(".ph-slot"), at = s.querySelector(".mo-q");
+    s.insertBefore(node, at);
+    if (o.cam){ const b = document.createElement("button"); b.type = "button"; b.className = "lk-cam ph-cam"; b.setAttribute("aria-label", "Read a tag from a photo");
+      b.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></svg>';
+      const f = document.createElement("input"); f.type = "file"; f.accept = "image/*"; f.capture = "environment"; f.hidden = true; b.after(f);
+      b.onclick = () => f.click();
+      f.onchange = () => { const x = f.files[0]; f.value = ""; if (!x || !window.Lookup) return; const ph = node.placeholder; node.value = "";
+        const say = m => node.placeholder = m;
+        Lookup.load().then(() => Lookup.scan(x, say)).then(r => { node.placeholder = ph; node.value = r.found.length ? r.found[0].q : (r.text.split(/\s+/)[0] || "");
+          node.dispatchEvent(new Event("input", { bubbles: true })); }).catch(e => { node.placeholder = ph; alert("Photo reading failed: " + (e.message || e)); }); };
+      s.insertBefore(b, at); s.insertBefore(f, at); }
+    syncRow(); return true; };
+  // the row shows only when something in it is showing (none on the Quiz)
+  function syncRow(){ if (!phone || !el) return; const s = el.querySelector(".ph-slot");
+    const on = [...s.children].some(c => c.type !== "file" && getComputedStyle(c).display !== "none" && !c.hidden);
+    if (document.documentElement.classList.contains("has-sr") !== on){ document.documentElement.classList.toggle("has-sr", on); dispatchEvent(new Event("resize")); } }
   const css = `/* the camera / status strip at the top: half its height is enough to clear the camera hole */
 :root{--sat:calc(env(safe-area-inset-top) * .5);--tb:calc(44px + var(--sat));--fh:22px;--fl:13px;--fb:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 /* one font everywhere, only three sizes */
@@ -273,6 +337,8 @@ body,button,input,select,textarea,code,kbd,pre,svg,.leaflet-container{font-famil
 .tb-t:hover{color:var(--ink)}
 .tb-t.on{color:var(--ink);background:color-mix(in srgb,var(--ink) 18%,var(--panel,var(--card)));box-shadow:0 1px 3px rgba(0,0,0,.25)}
 html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.16)}
+.tb-x{margin-left:22px;background:none;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 16%,var(--line))}
+.tb-x .tb-t.on,html[data-theme="light"] .tb-x .tb-t.on{background:color-mix(in srgb,var(--gold,var(--accent)) 14%,var(--panel,var(--card)));box-shadow:inset 0 0 0 1.5px var(--gold,var(--accent));color:color-mix(in srgb,var(--gold,var(--accent)) 70%,var(--ink))}
 .tb-i{font-size:var(--fb,15px)}
 .mn{position:relative;display:flex}
 .lg{display:flex;align-items:center;gap:6px;padding:0 12px 0 4px;margin-right:4px;border-right:1px solid var(--line);color:var(--ink)}
@@ -332,7 +398,7 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .nv-b:disabled{opacity:.35;cursor:default}.nv-b:disabled:hover{border-color:var(--line);color:var(--ink)}
 .nv-b:hover{border-color:var(--gold,var(--accent));color:var(--gold,var(--accent))}
 .nv-b.nv-logo,.nv-b.nv-logo:hover{border:0;background:none;border-radius:10px;width:34px;height:34px}.nv-b.nv-logo svg{width:34px!important;height:34px!important}.nv-b.nv-logo:hover{filter:brightness(1.06);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold,var(--accent)) 35%,transparent)}   /* desktop: the P is the home button */
-.ph-top .nv-bh{margin-right:2px;gap:4px}.ph-top .nv-b{width:29px;height:29px}.ph-top .nv-b svg{width:16px;height:16px}
+.ph-top .nv-bh{margin-right:2px;gap:6px}.ph-top .nv-b.nv-logo,.ph-top .nv-b.nv-logo svg{width:32px!important;height:32px!important}.ph-top .nv-b{width:29px;height:29px}.ph-top .nv-b svg{width:16px;height:16px}
 :root.phone .nv-b{border-width:1.5px;border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}:root.phone .nv-b svg{stroke-width:2.6}   /* phone: firmer buttons */
 :root.phone :is(.btn,.pf-b,.lk-pill,.lk-btn,.lk-vw,.ts-r,.x,#qBtns button){border-width:1.5px;border-style:solid;border-color:color-mix(in srgb,var(--ink) 22%,var(--line))}
 :root.phone :is(.btn,.pf-b,.lk-pill,.lk-btn,.ts-r,#qBtns button){font-weight:800}
@@ -348,7 +414,7 @@ button:disabled{cursor:default}
 .tbw.ph{border-bottom:1px solid var(--line)}
 .ph-top{height:52px;display:flex;align-items:center;gap:8px;padding:0 max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))}
 .ph-top .lg-m{flex:none;display:flex}.ph-top .lg-m svg{width:30px;height:30px}
-:root.phone .pj-m{left:auto;right:-60px}:root.phone .pj{flex:0 1 112px;min-width:72px}:root.phone .pj-b{width:100%;max-width:112px;min-width:0;height:36px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b b{font-size:var(--fb,15px);font-weight:700}   /* the same size as the rest of the text (it follows the text size setting) */
+:root.phone .pj-m{left:auto;right:-60px}:root.phone .pj{flex:1 1 auto;min-width:72px}:root.phone .pj-b{width:100%;max-width:none;min-width:0;height:36px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b b{font-size:var(--fb,15px);font-weight:700}   /* the same size as the rest of the text (it follows the text size setting) */
 .ph-top .ph-n{display:none}:root.in-settings .ph-top .ph-n{display:block}:root.in-settings .ph-top .pj{display:none}   /* (the page name only on Settings) */
 .ph-n{flex:0 1 auto;min-width:0;font-size:var(--fh,22px);font-weight:800;white-space:nowrap;overflow:hidden;line-height:1.1}   /* the page's name, like an item's tag (fitted to the row) */
 .ph-slot{flex:1;min-width:0;display:flex;align-items:center;gap:6px}.ph-slot>*{min-width:0}.ph-slot>.mo-off{display:none!important}
@@ -356,18 +422,19 @@ button:disabled{cursor:default}
 .tb-t svg{width:24px!important;height:24px!important;flex:none;cursor:inherit!important;display:block}.mo-i i svg{width:21px!important;height:21px!important;cursor:inherit!important}.mo-i em svg{width:18px!important;height:18px!important;cursor:inherit!important}.nv-b svg,.pj svg{cursor:inherit!important}
 /* phone top row: the right end is one round button on every page: the camera on Assets, a search elsewhere, which
    opens across the whole row when tapped (and stays open while it holds text) */
-:root.phone .ph-top{position:relative}:root.phone .ph-slot{flex:none;justify-content:flex-end;margin-left:auto;padding-left:6px}
-.bn-t,.bn-t span{line-height:1.2}   /* the same on every page (some set a line height on the body, some don't) */
-:root.phone .ph-slot>input:not(#_){flex:none;width:34px!important;min-width:34px!important;max-width:none!important;height:34px!important;padding:0!important;border-radius:50%!important;border:1.5px solid color-mix(in srgb,var(--ink) 22%,var(--line))!important;background:var(--card,var(--panel)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7480' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E") center/17px no-repeat!important;color:transparent!important;caret-color:transparent;cursor:pointer;box-shadow:none!important;margin:0!important;font-size:16px!important}
-:root.phone .ph-slot>input:not(#_)::placeholder{color:transparent}
-:root.phone .ph-slot>input:not(#_)::-webkit-search-cancel-button{display:none}
-:root.phone .ph-slot>input:not(#_):focus,:root.phone .ph-slot>input:not(#_):not(:placeholder-shown){position:absolute;left:10px;right:10px;top:50%;transform:translateY(-50%);width:auto!important;height:40px!important;border-radius:20px!important;padding:0 14px 0 40px!important;background-position:13px center!important;color:var(--ink)!important;caret-color:auto;z-index:6;box-shadow:0 2px 12px rgba(0,0,0,.18)!important;cursor:text}
-:root.phone .ph-slot>input:not(#_):focus::placeholder{color:var(--mute)}
-:root.phone .ph-slot>input:not(#_):focus::-webkit-search-cancel-button{display:initial}
-:root.phone .ph-slot .lk-cam{flex:none;width:34px;height:34px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--ink) 22%,var(--line));background:var(--card,var(--panel));color:var(--ink);display:grid;place-items:center;padding:0;margin:0}
+:root.phone .ph-slot .lk-cam{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--ink) 22%,var(--line));background:var(--card,var(--panel));color:var(--ink);display:grid;place-items:center;padding:0;margin:0}
 :root.phone .ph-slot .lk-cam svg{width:18px!important;height:18px!important}
-:root.in-settings .ph-slot>:not(.mo-q){display:none!important}   /* Settings: just its title */
-.ph-slot input[type=search],.ph-slot .mo-q{flex:1;width:100%;height:36px;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:18px;padding:0 12px;font:inherit;font-size:16px}
+/* phone: the wide search row under the top row (Assets, PFD, Layout, Settings): a round ended box with the camera
+   (or Settings' Update) at its right */
+.ph-sr{display:none;padding:0 max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left))}:root.has-sr .ph-sr{display:block}
+:root.phone.has-sr{--tb:calc(100px + var(--sat))}
+.ph-slot>input:not([type=file]):not(#_){flex:1 1 auto;width:auto!important;min-width:0;max-width:none!important;height:40px!important;box-sizing:border-box;margin:0!important;border:1.5px solid color-mix(in srgb,var(--ink) 14%,var(--line))!important;
+  background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7480' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E") 13px center/16px no-repeat!important;
+  color:var(--ink)!important;border-radius:20px!important;padding:0 12px 0 38px!important;font:inherit;font-size:var(--fb,15px)!important;box-shadow:none!important;outline:none}
+.ph-slot>input:not([type=file]):not(#_):focus{border-color:var(--gold,var(--accent))!important}
+.ph-slot .mo-q[hidden]{display:none}
+.ph-upd{flex:none;height:40px;border:1.5px solid var(--gold,var(--accent));background:var(--card,var(--panel));color:color-mix(in srgb,var(--gold,var(--accent)) 70%,var(--ink));border-radius:20px;padding:0 12px;font:inherit;font-weight:800;font-size:var(--fl,13px);white-space:nowrap;cursor:pointer}
+.ph-upd[hidden]{display:none}.ph-upd:disabled{opacity:.6}
 .bn{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:var(--panel,var(--card));border-top:1px solid var(--line);
   padding:4px max(2px,env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(2px,env(safe-area-inset-left));height:var(--bn);box-sizing:border-box}
 .bn-t{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--mute);text-decoration:none;font-size:var(--fl,13px);font-weight:600;-webkit-tap-highlight-color:transparent}
@@ -381,6 +448,40 @@ button:disabled{cursor:default}
 .mo-i i{flex:none;width:26px;display:grid;place-items:center;font-style:normal;color:var(--mute)}.mo-i span{flex:1;min-width:0}.mo-i em{font-style:normal;color:var(--mute);display:grid;place-items:center}
 .mo-i small{display:block;color:var(--mute);font-size:var(--fl,13px);margin-top:2px}.mo-i small b{font-weight:400}.mo-r .mn-no{padding:14px 16px}
 .mo-l[hidden]{display:none}
+/* phone Settings: underlined tabs, then one line rows */
+.st-t{position:sticky;top:-4px;z-index:2;display:flex;background:var(--panel,var(--card));border-bottom:1px solid var(--line);margin-top:-4px}.st-t[hidden]{display:none}
+.st-t button{flex:1 1 0;min-width:0;border:0;background:none;color:var(--mute);font:inherit;font-size:var(--fl,13px);font-weight:800;padding:12px 4px 10px;line-height:1.2;border-bottom:3px solid transparent;cursor:pointer}
+.st-t button.on{color:color-mix(in srgb,var(--gold,var(--accent)) 75%,var(--ink));border-bottom-color:var(--gold,var(--accent))}
+.st-b{padding:10px 10px 16px}.st-b .dl-l{border-radius:12px}
+.st-l{background:var(--card,var(--panel));border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.st-h{border-bottom:1px solid var(--line)}.st-h:last-child{border-bottom:0}
+.st-h summary{list-style:none;padding:11px 12px;font-size:var(--fb,15px);font-weight:800;color:var(--ink);display:flex;align-items:center;gap:8px}.st-h summary::-webkit-details-marker{display:none}
+.st-h summary::after{content:"›";margin-left:auto;color:var(--mute);font-size:1.3em;line-height:1;transition:transform .15s}.st-h[open] summary::after{transform:rotate(90deg)}
+.st-h p{margin:0;padding:0 12px 12px;font-size:var(--fb,15px);line-height:1.45;color:var(--ink)}
+.st-gl{display:flex;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:var(--fb,15px);background:var(--card,var(--panel))}.st-gl:last-child{border-bottom:0}
+.st-gl b{flex:none;min-width:58px;color:var(--ink)}.st-gl span{color:var(--mute);line-height:1.35}
+.mo-r .st-gl{border-left:0;border-right:0}
+/* View: a switch and three sliders, one row each (phone Settings and the desktop View menu) */
+.ap{background:var(--card,var(--panel));border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ap-r{display:flex;align-items:center;gap:14px;padding:11px 12px;border-bottom:1px solid var(--line);font-size:var(--fb,15px);font-weight:800;color:var(--ink);cursor:default}.ap-r:last-child{border-bottom:0}
+.ap-r span{flex:0 0 7.2em;line-height:1.2}
+.ap-r input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:22px;background:linear-gradient(var(--gold,var(--accent)),var(--gold,var(--accent))) 0 50%/var(--p,50%) 4px no-repeat,linear-gradient(var(--line),var(--line)) 0 50%/100% 4px no-repeat;margin:0}
+.ap-r input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--card,#fff);border:2px solid var(--gold,var(--accent));box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.ap-r input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--card,#fff);border:2px solid var(--gold,var(--accent))}
+.ap-sw{-webkit-appearance:none;appearance:none;margin:0 0 0 auto;flex:none;width:44px;height:26px;border-radius:13px;background:color-mix(in srgb,var(--ink) 18%,var(--line));position:relative;transition:background .15s;cursor:pointer}
+.ap-sw::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .15s}
+.ap-sw:checked{background:var(--gold,var(--accent))}.ap-sw:checked::after{left:21px}
+.mn-v .mn-d{min-width:360px;padding:6px}.mn-v .ap{border:0}
+/* View → Button size and Button spacing: the app's buttons and pills scaled, and spaced apart */
+:where(.btn,.hbtn,.pill,.chip,.nv-b,.lk-pill,.lk-btn,.lk-cam,.lk-st,.pf-b,.qp,#qBtns>button,.qd-b,.off-b,.dl-b,.ts-r,.hint,.bp-o,.bp-c,.bw-o,.bw-any,.bp-any,#pfab>button,.ph-upd){zoom:var(--bz,1)}
+:root.bsp :where(.btn,.hbtn,.pill,.chip,.nv-b,.lk-pill,.lk-btn,.lk-cam,.lk-st,.pf-b,.qp,#qBtns>button,.qd-b,.off-b,.dl-b,.ts-r,.hint,.bp-o,.bp-c,.bw-o,.bw-any,.bp-any,#pfab>button,.ph-upd){margin:calc(var(--bsp,0px) / 2)!important}
+/* selected: a cream fill, a solid gold ring (1.5px border plus a 1px inset shadow) and the normal ink colour for text and
+   icons (counts inside stay grey); dark mode a warm brown fill. Phone only: pills, toggles, segments, chips, the tab bar */
+:root{--sel-bg:#fdf6e6;--sel-ring:#e8b44a;--sel-ink:#1d2430}html[data-theme="dark"]{--sel-bg:#3a3020;--sel-ink:#e9edf2}
+:root.phone :is(.lk-pill.on,.pf-b.on,.qp.on,#qBtns #qShuf.on,#qdRev.on,.sl-p.on,.bp-c.on,.bp-f.set,.fx-p.on,#pfab button.on,.lo-lb.on,.hbtn.on,.qfbtn.on,.seg button.on,.flow.on,.step.on,.lg-item.on,.lg-li.on,.mn-th button.on){background:var(--sel-bg)!important;border:1.5px solid var(--sel-ring)!important;box-shadow:inset 0 0 0 1px var(--sel-ring)!important;color:var(--sel-ink)!important}
+:root.phone :is(.tb-x .tb-t.on,.ts-th button.on,.qd-sg button.on,.lo-seg button.on,.lo-sw button.on),:root.phone[data-theme] :is(.tb-x .tb-t.on,.ts-th button.on,.qd-sg button.on,.lo-seg button.on,.lo-sw button.on){background:var(--sel-bg)!important;box-shadow:inset 0 0 0 2.5px var(--sel-ring)!important;color:var(--sel-ink)!important}
+:root.phone :is(.st-t button.on,.vz-tab.on){color:var(--sel-ink)!important;font-weight:900!important;border-bottom-color:var(--sel-ring)!important}
+.bn-t.on,html[data-theme] .bn-t.on{color:var(--sel-ink)!important;font-weight:800;background:var(--sel-bg)!important;box-shadow:inset 0 0 0 2.5px var(--sel-ring)!important;border-radius:14px;margin:2px 3px}.bn-t.on:before{display:none!important}
 /* phone: help opens as a page between the two bars */
 :root.phone .hw{top:var(--tb);bottom:var(--bn);padding:0;background:var(--bg);z-index:58}
 :root.phone .hw-b{border:0;border-radius:0;width:100%;max-height:none;height:100%;box-shadow:none}`;

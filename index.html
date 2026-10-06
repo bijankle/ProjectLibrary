@@ -206,14 +206,13 @@ body.searching #homeMain{display:none}
 :root.phone body{padding-bottom:var(--bn)}
 :root.phone .appbar{display:none}
 :root.phone .page{padding-bottom:16px}
+:root.phone #lkRoot .lk-bar:empty,:root.phone #lkRoot .lk-bar{display:none!important}
 :root.phone #lkRoot{display:flex;margin:8px 0 8px}:root.phone #lkRoot .lk-bar{flex:1;gap:6px;min-width:0}
-:root.phone #lkCam{margin-left:auto;flex:none;height:29px;width:34px}
 :root.phone .x{font-size:calc(var(--fb,15px) * 1.4)}   /* (the quiz's ✕ follows the text size) */
 :root.phone #lkRoot .lk-in{height:31px;border-width:1.5px;font-size:var(--fb,15px)!important;border-radius:18px;padding:0 10px 0 32px;font-size:16px;
   background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") 10px 50%/16px no-repeat}
 :root.phone #lkRoot .lk-cam{width:36px;height:36px;border-radius:50%;font-size:17px}
-:root.phone #qSearch{height:36px}
-.ph-hide,:root:not(.phone) #qSearch{display:none!important}
+.ph-hide{display:none!important}
 /* quiz: progress on top, the card, two big buttons at the bottom */
 .qd-main{flex:1;min-width:0;display:flex;flex-direction:column}
 .qd-side,.qd-list,#qdBar{display:none}
@@ -266,7 +265,24 @@ body.searching #homeMain{display:none}
 :root.phone #settings h2{margin:18px 4px 6px}
 :root.phone #settings>.page>.topbar,:root.phone #gloss>.page>.topbar,:root.phone #history>.page>.topbar{display:none}   /* the top row names the page */
 :root.phone #settings .sgc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
-:root.phone #settings #fsBtn{background:var(--card);text-align:left;border-radius:14px}
+/* Learn: Quiz and Glossary as two tabs (phone: underlined across the top; desktop: a two way switch over the topics);
+   the glossary's own search box sits under them and only on the Glossary tab */
+.lt{display:flex;flex:none}
+:root.phone .lt{margin:-12px -14px 8px;background:var(--card);border-bottom:1px solid var(--line)}
+:root.phone .lt button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:var(--fl,13px);font-weight:800;padding:11px 4px 9px;border-bottom:3px solid transparent;cursor:pointer}
+:root.phone .lt button.on{color:var(--ink);font-weight:900;border-bottom-color:var(--gold)}
+:root:not(.phone) .lt{position:absolute;left:22px;top:14px;width:556px;gap:2px;padding:3px;border-radius:10px;background:color-mix(in srgb,var(--ink) 8%,transparent);z-index:2}
+:root:not(.phone) .lt button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:6px 10px;border-radius:8px;cursor:pointer}
+:root:not(.phone) .lt button.on{background:#fdf6e6;color:#1d2430;box-shadow:inset 0 0 0 2.5px #e8b44a}
+html[data-theme="dark"]:not(.phone) .lt button.on{background:#3a3020;color:var(--ink)}
+:root:not(.phone) #deck{position:fixed}:root:not(.phone) .qd-side{padding-top:62px!important}
+#deck.glos .qd-main,#deck.glos .qd-list,#deck.glos #qdSideIn{display:none!important}
+#lgPane{flex:1;min-width:0;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px}#lgPane[hidden]{display:none}
+#lgPane .search{flex:none}
+:root:not(.phone) #deck.glos #lgPane{padding:14px 22px 16px}:root:not(.phone) #deck.glos .qd-side{width:300px}:root:not(.phone) #deck.glos .lt{width:256px}
+:root:not(.phone) #deck.glos #lgQ{position:absolute;left:22px;top:62px;width:256px;box-sizing:border-box}   /* desktop: the glossary search under the switch */
+:root.phone #lgPane{margin:0 -14px -10px;padding:0 14px 10px}
+:root.phone #lgPane .gl-h{top:0}:root.phone #lgPane .gl-az{top:calc(var(--tb) + 110px)}
 /* glossary: A to Z with sticky letters and a letter strip */
 .gl-h,.gl-az{display:none}
 :root.phone .gl{display:block;background:none;border-radius:0;overflow:visible}
@@ -359,7 +375,9 @@ body.searching #homeMain{display:none}
 
 <!-- DECK -->
 <section id="deck">
+  <div class="lt" id="learnTabs" role="tablist"><button type="button" role="tab" data-lt="quiz">Quiz</button><button type="button" role="tab" data-lt="gloss">Glossary</button></div>
   <aside class="qd-side" id="qdSide" aria-label="Deck settings"></aside>
+  <div id="lgPane" hidden><input class="search" id="lgQ" type="search" placeholder="Search the glossary, e.g. F21, PAX, roping" autocomplete="off" aria-label="Search the glossary"><div class="gl" id="lgList"></div></div>
   <div class="qd-main">
   <div class="qpills" id="qPills" aria-label="Topics"></div>
   <div class="topbar qprog"><button class="x" id="quitBtn" hidden></button><button class="x" id="deckSet" hidden></button>
@@ -398,15 +416,6 @@ body.searching #homeMain{display:none}
   <div class="topbar" style="margin-bottom:12px">
     <h1 style="margin:0;font-size:22px">Settings</h1>
   </div>
-  <button class="btn" id="fsBtn" style="width:100%;margin-bottom:6px">Full screen</button>
-  <h2>Theme</h2>
-  <div class="sgc" id="thRoot"></div>
-  <h2>Text size</h2>
-  <div class="sgc" id="txRoot"></div>
-  <h2>App size</h2>
-  <div class="sgc" id="tsRoot"></div>
-  <h2>Offline downloads</h2>
-  <div class="sgc" id="offRoot"></div>
   <h2>Free Google AI key</h2>
   <div class="sgc"><input class="field secret" id="keyIn" type="text" name="kcgm-ai-key" placeholder="Paste key (starts with AIza)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
   <div class="row" style="margin-top:10px">
@@ -472,8 +481,7 @@ body.searching #homeMain{display:none}
     $("deck").classList.toggle("on", id === "deck"); window.scrollTo(0, 0);
     // phone: the top row's search follows the section (assets search, or the quiz questions)
     if (Tabs.title) Tabs.title({ settings: "Settings", gloss: "Glossary", history: "Q&A history" }[id] || "");
-    const qz = TAB_OF[id] === "quiz"; $("lkRoot").classList.toggle("ph-hide", qz); if ($("lkCam")) $("lkCam").classList.toggle("ph-hide", qz); if ($("qSearch")) $("qSearch").classList.toggle("ph-hide", !qz);
-    if (id === "settings" && window.Offline) Offline.mount($("offRoot"));
+    const qz = TAB_OF[id] === "quiz"; ["lkRoot", "lkIn", "lkCam"].forEach(k => $(k) && $(k).classList.toggle("ph-hide", qz));
     if (id === "home" && window.Browse) requestAnimationFrame(() => Browse.fit());   // e.g. after the text size changed
     nav(true);
   };
@@ -829,7 +837,7 @@ body.searching #homeMain{display:none}
   $("homeBtn").onclick = () => start(pick());
 
   // ---------- GLOSSARY ----------
-  function renderGloss(f){
+  function renderGloss(f, out = $("gList"), box = null){
     f = (f || "").toLowerCase();
     const list = GLOSSARY.filter(([k, v]) => !f || k.toLowerCase().includes(f) || v.toLowerCase().includes(f));
     if (Tabs.phone){   // phone: A to Z, a sticky letter over each group and a strip down the side to jump
@@ -837,11 +845,11 @@ body.searching #homeMain{display:none}
       const sorted = list.slice().sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: "base", numeric: true }));
       let h = "", last = ""; sorted.forEach(([k, v]) => { const c = L(k); if (c !== last){ h += `<div class="gl-h" id="gl-${c}">${c}</div>`; last = c; } h += `<div class="gl-e"><b>${k}</b><span>${v}</span></div>`; });
       const letters = [...new Set(sorted.map(x => L(x[0])))];
-      $("gList").innerHTML = (h || `<div class="gl-e"><b>No match</b></div>`) + (letters.length > 1 ? `<div class="gl-az">${letters.map(c => `<i data-l="${c}">${c}</i>`).join("")}</div>` : "");
-      const az = $("gList").querySelector(".gl-az"); if (az){ const go = e => { const t = document.elementFromPoint(az.getBoundingClientRect().left + 6, e.clientY); const c = t && t.dataset && t.dataset.l; if (c){ const g = $("gl-" + c); if (g) window.scrollTo(0, g.offsetTop - az.getBoundingClientRect().top + 60); } };
+      out.innerHTML = (h || `<div class="gl-e"><b>No match</b></div>`) + (letters.length > 1 ? `<div class="gl-az">${letters.map(c => `<i data-l="${c}">${c}</i>`).join("")}</div>` : "");
+      const az = out.querySelector(".gl-az"); if (az){ const go = e => { const t = document.elementFromPoint(az.getBoundingClientRect().left + 6, e.clientY); const c = t && t.dataset && t.dataset.l; if (c){ const g = out.querySelector("#gl-" + CSS.escape(c)); if (g){ if (box) box.scrollTop = g.offsetTop - box.offsetTop; else window.scrollTo(0, g.offsetTop - az.getBoundingClientRect().top + 60); } } };
         az.addEventListener("pointerdown", e => { az.setPointerCapture(e.pointerId); go(e); }); az.addEventListener("pointermove", e => { if (e.buttons || e.pointerType === "touch") go(e); }); }
       return; }
-    $("gList").innerHTML = list.map(([k, v]) => `<div class="k">${k}</div><div>${v}</div>`).join("") || `<div class="k">–</div><div>No match</div>`;
+    out.innerHTML = list.map(([k, v]) => `<div class="k">${k}</div><div>${v}</div>`).join("") || `<div class="k">–</div><div>No match</div>`;
   }
   // ---------- LOOKUP ----------
   let lk = null;
@@ -890,7 +898,7 @@ body.searching #homeMain{display:none}
     sp.addEventListener("dblclick", () => { setW(DEF); try { localStorage.removeItem("kcgm_split"); } catch (e) {} dispatchEvent(new Event("resize")); }); }
   Browse.mount($("browse"), lk); Browse.onChange(() => nav(false));
   lk.input.addEventListener("input", () => setTimeout(() => nav(false), 200));
-  $("glossBtn").onclick = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
+  $("glossBtn").onclick = () => openGloss();
   $("gSearch").oninput = e => renderGloss(e.target.value);
 
   // ---------- SETTINGS ----------
@@ -900,7 +908,7 @@ body.searching #homeMain{display:none}
     $("modelWrap").style.display = AI.ready() && AI.model() ? "block" : "none";
     if (AI.model()) $("modelSel").innerHTML = `<option>${AI.model()}</option>`;
   }
-  const openSettings = () => { renderSettings(); TextSize.theme($("thRoot")); TextSize.text($("txRoot")); TextSize.mount($("tsRoot")); show("settings"); };
+  const openSettings = () => { renderSettings(); show("settings"); };   // (theme and sizes: View menu, phone Settings → Appearance)
   $("keyTest").onclick = async () => {
     const k = $("keyIn").value.trim();
     if (!k){ $("keyStatus").textContent = "Paste a key first."; return; }
@@ -931,14 +939,6 @@ body.searching #homeMain{display:none}
     show("history");
   };
 
-  // ---------- FULL SCREEN ----------
-  $("fsBtn").onclick = () => {
-    const el = document.documentElement;
-    if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
-    else if (document.exitFullscreen) document.exitFullscreen();
-  };
-  if (matchMedia("(display-mode: fullscreen)").matches || matchMedia("(display-mode: standalone)").matches) $("fsBtn").style.display = "none";
-
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   renderHome();
   // the tab strip: Assets and Quiz switch here, PFD and Layout open pfd.html; a quiz left half way resumes
@@ -953,15 +953,18 @@ body.searching #homeMain{display:none}
   function assetsHome(){ if (window.AssetViz) AssetViz.home(); restoring = true; lk.input.value = ""; Browse.reset(); if (lk.current()) lk.close(); show("home"); restoring = false; }
   // the Quiz tab opens on a card: the deck in progress, or a fresh one with the last choices
   function openQuiz(){ if (run && card) show("deck"); else start(); }
-  const openGloss = () => { renderGloss(""); $("gSearch").value = ""; show("gloss"); };
-  // phone: the Assets search (with its camera) and a quiz search share the top row; the quiz one starts a deck of the
-  // cards whose question or answer has every word typed
-  { const q = document.createElement("input"); q.type = "search"; q.id = "qSearch"; q.className = "ph-hide"; q.placeholder = "Search the questions"; q.setAttribute("aria-label", "Search the quiz questions"); q.enterKeyHint = "go";
-    q.onkeydown = e => { if (e.key !== "Enter") return; const w = q.value.toLowerCase().split(/\s+/).filter(Boolean); if (!w.length) return;
-      const hit = CARDS.filter(c => w.every(x => (c.q + " " + c.a + " " + (c.e || "")).toLowerCase().includes(x)));
-      q.blur(); if (hit.length) start(shuffle(hit)); else { q.value = ""; q.placeholder = "No question has all those words"; } };
-    // phone: the Assets search runs full width on the page, over the filters; its camera sits in the top row
-    if (Tabs.phone){ const cam = $("lkRoot").querySelector(".lk-cam"); $("lkResults").before($("lkRoot")); if (cam){ cam.id = "lkCam"; Tabs.slot(cam); } } }
+  // Learn: Quiz or Glossary (the last one used is kept)
+  const learnTab = t => { try { localStorage.setItem("kcgm_lt", t); } catch (e) {} const g = t === "gloss";
+    document.querySelectorAll("#learnTabs [data-lt]").forEach(b => { const on = b.dataset.lt === t; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
+    $("deck").classList.toggle("glos", g); $("lgPane").hidden = !g;
+    if (g && !$("lgList").innerHTML) renderGloss($("lgQ").value, $("lgList"), $("lgPane")); };
+  document.querySelectorAll("#learnTabs [data-lt]").forEach(b => b.onclick = () => learnTab(b.dataset.lt));
+  $("lgQ").oninput = () => renderGloss($("lgQ").value, $("lgList"), $("lgPane"));
+  learnTab((() => { try { return localStorage.getItem("kcgm_lt") || "quiz"; } catch (e) { return "quiz"; } })());
+  const openGloss = () => { openQuiz(); learnTab("gloss"); };
+  // phone: the Assets search box and its camera go in the wide row under the top row (none on the Quiz)
+  if (Tabs.phone){ const inp = lk.input, cam = $("lkRoot").querySelector(".lk-cam"), f = $("lkRoot").querySelector("input[type=file]"); inp.id = "lkIn";
+    $("lkResults").before($("lkRoot")); Tabs.slot(inp); if (cam){ cam.id = "lkCam"; Tabs.slot(cam); if (f) cam.after(f); } }
   // the project picker lives in the top bar (tabs.js); a search already showing is run again when it changes
   Lookup.onProj(() => { const v = lk.input.value.trim(); if (v && !lk.current() && !(window.Browse && Browse.query(v))) lk.search(v); });
   const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#home"){ assetsHome(); history.replaceState(history.state, "", "#assets"); } else if (location.hash === "#gloss") openGloss(); else if (location.hash === "#settings") openSettings(); };

@@ -109,6 +109,8 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
    (tap one for the documents, dates and comment); Sources: one row per document, tap it for the details ---------- */
 #about{display:none}
 :root.phone body{padding-top:var(--tb);padding-bottom:var(--bn)}
+/* desktop: the app's tab strip on top (Sources and Checks are its last two tabs), so no header or tabs of its own */
+:root.has-tb:not(.phone) body{padding-top:var(--tb)}:root.has-tb:not(.phone) .page>header,:root.has-tb:not(.phone) .tabs,:root.has-tb:not(.phone) #ver{display:none}
 :root.phone .page>header,:root.phone #ver,:root.phone .tabs,:root.phone #checksPane>p.sub{display:none}
 :root.phone #checksPane.about>p.sub{display:block}
 :root.phone #about{display:inline-block;border:0;background:none;color:var(--gold);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:4px 0;margin:0 0 6px;cursor:pointer}
@@ -159,11 +161,12 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
     <button class="tab" role="tab" id="tabDocs" aria-selected="false">Source documents <span id="nDocs"></span></button>
   </div>
   <div id="docsPane" hidden>
-    <p class="sub" id="docsRule"></p>
+    <div id="slRoot"></div>
+    <div hidden><p class="sub" id="docsRule"></p>
     <table>
       <thead><tr><th>Document number</th><th>Title</th><th>Rev</th><th>Original tables</th></tr></thead>
       <tbody id="docRows"></tbody>
-    </table>
+    </table></div>
   </div>
   <div id="checksPane">
   <button type="button" id="about">About these checks</button>
@@ -186,6 +189,8 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
 <script src="app-update.js"></script>
 <script src="xlsx-lite.js"></script>
 <script src="sources-view.js"></script>
+<script src="offline.js"></script>
+<script src="sources-list.js"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
@@ -206,6 +211,9 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
       onHome: () => { popping = true; tab("checks"); popping = false; $("q").value = ""; off = new Set(); shown = 200; chips(); draw(); scrollTo(0, 0); return true; } }); Tabs.slot($("q")); $("q").placeholder = "Filter the checks";
     $("about").onclick = () => { const on = $("checksPane").classList.toggle("about"); $("about").textContent = on ? "Hide the explanation" : "About these checks"; };
     $("rows").addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) tr.classList.toggle("open"); }); }
+  else if (window.Tabs){ Tabs.mount({ active: location.hash === "#sources" ? "sources" : "checks",
+      onTab: t => { if (t !== "sources" && t !== "checks") return false; tab(t === "sources" ? "docs" : "checks"); return true; },
+      onPop: st => { if (st.s === "sources" || st.s === "checks"){ popping = true; tab(st.s === "sources" ? "docs" : "checks"); popping = false; } } }); }
 
   function chips(){
     $("sevChips").innerHTML = SEV.map(s => { const n = all.filter(r => r.sev === s).length;
@@ -231,11 +239,17 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
   }
   // Source documents tab: every document the app is built from, newest revision first
   let DOCS = {};
-  const docRev = v => v.rev ? "Rev " + v.rev : "–";
+  const docRev = v => v.revText || (v.rev ? "Rev " + v.rev : "–");
+  // the drawings and the spec are sources too (they aren't compared in the checks, so build_issues.py doesn't list them)
+  const EXTRA = {
+    pid: { number: "2000-Fxx-PID-PR series", full: "P&IDs", title: "P&IDs", kind: "Drawing", revText: "Each its own", used: "Every drawing opened from an item, the tags and drawing numbers on the sheets, and the drawing search", note: "Each sheet carries its own revision in its title block; the newest issue of each is used." },
+    spec: { number: "2000-F00-STS-PP-10001", full: "Piping and Valve Specification", title: "Pipe & valve spec", kind: "Specification", rev: "3", used: "Pipe classes and valve datasheets shown for every line and valve" } };
+  fetch("PIDs/index.json").then(r => r.json()).then(d => { const n = Object.keys(d.pids).filter(k => /-PID-/.test(k)).length;
+    EXTRA.pid.n = n; EXTRA.pid.note = `${n} drawings. ` + EXTRA.pid.note; const td = document.querySelector('#docRows td.tb[data-k="pid"]'); if (td) td.textContent = `${n} drawings`; }).catch(() => {});
   const review = v => v.review ? v.review + (v.review_date ? " (" + fmt(v.review_date) + ")" : "") : "–";
   const docList = () => Object.entries(DOCS).map(([k, v]) => ({ ...v, k })).sort((a, b) => (b.date || "0").localeCompare(a.date || "0"));
   function sources(m){
-    DOCS = m.docs || {};
+    DOCS = Object.assign({}, m.docs || {}, EXTRA);
     $("nDocs").textContent = `(${Object.keys(DOCS).length})`;
     $("docsRule").textContent = m.rule + " Each revision and date is read from the document's own revision block (spreadsheet cover page, drawing title block or report cover). Newest first.";
     // one line per document: number, title with ⓘ, rev, the two table buttons; everything else opens under the ⓘ
@@ -247,6 +261,8 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
         ${kv("Used in the app for", esc(v.used))}${v.full !== v.title ? kv("Called in the checks", "“" + esc(v.title) + "”") : ""}${kv("Note", esc(v.note))}
         ${v.sheets ? kv("Sheets", `${v.sheets.length}: ${esc(v.sheets[0].slice(-5))} to ${esc(v.sheets[v.sheets.length - 1].slice(-5))}`) : ""}<div class="trows" data-k="${v.k}"></div></div>
         ${v.history && v.history.length > 1 ? `<div class="dh">Revision history</div><table class="hist">${v.history.slice().reverse().map(h => `<tr><td>Rev ${esc(h.rev)}</td><td class="date">${fmt(h.date)}</td><td>${esc(h.status)}</td></tr>`).join("")}</table>` : ""}</td></tr>`).join("");
+    { const td = $("docRows").querySelector('td.tb[data-k="pid"]'); if (td && EXTRA.pid.n) td.textContent = `${EXTRA.pid.n} drawings`; }
+    { const td = $("docRows").querySelector('td.tb[data-k="spec"]'); if (td) td.innerHTML = `<div class="tb-btns"><a class="btn" href="spec/pvs.pdf" target="_blank" rel="noopener">PDF 9.3 MB</a></div>`; }
     if (PHONE) $("docRows").querySelectorAll("tr.drow").forEach(r => r.onclick = e => { if (!e.target.closest("button, a")) r.querySelector(".ib").click(); });
     $("docRows").querySelectorAll(".ib").forEach(b => b.onclick = () => { const r = b.closest("tr").nextElementSibling, open = r.hidden; r.hidden = !open; b.setAttribute("aria-expanded", open); b.classList.toggle("on", open); });
     SourceView.index().then(ix => document.querySelectorAll("#docRows td.tb").forEach(td => tables(td, ix[td.dataset.k], DOCS[td.dataset.k]))).catch(() => {});
@@ -266,13 +282,15 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
     const st = { s: docs ? "sources" : "checks" }, url = docs ? "#sources" : location.pathname + location.search;
     if (PHONE && !popping && history.state && history.state.s && history.state.s !== st.s) history.pushState(Object.assign(st, { d: (history.state.d || 0) + 1 }), "", url);
     else history.replaceState(Object.assign({}, history.state || {}, st), "", url);
+    if (!PHONE && window.Tabs && Tabs.set) Tabs.set(docs ? "sources" : "checks");
     if (PHONE){ Tabs.title(docs ? "Sources" : "Checks"); $("q").placeholder = docs ? "Filter the sources" : "Filter the checks"; }
   }
+  const SL = SourcesList.mount($("slRoot"), PHONE ? { phone: true, input: $("q") } : {});
   $("tabChecks").onclick = () => tab("checks"); $("tabDocs").onclick = () => tab("docs");
   // Back between Checks and Sources (phone, More → the other one); a link to #sources on this page switches too
   let popping = false;
   addEventListener("hashchange", () => tab(location.hash === "#sources" ? "docs" : "checks"));
-  if (location.hash === "#sources") tab("docs");
+  if (location.hash === "#sources" || PHONE) tab("docs");   // (the phone has no Checks)
   const docSheet = () => ({ name: "Sources", widths: [30, 50, 12, 6, 14, 40, 26, 60, 60],
     rows: [["Document number", "Title", "Type", "Rev", "Revision date", "Status", "Client review", "Used in the app for", "Note"],
       ...docList().map(v => [v.number, v.full, v.kind, v.rev, fmt(v.date), v.status, review(v) === "–" ? "" : review(v), v.used, v.note || ""])] });
@@ -280,7 +298,8 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
     rows: [["Document number", "Title", "Rev", "Date", "Status"], ...docList().flatMap(v => (v.history || []).map(h => [v.number, v.full, h.rev, fmt(h.date), h.status]))] });
   if ($("xlsDocs")) $("xlsDocs").onclick = () => XLSX.download(`Project source documents ${new Date().toISOString().slice(0, 10)}.xlsx`, [docSheet(), histSheet()]);
   // on the phone the one filter box serves whichever of the two is open
-  $("q").oninput = () => { if (PHONE && !$("docsPane").hidden){ const w = $("q").value.toLowerCase().split(/\s+/).filter(Boolean);
+  $("q").oninput = () => { if (PHONE && !$("docsPane").hidden) return;   // (Sources reads the box itself)
+    if (false){ const w = $("q").value.toLowerCase().split(/\s+/).filter(Boolean);
       document.querySelectorAll("#docRows tr.drow").forEach(r => { const hide = w.length && !w.every(x => r.textContent.toLowerCase().includes(x)); r.hidden = hide; if (hide) r.nextElementSibling.hidden = true; }); return; }
     shown = 200; draw(); }; $("cat").onchange = () => { shown = 200; draw(); };
   $("xls").onclick = () => {
