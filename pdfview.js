@@ -60,7 +60,18 @@ window.PdfView = (() => {
     V.size = () => { lastW = V.body.clientWidth; lastH = V.body.clientHeight; };
     addEventListener("resize", refit); if (screen.orientation) screen.orientation.addEventListener("change", refit);
     let t; V.body.addEventListener("scroll", () => { clearTimeout(t); t = setTimeout(sharp, 70); settleSoon(); });
-    V.body.addEventListener("wheel", e => { if (!e.ctrlKey && cur.fit !== "page") return; e.preventDefault(); zoomTo(V.zoom * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025)), e.clientX, e.clientY); }, { passive: false });
+    // wheel zoom: the sheet is scaled smoothly while the wheel turns (about the cursor) and redrawn sharp once it stops
+    let wz = null;
+    V.body.addEventListener("wheel", e => { if (!e.ctrlKey && cur.fit !== "page") return; e.preventDefault(); if (!V.pg) return;
+      if (!wz){ const q = V.sheet.getBoundingClientRect(); wz = { z: V.zoom, q, t: 0 }; }
+      const max = cur.fit === "page" ? 24 : 10, z = Math.max(1, Math.min(max, wz.z * Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0025))));
+      const v = V.sheet.getBoundingClientRect(), fx = (e.clientX - v.left) / v.width, fy = (e.clientY - v.top) / v.height, k = z / V.zoom;
+      wz.z = z; wz.cx = e.clientX; wz.cy = e.clientY;
+      V.sheet.style.transformOrigin = "0 0";
+      V.sheet.style.transform = `translate(${e.clientX - wz.q.left - fx * wz.q.width * k}px,${e.clientY - wz.q.top - fy * wz.q.height * k}px) scale(${k})`;
+      clearTimeout(wz.t); wz.t = setTimeout(() => { const w = wz; wz = null; const q = V.sheet.getBoundingClientRect(), fx = (w.cx - q.left) / q.width, fy = (w.cy - q.top) / q.height;
+        V.sheet.style.transform = ""; zoomTo(w.z, w.cx, w.cy, fx, fy); }, 140);
+    }, { passive: false });
     // touch pinch: scale the sheet while pinching, redraw sharp when the fingers lift
     const pts = new Map(); let pin = null;
     V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ const [a, b] = [...pts.values()]; pin = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1 }; } });
@@ -127,7 +138,7 @@ window.PdfView = (() => {
       a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
       // the red arrow on what was tapped, kept with this view (back here shows where you were)
       const bx = V.boxes[+a.dataset.i]; if (bx){ V.tap = { page: V.page, l: bx[0] / 1e4, t: bx[1] / 1e4, w: bx[2] / 1e4, h: bx[3] / 1e4 }; drawTap(); const me = REG.get(curId); if (me){ me.snap = state(); me.tap = V.tap; } }
-      if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : "tag", r[7]);
+      if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : "tag", r[7], bx || null);
     });
     return V;
   }
@@ -147,9 +158,10 @@ window.PdfView = (() => {
     if (!o._pop){ const was = curId && REG.get(curId), st0 = state(); if (was && st0 && wasOpen) was.snap = st0; push({ o, snap: null }); }
     // refs: the references printed on the sheet ([page, left, top, width, height, target, kind] in 1/10000 of the sheet,
     // a promise), each a tappable box; onRef(target, kind) acts on a tap.
-    V.refs = []; V.refsEl.innerHTML = ""; pickClose(); V.tap = o._pop && o._tap || null; V.tapEl.innerHTML = "";
+    V.sheet.classList.add("sp-wait"); V.refs = []; V.refsEl.innerHTML = ""; pickClose(); V.tap = o._pop && o._tap || null; V.tapEl.innerHTML = "";
     V.fit = false; V.fq = ""; V.fset = new Set(); V.fmatch = []; V.fstep = -2;
-    const me = cur; if (cur.refs) Promise.resolve(cur.refs).then(a => { if (cur !== me) return; V.refs = a || [];
+    // (the boxes are laid out once this document's page is in: until then V.pg is the last one's, or none)
+    const me = cur; if (cur.refs) Promise.resolve(cur.refs).then(a => new Promise(ok => V.pgFor === me ? ok(a) : (V.afterPage = () => ok(a)))).then(a => { if (cur !== me) return; V.refs = a || [];
       V.fit = V.refs.some(r => typeof r[7] === "string");
       // opened for an item (cur.find): on a checked sheet that item's labels stay red with the arrow, the rest grey
       if (V.fit && cur.find){ V.marks.innerHTML = ""; V.hits = []; fitFilter(cur.find, true); const m = V.fmatch.find(r => r[0] === V.page) || V.fmatch[0];
@@ -289,7 +301,8 @@ window.PdfView = (() => {
     if (!fromPop && V.pg && n !== V.page){ const me = REG.get(curId); if (me) me.snap = state(); quiet(); V.page = n; push({ o: me ? me.o : cur, snap: null }); }
     V.page = n;
     V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
-    V.pg = await d.getPage(n); V.body.scrollTo(0, 0); V.size(); layout(true); textLayer();
+    V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true); textLayer();
+    if (V.afterPage){ const f = V.afterPage; V.afterPage = null; f(); }
     if (cur.find) mark(cur.find); drawTap();
     const me = REG.get(curId); if (me && !me.snap && !fromPop){ me.snap = state(); me.at = me.snap; }
   }
@@ -312,7 +325,7 @@ window.PdfView = (() => {
     V.textEl.style.setProperty("--scale-factor", s);
     V.sheet.style.setProperty("--rbw", Math.max(1, Math.min(2.5, vp1.width * s * .0006)).toFixed(2) + "px");   // the red outline thins as the sheet shrinks
     if (V.sheet.style.width !== w || V.sheet.style.height !== h || bg){ V.hi.style.visibility = "hidden"; V.sheet.style.width = w; V.sheet.style.height = h; }
-    if (bg){ drawBg(); drawRefs(); } sharp();
+    slide(); if (bg){ V.sheet.classList.add("sp-wait"); drawBg(); drawRefs(); } sharp();   // (a new page's boxes wait for its picture)
   }
   // Both layers draw off screen and are swapped in whole when finished, so nothing blanks or jumps while panning.
   let bgTask = null, hiTask = null, bgGen = 0, hiGen = 0;
@@ -320,7 +333,8 @@ window.PdfView = (() => {
     const dpr = Math.min(2, devicePixelRatio || 1), vp = V.pg.getViewport({ rotation: V.rot || 0, scale: V.base * dpr * (cur.fit === "page" ? 1.5 : 1) });
     const off = document.createElement("canvas"), g = ++bgGen; off.width = vp.width; off.height = vp.height;
     if (bgTask) bgTask.cancel(); bgTask = V.pg.render({ canvasContext: off.getContext("2d"), viewport: vp });
-    bgTask.promise.then(() => { if (g !== bgGen) return; V.bg.width = off.width; V.bg.height = off.height; V.bg.getContext("2d").drawImage(off, 0, 0); }).catch(() => {});
+    bgTask.promise.then(() => { if (g !== bgGen) return; V.bg.width = off.width; V.bg.height = off.height; V.bg.getContext("2d").drawImage(off, 0, 0); V.sheet.classList.remove("sp-wait"); })
+      .catch(() => { if (g === bgGen) V.sheet.classList.remove("sp-wait"); });
   }
   function sharp(){
     if (!V.pg) return;
@@ -335,14 +349,26 @@ window.PdfView = (() => {
       c.width = off.width; c.height = off.height; c.getContext("2d").drawImage(off, 0, 0);
       c.style.left = x0 + "px"; c.style.top = y0 + "px"; c.style.width = w + "px"; c.style.height = h + "px"; c.style.visibility = ""; }).catch(() => {});
   }
-  function zoomTo(z, cx, cy){
+  function zoomTo(z, cx, cy, fx0, fy0){
     z = Math.max(1, Math.min(cur.fit === "page" ? 24 : 10, z)); if (!V.pg || Math.abs(z - V.zoom) < .001) return;
     const r = V.body.getBoundingClientRect(); cx = cx == null ? r.left + r.width / 2 : cx; cy = cy == null ? r.top + r.height / 2 : cy;
     // the point under (cx, cy) as a fraction of the page stays under it (measured from the page itself, so the body's padding doesn't matter)
-    const q = V.sheet.getBoundingClientRect(), fx = (cx - q.left) / q.width, fy = (cy - q.top) / q.height;
+    const q = V.sheet.getBoundingClientRect(), fx = fx0 != null ? fx0 : (cx - q.left) / q.width, fy = fy0 != null ? fy0 : (cy - q.top) / q.height;
     V.zoom = z; layout(false);
-    const q2 = V.sheet.getBoundingClientRect(); V.body.scrollLeft += q2.left + fx * q2.width - cx; V.body.scrollTop += q2.top + fy * q2.height - cy; sharp(); settleSoon();
+    const q2 = V.sheet.getBoundingClientRect(); V.body.scrollLeft += q2.left + fx * q2.width - cx; V.body.scrollTop += q2.top + fy * q2.height - cy;
+    // while the sheet is still smaller than the window one way it can't scroll that way: it slides instead (inside the
+    // window), so the point under the cursor stays under it from the first step of zoom, not only once the sheet overflows
+    const q3 = V.sheet.getBoundingClientRect(); V.ox = (V.ox || 0) + cx - (q3.left + fx * q3.width); V.oy = (V.oy || 0) + cy - (q3.top + fy * q3.height); slide();
+    sharp(); settleSoon();
   }
+  // the sheet's slide (V.ox, V.oy): lets the page sit off centre (or past the window's edge) so a zoom keeps the point
+  // under the cursor where it is; the page always covers the middle of the window, and at fit it is centred again
+  function slide(){
+    if (V.zoom <= 1.001){ V.ox = V.oy = 0; }
+    else { V.sheet.style.left = V.ox ? V.ox + "px" : ""; V.sheet.style.top = V.oy ? V.oy + "px" : "";
+      const q = V.sheet.getBoundingClientRect(), r = V.body.getBoundingClientRect(), mx = r.left + r.width / 2, my = r.top + r.height / 2;
+      if (q.left > mx) V.ox -= q.left - mx; if (q.right < mx) V.ox += mx - q.right; if (q.top > my) V.oy -= q.top - my; if (q.bottom < my) V.oy += my - q.bottom; }
+    V.sheet.style.left = V.ox ? V.ox + "px" : ""; V.sheet.style.top = V.oy ? V.oy + "px" : ""; }
 
   // ---------- mark a tag on the page ----------
   // find typed text: this page first, then the other sheets of the document (the first sheet with it opens)

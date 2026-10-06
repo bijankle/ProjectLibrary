@@ -37,9 +37,26 @@ window.AssetViz = (() => {
   function item(it){
     const own = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(it) : [];
     if (!own.length && cur && shown && (!window.Pid || Pid.ready())) return;   // (an item with no drawing: keep the one on show)
-    const kv = keepView && own.includes(keepView.n) ? keepView : null; keepView = null;
+    // (a kept view waits for the item it was kept for: closing the full screen viewer steps back through the one before)
+    if (keepView && keepView.key && nk(keepView.key) !== nk(it.key)){ cur = it; return; }
+    const kv = keepView && (own.includes(keepView.n) || keepView.tap) ? keepView : null; keepView = null;
     cur = it; shown = kv ? kv.n : null; hist = []; lastSig = ""; held = kv; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
   function list(){}
+  const keep = o => { keepView = { n: o.n, tap: o.tap || null, key: o.key || null }; setTimeout(() => { keepView = null; }, 2500); };
+  // the Assets search box finds on the drawing on show, literally, as the full screen viewer does: the labels it holds
+  // (references whose printed tag has the typed text) in blue, else the sheet's own words that do
+  let finder = null, refsNow = [], findQ = "";
+  const fnorm = s => String(s || "").toUpperCase().replace(/[\s\-_/.]+/g, "");
+  function find(q){ findQ = q || ""; findNow(); }
+  function findNow(){
+    if (!finder || finder.g !== gen) return; const { box, stage } = finder, fd = box.querySelector(".vz-fd"), rf = box.querySelector(".vz-rf"); if (!fd || !rf) return;
+    const w = fnorm(findQ); [...rf.children].forEach(i => i.classList.remove("hit")); fd.innerHTML = ""; if (w.length < 2) return;
+    let n = 0; refsNow.forEach((r, i) => { if (String(r[5]).split("|").some(t => fnorm(t).includes(w)) && rf.children[i]){ rf.children[i].classList.add("hit"); n++; } });
+    if (n) return;
+    const sr = stage.getBoundingClientRect(), z = finder.z || 1;
+    fd.innerHTML = [...box.querySelectorAll(".vz-tx span")].filter(sp => fnorm(sp.textContent).includes(w)).slice(0, 300).map(sp => { const q = sp.getBoundingClientRect();
+      return `<i style="left:${(q.left - sr.left) / z - 2}px;top:${(q.top - sr.top) / z - 2}px;width:${q.width / z + 4}px;height:${q.height / z + 4}px"></i>`; }).join("");
+  }
   function home(){ if (!cur) return; cur = null; shown = null; lastSig = ""; draw(true); }
   // a drawing's series: the sheets whose title differs only by the sheet number ("Plant air, sheet 3" → "Plant air"),
   // P&IDs with P&IDs, PFDs with PFDs, in sheet order
@@ -57,7 +74,7 @@ window.AssetViz = (() => {
     // over the sheet only the series' sheet tabs (when it has more than one sheet)
     el.innerHTML = `<div class="vz-pv">` + (ser.length > 1 ? `<div class="vz-hd"><div class="vz-tabs">` +
       ser.map(x => `<button type="button" class="vz-tab${x === n ? " on" : ""}" data-n="${esc(x)}" title="${esc(x)}">Sheet ${sheetOf(x)}</button>`).join("") + `</div></div>` : "") +
-      `<div class="vz-sheet"><div class="vz-dn">${esc(n)}</div><div class="vz-stage"><canvas></canvas><div class="vz-mk"></div><div class="vz-rf"></div></div>` +
+      `<div class="vz-sheet"><div class="vz-dn">${esc(n)}</div><div class="vz-stage"><canvas></canvas><div class="vz-rf"></div><div class="vz-fd"></div><div class="vz-tx sp-text"></div><div class="vz-mk"></div></div>` +
       `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Open full screen"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button><button type="button" data-z="fit" class="vz-ze" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>` +
       `<p class="vz-note">Loading the drawing…</p></div></div>`;
     el.querySelectorAll(".vz-tab[data-n]").forEach(b => b.onclick = () => { if (b.dataset.n) go(b.dataset.n); });
@@ -78,7 +95,11 @@ window.AssetViz = (() => {
     box.addEventListener("dblclick", e => { const r = box.getBoundingClientRect(); zoomAt(2, e.clientX - r.left, e.clientY - r.top); });
     // drag to pan (a press that doesn't move is a tap: references still work); two fingers pinch
     const pts = new Map(); let moved = 0, pinch = null;
-    box.addEventListener("pointerdown", e => { if (e.target.closest(".vz-zb")) return; pts.set(e.pointerId, [e.clientX, e.clientY]); moved = 0;
+    box.addEventListener("mousedown", e => { if (e.button === 1) e.preventDefault(); });   // (no browser auto-scroll: that moved the whole page)
+    box.addEventListener("auxclick", e => { if (e.button === 1) e.preventDefault(); });
+    box.addEventListener("pointerdown", e => { if (e.target.closest(".vz-zb")) return; moved = 0;
+      if (e.pointerType === "mouse" && e.button !== 1) return;   // (mouse: the left button selects text, the middle one pans)
+      if (e.pointerType === "mouse") e.preventDefault(); pts.set(e.pointerId, [e.clientX, e.clientY]);
       if (pts.size === 2){ const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z }; } });
     box.addEventListener("pointermove", e => { const p = pts.get(e.pointerId); if (!p) return;
       if (pts.size === 2 && pinch){ pts.set(e.pointerId, [e.clientX, e.clientY]); const [a, b] = [...pts.values()], r = box.getBoundingClientRect();
@@ -89,24 +110,31 @@ window.AssetViz = (() => {
     box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
     // references printed on the sheet (other drawings, tags): tap to follow
     let boxes = [];
-    box.querySelector(".vz-rf").addEventListener("click", e => { let a = e.target.closest("[data-t]"); if (!a || moved > 4) return; e.stopPropagation();
-      const q = e.currentTarget.getBoundingClientRect(), i = PdfView.nearest(boxes, (e.clientX - q.left) / q.width * 1e4, (e.clientY - q.top) / q.height * 1e4);
-      if (i >= 0) a = e.currentTarget.children[i] || a;   // overlapping boxes: the nearest centre wins
+    const rfEl = box.querySelector(".vz-rf"), refAt = (x, y) => { if (!boxes.length) return null; const q = rfEl.getBoundingClientRect(); if (!q.width) return null;
+      const i = PdfView.nearest(boxes, (x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4); return i >= 0 ? rfEl.children[i] : null; };
+    let hv = null; box.addEventListener("mousemove", e => { const a = pts.size ? null : refAt(e.clientX, e.clientY); if (a === hv) return; if (hv) hv.classList.remove("hv"); hv = a; if (a) a.classList.add("hv"); box.classList.toggle("on-ref", !!a); });
+    box.addEventListener("click", e => { if (e.target.closest(".vz-zb") || moved > 4) return; const sl = getSelection(); if (sl && !sl.isCollapsed && String(sl).trim()) return;
+      const a = refAt(e.clientX, e.clientY); if (!a) return; e.stopPropagation();
       const t = a.dataset.t, k = a.dataset.k;
       // a continuation: that drawing becomes the item on the left, with the ribbon back to this one marked (pid-refs way back)
       if (k === "d"){ if (Pid.has(t)){ arrival = { to: t, back: a.dataset.b ? JSON.parse(a.dataset.b) : null }; if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }
       // a tag on this sheet: its item opens on the left and the sheet stays as you have it (same zoom and place), only the arrow moves
-      const tag = t.split("|")[0]; keepView = { n, z, tx, ty }; if (window.kcgmOpenTag) kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); });
+      const tag = t.split("|")[0], bi = [...rfEl.children].indexOf(a); keepView = { n, z, tx, ty, tap: boxes[bi] || null }; if (window.kcgmOpenTag) kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); });
     PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
       if (g !== gen) return; page = pg;
       const v1 = pg.getViewport({ scale: 1 }), bw = box.clientWidth, bh = Math.max(200, innerHeight - box.getBoundingClientRect().top - 24);
       sc = Math.min(bw / v1.width, bh / v1.height); const vp = pg.getViewport({ scale: sc }); W = vp.width; H = vp.height;
       box.style.height = H + "px"; stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
-      if (held && held.n === n){ z = held.z; tx = held.tx; ty = held.ty; apply(); } held = null;
+      const tap = held && held.n === n ? held.tap : null; if (held && held.n === n && held.z){ z = held.z; tx = held.tx; ty = held.ty; apply(); } held = null;
       rz = 0; await sharp(); if (g !== gen) return; const nt = box.querySelector(".vz-note"); if (nt) nt.remove();
+      const txl = box.querySelector(".vz-tx"); txl.style.setProperty("--scale-factor", sc);
+      pg.getTextContent().then(tc => { if (g !== gen || !window.pdfjsLib || !pdfjsLib.renderTextLayer) return;
+        return pdfjsLib.renderTextLayer({ textContentSource: tc, container: txl, viewport: pg.getViewport({ scale: 1 }), textDivs: [] }).promise; }).then(() => { if (g === gen) findNow(); }).catch(() => {});
+      finder = { box, stage, get z(){ return z; }, n: d.number, g };
       Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
         const A = W / H; boxes = [];
-        rf.innerHTML = (R[d.number] || []).filter(r => r[0] === 1).map(r => { const [l, t, w, h] = PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
+        refsNow = (R[d.number] || []).filter(r => r[0] === 1);
+        rf.innerHTML = refsNow.map(r => { const [l, t, w, h] = PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
           return `<i data-t="${esc(r[5])}" data-k="${esc(r[6])}"${r[7] != null ? ` data-b="${esc(JSON.stringify(r[7]))}"` : ""} title="${esc(String(r[5]).split("|").join(", "))}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%"></i>`; }).join("");
         // arrived through a continuation: the red arrow on the ribbon back to the drawing you came from
         const arr = arrival && arrival.to === d.number && arrival.back != null ? arrival : null; arrival = null;
@@ -114,6 +142,9 @@ window.AssetViz = (() => {
           box.querySelector(".vz-mk").innerHTML = [].concat(arr.back).map(j => (R[d.number] || [])[j]).filter(r => r && r[0] === 1).map(r => {
             const cx = (r[1] + r[3] / 2) / 1e4 * W, top = r[2] / 1e4 * H;
             return `<svg class="sp-arrow" viewBox="0 0 10 17" preserveAspectRatio="none" style="left:${cx - aw / 2}px;top:${top - 2 - ah}px;width:${aw}px;height:${ah}px"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; }).join(""); } });
+      // the tag tapped (here or in the full screen viewer): the arrow on that very spot
+      if (tap){ const aw = W * .018, ah = aw * 1.7, cx = (tap[0] + tap[2] / 2) / 1e4 * W, top = tap[1] / 1e4 * H;
+        box.querySelector(".vz-mk").innerHTML = `<svg class="sp-arrow" viewBox="0 0 10 17" preserveAspectRatio="none" style="left:${cx - aw / 2}px;top:${top - 2 - ah}px;width:${aw}px;height:${ah}px"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; return; }
       // mark the tag: a text piece holding it, or two neighbouring pieces that together do
       const want = nk(key); if (want.length < 3 || cur.t === "pid" || !own.includes(n)) return;
       const tc = await pg.getTextContent(), it = tc.items.filter(t => t.str && t.str.trim()), hits = [];
@@ -251,10 +282,13 @@ window.AssetViz = (() => {
 .vz-sheet.drag{cursor:default}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
 .vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:2px;background:rgba(90,100,115,.06)}   /* as in the full screen viewer: a very light grey wash */
-.vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i:hover{background:rgba(90,100,115,.22)}
+.vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i.hv{background:rgba(90,100,115,.22)}.vz-sheet.on-ref,.vz-sheet.on-ref .vz-tx span{cursor:pointer}
+.vz-rf i.hit{box-shadow:inset 0 0 0 1.5px rgba(30,110,230,.85);background:rgba(30,110,230,.1)}
+.vz-fd{position:absolute;left:0;top:0;pointer-events:none}.vz-fd i{position:absolute;box-sizing:border-box;border:1.5px solid rgba(30,110,230,.85);background:rgba(30,110,230,.1);border-radius:2px}
+.vz-sheet .vz-tx{z-index:2}.vz-mk{z-index:3}
 .vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}.vz-zb .vz-ze{border-radius:50%;border:1.5px solid #b67d12;color:#8a5f0e}   /* zoom extents, in the corner as in the full screen viewer */
 .vz-zb button:hover{border-color:#b67d12}
-.vz-mk{position:absolute;left:0;top:0;pointer-events:none}.vz-mk .sp-arrow{position:absolute;fill:#e0201b;opacity:.6;overflow:visible}
+.vz-mk{position:absolute;left:0;top:0;pointer-events:none}.vz-mk .sp-arrow{position:absolute;fill:#1e6ee6;opacity:.6;overflow:visible}
 .vz-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
 .vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}
 .vz-tile span{font-size:var(--fl,13px);color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}.vz-tile b{font-size:var(--fh,22px);line-height:1.15;font-variant-numeric:tabular-nums}.vz-tile em{font-style:normal;font-size:var(--fb,15px);color:var(--mute)}
@@ -280,5 +314,5 @@ window.AssetViz = (() => {
 .vz-tip{position:fixed;z-index:200;pointer-events:none;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:var(--fb,15px);line-height:1.35;box-shadow:0 6px 18px #0006;max-width:260px}
 .vz-tip[hidden]{display:none}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  return { mount, update, item, list, home };
+  return { mount, update, item, list, home, find, keep };
 })();

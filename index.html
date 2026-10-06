@@ -898,6 +898,8 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:#3a3020;color:var(-
     sp.addEventListener("dblclick", () => { setW(DEF); try { localStorage.removeItem("kcgm_split"); } catch (e) {} dispatchEvent(new Event("resize")); }); }
   Browse.mount($("browse"), lk); Browse.onChange(() => nav(false));
   lk.input.addEventListener("input", () => setTimeout(() => nav(false), 200));
+  // what is typed is also found on the drawing beside the list (blue), as in the full screen viewer
+  { const f = () => window.AssetViz && AssetViz.find && AssetViz.find(lk.input.value); lk.input.addEventListener("input", f); lk.input.addEventListener("search", f); }
   $("glossBtn").onclick = () => openGloss();
   $("gSearch").oninput = e => renderGloss(e.target.value);
 
