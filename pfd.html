@@ -1530,8 +1530,13 @@ svg.focus .frame.pick{opacity:1}
     if (phoneFit()){ vb = { x: -pad, y: -pad, w, h }; setVB(); return; }   // phone portrait: full height, start at the left (crushing)
     vb = { x: (PFD_W - w) / 2, y: (PFD_H - h) / 2, w, h }; setVB(); }
   // first view: close up on the top left, where the process starts (ROM trucks, crushing); the fit button shows it all
+  let startVB = null;
   function startView(){ const W = svg.clientWidth, H = svg.clientHeight, pad = 40;
-    if (phoneFit() || !W || !H) return fit();
+    if (!W || !H) return fit();
+    // phone: the first process (the F12 crushing frame) filling the space above the Fluids / Layers / Story buttons
+    if (PHONE){ const f = FRAMES[0], fb = $("pfab").getBoundingClientRect(), r = svg.getBoundingClientRect(), m = 8;
+      if (!f) return fit(); const uw = W - 2 * m, uh = (fb.height && fb.top < r.bottom ? fb.top - r.top : H) - 2 * m, k = Math.max(f.w / uw, f.h / uh);
+      vb = { x: f.x + f.w / 2 - (W / 2) * k, y: f.y - m * k - Math.max(0, (uh - f.h / k) / 2) * k, w: W * k, h: H * k }; setVB(); startVB = Object.assign({}, vb); return; }
     // equipment names (14 units) open at about the page's own text size, 13.5 px; zooming still scales freely
     const s = Math.max(13.5 / 14, W / (PFD_W + pad * 2)); vb = { x: -pad, y: -pad, w: W / s, h: H / s }; setVB(); }
   function zoomAt(f, px, py){
