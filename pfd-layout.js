@@ -96,7 +96,7 @@ window.PFDLayout = (() => {
     let b = null; areas.forEach(a => { const g = a.poly.getBounds(); b = b ? b.extend(g) : L.latLngBounds(g.getSouthWest(), g.getNorthEast()); });   // the WBS zones
     if (!b) b = L.latLngBounds(LAYOUT.home);
     const ph = document.documentElement.classList.contains("phone");   // (clear of the buttons over the map's top and bottom)
-    const o = { paddingTopLeft: ph ? [6, 44] : [20, 50], paddingBottomRight: ph ? [6, 40] : [20, 20], maxZoom: AREA_Z - .25 };
+    const o = { paddingTopLeft: ph ? [6, 30] : [20, 50], paddingBottomRight: ph ? [6, 40] : [20, 20], maxZoom: AREA_Z - .25 };
     anim ? map.flyToBounds(b, Object.assign(o, { duration: .6 })) : map.fitBounds(b, o);
   }
   function zoomCls(){
