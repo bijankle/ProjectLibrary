@@ -102,6 +102,7 @@ body.layout #fHead,body.layout #narBtn,body.layout #fluids,body.layout #oHead,bo
 .lg-sig{display:flex;gap:9px;align-items:center;font-size:var(--fb,15px);color:var(--mute);padding:3px 6px}
 .lg-sig svg{width:46px;height:22px;flex:none}
 .note{font-size:var(--fb,15px);color:var(--mute);line-height:1.45;background:var(--panel2);border-radius:9px;padding:9px 10px}
+#stageSeg[hidden]{display:none!important}
 #stage{position:fixed;left:270px;right:0;top:calc(54px + var(--tb,0px));bottom:0}
 /* ---------- layout (map) view ---------- */
 #mapView{position:fixed;left:270px;right:0;top:calc(54px + var(--tb,0px));bottom:0;background:#20242a;z-index:0}
@@ -504,7 +505,7 @@ svg.focus .frame.pick{opacity:1}
   <button class="hbtn m-only" id="menuBtn" aria-label="Menu" title="Menu">☰</button>
   <button class="hbtn" id="setBtn" title="Settings: update the app, offline downloads, checks and sources" aria-label="Settings">Settings</button>
   <div class="seg" id="viewSeg" title="Schematic PFD or the same items on the real plant layout"><button data-v="pfd" data-l="PFD" class="on">Schematic</button><button data-v="map" data-l="Map">Layout</button></div>
-  <div class="seg" id="stageSeg"><button data-s="1">Stage 1</button><button data-s="2" class="on">Stage 2</button></div>
+  <div class="seg" id="stageSeg" hidden><button data-s="1">Stage 1</button><button data-s="2">Stage 2</button></div>
   <select class="hbtn" id="case" title="PDC design case: changes the flow figures on the lines and highlights that column in stream panels"></select>
   <button class="hbtn" id="tLoops" title="Show ISA control loops (tag bubbles and signal lines)">Control loops</button>
   <button class="hbtn" id="tIlk" title="Show interlocks and start permissives">Interlocks</button>
@@ -574,7 +575,7 @@ svg.focus .frame.pick{opacity:1}
   const byId = {}; NODES.forEach(n => byId[n.id] = n);
   const pref = { get(k, d){ try{ return localStorage.getItem(k) ?? d; }catch(e){ return d; } }, set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} } };
 
-  let stage = 2, focusFlow = null, stepIx = -1, playing = null, pdcCase = 0, sel = [], lastPanel = null;
+  let stage = 0, focusFlow = null, stepIx = -1, playing = null, pdcCase = 0, sel = [], lastPanel = null;
   // theme: the app wide setting (kcgmTheme in the head, Settings → Theme)
 
   // ---------- geometry ----------
@@ -951,7 +952,7 @@ svg.focus .frame.pick{opacity:1}
   });
 
   // ---------- stage / scenario ----------
-  const vis = st => st == null || st === "b" || st === stage;
+  const vis = st => st == null || st === "b" || !stage || st === stage;
   function applyStage(){
     NODES.forEach(n => {
       const s = n.st == null ? "b" : n.st;
@@ -960,17 +961,18 @@ svg.focus .frame.pick{opacity:1}
     });
     STREAMS.forEach(s => {
       const st = s.st == null ? "b" : s.st;
-      const endsOk = [s.f, s.to].every(id => { const nd = byId[id]; return nd.st == null || nd.st === stage; });
-      s.g.style.display = (st !== "b" && st !== stage) ? "none" : "";
+      const endsOk = [s.f, s.to].every(id => { const nd = byId[id]; return nd.st == null || !stage || nd.st === stage; });
+      s.g.style.display = (st !== "b" && stage && st !== stage) ? "none" : "";
       s.g.classList.toggle("ghost", st === "b" && !endsOk && stage === 1);
       if (st === "b" && !endsOk && stage === 2) s.g.style.display = "none";
     });
-    FRAMES.forEach(f => f.g.style.opacity = (f.st && f.st !== stage) ? .25 : "");
-    LOOPS.concat(INTERLOCKS).forEach(L => { L.g.style.display = (L.st && L.st !== stage) ? "none" : ""; if (L.li) L.li.classList.toggle("st-hide", !!(L.st && L.st !== stage)); });
+    FRAMES.forEach(f => f.g.style.opacity = (f.st && stage && f.st !== stage) ? .25 : "");
+    LOOPS.concat(INTERLOCKS).forEach(L => { L.g.style.display = (L.st && stage && L.st !== stage) ? "none" : ""; if (L.li) L.li.classList.toggle("st-hide", !!(L.st && stage && L.st !== stage)); });
     if (focusFlow) showStep(stepIx); else if (sel.length) applySel(false);
     PFDLayout.sync(false);
   }
-  document.querySelectorAll("#stageSeg button").forEach(b => b.onclick = () => {
+  // the smart PFD shows both stages at once (stage 0); the hidden Stage 1 / Stage 2 buttons do nothing
+  if (false) document.querySelectorAll("#stageSeg button").forEach(b => b.onclick = () => {
     document.querySelectorAll("#stageSeg button").forEach(x => x.classList.toggle("on", x === b));
     stage = +b.dataset.s; applyStage();
     toast(stage === 1 ? "Stage 1 as built: tails to old CIL2/3 and the dam, concentrate to CIL1 and the offsite roaster. Stage 2 items shown faded." : "Stage 2: all tails to CIL4, UFG 3 added, CIL2 leach and CIL3 adsorption, offsite roaster shut.");
@@ -1272,8 +1274,8 @@ svg.focus .frame.pick{opacity:1}
   const link = s => `<a data-s="${s.id}"><span style="color:${STREAM_TYPES[s.ty].color}">■</span> ${esc(s.n)}</a>`;
   const loopLink = L => `<a data-l="${L.id}"><b style="font-family:var(--ff)">${esc(L.tag)}</b> ${esc(L.name)}</a>`;
   const ilkLink = I => `<a data-i="${I.id}"><b style="color:#ff3b30">${I.k}</b> ${esc(I.name)}</a>`;
-  const loopsOn = id => LOOPS.filter(L => (L.node === id || (L.rel || []).includes(id)) && !(L.st && L.st !== stage));
-  const ilksOn = id => INTERLOCKS.filter(I => (I.rel || []).includes(id) && !(I.st && I.st !== stage));
+  const loopsOn = id => LOOPS.filter(L => (L.node === id || (L.rel || []).includes(id)) && !(L.st && stage && L.st !== stage));
+  const ilksOn = id => INTERLOCKS.filter(I => (I.rel || []).includes(id) && !(I.st && stage && I.st !== stage));
 
   // Index of every MEL row the build pulled in, by equipment number
   const MEL = {}; Object.entries(EQUIP_DATA).forEach(([node, d]) => d.eq.forEach(r => { MEL[r.tag] = Object.assign({ node }, r); }));
@@ -1476,7 +1478,7 @@ svg.focus .frame.pick{opacity:1}
       h = `<div class="symm">${feSvg(a.k)}<div><b>${esc(M[0])}</b>. ${esc(M[1])}</div></div>` +
         table([["Tag", t], ["Description", describe(t)], ["What it drives / acts on", drives + (byId[L.node] ? " on " + byId[L.node].n : "")],
           ["Loop acting on it", `${esc(L.tag)} ${esc(L.name)} (controller ${val(L.c)})`, 1], ["Output from loop", L.mv]]);
-      const ilks = INTERLOCKS.filter(I => !(I.st && I.st !== stage) && ((I.rel || []).includes(L.node) || (t && (I.tags || "").includes(expandTag(t)[0] || "~"))));
+      const ilks = INTERLOCKS.filter(I => !(I.st && stage && I.st !== stage) && ((I.rel || []).includes(L.node) || (t && (I.tags || "").includes(expandTag(t)[0] || "~"))));
       h += `<h4>Interlocks & permissives acting here</h4>` + (ilks.length ? `<div class="conn">${ilks.map(ilkLink).join("")}</div>` : `<div>${NS_TXT}</div>`);
       h += `<h4>Control loop</h4><div class="conn">${loopLink(L)}</div>` + (t ? deviceDetails(t) : "");
     }
@@ -1506,7 +1508,7 @@ svg.focus .frame.pick{opacity:1}
   function bindLinks(){
     const go = (e, item, panel) => { e.preventDefault(); pick(e, item, panel); };
     $("iBody").querySelectorAll("a[data-s]").forEach(a => a.onclick = e => { const s = STREAMS.find(x => x.id === a.dataset.s); go(e, { k: "s", id: s.id }, () => showStream(s)); });
-    $("iBody").querySelectorAll("a[data-n]").forEach(a => a.onclick = e => { const n = byId[a.dataset.n]; if (n.st && n.st !== stage) document.querySelector(`#stageSeg button[data-s="${n.st}"]`).click(); go(e, { k: "n", id: n.id }, () => showNode(n)); });
+    $("iBody").querySelectorAll("a[data-n]").forEach(a => a.onclick = e => { const n = byId[a.dataset.n]; if (n.st && stage && n.st !== stage) document.querySelector(`#stageSeg button[data-s="${n.st}"]`).click(); go(e, { k: "n", id: n.id }, () => showNode(n)); });
     $("iBody").querySelectorAll("a[data-l]").forEach(a => a.onclick = e => { const L = LOOPS.find(x => x.id === a.dataset.l); go(e, { k: "loop", id: L.id }, () => showLoop(L)); });
     $("iBody").querySelectorAll("a[data-i]").forEach(a => a.onclick = e => { const I = INTERLOCKS.find(x => x.id === a.dataset.i); go(e, { k: "ilk", id: I.id }, () => showIlk(I)); });
     $("iBody").querySelectorAll("a[data-find]").forEach(a => a.onclick = e => { e.preventDefault(); openSearch(a.dataset.find, true); });
@@ -1611,11 +1613,11 @@ svg.focus .frame.pick{opacity:1}
   // ---------- search ----------
   // ---------- search (all plant lists + the PFD itself) ----------
   // PFD items become search results that jump straight to the diagram
-  const goNode = n => () => { if (n.st && n.st !== stage) document.querySelector(`#stageSeg button[data-s="${n.st}"]`).click(); pick({}, { k: "n", id: n.id }, () => showNode(n)); };
+  const goNode = n => () => { if (n.st && stage && n.st !== stage) document.querySelector(`#stageSeg button[data-s="${n.st}"]`).click(); pick({}, { k: "n", id: n.id }, () => showNode(n)); };
   const goStream = s => () => pick({}, { k: "s", id: s.id }, () => showStream(s));
   // peek: highlight and zoom to the item on the diagram but keep the search result open in the panel
-  const peek = (st, item) => () => { if (st && st !== stage) document.querySelector(`#stageSeg button[data-s="${st}"]`).click(); if (focusFlow) setFlow(null); sel = [item]; applySel(true); };
-  const goLoop = L => () => { if (L.st && L.st !== stage) document.querySelector(`#stageSeg button[data-s="${L.st}"]`).click(); pick({}, { k: "loop", id: L.id }, () => showLoop(L)); };
+  const peek = (st, item) => () => { if (st && stage && st !== stage) document.querySelector(`#stageSeg button[data-s="${st}"]`).click(); if (focusFlow) setFlow(null); sel = [item]; applySel(true); };
+  const goLoop = L => () => { if (L.st && stage && L.st !== stage) document.querySelector(`#stageSeg button[data-s="${L.st}"]`).click(); pick({}, { k: "loop", id: L.id }, () => showLoop(L)); };
   Lookup.addExtra([
     ...NODES.map(n => ({ t: "pfd", key: n.tag || n.n, name: "Equipment: " + n.n, words: n.n + " " + (n.sn || "") + " " + (EQUIP_DATA[n.id] ? EQUIP_DATA[n.id].eq.map(r => r.tag + " " + (r.n || "")).join(" ") : ""), go: goNode(n) })),
     ...STREAMS.map(s => ({ t: "pfd", key: s.n, name: "Stream: " + byId[s.f].n + " → " + byId[s.to].n, words: STREAM_TYPES[s.ty].name, go: goStream(s) })),
@@ -1727,9 +1729,9 @@ svg.focus .frame.pick{opacity:1}
       FRAMES.forEach(f => { const on = !!c && codesOf(f.label).includes(c); f.g.classList.toggle("pick", on);
         if (on && flash){ f.g.classList.remove("flash"); void f.g.getBBox(); f.g.classList.add("flash"); setTimeout(() => f.g.classList.remove("flash"), 1700); } });
     }
-    const toStage = st => { if (st && st !== stage){ const b = document.querySelector(`#stageSeg button[data-s="${st}"]`); if (b) b.click(); } };
+    const toStage = st => { if (st && stage && st !== stage){ const b = document.querySelector(`#stageSeg button[data-s="${st}"]`); if (b) b.click(); } };
     function wbsGo(c){
-      const fr = framesOf(c); if (fr.length && fr.every(f => f.st && f.st !== stage)) toStage(fr[0].st);
+      const fr = framesOf(c); if (fr.length && fr.every(f => f.st && stage && f.st !== stage)) toStage(fr[0].st);
       const ns = nodesOf(c).filter(n => shown(nEls[n.id]));
       if (focusFlow) setFlow(null);
       sel = ns.map(n => ({ k: "n", id: n.id })); applySel(false); markFrames(c, true);
@@ -1744,7 +1746,7 @@ svg.focus .frame.pick{opacity:1}
       const L = locate(it); if (focusFlow) setFlow(null); markFrames(null);
       if (L.loop){ toStage(L.loop.st); sel = [{ k: "loop", id: L.loop.id }]; applySel(true);
         note(`<b>${esc(it.key)}</b> ${L.how === "pfd" ? "is in" : "is tied to " + esc(L.via) + ", in"} the <b>${esc(L.loop.tag)}</b> control loop (${esc(L.loop.name)}).`, it); return; }
-      if (L.ids){ const ns = L.ids.map(id => byId[id]).filter(Boolean); if (ns.length && !ns.some(n => !n.st || n.st === stage)) toStage(ns[0].st);
+      if (L.ids){ const ns = L.ids.map(id => byId[id]).filter(Boolean); if (ns.length && !ns.some(n => !n.st || !stage || n.st === stage)) toStage(ns[0].st);
         sel = ns.filter(n => shown(nEls[n.id])).map(n => ({ k: "n", id: n.id })); applySel(true);
         const names = ns.slice(0, 3).map(n => n.sn || n.n).join(", ") + (ns.length > 3 ? ` and ${ns.length - 3} more` : "");
         note(L.how === "pfd" ? `<b>${esc(it.key)}</b> is on the PFD as <b>${esc(names)}</b>.`
