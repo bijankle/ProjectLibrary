@@ -80,7 +80,7 @@ window.PFDLayout = (() => {
     addEventListener("keydown", e => { if (e.key === "Escape" && moving) moving.cancel(); });
     api.NODES.forEach(drawNode);
     api.STREAMS.forEach(drawStream);
-    drawAreas();
+    drawAreas(); home(false);   // (now the zones are there: open on them)
     markers();
   }
   function setBase(k){
@@ -90,9 +90,14 @@ window.PFDLayout = (() => {
     api.pref.set("lo_base", k);
     document.querySelectorAll(".lo-seg [data-b]").forEach(b => b.classList.toggle("on", b.dataset.b === k));
   }
+  // home (the opening view and ⌂): every WBS zone, filling the screen, but never so close that the
+  // zones give way to the name stacks
   function home(anim){
-    const b = L.latLngBounds(LAYOUT.home);
-    anim ? map.flyToBounds(b, { padding: [10, 10], duration: .6 }) : map.fitBounds(b, { padding: [10, 10] });
+    let b = null; areas.forEach(a => { const g = a.poly.getBounds(); b = b ? b.extend(g) : L.latLngBounds(g.getSouthWest(), g.getNorthEast()); });   // the WBS zones
+    if (!b) b = L.latLngBounds(LAYOUT.home);
+    const ph = document.documentElement.classList.contains("phone");   // (clear of the buttons over the map's top and bottom)
+    const o = { paddingTopLeft: ph ? [6, 44] : [20, 50], paddingBottomRight: ph ? [6, 40] : [20, 20], maxZoom: AREA_Z - .25 };
+    anim ? map.flyToBounds(b, Object.assign(o, { duration: .6 })) : map.fitBounds(b, o);
   }
   function zoomCls(){
     const z = map.getZoom(), c = $("mapView").classList;
