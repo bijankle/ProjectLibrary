@@ -2,7 +2,7 @@
 
 Usage: python3 tools/refs_cv.py [<drawing number> ...] [--preview <folder>]       (after tools/build_pid_refs.py)
 With no drawing given it does the checked sheets, tools/refs_checked.json (add one there once it has been checked).
-To carry on with the sheets not done yet (Oct 2026: 83 of 262 done, the list in tools/refs_checked.json):
+Every P&ID and PFD sheet is in tools/refs_checked.json and fitted (Oct 2026). To redo them (after new drawings):
   1. put every P&ID / PFD sheet in tools/refs_checked.json, 2. python3 tools/build_pid_refs.py,
   3. CVDIR=<a folder kept between runs> python3 tools/refs_cv.py   (four sheets at a time, each kept as it finishes,
      so a run that stops carries on; about 40 sheets an hour). Every sheet in the list is fitted again from the fresh
