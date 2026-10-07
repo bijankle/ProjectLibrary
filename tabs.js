@@ -226,15 +226,15 @@ window.Tabs = (() => {
   // the accent themes (colours in each page's head: #kcgmThemes); none is blue, green, amber, orange or red, so the accent never reads as a status
   const THEMES = [["slate", "Slate", "#475569"], ["graphite", "Graphite", "#52525b"], ["navy", "Navy", "#1e3a5f"], ["petrol", "Petrol", "#1f4f5a"], ["olive", "Olive", "#5a5a2e"], ["stone", "Stone", "#7a6a5d"], ["rust", "Rust", "#9a3412"], ["ink", "Ink", "#111827"]];   // as ActionMap
   const themeRow = () => { const cur = lsGet("kcgm_accent", "slate"), t = THEMES.find(x => x[0] === cur) || THEMES[0];
-    return `<div class="ap-r ap-th"><span>Theme</span><div class="ap-thw"><div class="ap-ths" role="radiogroup" aria-label="Theme">${THEMES.map(([k, n, c]) => `<button type="button" role="radio" data-th="${k}" title="${n}" aria-label="${n}" aria-checked="${k === t[0]}" style="--c:${c}"${k === t[0] ? ' class="on"' : ""}></button>`).join("")}</div><div class="ap-thn">${t[1]}</div></div></div>`; };
+    return `<div class="ap-r ap-th"><span>Theme</span><div class="ap-thw"><div class="ap-ths" role="radiogroup" aria-label="Theme">${THEMES.map(([k, n, c]) => `<button type="button" role="radio" data-acc="${k}" title="${n}" aria-label="${n}" aria-checked="${k === t[0]}" style="--c:${c}"${k === t[0] ? ' class="on"' : ""}></button>`).join("")}</div><div class="ap-thn">${t[1]}</div></div></div>`; };
   function appearance(box){
     const dark = document.documentElement.dataset.theme === "dark", tx = Math.max(0, TXK.indexOf(curText()));
     const sl = (k, label, min, max, step, v) => `<label class="ap-r"><span>${label}</span><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${v}" aria-label="${label}"></label>`;
     box.innerHTML = `<div class="ap"><label class="ap-r"><span>Dark mode</span><input type="checkbox" class="ap-sw" ${dark ? "checked" : ""} aria-label="Dark mode"></label>` +
       themeRow() + sl("tx", "Text size", 0, 4, 1, tx) + sl("bz", "Button size", 80, 120, 5, lsGet("kcgm_bsz", 100)) + sl("bp", "Button spacing", 0, 8, 2, lsGet("kcgm_bsp", 0)) + `</div>`;
-    box.querySelectorAll(".ap-th button").forEach(x => x.onclick = e => { e.stopPropagation(); lsSet("kcgm_accent", x.dataset.th); if (window.kcgmAccent) kcgmAccent(x.dataset.th);
-      document.querySelectorAll(".ap-th").forEach(r => { r.querySelectorAll("button").forEach(y => { const on = y.dataset.th === x.dataset.th; y.classList.toggle("on", on); y.setAttribute("aria-checked", on); });
-        r.querySelector(".ap-thn").textContent = THEMES.find(t => t[0] === x.dataset.th)[1]; }); });
+    box.querySelectorAll(".ap-th button").forEach(x => x.onclick = e => { e.stopPropagation(); lsSet("kcgm_accent", x.dataset.acc); if (window.kcgmAccent) kcgmAccent(x.dataset.acc);
+      document.querySelectorAll(".ap-th").forEach(r => { r.querySelectorAll("button").forEach(y => { const on = y.dataset.acc === x.dataset.acc; y.classList.toggle("on", on); y.setAttribute("aria-checked", on); });
+        r.querySelector(".ap-thn").textContent = THEMES.find(t => t[0] === x.dataset.acc)[1]; }); });
     box.querySelector(".ap-sw").onchange = e => { lsSet("kcgm_theme", e.target.checked ? "dark" : "light"); if (window.kcgmTheme) kcgmTheme(); };
     box.querySelectorAll("input[type=range]").forEach(r => { const fill = () => r.style.setProperty("--p", (r.value - r.min) / (r.max - r.min) * 100 + "%"); fill();
       r.oninput = () => { fill(); if (r.dataset.k === "bz"){ lsSet("kcgm_bsz", r.value); applyBtn(); } if (r.dataset.k === "bp"){ lsSet("kcgm_bsp", r.value); applyBtn(); } };

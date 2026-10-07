@@ -84,6 +84,8 @@ window.AssetViz = (() => {
     const box = el.querySelector(".vz-sheet"), stage = box.querySelector(".vz-stage"), cv = box.querySelector("canvas"), key = cur.key;
     let z = 1, tx = 0, ty = 0, W = 0, H = 0, page = null, sc = 1, rz = 0, rt = null;
     // the place tapped or found: a highlighted box on it (no arrow), in 1/10000 of the sheet, grown a little as in the full screen viewer
+    // turn the click boxes passing test(i, ref) blue; how many
+    const pick = test => { const rf = box.querySelector(".vz-rf"); let n = 0; [...rf.children].forEach((e, i) => { const on = !!(refsNow[i] && test(i, refsNow[i])); e.classList.toggle("pick", on); n += on; }); return n; };
     const hbox = (l, t, w, h) => { const [a, b, c, d] = PdfView.grow(l, t, w, h, W / H); return `<i class="sp-hb sp-hbon" style="left:${a / 1e4 * W}px;top:${b / 1e4 * H}px;width:${c / 1e4 * W}px;height:${d / 1e4 * H}px"></i>`; };
     const apply = () => { z = Math.max(1, Math.min(10, z)); tx = Math.min(0, Math.max(W - W * z, tx)); ty = Math.min(0, Math.max(H - H * z, ty));
       stage.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; clearTimeout(rt); rt = setTimeout(sharp, 180); };
@@ -142,7 +144,7 @@ window.AssetViz = (() => {
       pg.getTextContent().then(tc => { if (g !== gen || !window.pdfjsLib || !pdfjsLib.renderTextLayer) return;
         return pdfjsLib.renderTextLayer({ textContentSource: tc, container: txl, viewport: pg.getViewport({ scale: 1 }), textDivs: [] }).promise; }).then(() => { if (g === gen) findNow(); }).catch(() => {});
       finder = { box, stage, get z(){ return z; }, n: d.number, g };
-      Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
+      const refsP = Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
         const A = W / H; boxes = [];
         refsNow = (R[d.number] || []).filter(r => r[0] === 1);
         rf.innerHTML = refsNow.map(r => { const [l, t, w, h] = PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
@@ -154,9 +156,14 @@ window.AssetViz = (() => {
             return hbox(r[1], r[2], r[3], r[4]); }).join(""); } });
       // the tag tapped (here or in the full screen viewer): the arrow on that very spot
       if (tap){ const own = boxes.some(([l, t, w, h]) => tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t);   // its own tag box shows it: no second box
-        box.querySelector(".vz-mk").innerHTML = own ? "" : hbox(tap[0], tap[1], tap[2], tap[3]); return; }
+        box.querySelector(".vz-mk").innerHTML = own ? "" : hbox(tap[0], tap[1], tap[2], tap[3]);
+        if (own) refsP.then(() => { if (g === gen) pick(i => { const [l, t, w, h] = boxes[i]; return tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t; }); });
+        return; }
       // mark the tag: a text piece holding it, or two neighbouring pieces that together do
       const want = nk(key); if (want.length < 3 || cur.t === "pid" || !own.includes(n)) return;
+      // its own click box on the sheet turns blue; only a tag with no click box gets a box drawn on its text
+      await refsP; if (g !== gen) return;
+      if (pick((i, r) => String(r[5]).split("|").some(t => nk(t) === want))) return;
       const tc = await pg.getTextContent(), it = tc.items.filter(t => t.str && t.str.trim()), hits = [];
       const rect = t => { const [a, b, c, dd, e, f] = t.transform, h = Math.hypot(c, dd) || Math.hypot(a, b), w = t.width || h * t.str.length * .5, rot = Math.abs(b) > Math.abs(a);
         return rot ? [e - h, f, e, f + w] : [e, f - h * .2, e + w, f + h * .9]; };
@@ -293,7 +300,7 @@ window.AssetViz = (() => {
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
 .vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:2px;background:rgba(90,100,115,.06)}   /* as in the full screen viewer: a very light grey wash */
 .vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i.hv{background:rgba(90,100,115,.22)}.vz-sheet.on-ref,.vz-sheet.on-ref .vz-tx span{cursor:pointer}
-.vz-rf i.hit{box-shadow:inset 0 0 0 1.5px rgba(30,110,230,.85);background:rgba(30,110,230,.28)}
+.vz-rf i.pick{box-shadow:inset 0 0 0 2.5px #1e6ee6,0 0 0 2px rgba(255,255,255,.7);background:rgba(30,110,230,.32)}.vz-rf i.hit{box-shadow:inset 0 0 0 1.5px rgba(30,110,230,.85);background:rgba(30,110,230,.28)}
 .vz-fd{position:absolute;left:0;top:0;pointer-events:none}.vz-fd i{position:absolute;box-sizing:border-box;border:1.5px solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:2px}
 .vz-sheet .vz-tx{z-index:2}.vz-mk{z-index:3}
 .vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}.vz-zb .vz-ze{border-radius:50%;border:1.5px solid var(--gold);color:color-mix(in srgb,var(--gold) 75%,var(--ink))}   /* zoom extents, in the corner as in the full screen viewer */
