@@ -19,6 +19,8 @@ pid = sorted(v["file"] for k, v in dw.items() if "-PID-" in k); pfd = sorted(v["
 pics = lambda fs: [x for f in fs for x in [f] + sorted(rel(p) for p in glob.glob(os.path.join(ROOT, f) + ".p*.png"))]
 add("pids", "P&IDs", f"{len(pid)} drawings", pics(pid))
 add("pfds", "PFD sheets", f"{len(pfd)} drawings", pics(pfd))
+bfd = sorted(v["file"] for k, v in dw.items() if "-BLK-" in k)
+add("bfds", "Block flowsheets", f"{len(bfd)} drawings", bfd)
 six = json.load(open(os.path.join(ROOT, "sources", "index.json"))) if os.path.exists(os.path.join(ROOT, "sources", "index.json")) else {}
 revs = json.load(open(os.path.join(ROOT, "tools", "doc_revs.json")))
 for k, d in six.items():

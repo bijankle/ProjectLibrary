@@ -13,8 +13,11 @@ ROOT = os.path.join(os.path.dirname(__file__), "..")
 DOCS = {r"DCR-PR-10002": ("2000-F00-DCR-PR-10002", "PROCESS DESIGN CRITERIA - STAGE 2"),
         # the two layout drawings the Layout view was built from (tools/build_layout.py), opened from its map bar
         r"DRG-GE-10100": ("2000-F00-DRG-GE-10100", "GENERAL FIMISTON SITE GENERAL ARRANGEMENT (NEW PLANT)"),
-        r"DRG-GE-20001_2\.pdf$": ("2000-F00-DRG-GE-20001", "FIMISTON PROCESS PLANT OVERALL PLANT LAYOUT (OLD PLANT)")}
-DRG = re.compile(r"-DRG-")
+        r"DRG-GE-20001_2\.pdf$": ("2000-F00-DRG-GE-20001", "FIMISTON PROCESS PLANT OVERALL PLANT LAYOUT (OLD PLANT)"),
+        # the two block flowsheets (Stage 1, Stage 2) the Smart PFD's zoomed out block view follows
+        r"BLK-PR-20001": ("2000-F00-BLK-PR-20001", "OVERALL BLOCK FLOWSHEET STAGE 1"),
+        r"BLK-PR-20002": ("2000-F00-BLK-PR-20002", "OVERALL BLOCK FLOWSHEET STAGE 2")}
+DRG = re.compile(r"-DRG-|-BLK-")
 # the drawings' sign off blocks are blacked out with the P&ID build's own routine (tools/build_pids.py, up to its main loop)
 _src = open(os.path.join(os.path.dirname(__file__), "build_pids.py")).read(); _src = _src[:_src.index("def split(n)")]
 _argv = sys.argv; sys.argv = [sys.argv[0], "x.pdf"]; BP = {"__file__": os.path.join(os.path.dirname(__file__), "build_pids.py")}; exec(_src, BP); sys.argv = _argv

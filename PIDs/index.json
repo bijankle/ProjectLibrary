@@ -2407,6 +2407,24 @@
    "pages": 1,
    "size": 220547,
    "proj_src": "TSF P&IDs"
+  },
+  "2000-F00-BLK-PR-20001": {
+   "file": "PIDs/2000-F00-BLK-PR-20001.pdf",
+   "title": "Overall block flowsheet, Stage 1",
+   "rev": "1",
+   "pages": 1,
+   "size": 208396,
+   "doc": true,
+   "layout": true
+  },
+  "2000-F00-BLK-PR-20002": {
+   "file": "PIDs/2000-F00-BLK-PR-20002.pdf",
+   "title": "Overall block flowsheet, Stage 2",
+   "rev": "1",
+   "pages": 1,
+   "size": 173455,
+   "doc": true,
+   "layout": true
   }
  }
 }
