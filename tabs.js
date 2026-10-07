@@ -52,7 +52,7 @@ window.Tabs = (() => {
   const FEATURES = () => [
     { t: "Sources: save or keep documents", k: "offline download save keep documents pids pfds spec sources lists drawings data excel pdf", st: "src", run: () => location.href = "issues.html#sources" },
     { t: "Dark mode", k: "theme dark light mode colours colors appearance", st: "look", run: () => viewMenu() },
-    { t: "Theme colour", k: "theme colour color accent slate graphite plum berry stone appearance", st: "look", run: () => viewMenu() },
+    { t: "Theme colour", k: "theme colour color accent slate graphite navy petrol olive stone rust ink appearance", st: "look", run: () => viewMenu() },
     { t: "Text size", k: "text size font bigger smaller larger appearance", st: "look", run: () => viewMenu() },
     { t: "Button size and spacing", k: "button size spacing bigger smaller gap appearance", st: "look", run: () => viewMenu() },
     { t: "AI key and other settings", k: "settings preferences ai key gemini google app size", run: () => O.onSettings ? O.onSettings() : location.href = "index.html?cards#settings" },
@@ -224,7 +224,7 @@ window.Tabs = (() => {
   const applyBtn = () => { const r = document.documentElement.style; r.setProperty("--bz", (+lsGet("kcgm_bsz", 100) || 100) / 100); r.setProperty("--bsp", (+lsGet("kcgm_bsp", 0) || 0) + "px"); document.documentElement.classList.toggle("bsp", +lsGet("kcgm_bsp", 0) > 0); };
   applyBtn(); addEventListener("storage", e => { if (e.key === "kcgm_bsz" || e.key === "kcgm_bsp") applyBtn(); });
   // the accent themes (colours in each page's head: #kcgmThemes); none is blue, green, amber, orange or red, so the accent never reads as a status
-  const THEMES = [["slate", "Slate", "#475569"], ["graphite", "Graphite", "#52525b"], ["plum", "Plum", "#8e4c8a"], ["berry", "Berry", "#a8456b"], ["stone", "Stone", "#7a6a5d"]];
+  const THEMES = [["slate", "Slate", "#475569"], ["graphite", "Graphite", "#52525b"], ["navy", "Navy", "#1e3a5f"], ["petrol", "Petrol", "#1f4f5a"], ["olive", "Olive", "#5a5a2e"], ["stone", "Stone", "#7a6a5d"], ["rust", "Rust", "#9a3412"], ["ink", "Ink", "#111827"]];   // as ActionMap
   const themeRow = () => { const cur = lsGet("kcgm_accent", "slate"), t = THEMES.find(x => x[0] === cur) || THEMES[0];
     return `<div class="ap-r ap-th"><span>Theme</span><div class="ap-thw"><div class="ap-ths" role="radiogroup" aria-label="Theme">${THEMES.map(([k, n, c]) => `<button type="button" role="radio" data-th="${k}" title="${n}" aria-label="${n}" aria-checked="${k === t[0]}" style="--c:${c}"${k === t[0] ? ' class="on"' : ""}></button>`).join("")}</div><div class="ap-thn">${t[1]}</div></div></div>`; };
   function appearance(box){
@@ -474,9 +474,11 @@ button:disabled{cursor:default}
 .ap-r{display:flex;align-items:center;gap:14px;padding:11px 12px;border-bottom:1px solid var(--line);font-size:var(--fb,15px);font-weight:800;color:var(--ink);cursor:default}.ap-r:last-child{border-bottom:0}
 .ap-r span{flex:0 0 7.2em;line-height:1.2}
 .ap-th{align-items:flex-start}.ap-th>span{padding-top:3px}.ap-thw{flex:1;min-width:0}
-.ap-ths{display:flex;gap:min(10px,2.2vw);flex-wrap:nowrap}.ap-ths button{flex:none;width:clamp(18px,6vw,24px);height:clamp(18px,6vw,24px);border-radius:50%;border:0;padding:0;background:var(--c);cursor:pointer}
-.ap-ths button.on{box-shadow:0 0 0 2px var(--card,var(--panel,#fff)),0 0 0 4px var(--c)}
+.ap-ths{display:flex;gap:min(6px,1.4vw);flex-wrap:nowrap}.ap-ths button{flex:none;width:clamp(15px,4.4vw,20px);height:clamp(15px,4.4vw,20px);border-radius:50%;border:0;padding:0;background:var(--c);cursor:pointer}
+.ap-ths button.on{box-shadow:0 0 0 2px var(--card,var(--panel,#fff)),0 0 0 4px var(--c)}html[data-theme="dark"] .ap-ths button{box-shadow:inset 0 0 0 1px #ffffff55}html[data-theme="dark"] .ap-ths button.on{box-shadow:inset 0 0 0 1px #ffffff55,0 0 0 2px var(--card,var(--panel,#15191e)),0 0 0 4px color-mix(in srgb,var(--c) 55%,#fff)}
 .ap-thn{font-size:var(--fl,13px);font-weight:700;color:var(--mute);margin-top:6px}
+/* (a narrow phone: the eight swatches go under the label, spread across the row) */
+:root.phone .ap-th{flex-wrap:wrap;row-gap:10px}:root.phone .ap-thw{flex:1 0 100%}:root.phone .ap-ths{justify-content:space-between}:root.phone .ap-ths button{width:clamp(22px,7vw,30px);height:clamp(22px,7vw,30px)}
 .ap-r input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:22px;background:linear-gradient(var(--gold,var(--accent)),var(--gold,var(--accent))) 0 50%/var(--p,50%) 4px no-repeat,linear-gradient(var(--line),var(--line)) 0 50%/100% 4px no-repeat;margin:0}
 .ap-r input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--card,#fff);border:2px solid var(--gold,var(--accent));box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .ap-r input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--card,#fff);border:2px solid var(--gold,var(--accent))}

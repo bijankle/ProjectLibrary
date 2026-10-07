@@ -31,19 +31,22 @@ try { addEventListener("storage", function(e){ if (e.key === "kcgm_text") { kcgm
 try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){ kcgmTheme(); });
   addEventListener("storage", function(e){ if (e.key === "kcgm_theme") kcgmTheme(); }); } catch (e) {}
 // the app's accent theme (View > Theme), also before the first paint, as data-accent on <html>; slate unless picked
-window.kcgmAccent = function(v){ try { v = v || localStorage.getItem("kcgm_accent") || "slate"; document.documentElement.dataset.accent = v; } catch (e) {} };
+window.kcgmAccent = function(v){ try { v = v || localStorage.getItem("kcgm_accent") || "slate"; if (!/^(slate|graphite|navy|petrol|olive|stone|rust|ink)$/.test(v)) v = "slate"; document.documentElement.dataset.accent = v; } catch (e) {} };
 kcgmAccent();
 try { addEventListener("storage", function(e){ if (e.key === "kcgm_accent") kcgmAccent(); }); } catch (e) {}
 </script>
 <style id="kcgmThemes">
 /* accent themes: main, darker, light tint, button fill. Only things that are "the app" follow them (selected pills,
    sliders, tags, buttons, outlines, progress lines); colours that mean something (fluids, check types, stages, warnings,
-   search hits, chart series) never do, and none of these is blue, green, amber, orange, red or bright pink/purple */
+   search hits, chart series) never do, and the same eight as ActionMap: deep and muted, so none passes for a fluid, check type or search colour */
 :root,html[data-accent="slate"]{--thm:#475569;--thd:#334155;--tht:#eef1f5;--thb:#64748b}
 html[data-accent="graphite"]{--thm:#52525b;--thd:#3f3f46;--tht:#f0f0f1;--thb:#71717a}
-html[data-accent="plum"]{--thm:#8e4c8a;--thd:#74386f;--tht:#f6edf5;--thb:#a0629c}
-html[data-accent="berry"]{--thm:#a8456b;--thd:#8a3557;--tht:#f8ecf1;--thb:#bb5d80}
+html[data-accent="navy"]{--thm:#1e3a5f;--thd:#132845;--tht:#e8edf4;--thb:#2d4f7c}
+html[data-accent="petrol"]{--thm:#1f4f5a;--thd:#143a43;--tht:#e7f0f1;--thb:#2d6673}
+html[data-accent="olive"]{--thm:#5a5a2e;--thd:#444422;--tht:#f0f0e6;--thb:#6e6e3a}
 html[data-accent="stone"]{--thm:#7a6a5d;--thd:#5f5147;--tht:#f3efeb;--thb:#8f7f71}
+html[data-accent="rust"]{--thm:#9a3412;--thd:#7c2a0e;--tht:#f8ece6;--thb:#b4471f}
+html[data-accent="ink"]{--thm:#111827;--thd:#000000;--tht:#e9ebef;--thb:#1f2937}
 :root{--th:var(--thm);--th2:var(--thd);--th-t:var(--tht);--th-b:var(--thb);--on-th:#fff}
 html[data-theme="dark"]{--th:color-mix(in srgb,var(--thm) 62%,#fff);--th2:color-mix(in srgb,var(--thm) 78%,#fff);--th-t:color-mix(in srgb,var(--thm) 32%,#15191e);--th-b:color-mix(in srgb,var(--thb) 80%,#fff)}   /* lifted so it reads on black */
 </style>
