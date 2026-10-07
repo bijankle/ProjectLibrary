@@ -110,12 +110,17 @@ window.SourcesList = (() => {
     function draw(){ if (busyRow){ redraw = true; return; } redraw = false;
       if (!DOCS) return; pills(); list = shown();
       const need = list.filter(d => stOf(d) !== "ok" && stOf(d) !== "none"), files = [...new Set(need.flatMap(d => d.keep.filter(f => st[f] !== "ok")))];
-      const left = files.reduce((t, f) => t + ((Offline.load && OFF && OFF.sz[f]) || 0), 0), what = type ? TN[type].replace("&amp;", "&") : "documents";
+      const left = files.reduce((t, f) => t + ((Offline.load && OFF && OFF.sz[f]) || 0), 0), allF = [...new Set(list.flatMap(d => d.keep))],
+        have = allF.filter(f => st[f] === "ok").reduce((t, f) => t + ((OFF && OFF.sz[f]) || 0), 0), what = type ? TN[type].replace("&amp;", "&") : "documents";
       const noun = list.length === 1 ? "document" : subOf(type) ? "drawings" : "documents";
       $(".sl-bar").innerHTML = `<span class="sl-n"><b>${list.length}</b> ${noun}${!phone && type ? ` · ${esc(TN[type])}` : ""}${!phone && area ? ` · ${area} ${esc(AREA[area] || "")}` : ""}</span>` +
         (list.length ? need.length ? (phone ? `<button type="button" class="sl-all">Cache all ${need.length}</button>`
-          : `<span class="sl-allr"><span class="sl-alln">${need.length} to cache, ${mb(left)} MB</span><button type="button" class="sl-b sl-all" title="Cache every document listed on this device">${ICO.dev}<span>Cache all</span></button></span>`)
-          : `<span class="sl-allok">${ICO.devOk} All cached</span>` : "") + `<i class="sl-pg"><i></i></i>`;
+          : `<span class="sl-alln">${mb(have)} of ${mb(have + left)} MB</span>`)
+          : phone ? `<span class="sl-allok">${ICO.devOk} All cached</span>` : `<span class="sl-alln">${mb(have)} of ${mb(have)} MB</span>` : "") + `<i class="sl-pg"><i></i></i>`;
+      // desktop: Cache all heads the button columns, its "x of y MB" just above it
+      if (!phone){ $(".sl-bh").innerHTML = !list.length ? "" : need.length ? `<button type="button" class="sl-b sl-all" title="Cache every document listed on this device">${ICO.dev}<span>Cache all</span></button>`
+          : `<span class="sl-b sl-kp ok sl-allc" title="Everything listed is cached on this device">${ICO.devOk}<span>All cached</span></span>`;
+        requestAnimationFrame(() => { const n = $(".sl-alln"), th = $(".sl-bh"); if (n && th) n.style.left = (th.getBoundingClientRect().left - $(".sl-bar").getBoundingClientRect().left + 2) + "px"; }); }
       const rows = list.slice(0, 400);
       // desktop: a Save column shows only when something listed has that file (the columns stay lined up)
       // desktop: each row's buttons packed from the left (Cache, PDF, Excel), as many button columns as the fullest row
@@ -167,7 +172,7 @@ window.SourcesList = (() => {
       busyRow = row || el; stop.x = false; el.classList.add("sl-busy"); busyRow.classList.add("sl-on");
       const bar = row ? row.querySelector(".sl-rb i") : $(".sl-pg i");
       const kb = row ? row.querySelector(".sl-kp") : !phone && $(".sl-all"); if (kb) kb.innerHTML = ICO.stop + `<span>${row ? "" : "Stop"}</span>`;
-      const say = f => { const t = `${mb(have + f * (total - have))} / ${mb(total)} MB`; const l = row ? row.querySelector(".sl-kp span") : phone ? $(".sl-all") : $(".sl-alln"); if (l) l.textContent = row || phone ? t : "Stop · " + t; if (bar) bar.style.width = ((have + f * (total - have)) / total * 100).toFixed(1) + "%"; };
+      const say = f => { const t = `${mb(have + f * (total - have))} / ${mb(total)} MB`; const l = row ? row.querySelector(".sl-kp span") : phone ? $(".sl-all") : $(".sl-alln"); if (l) l.textContent = row || phone ? t : t.replace(" / ", " of "); if (bar) bar.style.width = ((have + f * (total - have)) / total * 100).toFixed(1) + "%"; };
       say(0);
       if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
       try { await Offline.get(files, say, stop); } catch (e){ if (e.message !== "stopped") alert("Stopped: " + e.message + ". What was saved is kept; tap Cache again to finish."); }
@@ -205,8 +210,8 @@ td.sl-c{width:1%;padding-left:3px;padding-right:3px;position:relative}td.sl-c:la
 .sl-dt .sl-b{flex-direction:column;gap:1px;width:46px;height:34px;padding:0;border-radius:9px;font-size:10.5px;line-height:1}.sl-dt .sl-b svg{width:14px;height:14px}
 .sl-dt tr.sl-on .sl-kp{width:auto;min-width:46px;padding:0 6px}.sl-dt .sl-tb td{padding-top:3px;padding-bottom:3px}.sl-dt .sl-tb th{padding-top:7px;padding-bottom:7px}
 .sl-dt .sl-tb td.sl-ti{width:100%}.sl-dt td.sl-c{padding-left:2px;padding-right:2px}
-.sl-hb{display:flex;gap:6px;margin:10px 0 0}.sl-hb .sl-b,.sl-allr .sl-b{width:auto;min-width:54px;padding:0 8px}.sl-b:disabled{opacity:.6;cursor:progress}
-.sl-allr{display:inline-flex;align-items:center;gap:10px}.sl-alln{font-size:var(--fl,13px);color:var(--mute);font-variant-numeric:tabular-nums}
+.sl-hb{display:flex;gap:6px;margin:10px 0 0}.sl-hb .sl-b,.sl-bh .sl-b{width:auto;min-width:54px;padding:0 8px}.sl-dt .sl-tb th.sl-bh{padding:4px 2px;text-transform:none;letter-spacing:0}.sl-allc{cursor:default}.sl-b:disabled{opacity:.6;cursor:progress}
+.sl-dt .sl-alln{position:absolute;bottom:2px;white-space:nowrap}.sl-alln{font-size:var(--fl,13px);color:var(--mute);font-variant-numeric:tabular-nums}
 .sl-dt .sl-types,.sl-dt .sl-areas{display:flex;flex-wrap:wrap;gap:6px}.sl-dt .sl-p{border-radius:9px;font-size:14px;padding:4px 10px}
 .sl-kp.ok{border-color:#2aa765;color:#1f9a55}.sl-b,.sl-p,.sl-all,.sl-r{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.sl-b:active,.sl-p:active,.sl-all:active{transform:scale(.93);background:var(--th-t,#eef1f5)!important;transition:transform .05s}.sl-r:active{background:var(--th-t,#eef1f5)}.sl-kp.old,.sl-kp.part{border-style:dashed}
 .sl-busy .sl-kp:not(.sl-on .sl-kp),.sl-busy .sl-all:not(.sl-dt.sl-on .sl-all,.sl-ph.sl-on .sl-all){opacity:.4;pointer-events:none}
