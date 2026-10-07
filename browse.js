@@ -117,7 +117,7 @@ window.Browse = (() => {
       const c = {}; for (const r of list) c[r[st[0]]] = (c[r[st[0]]] || 0) + 1;
       const vals = st[0] === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => ALPHA.compare(TN[x], TN[y])) : order(st[0], c);
       const sn = st[0] === "t" ? () => "" : shortAll(vals.filter(v => v !== "?"), v => nameOf(st[0], t(), v));   // (asset types have no short names)
-      opts = `<div class="bw-h">${esc(st[1])}${st[0] !== "t" ? `<button class="bw-any">Any</button>` : ""}</div>` +
+      opts = `<div class="bw-h bw-band">${esc(st[1])}${st[0] !== "t" ? `<button class="bw-any">Any</button>` : ""}</div>` +
         vals.map(v => { const n = st[0] === "t" || v === "?" ? "" : sn(v), label = st[0] === "t" ? TN[v] : v === "?" ? "Other" : v;
           // code (short name); the full name and the count show on the gold chip once picked
           // qty × code (short name): the quantities share one right aligned column, so the items line up
@@ -127,7 +127,7 @@ window.Browse = (() => {
     } else opts = "";   // every step set (how to change one is in Help)
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = recBar() + `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts stack" style="--qw:${qw}ch">${opts}</div></div></div>
-      <div class="bw-r"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
+      <div class="bw-r">${resBand(list.length)}
       ${hits.map((it, i) => `<button class="bw-it${it.t === "line" ? " ln" : ""}" data-i="${i}"><b>${esc(it.key)}</b>${Lookup.tsfTag(it)} <span>(${esc(resDesc(it))})</span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bw-o").forEach(b => b.onclick = () => { path.push({ f: st[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
@@ -186,12 +186,12 @@ window.Browse = (() => {
       const f = nx[0], c = {}; for (const r of list) c[r[f]] = (c[r[f]] || 0) + 1;
       const vals = f === "t" ? TYPES.map(x => x[0]).filter(v => c[v]).sort((x, y) => ALPHA.compare(TN[x], TN[y])) : order(f, c);
       const sn = f === "t" ? () => "" : shortAll(vals.filter(v => v !== "?"), v => nameOf(f, t(), v));
-      opts = (path.length ? `<div class="bp-nx">${esc(nx[1])} ›</div>` : "") + `<div class="bp-g">` + (f !== "t" ? `<button class="bp-o bp-any">Any</button>` : "") +
+      opts = `<div class="bw-band">${esc(path.length ? nx[1] : "Asset type")}</div><div class="bp-g">` + (f !== "t" ? `<button class="bp-o bp-any">Any</button>` : "") +
         vals.map(v => { const n = f === "t" || v === "?" ? "" : sn(v); return `<button class="bp-o" data-v="${esc(v)}" data-n="${c[v]}"><b>${esc(f === "t" ? TN[v] : v === "?" ? "Other" : v)}</b>${n ? ` <span>${esc(n)}</span>` : ""}</button>`; }).join("") + `</div>`;
     }
-    const rec = !path.length && !q && rc.length ? `<div class="bp-bar bp-recs">${rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("")}</div>` : "";
+    const rec = !path.length && !q && rc.length ? `<div class="bw-band">Recent</div><div class="bp-bar bp-recs">${rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("")}</div>` : "";
     el.innerHTML = `<div class="bp-top">${rec}${chips ? `<div class="bp-bar">${chips}</div>` : ""}${opts}</div>
-      <div class="bw-r bp-l"><div class="bw-n"><b>${list.length.toLocaleString()}</b> ${list.length === 1 ? "item" : "items"}</div>
+      <div class="bw-r bp-l">${resBand(list.length)}
       ${hits.map((it, i) => `<button class="bw-it bp-it" data-i="${i}"><b>${esc(it.key)}</b>${Lookup.tsfTag(it)} <span data-full="${esc(resDesc(it))}"></span></button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bp-c.on").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
@@ -202,6 +202,8 @@ window.Browse = (() => {
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
     fit(); fitPhone();
   }
+  // design 14b: full width grey header bands split the page (Recent, Asset type, Results); Results carries the count
+  const resBand = n => `<div class="bw-n bw-band"><span>Results</span><b>${n.toLocaleString()}</b></div>`;
   // one row per result: code (description); a line reads code (from Name (tag), to Name (tag))
   const resDesc = it => { if (it.t === "pid"){ const d = window.Pid && Pid.info(it.key); return d && d.title ? Lookup.pidTitle(d.title) : ""; }
     if (it.t === "line" && it.r){ const [a, b] = Lookup.lineEnds(it, true); return `from ${a}, to ${b}`; } return Lookup.listName(it); };
@@ -310,6 +312,14 @@ window.Browse = (() => {
 .bw-it span{font-size:var(--fb,15px);color:var(--mute)}
 .bw-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-size:var(--fb,15px);font-weight:700}
 .bw-note{font-size:var(--fb,15px);color:var(--mute);line-height:1.4}
+/* design 14b: grey header bands over each section, results striped (no dividers). Desktop: the columns meet at the
+   divider (no gap) so the bands run edge to edge; rows keep their text where it was, the stripe fills the column */
+.bw-band{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 4px;padding:5px 8px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.bw-band b{color:var(--ink);letter-spacing:.02em;font-variant-numeric:tabular-nums}.bw-band .bw-any{padding:0 8px}
+.bw{column-gap:0}.bw-l{padding-right:18px}.bw-opts .bw-band{margin:0 -18px 2px 0}.bw-opts.stack>.bw-o{margin-left:8px;max-width:calc(100% - 8px)}
+.bw-r{padding:0}.bw-r>.bw-band{margin:0 0 2px;padding-right:12px}
+.bw-it{border-bottom:0;padding:7px 12px 7px 8px}.bw-it:where(:nth-of-type(even)){background:color-mix(in srgb,var(--ink) 3.5%,transparent)}
+.bw-r>.bw-more{width:calc(100% - 20px);margin:8px 12px 8px 8px}
 /* phone */
 :root.phone .bw{display:flex;flex-direction:column;gap:0}
 .bp-bar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0 8px;flex:none;align-items:center}.bp-bar::-webkit-scrollbar{display:none}
@@ -324,7 +334,12 @@ window.Browse = (() => {
 .bp-nx{font-size:var(--fl,13px);font-weight:800;color:var(--mute);margin:2px 2px 4px}
 .bp-g{display:grid;grid-auto-flow:column;grid-template-rows:repeat(3,auto);gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0;justify-content:start;overscroll-behavior-x:contain}.bp-g::-webkit-scrollbar{display:none}
 .bp-o{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:var(--fb,15px);font-weight:700;text-align:left;cursor:pointer;white-space:nowrap}
-:root.phone .bp-o,:root.phone .bp-c{padding:4px 11px;min-height:26px}:root.phone .bp-it{padding:6px 0}
+:root.phone .bp-o,:root.phone .bp-c{padding:4px 11px;min-height:26px}:root.phone .bp-it{padding:6px 16px}
+/* 14b on the phone: the Assets page runs to the screen edges (over the page's 16px gutter) so the bands and stripes do;
+   its content keeps the 16px inset */
+:root.phone #browse.bw{margin:0 -16px}:root.phone .bp-top{padding-bottom:4px;border-bottom:0;margin-bottom:0}
+:root.phone .bp-top>.bp-bar,:root.phone .bp-g{padding-left:16px;padding-right:16px}:root.phone .bp-top>.bp-bar{padding-top:6px}:root.phone .bp-g{padding-top:6px;padding-bottom:8px}
+:root.phone .bw-band{margin:0;padding:6px 16px}:root.phone .bw-r>.bw-more{width:calc(100% - 32px);margin:8px 16px}:root.phone .bw-note{padding:0 16px}
 .bp-o b{font-weight:800}.bp-o span{color:var(--mute);font-weight:600}.bp-any{color:var(--mute)}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   // back to no filter (the Assets tab calls this each time it opens)
