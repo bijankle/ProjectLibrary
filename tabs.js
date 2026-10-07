@@ -3,8 +3,9 @@
 // Assets and Quiz live in index.html, PFD and Layout in pfd.html; a tab on the other page is a link, a tab on this page is
 // handled in place by onTab(id) (return true when handled). The whole top's height is --tb, which both pages offset
 // their fixed layout by. Tabs.mount({ active, onTab, onSettings }), Tabs.set(id) marks a tab, Tabs.help(topic) opens Help.
-// File: Settings (theme, app size, offline downloads, AI key), Checks, Sources.
-// Help: a search over everything app wide (settings, features, how-to notes), How to use, Update app, About.
+// File: Print, Export to Excel, Copy link. View: text size and theme.
+// Help: a search over everything app wide (settings, features, how-to notes), How to use, API keys (Google AI, GitHub),
+// Update app, About. Tabs.keys() opens the API keys window, Tabs.toast(text) a short note at the bottom.
 window.Tabs = (() => {
   const TABS = [["assets", "Assets", "index.html?cards#assets"], ["pfd", "PFD", "pfd.html#pfd"],
     ["layout", "Layout", "pfd.html#layout"], ["quiz", "Learn", "index.html?cards#quiz"]];
@@ -46,7 +47,8 @@ window.Tabs = (() => {
     { t: "Move a Layout box", k: "layout drag move position hold export moves", h: "Press and hold a box for half a second until it lifts, then drag it. A shorter tap only selects it. Moves are kept on this device; Map options → Moves downloads them to send in." },
     { t: "Layout menus", k: "wbs filters flow filters map options satellite dim minor equipment old new layout drawing", h: "Top left of the map: Plant, WBS filters (fly to an area), Flow filters (fluids and narrative), Map options (imagery, dim, flow lines, minor equipment, moves, the old and new layout drawings)." },
     { t: "Learn", k: "learn quiz flashcards cards glossary", h: "Quiz: tap the card to see the answer, Next for another (the ones you have seen least come first), Back for the last one. The topic pills pick what comes up. Glossary: plant terms and abbreviations, with its own search." },
-    { t: "Offline use", k: "offline download cache no signal documents", h: "The app, lists and search always work offline. Documents are kept once opened; File → Settings → Offline downloads fetches them all ahead of time." }
+    { t: "Offline use", k: "offline download cache no signal documents", h: "The app, lists and search always work offline. Documents are kept once opened; Sources → Cache all fetches them ahead of time." },
+    { t: "Upload documents", k: "upload new revision drawing pdf github key superseded older", h: "Desktop: Sources → Upload (or the ↑ on a document or area) picks PDFs; the box that opens matches each file to its document number and revision from the file name, so check the flagged ones and press Upload. It needs a GitHub key (Help → API keys). A new file shows in Sources a few minutes later; the revision it replaces stays listed under it as superseded." }
   ];
   // st: the phone Settings tab it lives on (the phone opens that tab, the desktop runs it)
   const FEATURES = () => [
@@ -55,7 +57,11 @@ window.Tabs = (() => {
     { t: "Theme colour", k: "theme colour color accent slate graphite navy petrol olive stone rust ink appearance", st: "look", run: () => viewMenu() },
     { t: "Text size", k: "text size font bigger smaller larger appearance", st: "look", run: () => viewMenu() },
     { t: "Button size and spacing", k: "button size spacing bigger smaller gap appearance", st: "look", run: () => viewMenu() },
-    { t: "AI key and other settings", k: "settings preferences ai key gemini google app size", run: () => O.onSettings ? O.onSettings() : location.href = "index.html?cards#settings" },
+    // (desktop: both keys are in Help → API keys; the phone keeps the AI key on the Assets page's settings screen)
+    phone ? { t: "AI key and other settings", k: "settings preferences ai key gemini google app size", run: () => O.onSettings ? O.onSettings() : location.href = "index.html?cards#settings" }
+      : { t: "API keys: Google AI and GitHub", k: "settings api keys ai key gemini google github token upload", run: () => keys() },
+    ...(phone ? [] : [{ t: "Upload documents", k: "upload new revision drawing pdf github", run: () => location.href = "issues.html#sources" },
+      { t: "Print", k: "print paper pdf", run: () => print() }, { t: "Copy link", k: "copy link address url share", run: () => copyLink() }]),
     { t: "Update app", k: "update version refresh latest", run: () => { stamp(); window.AppUpdate && AppUpdate.update(); } },
     ...(phone ? [] : [{ t: "Checks", k: "checks issues gaps clashes", run: () => location.href = "issues.html" }]),
     { t: "Assets", k: "assets browse search", run: tab("assets") },
@@ -73,9 +79,9 @@ window.Tabs = (() => {
 
   // ---------- menus ----------
   const item = (id, label, sub) => `<button type="button" class="mn-i" data-a="${id}">${label}${sub ? `<small>${sub}</small>` : ""}</button>`;
-  const fileItems = () => item("settings", "Settings…", "Offline downloads, AI key");
+  const fileItems = () => item("print", "Print…") + item("xls", "Export to Excel…") + item("link", "Copy link");
   const helpItems = () => `<div class="mn-s"><input type="search" placeholder="Search the app: settings, features, how to…" aria-label="Search the app"><div class="mn-r"></div></div>` +
-    item("howto", "How to use…") + item("gloss", "Glossary", "Plant terms and abbreviations") + `<hr><button type="button" class="mn-i" data-a="update">Update app<small class="mn-ver">Checking the version…</small></button>` + item("about", "About this app");
+    item("howto", "How to use…") + item("gloss", "Glossary", "Plant terms and abbreviations") + item("keys", "API keys…", "Google AI, GitHub") + `<hr><button type="button" class="mn-i" data-a="update">Update app<small class="mn-ver">Checking the version…</small></button>` + item("about", "About this app");
   // View: text size (the same five steps as Settings, kcgmText in each page's head) and theme
   const TXT = [["xs", "Extra small"], ["s", "Small"], ["n", "Normal"], ["l", "Large"], ["xl", "Extra large"]];
   const curText = () => { try { return localStorage.getItem("kcgm_text") || "n"; } catch (e) { return "n"; } };
@@ -94,7 +100,7 @@ window.Tabs = (() => {
     el.querySelectorAll("[data-th]").forEach(b => b.onclick = () => theme(b.dataset.th));
     el.querySelectorAll("[data-tx]").forEach(b => b.onclick = () => textSize(b.dataset.tx));
     el.querySelectorAll(".mn-i[data-a]").forEach(b => b.onclick = () => { close(); ({
-      settings: () => O.onSettings && O.onSettings(), checks: () => location.href = "issues.html", sources: () => location.href = "issues.html#sources",
+      settings: () => O.onSettings && O.onSettings(), print: () => print(), xls: exportXls, link: copyLink, keys: () => keys(), checks: () => location.href = "issues.html", sources: () => location.href = "issues.html#sources",
       howto: () => help(), about: () => help("about"), gloss: glossary, update: () => { b.disabled = true; window.AppUpdate && AppUpdate.update(); } })[b.dataset.a](); });
     if (window.AppUpdate) Promise.all([AppUpdate.installed(), AppUpdate.latest()]).then(([a, l]) => el.querySelectorAll(".mn-ver").forEach(v => {
       v.textContent = l && a && a !== l ? `Installed ${a}, latest ${l}: update available` : l ? `${l}: up to date` : a ? `${a} (offline)` : ""; }));
@@ -104,6 +110,51 @@ window.Tabs = (() => {
         out.querySelectorAll("[data-r]").forEach(b => b.onclick = () => { const x = r[+b.dataset.r]; close(); if (x.run) x.run(); else help(x.t); }); };
       inp.onkeydown = e => { if (e.key === "Enter"){ const f = out.querySelector("[data-r]"); if (f) f.click(); } }; });
   }
+  // File: the page's own Excel export where it has one showing (Checks), else not yet
+  const exportXls = () => { const b = document.getElementById("xls"); if (b && b.offsetParent) b.click(); else toast("Export comes later"); };
+  function copyLink(){ const ok = () => toast("Link copied"), u = location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(ok, () => fallback()); else fallback();
+    function fallback(){ const t = document.createElement("textarea"); t.value = u; t.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); ok(); } catch (e) { toast("Couldn't copy the link"); } t.remove(); } }
+  let toT; function toast(m){ let t = document.getElementById("tbToast"); if (!t){ t = document.createElement("div"); t.id = "tbToast"; t.className = "tb-toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+    t.textContent = m; t.hidden = false; clearTimeout(toT); toT = setTimeout(() => t.hidden = true, 2600); }
+
+  // ---------- Help → API keys: the Google AI key (ai.js reads kcgm_gkey) and the GitHub key Sources uploads with ----------
+  // Both stay in this browser only. The repository comes from sources-list.js (SourcesList.REPO), its one home.
+  const KEYS = [["kcgm_gkey", "Google AI key", "Lets Gemini answer your own questions on the quiz cards. Free from aistudio.google.com.", "AIza…"],
+    ["kcgm_ghkey", "GitHub key", "Lets you upload documents in Sources. A fine-grained personal access token with Contents read and write on the repository below.", "github_pat_…"]];
+  function keys(){
+    close(); let w = document.getElementById("keysWin");
+    if (!w){ w = document.createElement("div"); w.id = "keysWin"; w.className = "hw ak"; document.body.appendChild(w);
+      w.addEventListener("click", e => { if (e.target === w) w.hidden = true; }); addEventListener("keydown", e => { if (e.key === "Escape") w.hidden = true; }); }
+    const f = (k, label, use, ph) => `<label class="ak-f"><b>${label}</b><span class="ak-r"><input class="ak-in ak-hid" data-k="${k}" type="text" value="${esc(lsGet(k, ""))}" placeholder="${ph}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other"><button type="button" class="ak-sh">Show</button></span><small>${use}</small><em class="ak-st" data-st="${k}"></em></label>`;
+    w.innerHTML = `<div class="hw-b ak-b" role="dialog" aria-label="API keys"><div class="hw-top"><b>API keys</b><span style="flex:1"></span><button type="button" class="hw-x" aria-label="Close">✕</button></div>
+      <div class="ak-l">${KEYS.map(x => f(...x)).join("")}<div class="ak-f"><b>Repository</b><span class="ak-repo">…</span><small>Where uploads go (GitHub). Set in the app; it can't be changed here.</small></div>
+      <p class="ak-n">The keys are kept only in this browser, on this device.</p></div>
+      <div class="ak-bt"><button type="button" class="ak-c">Cancel</button><button type="button" class="ak-ok">Save</button></div></div>`;
+    w.hidden = false; const $ = s => w.querySelector(s), say = (k, m, bad) => { const e = w.querySelector(`[data-st="${k}"]`); e.textContent = m; e.classList.toggle("bad", !!bad); };
+    need("sources-list.js", () => !!window.SourcesList).then(() => { $(".ak-repo").textContent = (window.SourcesList && SourcesList.REPO) || "Not available offline"; });
+    w.querySelectorAll(".ak-sh").forEach(b => b.onclick = e => { e.preventDefault(); const i = b.previousElementSibling, hid = i.classList.toggle("ak-hid"); b.textContent = hid ? "Show" : "Hide"; });
+    $(".hw-x").onclick = $(".ak-c").onclick = () => w.hidden = true;
+    $(".ak-ok").onclick = async () => {
+      const v = {}; w.querySelectorAll(".ak-in").forEach(i => v[i.dataset.k] = i.value.trim());
+      const g = v.kcgm_gkey, h = v.kcgm_ghkey, gWas = lsGet("kcgm_gkey", "");
+      const put = (k, x) => { try { x ? localStorage.setItem(k, x) : localStorage.removeItem(k); } catch (e) {} };
+      put("kcgm_ghkey", h); dispatchEvent(new Event("kcgm-keys"));   // (Sources redraws its upload buttons' locks)
+      if (g !== gWas){ put("kcgm_gkey", g); put("kcgm_gmodel", ""); put("kcgm_gspare", ""); }   // (a new key: ai.js picks its model again)
+      say("kcgm_gkey", g ? (g === gWas ? "Saved." : "Saved. Checking…") : "No key: the written answers still work.");
+      say("kcgm_ghkey", h ? "Saved. Checking…" : "No key: uploading is off.");
+      if (g && g !== gWas && window.AI && AI.test) AI.test(g).then(r => say("kcgm_gkey", "Working. Using " + r.best + "."), e => say("kcgm_gkey", "Saved, but Google refused it: " + e.message, true));
+      else if (g && g !== gWas) say("kcgm_gkey", "Saved.");
+      if (h){ await need("sources-list.js", () => !!window.SourcesList); const repo = window.SourcesList && SourcesList.REPO;
+        try { const r = await fetch("https://api.github.com/repos/" + repo, { headers: { Authorization: "Bearer " + h, Accept: "application/vnd.github+json" } });
+          const j = r.ok ? await r.json() : {};
+          say("kcgm_ghkey", r.status === 401 ? "Saved, but GitHub refused the key." : r.status === 404 ? "Saved, but the key can't see " + repo + "." : !r.ok ? "Saved. GitHub answered " + r.status + "." :
+            j.permissions && j.permissions.push === false ? "Saved, but the key can only read " + repo + ": it needs Contents write." : "Working: it can upload to " + repo + ".", !r.ok || (j.permissions && j.permissions.push === false));
+        } catch (e) { say("kcgm_ghkey", "Saved. Couldn't reach GitHub to check it."); } }
+    };
+    setTimeout(() => { const i = $(".ak-in"); if (i && desk()) i.focus(); }, 0);
+  }
+
   // the glossary lives on the Assets page: open it there (from the PFD page, go there)
   const glossary = () => { close(); if (O.onGlossary) O.onGlossary(); else location.href = "index.html?cards#gloss"; };
   function open(m){ close(); openM = m; m.classList.add("open"); const i = m.querySelector(".mn-s input"); if (i && desk()) setTimeout(() => i.focus(), 0); }
@@ -401,6 +452,18 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .hw-top input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 9px;font:inherit;font-size:var(--fb,15px)}
 .hw-x{border:0;background:none;color:var(--mute);font-size:18px;cursor:pointer}
 .hw-l{overflow-y:auto;padding:6px 16px 16px}.hw-l section{padding:8px 0;border-bottom:1px solid var(--line)}.hw-l section[hidden]{display:none}.hw-l section.hl h4{color:var(--gold,var(--accent))}
+/* Help → API keys: the Help window's frame, a field per key, Save at the bottom */
+.ak-b{width:min(520px,100%)}.ak-l{overflow-y:auto;padding:6px 16px 4px}
+.ak-f{display:block;padding:10px 0;border-bottom:1px solid var(--line)}.ak-f>b{display:block;font-size:var(--fb,15px);margin-bottom:6px}
+.ak-r{display:flex;gap:6px}.ak-in{flex:1;min-width:0;height:34px;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:0 9px;font:inherit;font-size:var(--fl,13px);font-family:ui-monospace,Menlo,Consolas,monospace}
+.ak-in:focus{outline:0;border-color:var(--th)}.ak-hid{-webkit-text-security:disc;text-security:disc}
+.ak-sh,.ak-c,.ak-ok{flex:none;height:34px;border:1px solid var(--line);background:var(--card,var(--panel));color:var(--ink);border-radius:8px;padding:0 12px;font:inherit;font-size:var(--fl,13px);font-weight:700;cursor:pointer}.ak-sh{width:62px}
+.ak-sh:hover,.ak-c:hover{border-color:var(--th)}.ak-ok{background:var(--th);border-color:var(--th);color:var(--on-th,#fff)}
+.ak-f small{display:block;color:var(--mute);font-size:var(--fl,13px);line-height:1.4;margin-top:6px}.ak-st{display:block;font-style:normal;font-size:var(--fl,13px);font-weight:700;color:#1f9a55;margin-top:4px}.ak-st:empty{display:none}.ak-st.bad{color:#c2412f}
+.ak-repo{display:inline-block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:var(--fl,13px);background:var(--th-t);border:1px solid var(--line);border-radius:6px;padding:4px 8px;user-select:all}
+.ak-n{color:var(--mute);font-size:var(--fl,13px);margin:10px 0 6px}.ak-bt{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;border-top:1px solid var(--line)}
+.tb-toast{position:fixed;left:50%;bottom:calc(24px + var(--bn,0px));transform:translateX(-50%);z-index:400;background:#171b21;color:#e9edf2;border:1px solid var(--th);border-radius:10px;padding:8px 14px;font-size:var(--fb,15px);box-shadow:0 6px 20px #0006;max-width:90vw}.tb-toast[hidden]{display:none}
+@media print{.tbw,.bn,.hw,.tb-toast{display:none!important}}
 .hw-l h4{margin:4px 0;font-size:var(--fb,15px)}.hw-l p{margin:4px 0;font-size:var(--fb,15px);line-height:1.5;color:var(--ink)}.hw-ver{color:var(--mute) !important}
 /* scroll bars across the app: barely there until you hover the area, clearer on the bar itself, gold while dragging */
 ::-webkit-scrollbar{width:10px;height:10px}
@@ -519,7 +582,7 @@ button:disabled{cursor:default}
     const guess = /issues/.test(pg) ? "more" : /pfd/.test(pg) ? (h === "#layout" ? "layout" : "pfd") : h === "#quiz" ? "quiz" : "assets";
     if (guess === "more") O.title = h === "#sources" ? "Sources" : "Checks";
     build(); set(guess); }
-  return { mount, set, help, slot, more, phone, desk, title, push, replace, back: goBack, home: goHome, fit: fitText };
+  return { mount, set, help, slot, more, phone, desk, title, push, replace, back: goBack, home: goHome, fit: fitText, keys, toast };
 })();
 
 // Property tables (label | value): the label column is set, per table, to the width that makes the whole table take

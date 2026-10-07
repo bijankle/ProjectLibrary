@@ -1,0 +1,38 @@
+# Uploads from the app (Sources → Upload, desktop) land in uploads/ as a PDF and a small JSON note, one commit each.
+# This files them into the library (tools/ingest_uploads.py: PIDs/ or PFDs/, the old revision kept under rev/), redraws
+# the sheet pictures and offline.json, bumps the app version and pushes; GitHub Pages then serves it.
+# The ingest commit removes the files from uploads/ (and pushes made with the Action's own token start no workflow),
+# so it never triggers itself; the actor check is a second guard.
+name: Ingest uploads
+on:
+  push:
+    branches: [main]
+    paths: ["uploads/**"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:   # one at a time; a run waiting behind another picks up everything uploaded meanwhile
+  group: ingest-uploads
+  cancel-in-progress: false
+jobs:
+  ingest:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main   # (the newest main, not the commit that started the run: a queued run sees every upload)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pymupdf pillow
+      - run: python3 tools/ingest_uploads.py
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
+          git commit -q -m "Ingest uploads"
+          git pull -q --rebase origin main
+          git push origin HEAD:main

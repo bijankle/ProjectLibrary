@@ -525,7 +525,9 @@
   "PFDs/2000-F00-PFD-PR-10050.pdf": "09cff1e1b4",
   "PFDs/2000-F00-PFD-PR-10050.pdf.p1.png": "b6e4737a5d",
   "PIDs/2000-F00-BLK-PR-20001.pdf": "f7d94896e2",
+  "PIDs/2000-F00-BLK-PR-20001.pdf.p1.png": "350543e6a6",
   "PIDs/2000-F00-BLK-PR-20002.pdf": "6a57a41d03",
+  "PIDs/2000-F00-BLK-PR-20002.pdf.p1.png": "022e54eb7e",
   "sources/mel.xlsx": "af8a24ed2e",
   "sources/mel/0-0.json": "4e2f7ab12e",
   "sources/mel/1-0.json": "421fb8718a",
@@ -1197,7 +1199,9 @@
   "PFDs/2000-F00-PFD-PR-10050.pdf": 126392,
   "PFDs/2000-F00-PFD-PR-10050.pdf.p1.png": 28395,
   "PIDs/2000-F00-BLK-PR-20001.pdf": 202058,
+  "PIDs/2000-F00-BLK-PR-20001.pdf.p1.png": 27424,
   "PIDs/2000-F00-BLK-PR-20002.pdf": 150002,
+  "PIDs/2000-F00-BLK-PR-20002.pdf.p1.png": 31532,
   "sources/mel.xlsx": 359506,
   "sources/mel/0-0.json": 1012674,
   "sources/mel/1-0.json": 1993,
@@ -1898,9 +1902,11 @@
    "note": "2 drawings",
    "files": [
     "PIDs/2000-F00-BLK-PR-20001.pdf",
-    "PIDs/2000-F00-BLK-PR-20002.pdf"
+    "PIDs/2000-F00-BLK-PR-20001.pdf.p1.png",
+    "PIDs/2000-F00-BLK-PR-20002.pdf",
+    "PIDs/2000-F00-BLK-PR-20002.pdf.p1.png"
    ],
-   "size": 352060
+   "size": 411016
   },
   {
    "id": "src-mel",
@@ -2168,5 +2174,5 @@
    "size": 40891
   }
  ],
- "total": 134569585
+ "total": 134628541
 }

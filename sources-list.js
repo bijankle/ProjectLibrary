@@ -6,7 +6,13 @@
 // Desktop (issues.html#sources): sections on the left (one per type, each with its cached MB and a Cache all), a divider
 // to drag, and on the right a selection tree as in Navisworks: section → area (P&IDs, PFDs) → document → its revision.
 // Phone: pills over a list (Settings → Sources, the Settings search box filters it). SourcesList.mount(el, {phone, input}).
+// Desktop upload: Upload (toolbar) or the ↑ on a document / area / section picks PDFs; a box matches each file to a
+// document number and revision from its name (design 12a), then PUTs it with a small JSON note into uploads/ of REPO
+// through the GitHub API with the GitHub key (Help → API keys). The ingest Action (.github/workflows/ingest.yml,
+// tools/ingest_uploads.py) files it into PIDs/ or PFDs/ a few minutes later and keeps the replaced file as a
+// superseded revision (the index's "revs"), which the tree lists under the latest one (view and download only).
 window.SourcesList = (() => {
+  const REPO = "bijankle/ProjectLibrary";   // the GitHub repository the app is served from and uploads to (one home: Help → API keys shows it)
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const mb = b => { const v = (b || 0) / 1e6; return v === 0 ? "0" : v < 1 ? String(+v.toFixed(2)) : v < 10 ? String(+v.toFixed(1)) : String(Math.round(v)); };
   const TYPES = [["pid", "P&IDs"], ["pfd", "PFDs"], ["bfd", "BFDs"], ["list", "Lists"], ["report", "Reports"], ["spec", "Specs"], ["dwg", "Drawings"], ["other", "Other"]];
@@ -27,15 +33,17 @@ window.SourcesList = (() => {
     fo: '<svg class="sl-ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1.5 4.5v8h11l2-5.5h-11l-2 5.5" fill="#f2d98c" stroke="#b8902c"/><path d="M1.5 12.5v-8h5l1.5 1.5h4.5v1" fill="none" stroke="#b8902c"/></svg>',
     pdf: '<svg class="sl-ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 1.5h6l3 3v10h-9z" fill="#fff" stroke="#6b7280"/><path d="M9.5 1.5v3h3" fill="none" stroke="#6b7280"/><rect x="4.5" y="9" width="7" height="3.5" rx=".5" fill="#d64545"/></svg>',
     xls: '<svg class="sl-ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 1.5h6l3 3v10h-9z" fill="#fff" stroke="#6b7280"/><path d="M9.5 1.5v3h3" fill="none" stroke="#6b7280"/><rect x="4.5" y="9" width="7" height="3.5" rx=".5" fill="#1f8a4c"/></svg>',
+    lock: '<svg viewBox="0 0 12 12" width="9" height="9" aria-hidden="true"><rect x="1.5" y="5" width="9" height="6.5" rx="1.2" fill="currentColor"/><path d="M3.6 5V3.6a2.4 2.4 0 0 1 4.8 0V5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></svg>',
     rev: '<svg class="sl-ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="#fff" stroke="#6b7280"/><path d="M8 5v3.2l2 1.3" fill="none" stroke="#6b7280" stroke-width="1.3"/></svg>' };
   const MEM = { open: null, sel: "" };   // the desktop tree's open nodes and selected document, kept while the page is open
 
   // ---------- the documents ----------
-  let DOCS = null;
+  let DOCS = null, IDX = {};   // IDX: the drawing index (PIDs/index.json "pids"), what an upload can go to
   async function load(){
     if (DOCS) return DOCS;
     const j = u => fetch(u).then(r => r.ok ? r.json() : {}).catch(() => ({}));
-    const [P, six, iss] = await Promise.all([j("PIDs/index.json"), j("sources/index.json"), j("issues.json")]);
+    const [P, six, iss] = await Promise.all([j("PIDs/index.json"), j("sources/index.json"), j("issues.json")]); IDX = P.pids || {};
     if (window.Offline) await Offline.load().catch(() => {});
     const off = (window.Offline && Offline.load && await Offline.load().catch(() => null)) || { groups: [], sz: {} };
     const grp = id => (off.groups || []).find(g => g.id === id);
@@ -44,13 +52,13 @@ window.SourcesList = (() => {
     const JOIN = { "2000-F00-DCR-PR-10002": "pdc", "2000-F00-DRG-GE-20001": "layout" };
     Object.entries(P.pids || {}).forEach(([k, d]) => { if (JOIN[k]) return;
       const t = /-PID-/.test(k) ? "pid" : /-PFD-/.test(k) ? "pfd" : /-BLK-/.test(k) ? "bfd" : "dwg", area = k.split("-")[1];
-      out.push({ k, t, number: k, title: d.title || "", rev: d.rev || "", date: d.date || "", area, pdf: d.file, size: d.size, keep: [d.file].concat(Object.keys(off.sz || {}).filter(f => f.startsWith(d.file + ".p"))), tsf: !!d.proj_src }); });   // (with its sheet pictures)
+      out.push({ k, t, number: k, title: d.title || "", rev: d.rev || "", date: d.date || "", area, pdf: d.file, size: d.size, keep: [d.file].concat(Object.keys(off.sz || {}).filter(f => f.startsWith(d.file + ".p"))), tsf: !!d.proj_src, ik: k, revs: d.revs || [] }); });   // (with its sheet pictures)
     const KIND = { List: "list", Report: "report", Specification: "spec", Drawing: "dwg", Reference: "other" };
     Object.entries(meta).forEach(([k, v]) => {
       const s = six[k], g = grp("src-" + k), pdfK = Object.keys(JOIN).find(n => JOIN[n] === k), pd = pdfK && P.pids && P.pids[pdfK];
       const keep = (g ? g.files : []).concat(pd ? [pd.file] : []);
       out.push({ k, t: k === "pfd" ? "pfd" : KIND[v.kind] || "other", number: v.number, title: v.full || v.title, rev: v.rev || "", date: v.date || "", info: v,
-        xlsx: s && s.xlsx, xname: s && s.fname, tables: !!s, pdf: pd && pd.file, size: keep.reduce((t, f) => t + (off.sz[f] || 0), 0) || (s && s.size), keep }); });
+        xlsx: s && s.xlsx, xname: s && s.fname, tables: !!s, pdf: pd && pd.file, size: keep.reduce((t, f) => t + (off.sz[f] || 0), 0) || (s && s.size), keep, ik: pd ? pdfK : "", revs: (pd && pd.revs) || [] }); });
     const sp = grp("spec");
     out.push({ k: "spec", t: "spec", number: "2000-F00-STS-PP-10001", title: "Piping and Valve Specification", rev: "3", pdf: "spec/pvs.pdf", size: sp ? sp.size : 0, keep: ["spec/pvs.pdf"] });
     const ORD = new Intl.Collator(undefined, { numeric: true });
@@ -84,7 +92,7 @@ window.SourcesList = (() => {
       : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off"><div class="sl-hb"><button type="button" class="sl-b sl-sva">${ICO.save}<span>Save all</span></button><span class="sl-svn"></span></div>
            <div class="sl-h">Sections</div><div class="sl-secs"></div><div class="sl-h">Everything</div><div class="sl-ev"></div></aside>
          <div class="sl-dv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
-         <div class="sl-main"><div class="sl-tbar"><b>Selection tree</b><span class="sl-sp"></span><button type="button" class="sl-tbb" disabled title="Uploading comes later">${ICO.up}Upload</button><button type="button" class="sl-tbb" data-x="1">Expand all</button><button type="button" class="sl-tbb" data-x="0">Collapse all</button></div>
+         <div class="sl-main"><div class="sl-tbar"><b>Selection tree</b><span class="sl-sp"></span><button type="button" class="sl-tbb sl-upb" data-up="">${ICO.up}Upload</button><input type="file" class="sl-file" accept="application/pdf,.pdf" multiple hidden><button type="button" class="sl-tbb" data-x="1">Expand all</button><button type="button" class="sl-tbb" data-x="0">Collapse all</button></div>
            <div class="sl-tree"><div class="sl-gh"><span>Name</span><span>Title</span><span>Rev</span><span>Size</span><span>Cached</span><span></span></div><div class="sl-rows"></div></div></div>`;
     const $ = s => el.querySelector(s);
     const input = o.input || $(".sl-q");
@@ -184,22 +192,29 @@ window.SourcesList = (() => {
       const H = [], tail = `<i class="sl-rb"><i></i></i>`;
       const gd = (pre, lv, last) => pre.map(c => `<span class="sl-g${c ? " sl-gv" : ""}"></span>`).join("") + (lv ? `<span class="sl-g sl-gt${last ? " sl-gl" : ""}"></span>` : "");
       const tg = o => `<span class="sl-tg">${o ? "−" : "+"}</span>`;
+      // ↑ upload into a document / area / section (only what the drawing index holds); a lock while there's no GitHub key
+      const upB = (id, ds) => ds.some(d => d.ik) ? upBtn(id, "sl-ib") : "";
       const okIco = s => s === "ok" ? `<span class="sl-ok" title="Cached on this device">${ICO.devOk}</span>` : s === "old" ? `<span class="sl-ok old" title="An older copy is cached: cache it again to update">${ICO.devOk}</span>`
         : s === "part" ? `<span class="sl-ok part" title="Partly cached">${ICO.dev}</span>` : "";
       const kp = (d, s) => d.keep.length ? `<button type="button" class="sl-ib sl-kp ${s}" title="${s === "ok" ? "Cached on this device. Click to remove" : s === "old" ? "Update the cached copy" : "Cache on this device to open with no signal"}">${s === "ok" ? ICO.devOk : ICO.dev}</button>` : "";
-      const acts = (d, s) => (d.pdf ? saveBtn(d, "p", "sl-ib", "") : "") + (d.xlsx ? saveBtn(d, "x", "sl-ib", "") : "") + kp(d, s);
+      const acts = (d, s, up) => (up ? upB("d:" + d.k, [d]) : "") + (d.pdf ? saveBtn(d, "p", "sl-ib", "") : "") + (d.xlsx ? saveBtn(d, "x", "sl-ib", "") : "") + kp(d, s);
       const grp = (id, lv, pre, last, label, ds, kids) => { const o = isOpen(id);
         H.push(`<div class="sl-tr sl-grp" data-id="${esc(id)}"><span class="sl-nm">${gd(pre, lv, last)}${tg(o)}${o ? ICO.fo : ICO.fc}<span class="sl-l">${esc(label)}<em>(${ds.length})</em></span></span><span></span><span></span><span></span>` +
-          `<span class="sl-c sl-pt">${ds.filter(d => stOf(d) === "ok").length} of ${ds.length}</span><span class="sl-acts">${caBtn(id, ds)}</span>${tail}</div>`);
+          `<span class="sl-c sl-pt">${ds.filter(d => stOf(d) === "ok").length} of ${ds.length}</span><span class="sl-acts">${upB(id, ds)}${caBtn(id, ds)}</span>${tail}</div>`);
         if (o) kids(lv ? pre.concat(!last) : pre); };
       const doc = (d, lv, pre, last) => { const id = "d:" + d.k, o = isOpen(id), s = stOf(d), v = d.info || {}, sel = x => MEM.sel === x ? " sel" : "";
         const tip = [v.kind, v.status, v.used && "Used for " + v.used, v.note].filter(Boolean).concat("Click to open").join("\n");
         H.push(`<div class="sl-tr sl-doc${sel(id)}" data-id="${esc(id)}" data-r="${esc(d.k)}"><span class="sl-nm">${gd(pre, lv, last)}${tg(o)}${d.pdf ? ICO.pdf : ICO.xls}<span class="sl-l">${esc(d.number + (d.rev ? "_Rev" + d.rev : ""))}</span></span>` +
           `<span class="sl-c"><button type="button" class="sl-op" title="${esc(tip)}">${esc(d.title)}</button></span><span class="sl-c">${d.rev ? "Rev " + esc(d.rev) : ""}</span><span class="sl-c">${d.size ? mb(d.size) + " MB" : ""}</span>` +
-          `<span class="sl-c sl-pt">${okIco(s)}</span><span class="sl-acts">${acts(d, s)}</span>${tail}</div>`);
-        // its revisions: the project library holds the latest only, so one row (no made up older ones)
-        if (o) H.push(`<div class="sl-tr sl-rv${sel("v:" + d.k)}" data-id="v:${esc(d.k)}" data-r="${esc(d.k)}"><span class="sl-nm">${gd(pre.concat(!last), lv + 1, true)}<span class="sl-tg0"></span>${ICO.rev}<span class="sl-l">Rev ${esc(d.rev || "–")}${d.date ? " · " + esc(d.date) : ""}<u>latest</u></span></span>` +
-          `<span class="sl-c">${esc(v.status || "")}</span><span></span><span class="sl-c">${d.size ? mb(d.size) + " MB" : ""}</span><span class="sl-c sl-pt">${okIco(s)}</span><span class="sl-acts">${acts(d, s)}</span>${tail}</div>`); };
+          `<span class="sl-c sl-pt">${okIco(s)}</span><span class="sl-acts">${acts(d, s, 1)}</span>${tail}</div>`);
+        // its revisions: the latest, then the ones it superseded (uploads keep them: the index's "revs", oldest first),
+        // newest first; an old one can be viewed and saved, not cached (the app works from the latest)
+        if (!o) return; const old = d.revs.slice().reverse(), p2 = pre.concat(!last);
+        H.push(`<div class="sl-tr sl-rv${sel("v:" + d.k)}" data-id="v:${esc(d.k)}" data-r="${esc(d.k)}"><span class="sl-nm">${gd(p2, lv + 1, !old.length)}<span class="sl-tg0"></span>${ICO.rev}<span class="sl-l">Rev ${esc(d.rev || "–")}${d.date ? " · " + esc(d.date) : ""}<u>latest</u></span></span>` +
+          `<span class="sl-c">${esc(v.status || "")}</span><span></span><span class="sl-c">${d.size ? mb(d.size) + " MB" : ""}</span><span class="sl-c sl-pt">${okIco(s)}</span><span class="sl-acts">${acts(d, s)}</span>${tail}</div>`);
+        old.forEach((r, i) => { const id = `o:${d.k}:${r.rev}`, nm = (d.number + " Rev " + r.rev + (d.title ? " " + d.title : "")).replace(/[\\/:*?"<>|]+/g, " ").trim() + ".pdf";
+          H.push(`<div class="sl-tr sl-rv sl-old${sel(id)}" data-id="${esc(id)}" data-r="${esc(d.k)}" data-pdf="${esc(r.file)}"><span class="sl-nm">${gd(p2, lv + 1, i === old.length - 1)}<span class="sl-tg0"></span>${ICO.rev}<span class="sl-l">Rev ${esc(r.rev || "–")}${r.date ? " · " + esc(r.date) : ""}<u class="sl-sup">superseded</u></span></span>` +
+            `<span></span><span></span><span class="sl-c">${r.size ? mb(r.size) + " MB" : ""}</span><span></span><span class="sl-acts"><button type="button" class="sl-ib sl-vw" title="View Rev ${esc(r.rev)}">${ICO.eye}</button><a class="sl-ib sl-sv" href="${esc(r.file)}" download="${esc(nm)}" title="Save Rev ${esc(r.rev)} to Downloads">${ICO.save}</a></span>${tail}</div>`); }); };
       (type ? [type] : TYPES.map(x => x[0])).forEach(t => { const ds = ofT(hit, t); if (!ds.length) return;
         grp("r:" + t, 0, [], true, TN[t], ds, pre => subOf(t)
           ? byArea(ds).forEach(([a, as], i, A) => grp(`a:${t}:${a}`, 1, pre, i === A.length - 1, a === "–" ? "Other" : `${a} ${AREA[a] || ""}`.trim(), as, p2 => as.forEach((d, j) => doc(d, 2, p2, j === as.length - 1))))
@@ -217,7 +232,9 @@ window.SourcesList = (() => {
         const x = t.closest("[data-x]");
         if (x){ const g = groups(); if (x.dataset.x === "1"){ g.forEach(id => open.add(id)); shut.clear(); }
           else { [...open].forEach(id => id[0] !== "r" && open.delete(id)); if (q) g.forEach(id => id[0] === "a" && shut.add(id)); } return draw(); }
+        const ub = t.closest(".sl-upb"); if (ub) return pickUp(ub.dataset.up);
         const r = t.closest("[data-id]"); if (!r) return;
+        if (t.closest(".sl-vw")) return window.open(r.dataset.pdf, "_blank", "noopener");
         const kb = t.closest(".sl-kp");
         if (kb){ if (busy){ stop.x = true; return; }
           if (kb.dataset.ca){ const ds = grpDocs(kb.dataset.ca); if (!allOk(ds)) run(ds, r); return; }   // (all of it: the ones cached are skipped, the MB count on from them)
@@ -229,7 +246,14 @@ window.SourcesList = (() => {
         if (t.closest(".sl-op")) return openDoc(DOCS.find(x => x.k === r.dataset.r));
         if (t.closest(".sl-tg") || r.classList.contains("sl-grp")) return toggle(r.dataset.id);
         if (r.dataset.r){ MEM.sel = r.dataset.id; el.querySelectorAll(".sl-tr.sel").forEach(x => x.classList.remove("sel")); r.classList.add("sel"); } });
-      el.addEventListener("dblclick", e => { const r = e.target.closest(".sl-tr[data-r]"); if (r && !e.target.closest(".sl-acts,.sl-tg,.sl-op")) openDoc(DOCS.find(x => x.k === r.dataset.r)); });
+      el.addEventListener("dblclick", e => { const r = e.target.closest(".sl-tr[data-r]"); if (r && !e.target.closest(".sl-acts,.sl-tg,.sl-op")) r.dataset.pdf ? window.open(r.dataset.pdf, "_blank", "noopener") : openDoc(DOCS.find(x => x.k === r.dataset.r)); });
+      // upload: the picker remembers where it was opened from (a document, area or section) for the box's guesses
+      let upAt = ""; const fi = $(".sl-file");
+      const pickUp = at => { if (!ghKey()) return needKey(); upAt = at; fi.value = ""; fi.click(); };
+      fi.onchange = () => { const fs = [...fi.files].filter(f => /\.pdf$/i.test(f.name) || f.type === "application/pdf"); fi.value = "";
+        if (fs.length) upload(fs, upAt, DOCS); else if (fi.files.length) alert("Only PDF files can be uploaded."); };
+      const relock = () => { const lk = !ghKey(); el.querySelectorAll(".sl-tbar .sl-upb").forEach(b => setLock(b, lk)); draw(); };
+      addEventListener("kcgm-keys", relock); addEventListener("storage", e => { if (e.key === "kcgm_ghkey") relock(); }); relock();
       el.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList.contains("sl-sec")) e.target.click(); });
       $(".sl-sva").onclick = () => saveAll(list, $(".sl-sva"));
       // the divider: drag to share the width (the side 260px to half), double click for the default
@@ -280,6 +304,141 @@ window.SourcesList = (() => {
     return { refresh, filter: v => { q = String(v || "").trim().toLowerCase(); draw(); } };
   }
 
+  // ---------- upload (desktop) ----------
+  const ghKey = () => { try { return localStorage.getItem("kcgm_ghkey") || ""; } catch (e) { return ""; } };
+  const LOCKT = "Uploading needs a GitHub key: Help → API keys";
+  const upBtn = (id, cls) => { const lk = !ghKey();
+    return `<button type="button" class="${cls} sl-upb${lk ? " sl-lkd" : ""}" data-up="${esc(id)}" title="${lk ? LOCKT : id ? "Upload new revisions or documents into here" : "Upload PDFs"}">${ICO.up}${lk ? `<i class="sl-lk">${ICO.lock}</i>` : ""}</button>`; };
+  const setLock = (b, lk) => { b.classList.toggle("sl-lkd", lk); b.title = lk ? LOCKT : "Upload PDFs"; const i = b.querySelector(".sl-lk"); if (lk && !i) b.insertAdjacentHTML("beforeend", `<i class="sl-lk">${ICO.lock}</i>`); if (!lk && i) i.remove(); };
+  // a centred box over the page (the upload check, the key note): returns its card; Esc or a click outside closes it
+  // unless it's busy
+  function box(cls){ const w = document.createElement("div"); w.className = "up-w"; w.innerHTML = `<div class="up-b ${cls || ""}" role="dialog" aria-modal="true"></div>`; document.body.appendChild(w);
+    const shut = () => { if (w.dataset.busy) return; w.remove(); removeEventListener("keydown", k); }, k = e => { if (e.key === "Escape") shut(); };
+    w.addEventListener("click", e => { if (e.target === w) shut(); }); addEventListener("keydown", k); const b = w.firstChild; b.shut = shut; b.wrap = w; return b; }
+  function needKey(){ const b = box("up-sm");
+    b.innerHTML = `<h3>Uploading needs a GitHub key</h3><p>Uploads go straight into the app's GitHub repository (${esc(REPO)}), so they need a GitHub key: a fine-grained personal access token with Contents read and write on that repository. Add it in Help → API keys; it stays in this browser only.</p>
+      <div class="up-ft"><span class="sl-sp"></span><button type="button" class="up-c">Close</button>${window.Tabs && Tabs.keys ? `<button type="button" class="up-go">Open API keys…</button>` : ""}</div>`;
+    b.querySelector(".up-c").onclick = b.shut; const g = b.querySelector(".up-go"); if (g) g.onclick = () => { b.shut(); Tabs.keys(); }; }
+
+  // revisions: numbers after letters (A, B, C are the issues before Rev 0), 1A after 1; true when a is later than b
+  const rk = r => { r = String(r || "").toUpperCase(); const m = r.match(/^(\d+)([A-Z]?)$/); return m ? [1, +m[1], m[2]] : /^[A-Z]{1,2}$/.test(r) ? [0, r.length, r] : [0, 0, r]; };
+  const later = (a, b) => { const x = rk(a), y = rk(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i]; return false; };
+  const nextRev = r => { r = String(r || "").toUpperCase(); return /^\d+$/.test(r) ? String(+r + 1) : /^[A-Y]$/.test(r) ? String.fromCharCode(r.charCodeAt(0) + 1) : /^(\d+)[A-Z]$/.test(r) ? String(parseInt(r) + 1) : r ? "" : "0"; };
+  const REVOK = /^[A-Z0-9]{1,4}$/, NUMOK = /^[A-Z0-9][A-Z0-9-]{4,60}$/;
+  // a file name → {num (an index key), fresh (a number not in the index), rev}: "F13-PID-10002 rev 3.pdf" →
+  // 2000-F13-PID-PR-10002 rev 3; "2000-F16-PID-PR-10007_C" → rev C; the parts left out (2000-, PR) are filled in
+  function guess(name){
+    const U = name.replace(/\.pdf$/i, "").toUpperCase(), out = { num: "", fresh: "", rev: "", alts: [] };
+    const m = U.match(/(?:(\d{4})[-_ ]?)?F(\d{2,3})[-_ ]?(PID|PFD|BLK|DRG|DCR|LAY|GA)[-_ ]?(?:([A-Z]{2})[-_ ]?)?(\d{4,5})/);
+    let rest = U;
+    if (m){ rest = U.replace(m[0], " ");
+      const hit = Object.keys(IDX).filter(k => { const p = k.split("-"); return p[1] === "F" + m[2] && p[2] === m[3] && p[4] === m[5] && (!m[1] || p[0] === m[1]) && (!m[4] || p[3] === m[4]); });
+      if (hit.length === 1) out.num = hit[0]; else if (hit.length) out.alts = hit;
+      else out.fresh = `${m[1] || "2000"}-F${m[2]}-${m[3]}-${m[4] || "PR"}-${m[5]}`; }
+    const r = rest.match(/REV(?:ISION)?[\s_.-]*(\d{1,2}[A-Z]?|[A-Z]{1,2})(?![A-Z0-9])/) || rest.trim().match(/(?:^|[-_ ])(\d{1,2}|[A-Z])$/);
+    if (r) out.rev = r[1];
+    return out; }
+
+  // the check box (design 12a): FILE | GOES TO | REV | status, then Upload N
+  function upload(files, at, DOCS){
+    const nums = Object.keys(IDX).sort(new Intl.Collator(undefined, { numeric: true }).compare);
+    // where it was opened from: a document is the default target; an area or section puts its documents first and
+    // starts a new document's number with its area
+    const [w, t, a] = at.split(":"), atDoc = w === "d" ? (DOCS.find(d => d.k === at.slice(2)) || {}).ik || "" : "";
+    const scope = w === "a" || w === "r" ? DOCS.filter(d => d.ik && d.t === t && (w === "r" || (d.area || "–") === a)).map(d => d.ik) : [];
+    const pre = w === "a" && a !== "–" ? `2000-${a}-${{ pid: "PID", pfd: "PFD", bfd: "BLK" }[t] || "DRG"}-PR-` : "";
+    const scName = w === "a" ? `${a} ${AREA[a] || ""}`.trim() : w === "r" ? (TN[t] || "").replace("&amp;", "&") : "";
+    const rows = files.map(f => { const g = guess(f.name), num = g.num || (!g.fresh && atDoc) || "";
+      const x = { f, num, mode: num ? "doc" : g.fresh ? "new" : "", fresh: g.fresh || pre, title: "", rev: g.rev, guessed: false, st: "", msg: "", alts: g.alts };
+      if (!x.rev){ x.rev = num ? nextRev(IDX[num].rev) : g.fresh ? "0" : ""; x.guessed = !!num; }
+      return x; });
+    const b = box("up-big"), mbs = n => (n / 1e6 < 0.1 ? "<0.1" : (n / 1e6).toFixed(1)) + " MB";
+    const target = x => x.mode === "doc" ? x.num : x.mode === "new" ? x.fresh.trim().toUpperCase() : "";
+    // status: ✓ Matched, ! Check rev (not later than the current one, or guessed), ? Pick one, + New; ready = can go up
+    const stat = x => { const r = x.rev.trim().toUpperCase();
+      if (x.st === "ok") return ["ok", "✓ Uploaded", ""]; if (x.st === "busy") return ["bz", x.msg, ""]; if (x.st === "err") return ["no", "✕ " + x.msg, ""];
+      if (!x.mode) return ["no", "? Pick one", x.alts.length ? "The name fits more than one document" : "No document number found in the name"];
+      if (x.mode === "new"){ const n = target(x); if (!NUMOK.test(n)) return ["no", "? Number", "Type the new document's number"]; if (!REVOK.test(r)) return ["ck", "! Rev", "Type its revision"]; return ["nw", "+ New", "A new document: " + n]; }
+      const cur = IDX[x.num].rev || "", old = (IDX[x.num].revs || []).map(v => v.rev);
+      if (!REVOK.test(r)) return ["ck", "! Rev", "Type the revision (letters and numbers)"];
+      if (cur && !later(r, cur) || old.includes(r)) return ["ck", "! Check rev", `Rev ${r} isn't later than the current Rev ${cur}`];
+      if (x.guessed) return ["ck", "! Check rev", "No revision in the name: Rev " + r + " is a guess"];
+      return ["ok", "✓ Matched", cur ? `Replaces Rev ${cur}` : "Replaces the current file"]; };
+    const ready = x => x.st !== "ok" && x.st !== "busy" && !!target(x) && REVOK.test(x.rev.trim().toUpperCase()) && (x.mode === "doc" || NUMOK.test(target(x)));
+    const opts = x => { const o = n => `<option value="${esc(n)}"${x.mode === "doc" && x.num === n ? " selected" : ""}>${esc(n)}</option>`;
+      const first = x.alts.length ? x.alts : scope;
+      return `<option value=""${x.mode ? "" : " selected"} disabled>Pick a document</option><option value="+"${x.mode === "new" ? " selected" : ""}>+ New document</option>` +
+        (first.length ? `<optgroup label="${x.alts.length ? "Fits the name" : "In " + esc(scName)}">${first.map(o).join("")}</optgroup><optgroup label="All documents">` : "") +
+        nums.map(o).join("") + (first.length ? "</optgroup>" : ""); };
+    const rowH = (x, i) => { const [c, l, tip] = stat(x), off = x.st === "ok" || x.st === "busy" ? " disabled" : "", sug = [...new Set([x.mode === "doc" ? nextRev(IDX[x.num].rev) : "0", x.rev, "A", "0", "1"].filter(Boolean))];
+      return `<tr data-i="${i}"><td class="up-fn" title="${esc(x.f.name)}">${esc(x.f.name)}<small>${mbs(x.f.size)}</small></td>
+        <td><select class="up-to"${off}>${opts(x)}</select>${x.mode === "new" ? `<input class="up-nn" value="${esc(x.fresh)}" placeholder="Number, e.g. 2000-F13-PID-PR-10020" spellcheck="false"${off}><input class="up-ti" value="${esc(x.title)}" placeholder="Title"${off}>` : ""}</td>
+        <td><input class="up-rv" value="${esc(x.rev)}" list="up-rl${i}" maxlength="4" spellcheck="false" aria-label="Revision"${off}><datalist id="up-rl${i}">${sug.map(v => `<option value="${esc(v)}">`).join("")}</datalist></td>
+        <td><span class="up-ch up-${c}" title="${esc(tip)}">${esc(l)}</span>${tip && c !== "bz" ? `<small>${esc(tip)}</small>` : ""}</td></tr>`; };
+    let done = false;
+    const foot = () => { const n = rows.filter(ready).length, wait = rows.filter(x => x.st !== "ok" && x.st !== "busy" && !ready(x)), nd = wait.filter(x => !target(x)).length, nr = wait.length - nd, go = b.querySelector(".up-go");
+      const why = [nd && `${nd} need${nd === 1 ? "s" : ""} a document`, nr && `${nr} need${nr === 1 ? "s" : ""} a number or rev`].filter(Boolean).join(", ");
+      go.disabled = !n || !!b.wrap.dataset.busy; go.textContent = done ? "Close" : `Upload ${n}${why ? ` (${why})` : ""}`; if (done) go.disabled = false; };
+    const paint = i => { const tr = b.querySelector(`tr[data-i="${i}"]`); tr.outerHTML = rowH(rows[i], i); foot(); };
+    const paintChip = i => { const tr = b.querySelector(`tr[data-i="${i}"]`), [c, l, tip] = stat(rows[i]); tr.lastElementChild.innerHTML = `<span class="up-ch up-${c}" title="${esc(tip)}">${esc(l)}</span>${tip && c !== "bz" ? `<small>${esc(tip)}</small>` : ""}`; foot(); };
+    b.innerHTML = `<h3>Upload ${files.length} file${files.length === 1 ? "" : "s"}</h3><p class="up-sub">Check where each file goes and its revision. They go to ${esc(REPO)} on GitHub; no redaction is done.</p>
+      <div class="up-tw"><table class="up-t"><thead><tr><th>File</th><th>Goes to</th><th>Rev</th><th></th></tr></thead><tbody>${rows.map(rowH).join("")}</tbody></table></div>
+      <div class="up-msg" role="status"></div><div class="up-ft"><span class="sl-sp"></span><button type="button" class="up-c">Cancel</button><button type="button" class="up-go"></button></div>`;
+    foot();
+    const tb = b.querySelector("tbody"), msg = b.querySelector(".up-msg");
+    tb.addEventListener("change", e => { const i = +e.target.closest("tr").dataset.i, x = rows[i];
+      if (e.target.classList.contains("up-to")){ const v = e.target.value; x.st = "";
+        if (v === "+"){ x.mode = "new"; if (!x.rev || x.guessed){ x.rev = "0"; x.guessed = false; } } else { x.mode = "doc"; x.num = v; if (x.guessed || !x.rev) { x.rev = nextRev(IDX[v].rev); x.guessed = true; } }
+        paint(i); } });
+    tb.addEventListener("input", e => { const tr = e.target.closest("tr"), i = +tr.dataset.i, x = rows[i]; x.st = "";
+      if (e.target.classList.contains("up-rv")){ x.rev = e.target.value; x.guessed = false; }
+      if (e.target.classList.contains("up-ti")) x.title = e.target.value;
+      if (e.target.classList.contains("up-nn")){ x.fresh = e.target.value; const n = target(x); if (IDX[n]){ x.mode = "doc"; x.num = n; return paint(i); } }   // (a number that's already there: that document)
+      paintChip(i); });
+    b.querySelector(".up-c").onclick = () => { if (b.wrap.dataset.busy){ stopUp = true; return; } b.shut(); };
+    let stopUp = false;
+    b.querySelector(".up-go").onclick = async () => { if (done) return b.shut();
+      const todo = rows.map((x, i) => [x, i]).filter(([x]) => ready(x)); if (!todo.length) return;
+      b.wrap.dataset.busy = 1; stopUp = false; b.querySelector(".up-c").textContent = "Stop"; msg.className = "up-msg"; msg.textContent = ""; foot();
+      let ok = 0, bad = 0, fatal = "";
+      for (const [x, i] of todo){
+        if (stopUp || fatal){ break; }
+        const num = target(x), rev = x.rev.trim().toUpperCase(), path = `uploads/${num}_Rev${rev}`;
+        const step = m => { x.st = "busy"; x.msg = m; paint(i); };
+        try {
+          step("Reading…"); const pdf = await b64(x.f);
+          const note = { number: num, rev, uploaded: new Date().toISOString(), file: x.f.name }; if (x.mode === "new") note.title = x.title.trim() || ""; 
+          step("Uploading " + mbs(x.f.size) + "…");
+          // the note first: the Action files a PDF only once its note is there, so the PDF's push is the one that does it
+          await put(path + ".json", b64s(JSON.stringify(note, null, 1)), `Upload ${num} Rev ${rev} (note)`);
+          await put(path + ".pdf", pdf, `Upload ${num} Rev ${rev}`);
+          x.st = "ok"; ok++;
+        } catch (e){ x.st = "err"; x.msg = e.message; bad++; if (e.fatal) fatal = e.message; }
+        paint(i); }
+      delete b.wrap.dataset.busy; b.querySelector(".up-c").textContent = "Cancel";
+      if (!bad && !stopUp && rows.every(x => x.st === "ok")){ done = true; b.querySelector(".up-c").hidden = true; msg.className = "up-msg up-good"; msg.textContent = "Uploaded. It will appear in Sources in a few minutes, once GitHub has processed it."; }
+      else { msg.className = "up-msg" + (bad ? " up-bad" : ""); msg.textContent = (ok ? `${ok} uploaded; they will appear in Sources in a few minutes. ` : "") + (fatal ? fatal + ". Check it in Help → API keys." : bad ? `${bad} failed: see the red lines, then try again.` : stopUp ? "Stopped." : ""); }
+      foot(); };
+  }
+  // a file as base64 in pieces (a 50 MB drawing would overflow one String.fromCharCode); 3 × 32 KB keeps the pieces whole
+  async function b64(f){ const u = new Uint8Array(await f.arrayBuffer()), C = 3 * 32768, out = [];
+    for (let i = 0; i < u.length; i += C){ let s = ""; const p = u.subarray(i, i + C); for (let j = 0; j < p.length; j += 8192) s += String.fromCharCode.apply(null, p.subarray(j, j + 8192)); out.push(btoa(s)); }
+    return out.join(""); }
+  const b64s = t => { const u = new TextEncoder().encode(t); let s = ""; u.forEach(c => s += String.fromCharCode(c)); return btoa(s); };
+  // one file into the repository (the GitHub contents API: a commit per file); errors in plain words
+  async function put(path, content, message){
+    let r; try { r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path.split("/").map(encodeURIComponent).join("/")}`, { method: "PUT",
+      headers: { Authorization: "Bearer " + ghKey(), Accept: "application/vnd.github+json", "Content-Type": "application/json", "X-GitHub-Api-Version": "2022-11-28" }, body: JSON.stringify({ message, content }) }); }
+    catch (e){ throw Object.assign(new Error("Couldn't reach GitHub"), { fatal: true }); }
+    if (r.ok) return r.json().catch(() => ({}));
+    const j = await r.json().catch(() => ({})), why = j.message || "";
+    if (r.status === 401) throw Object.assign(new Error("The GitHub key was refused"), { fatal: true });
+    if (r.status === 404) throw Object.assign(new Error("The key can't see the repository"), { fatal: true });
+    if (r.status === 422) throw new Error("That revision is already uploaded");
+    if (r.status === 403) throw Object.assign(new Error(/rate limit/i.test(why) ? "GitHub's limit for now is used up: try again later" : "The key can't write to the repository"), { fatal: true });
+    if (r.status === 413) throw new Error("Too big for GitHub");
+    throw new Error(`GitHub answered ${r.status}${why ? ": " + why : ""}`); }
+
   const css = `.sl-q{width:100%;box-sizing:border-box;height:36px;border:1.5px solid var(--line);border-radius:18px;background:var(--bg);color:var(--ink);padding:0 12px;font:inherit;font-size:var(--fb,15px)}
 .sl-h{font-size:var(--fl,13px);font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:14px 2px 6px}
 .sl-bar{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 8px;font-size:var(--fb,15px);color:var(--mute);min-height:32px}.sl-bar b{color:var(--ink)}
@@ -309,8 +468,8 @@ window.SourcesList = (() => {
 .sl-tbar{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--card2,var(--panel2))}.sl-tbar b{font-size:13px;letter-spacing:.04em}.sl-sp{flex:1}
 .sl-tbb{display:inline-flex;align-items:center;gap:5px;height:26px;border:1px solid var(--line);background:var(--card,var(--panel));border-radius:6px;font:inherit;font-size:12px;font-weight:700;padding:0 9px;cursor:pointer;color:var(--ink)}.sl-tbb:hover:not(:disabled){border-color:var(--th)}.sl-tbb:disabled{opacity:.45;cursor:default}
 /* the selection tree: a property grid's grey header, 22px rows, Navisworks' blue hover and selection */
-.sl-tree{flex:1;overflow:auto;font-size:13px;--cols:minmax(250px,2.4fr) minmax(110px,2fr) 58px 78px 92px 82px}
-.sl-gh,.sl-tr{display:grid;grid-template-columns:var(--cols);min-width:680px}
+.sl-tree{flex:1;overflow:auto;font-size:13px;--cols:minmax(250px,2.4fr) minmax(110px,2fr) 58px 78px 92px 108px}
+.sl-gh,.sl-tr{display:grid;grid-template-columns:var(--cols);min-width:706px}
 .sl-gh{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute)}.sl-gh span{padding:4px 8px;border-right:1px solid var(--line)}.sl-gh span:last-child{border-right:0}
 .sl-tr{position:relative;height:22px;line-height:22px;white-space:nowrap;cursor:default}.sl-tr>span{padding:0 8px;min-width:0;overflow:hidden;text-overflow:ellipsis;border-right:1px solid color-mix(in srgb,var(--line) 55%,transparent)}.sl-tr>span:nth-child(6){border-right:0}
 .sl-tr:hover{background:#e5f1fb}.sl-tr.sel{background:#cce4f7;box-shadow:inset 0 0 0 1px #99c9ef}
@@ -325,6 +484,29 @@ html[data-theme=dark] .sl-tr:hover{background:#26384a}html[data-theme=dark] .sl-
 .sl-acts{display:flex;align-items:center;justify-content:flex-end;gap:3px;padding:0 6px!important}
 .sl-ib{flex:none;box-sizing:border-box;width:22px;height:20px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--ink) 22%,var(--line));border-radius:5px;background:var(--card,var(--panel));color:var(--ink);padding:0;cursor:pointer;text-decoration:none}
 .sl-ib svg{width:13px;height:13px}.sl-ib:hover{border-color:var(--th);color:var(--th)}.sl-ib.sl-x{color:#1f8a4c}.sl-ib.ok{color:#1f9a55;border-color:#2aa765}.sl-ib.old,.sl-ib.part{border-style:dashed}
+/* upload: the ↑ with a small lock at its corner while there's no GitHub key; superseded revisions in grey */
+.sl-upb{position:relative}.sl-lk{position:absolute;right:-4px;bottom:-4px;width:12px;height:12px;border-radius:3px;background:var(--card,var(--panel));color:var(--mute);display:grid;place-items:center;box-shadow:0 0 0 1px var(--line);line-height:0}
+.sl-tbb .sl-lk{right:-5px;bottom:-5px}.sl-ib .sl-lk{right:-3px;bottom:-1px;width:10px;height:10px}.sl-ib .sl-lk svg{width:8px;height:8px}.sl-ib.sl-lkd{color:var(--mute)}
+.sl-l u.sl-sup{color:var(--mute);border-color:color-mix(in srgb,var(--mute) 60%,transparent);font-weight:700}.sl-old .sl-l{color:var(--mute)}
+/* the upload check (design 12a) and the key note: a centred card over a dimmed page */
+.up-w{position:fixed;inset:0;z-index:320;background:#0008;display:flex;align-items:center;justify-content:center;padding:20px}
+.up-b{background:var(--card,var(--panel));color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 50px #000a;width:min(900px,100%);max-height:calc(100vh - 40px);display:flex;flex-direction:column;padding:16px 18px 14px;box-sizing:border-box;font-size:13px}
+.up-sm{width:min(460px,100%)}.up-b h3{margin:0 0 4px;font-size:17px}.up-b p{margin:4px 0 10px;color:var(--mute);line-height:1.45}.up-sm p{color:var(--ink)}
+.up-tw{overflow:auto;min-height:0;border-top:1px solid var(--line)}
+.up-t{width:100%;border-collapse:collapse}.up-t th{position:sticky;top:0;background:var(--card,var(--panel));text-align:left;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);padding:8px 8px;border-bottom:1px solid var(--line)}
+.up-t td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}.up-t tr:last-child td{border-bottom:0}
+.up-fn{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-top:11px!important}.up-t td small{display:block;color:var(--mute);font-size:11.5px;margin-top:3px;white-space:normal}
+.up-to,.up-nn,.up-ti,.up-rv{box-sizing:border-box;height:28px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:0 6px;font:inherit;font-size:13px}
+.up-to{width:230px;font-weight:700}.up-nn,.up-ti{display:block;width:230px;margin-top:5px}.up-nn{font-weight:700}.up-rv{width:58px;font-weight:700;text-transform:uppercase}
+.up-to:focus,.up-nn:focus,.up-ti:focus,.up-rv:focus{outline:0;border-color:var(--th)}.up-t :disabled{opacity:.7}
+.up-ch{display:inline-block;margin-top:4px;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:800;white-space:nowrap}
+.up-ok{background:color-mix(in srgb,#1f9a55 16%,transparent);color:#1a8a4b}.up-ck{background:color-mix(in srgb,#d08a0e 20%,transparent);color:#a86a00}.up-no{background:color-mix(in srgb,#d64545 16%,transparent);color:#c2412f}
+.up-nw{background:color-mix(in srgb,#2f6fdb 16%,transparent);color:#2a62c4}.up-bz{background:var(--th-t);color:var(--ink)}
+html[data-theme=dark] .up-ok{color:#4cc28a}html[data-theme=dark] .up-ck{color:#e8b04a}html[data-theme=dark] .up-no{color:#ef7d6d}html[data-theme=dark] .up-nw{color:#7fa8f0}
+.up-msg{font-weight:700;padding:8px 2px 0;line-height:1.4}.up-msg:empty{display:none}.up-good{color:#1a8a4b}.up-bad{color:#c2412f}html[data-theme=dark] .up-good{color:#4cc28a}html[data-theme=dark] .up-bad{color:#ef7d6d}
+.up-ft{display:flex;align-items:center;gap:8px;padding-top:12px}
+.up-c,.up-go{height:32px;border:1px solid var(--line);background:var(--card,var(--panel));color:var(--ink);border-radius:8px;padding:0 14px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}.up-c:hover{border-color:var(--th)}
+.up-go{background:var(--th);border-color:var(--th);color:var(--on-th,#fff)}.up-go:disabled{opacity:.45;cursor:default}
 .sl-tr .sl-rb{left:0;right:0;bottom:0}.sl-tr.sl-on .sl-rb{display:block}.sl-tr.sl-on .sl-pt{color:var(--ink)}
 .sl-dt .sl-none{font-size:13px}
 /* phone */
@@ -339,5 +521,5 @@ html[data-theme=dark] .sl-tr:hover{background:#26384a}html[data-theme=dark] .sl-
 .sl-ph .sl-kp.sl-on,.sl-r.sl-on .sl-kp{width:auto;min-width:44px;padding:0 6px}
 .sl-ph .sl-pg{display:none!important}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  return { mount, load };
+  return { mount, load, REPO };
 })();
