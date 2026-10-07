@@ -245,6 +245,7 @@ svg.dragging{cursor:grabbing}
 #info .pill{display:inline-block;font-size:var(--fb,15px);font-weight:800;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
 #zoom{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:5}
 #info.on ~ #zoom{right:488px}
+#zoom button.on{background:var(--th-t,#eef1f5);box-shadow:inset 0 0 0 2px var(--th,#475569)}#zoom button[hidden]{display:none}
 #zoom button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:25px;line-height:1;padding:0;cursor:pointer}
 #stepbar{position:fixed;top:calc(64px + var(--tb,0px));left:284px;right:14px;display:none;gap:10px;align-items:stretch;justify-content:center;z-index:5;pointer-events:none}
 #stepbar.on{display:flex}
@@ -573,7 +574,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
 <div id="mapView" hidden></div>
 
 <div id="info"><div class="top"><button class="x" id="infoX">✕</button><div class="kind" id="iKind"></div><h3 id="iName"></h3><div class="tag" id="iTag"></div></div><div class="body" id="iBody"></div></div>
-<div id="zoom"><button id="zInfo" title="Show the properties panel again" style="font-size:21px">ⓘ</button><button id="zIn" title="Zoom in">+</button><button id="zOut" title="Zoom out">−</button><button id="zFit" title="Fit" style="font-size:20px">⤢</button></div>
+<div id="zoom"><button id="zInfo" title="Show the properties panel again" style="font-size:21px">ⓘ</button><button id="zIn" title="Zoom in">+</button><button id="zOut" title="Zoom out">−</button><button id="zBlk" title="Block flow view: the whole plant as blocks" style="font-size:19px">▦</button><button id="zFit" title="Fit" style="font-size:20px">⤢</button></div>
 <div id="stepbar"><button class="sb-card sb-prev" id="sbPrev"></button><div class="sb-card sb-cur" id="sbCur"></div><button class="sb-card sb-next" id="sbNext"></button></div>
 <div id="toast"></div>
 <div id="mleg" class="m-only" aria-label="Legend and filters"><div id="mshH"><b></b><button type="button">Done</button></div></div>
@@ -584,6 +585,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
 <script src="pfd-data.js"></script>
 <script src="pfd-streams.js"></script>
 <script src="pfd-equip.js"></script>
+<script src="pfd-bfd.js"></script>
 <script src="tools/tagutil.js"></script>
 <script src="pdfview.js"></script>
 <script src="spec.js"></script>
@@ -1557,7 +1559,11 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
   let ahK = 0;
   const sizeArrows = scale => { const k = Math.round(Math.min(1, 14 / 16 / scale) * 100) / 100; if (k === ahK) return; ahK = k;
     defs.querySelectorAll("marker[data-base]").forEach(m => { const w = m.dataset.base * k; m.setAttribute("markerWidth", w); m.setAttribute("markerHeight", w); }); };
-  function setVB(){ svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); const scale = svg.clientWidth / vb.w; svg.classList.toggle("far", scale < 0.42); if (scale > 0) sizeArrows(scale); }
+  function setVB(){ svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); const scale = svg.clientWidth / vb.w; svg.classList.toggle("far", scale < 0.42); if (scale > 0) sizeArrows(scale);
+    // zoomed out well past the whole sheet: the block flow view takes over (pfd-bfd.js)
+    // (after it closes it waits until the view is back inside the sheet, so the fly in from it doesn't reopen it)
+    const B = window.pfdBlocks; if (B && !B.isOpen() && !PHONE && !PFDLayout.active()){ const ar = svg.clientWidth / svg.clientHeight, out = vb.w > Math.max(PFD_W + 80, (PFD_H + 80) * ar) * 1.25;
+      if (!out) B.hold = false; else if (!B.hold) B.open(); } }
   const phoneFit = () => matchMedia("(max-width: 900px)").matches && svg.clientHeight > svg.clientWidth;
   function fit(){ const W = svg.clientWidth, H = svg.clientHeight, ar = W / H; const pad = 40;
     let w = PFD_W + pad * 2, h = PFD_H + pad * 2; if (w / h > ar && !phoneFit()) h = w / ar; else w = h * ar;
@@ -1607,6 +1613,18 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
   $("bgHit").addEventListener("click", e => { if (moved || e.ctrlKey || e.metaKey) return; closeInfo(); clearSel(); });
   const center = () => [vb.x + vb.w / 2, vb.y + vb.h / 2];
   $("zIn").onclick = () => PFDLayout.active() ? PFDLayout.zoomBy(1) : zoomAt(0.7, ...center()); $("zOut").onclick = () => PFDLayout.active() ? PFDLayout.zoomBy(-1) : zoomAt(1.4, ...center());
+  // the block flow view: a block flies to its boxes on the PFD (or its WBS area's frame), lit as a selection
+  if (window.PFDBlocks && !PHONE){
+    window.pfdBlocks = PFDBlocks.mount($("stage"), {
+      go(ids, area){ const ns = ids.map(id => byId[id]).filter(Boolean);
+        if (ns.length){ if (focusFlow) setFlow(null); sel = ns.map(n => ({ k: "n", id: n.id })); applySel(false);
+          const x1 = Math.min(...ns.map(n => n.x)), y1 = Math.min(...ns.map(n => n.y)), x2 = Math.max(...ns.map(n => n.x + n.w)), y2 = Math.max(...ns.map(n => n.y + n.h));
+          return flyTo({ x: x1, y: y1, w: x2 - x1, h: y2 - y1 }, 1.8, 700); }
+        const f = FRAMES.find(fr => (String(fr.label).match(/F\d\d/g) || []).includes(area)); if (f) flyTo({ x: f.x, y: f.y, w: f.w, h: f.h }, 1.05, 700); else fitAnim(); },
+      back: () => fitAnim(),
+      state: on => { $("zBlk").classList.toggle("on", on); if (!on) pfdBlocks.hold = true; } });
+    $("zBlk").onclick = () => { if (pfdBlocks.isOpen()){ pfdBlocks.close(); fitAnim(); } else pfdBlocks.open(); };
+  } else $("zBlk").hidden = true;
   $("zFit").onclick = () => PFDLayout.active() ? PFDLayout.home() : fitAnim(); $("zInfo").onclick = () => { if (lastPanel) lastPanel(); else toast("Click any equipment, stream, loop, interlock or symbol to see its properties."); };
   window.addEventListener("resize", () => { if (PFDLayout.active()) return; const c = center(); const ar = svg.clientWidth / svg.clientHeight; vb.h = vb.w / ar; vb.x = c[0] - vb.w / 2; vb.y = c[1] - vb.h / 2; setVB(); });
   function bboxOf(g){ const b = g.getBBox(); return { x: b.x, y: b.y, w: b.width, h: b.height }; }
@@ -1847,7 +1865,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
       hit.go(); if (location.hash === "#layout"){ const nid = nd && byId[nd] ? nd : Object.keys(EQUIP_DATA).find(id => EQUIP_DATA[id].eq.some(r => Lookup.norm(r.tag) === k) || EQUIP_DATA[id].ins.some(i => Lookup.norm(i.tag) === k));
         setView("map"); if (nid) setTimeout(() => PFDLayout.focus(nid), 700); } }); }, 300); }
 
-  window.addEventListener("keydown", e => { if (e.key === "Escape"){ closeInfo(); if (focusFlow) setFlow(null); clearSel(); if (window.fxClearWbs) fxClearWbs(); } });
+  window.addEventListener("keydown", e => { if (e.key === "Escape"){ closeInfo(); if (focusFlow) setFlow(null); clearSel(); if (window.fxClearWbs) fxClearWbs(); if (window.pfdBlocks && pfdBlocks.isOpen()){ pfdBlocks.close(); fitAnim(); } } });
 
   let tt; function toast(m){ const t = $("toast"); t.textContent = m; t.style.display = "block"; clearTimeout(tt); tt = setTimeout(() => t.style.display = "none", 4200); }
 
