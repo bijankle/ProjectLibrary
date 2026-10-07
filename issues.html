@@ -148,6 +148,48 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
 :root.phone #docRows tr.drow{cursor:pointer}:root.phone #docRows tr.drow td.num{order:2}
 :root.phone #docRows .ib{display:none}
 :root.phone .sv{z-index:70}
+/* ---------- desktop Checks: two panels and a divider. Left: type and category pills beside the search and a one line
+   per check list; right: the picked check in full. The old table, chips and bar stay for the phone ---------- */
+:root{--nw-bg:color-mix(in srgb,#2aa765 24%,var(--card));--nw-ink:#86efac;--nw-line:#34a46a}
+:root[data-theme="light"]{--nw-bg:#dcf3e5;--nw-ink:#166534;--nw-line:#2aa765}
+#ck{display:none}
+:root:not(.phone) #checksPane>.chips,:root:not(.phone) #checksPane>.bar,:root:not(.phone) #checksPane>table,:root:not(.phone) #checksPane>.more,:root:not(.phone) #about{display:none}
+:root:not(.phone) #ck{display:flex;height:calc(100vh - var(--tb,0px) - 40px);min-height:420px;--ckw:780px}
+.ck-l{flex:0 0 var(--ckw);min-width:520px;max-width:70%;display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:0}
+.ck-f{flex:0 0 190px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;overflow:auto;min-height:0}
+.ck-h{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:6px 2px 2px}
+.ck-p{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1.5px solid color-mix(in srgb,var(--ink) 16%,var(--line));background:var(--card);color:var(--ink);border-radius:9px;padding:4px 10px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap}
+.ck-p i{flex:none;width:9px;height:9px;border-radius:50%}.ck-p s{text-decoration:none;overflow:hidden;text-overflow:ellipsis}.ck-p em{font-style:normal;color:var(--mute);font-weight:600}
+.ck-p.on{border-color:var(--th);box-shadow:inset 0 0 0 1px var(--th);background:var(--th-t)}.ck-p.z:not(.on){opacity:.45}
+.ck-f #xls{margin-top:auto;font-size:13px;padding:5px 10px;border-radius:9px}
+.ck-r{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
+.ck-r #q{flex:0 0 34px;height:34px;width:100%;border:1.5px solid var(--line);border-radius:17px;padding:0 12px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink)}
+.ck-r #count{font-size:13px;color:var(--mute);margin:10px 2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ck-r #count b{color:var(--ink)}
+/* one grid for the header and the rows; minmax(0, …) so a long cell is cut, never pushed over the next */
+.ck-gh,.ck-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr);gap:8px;align-items:center}
+.ck-gh{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:0 8px 4px}.ck-gh span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ck-list{flex:1;min-height:0;overflow:auto;border-top:1px solid var(--line);outline:0}
+.ck-row{height:32px;padding:0 8px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:14px;cursor:pointer}
+.ck-row>*{min-width:0;overflow:hidden;text-overflow:ellipsis}.ck-row:hover{background:var(--card2)}
+.ck-row.sel{background:var(--th-t);box-shadow:inset 3px 0 0 var(--th)}
+.ck-d{font-size:12px;font-weight:700;background:var(--card2);border-radius:5px;padding:1px 6px;justify-self:start;max-width:100%}.ck-d.nw{background:var(--nw-bg);color:var(--nw-ink)}
+.ck-c{color:var(--mute);font-size:13px}
+.ck-none{color:var(--mute);font-size:14px;padding:14px 8px}
+.ck-dv{flex:0 0 24px;position:relative;cursor:col-resize;touch-action:none}
+.ck-dv::before{content:"";position:absolute;left:11px;top:14px;bottom:14px;width:2px;border-radius:1px;background:var(--line)}
+.ck-dv i{position:absolute;left:7px;top:50%;margin-top:-22px;width:10px;height:44px;border-radius:5px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px}
+.ck-dv i b{width:3px;height:3px;border-radius:50%;background:var(--mute)}
+.ck-dv:hover::before,.ck-dv.drag::before{background:var(--gold)}.ck-dv:hover i,.ck-dv.drag i{border-color:var(--gold)}.ck-dv:hover i b,.ck-dv.drag i b{background:var(--gold)}
+body.splitting{cursor:col-resize;user-select:none}
+.ck-x{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px;overflow:auto;font-size:14px;line-height:1.45}
+.ck-b{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:var(--c);border:1.5px solid var(--c);border-radius:8px;padding:2px 9px}.ck-b i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.ck-x h2{margin:10px 0 8px;font-size:var(--fh,22px);line-height:1.25;overflow-wrap:anywhere}
+.ck-kv{width:100%;border-collapse:collapse;background:none;border-radius:0;font-size:14px;margin:0 0 6px}.ck-kv td{padding:6px 8px;border-top:0;border-bottom:1px solid var(--line);vertical-align:top}
+.ck-kv td:first-child{color:var(--mute);width:120px}.ck-kv small{display:block;color:var(--mute);font-size:12.5px}
+.ck-st{border-left:3px solid var(--line);padding:6px 12px;margin:10px 0;overflow-wrap:anywhere}.ck-st.nw{border-left-color:var(--nw-line)}
+.ck-dh{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.ck-dh u{text-decoration:none;letter-spacing:0;text-transform:none;font-size:11.5px;color:var(--nw-ink);border:1px solid var(--nw-line);border-radius:5px;padding:0 5px}
+.ck-nt{margin-top:12px;border-radius:10px;background:var(--card2);padding:12px;line-height:1.5}
 @media (max-width: 760px){
   table:not(.sv-tb),table:not(.sv-tb) thead,table:not(.sv-tb) tbody,table:not(.sv-tb) tr,table:not(.sv-tb) td{display:block;width:100%}
   table:not(.sv-tb) thead{display:none}
@@ -201,6 +243,12 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
     <tbody id="rows"></tbody>
   </table>
   <div class="more" id="more"></div>
+  <div id="ck">
+    <div class="ck-l"><div class="ck-f" id="ckF"><div id="ckP" style="display:contents"></div></div>
+      <div class="ck-r" id="ckR"><div class="ck-gh"><span>Item</span><span>Document 1</span><span>Document 2</span><span>Comment</span></div><div class="ck-list" id="ckList"></div></div></div>
+    <div class="ck-dv" id="ckDv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
+    <div class="ck-x" id="ckX"></div>
+  </div>
   </div>
 </div>
 <iframe id="pfdFrame" title="Diagram checks" style="position:absolute;left:-9999px;top:0;width:1600px;height:900px;border:0" aria-hidden="true"></iframe>
@@ -217,7 +265,7 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
   const SEVC = { Decision: "var(--s-decision)", Clash: "var(--s-clash)", Missing: "var(--s-missing)", Placeholder: "var(--s-placeholder)", Check: "var(--s-check)", Diagram: "var(--s-diagram)" };
   const SEVTIP = { Decision: "Documents disagree; the app made a choice", Clash: "Same item, different value in two lists", Missing: "In one list, not the other",
     Placeholder: "Deleted or unnumbered tag", Check: "Possibly fine, worth checking", Diagram: "Smart PFD layout and data checks" };
-  let all = [], off = new Set(), shown = 200;
+  let all = [], off = new Set(), shown = 200, cats = new Set();   // cats: the categories picked on the desktop (none = all)
   const MON = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
   const fmt = d => d ? `${d.slice(8, 10)} ${MON[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}` : "";
   // date cell; the newer of the two dates is marked, as the newer document is taken as true
@@ -244,9 +292,11 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
     const cats = [...new Set(all.map(r => r.cat))].sort(), cur = $("cat").value;
     $("cat").innerHTML = '<option value="">All categories</option>' + cats.map(c => `<option${c === cur ? " selected" : ""}>${esc(c)}</option>`).join("");
   }
-  const filtered = () => { const q = $("q").value.toLowerCase().trim(), c = $("cat").value, words = q.split(/\s+/).filter(Boolean);
-    return all.filter(r => !off.has(r.sev) && (!c || r.cat === c) && (!words.length || words.every(w => (r.item + " " + r.v1 + " " + r.d1 + " " + r.v2 + " " + r.d2 + " " + r.note + " " + r.cat).toLowerCase().includes(w)))); };
-  function draw(){
+  // skip: "sev" or "cat" leaves that filter out, so a pill's count is what clicking it would show
+  const filtered = skip => { const q = $("q").value.toLowerCase().trim(), c = $("cat").value, words = q.split(/\s+/).filter(Boolean);
+    return all.filter(r => (skip === "sev" || !off.has(r.sev)) && (!c || r.cat === c) && (skip === "cat" || !cats.size || cats.has(r.cat)) && (!words.length || words.every(w => (r.item + " " + r.v1 + " " + r.d1 + " " + r.v2 + " " + r.d2 + " " + r.note + " " + r.cat).toLowerCase().includes(w)))); };
+  function draw(reset){
+    if (!PHONE) return desk(reset);
     const f = filtered();
     $("count").textContent = `${f.length} of ${all.length} shown`; $("nChecks").textContent = `(${all.length})`;
     $("rows").innerHTML = f.slice(0, shown).map(r => `<tr><td data-l="Type"><span class="sev" style="background:${SEVC[r.sev]}">${esc(r.sev)}</span></td><td data-l="Category">${esc(r.cat)}</td>
@@ -319,7 +369,7 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
   $("q").oninput = () => { if (PHONE && !$("docsPane").hidden) return;   // (Sources reads the box itself)
     if (false){ const w = $("q").value.toLowerCase().split(/\s+/).filter(Boolean);
       document.querySelectorAll("#docRows tr.drow").forEach(r => { const hide = w.length && !w.every(x => r.textContent.toLowerCase().includes(x)); r.hidden = hide; if (hide) r.nextElementSibling.hidden = true; }); return; }
-    shown = 200; draw(); }; $("cat").onchange = () => { shown = 200; draw(); };
+    shown = 200; draw(true); }; $("cat").onchange = () => { shown = 200; draw(); };
   $("xls").onclick = () => {
     const f = filtered(), head = ["Type", "Category", "Item", "What document 1 says", "Document 1", "Date 1", "What document 2 says", "Document 2", "Date 2", "Comment (which is taken as true and why)"];
     XLSX.download(`Project checks ${new Date().toISOString().slice(0, 10)}.xlsx`, [
@@ -327,6 +377,68 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
       docSheet(),
       { name: "Types", widths: [14, 60, 10], rows: [["Type", "Meaning", "Count"], ...SEV.map(s => [s, SEVTIP[s], all.filter(r => r.sev === s).length])] }]);
   };
+
+  // ---------- desktop: pills | search and one line per check | the picked check in full ----------
+  const PL = { Decision: "decisions", Clash: "clashes", Missing: "missing", Placeholder: "placeholders", Check: "checks", Diagram: "diagram checks" };
+  // a readable document name for a chip: the words before the document number plus its revision ("Line List Rev 1")
+  const short = d => { if (!d) return ""; const m = d.match(/\d{4}-F\d+-[A-Z]+-[A-Z]+-\d+/), rv = (d.match(/Rev\s*(\w+)/) || [])[1];
+    const n = m ? d.slice(0, m.index).trim() || m[0].replace(/^2000-/, "") : d.split(/\s+/).slice(0, 3).join(" "); return n + (rv ? " Rev " + rv : ""); };
+  const newer = r => r.date1 && r.date2 ? (r.date1 > r.date2 ? 1 : r.date2 > r.date1 ? 2 : 0) : 0;
+  let F = [], cur = null;   // the list as drawn, the picked check (kept while it stays in the list)
+  if (!PHONE){ $("ckR").prepend($("q"), $("count")); $("ckF").append($("xls")); $("xls").textContent = "Export to Excel"; }
+  function desk(reset){
+    F = filtered(); const n = F.length, nT = filtered("sev"), nC = filtered("cat"), cnt = (a, k, v) => a.reduce((t, r) => t + (r[k] === v), 0);
+    $("nChecks").textContent = `(${all.length})`;
+    const one = off.size === SEV.length - 1 ? SEV.find(s => !off.has(s)) : "";
+    $("count").innerHTML = one ? `<b>${n}</b> ${PL[one]}` : `<b>${n}</b> of ${all.length} checks`;
+    // categories in a fixed order (most checks first), so the pills don't jump about as the counts change
+    const byCat = {}; all.forEach(r => byCat[r.cat] = (byCat[r.cat] || 0) + 1);
+    const pill = (k, on, c, dot) => `<button class="ck-p${on ? " on" : ""}${c ? "" : " z"}" data-${dot ? "s" : "c"}="${esc(k)}"${dot ? ` title="${SEVTIP[k]}"` : ` title="${esc(k)}"`}>${dot ? `<i style="background:${SEVC[k]}"></i>` : ""}<s>${esc(k)}</s><em>${c}</em></button>`;
+    $("ckP").innerHTML = `<div class="ck-h">Type</div>${SEV.map(s => pill(s, off.size && !off.has(s), cnt(nT, "sev", s), 1)).join("")}
+      <div class="ck-h">Category</div>${Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a] || a.localeCompare(b)).map(c => pill(c, cats.has(c), cnt(nC, "cat", c))).join("")}`;
+    const L = $("ckList"), top = L.scrollTop;
+    L.innerHTML = n ? F.map((r, i) => { const w = newer(r);
+      return `<div class="ck-row" data-i="${i}"><b title="${esc(r.item)}">${esc(r.item)}</b><span class="ck-d${w === 1 ? " nw" : ""}" title="${esc(r.d1)}">${esc(short(r.d1))}</span>${r.d2 ? `<span class="ck-d${w === 2 ? " nw" : ""}" title="${esc(r.d2)}">${esc(short(r.d2))}</span>` : "<span></span>"}<span class="ck-c">${esc(r.note)}</span></div>`; }).join("")
+      : `<div class="ck-none">No checks match.</div>`;
+    L.scrollTop = reset ? 0 : top;
+    pick(F.includes(cur) ? cur : F[0], false);
+  }
+  // the right panel: the check in full; the newer document is taken as true, so its statement is marked
+  function pick(r, scroll){
+    cur = r || null; const L = $("ckList"), i = F.indexOf(cur);
+    L.querySelectorAll(".ck-row.sel").forEach(e => e.classList.remove("sel"));
+    const el = L.querySelector(`.ck-row[data-i="${i}"]`); if (el){ el.classList.add("sel"); if (scroll) el.scrollIntoView({ block: "nearest" }); }
+    if (!r){ $("ckX").innerHTML = `<div class="ck-none">${all.length ? "Nothing picked: no checks match the filters." : ""}</div>`; return; }
+    const w = newer(r), doc = (k, d, dt) => d ? `<tr><td>Document ${k}</td><td>${esc(d)}${dt ? `<small>${fmt(dt)}${w === k ? " · newer" : ""}</small>` : ""}</td></tr>` : "";
+    const says = (k, v) => v ? `<div class="ck-st${w === k ? " nw" : ""}"><div class="ck-dh"><span>What document ${k} says</span>${w === k ? "<u>taken as true</u>" : ""}</div>${esc(v)}</div>` : "";
+    $("ckX").innerHTML = `<span class="ck-b" style="--c:${SEVC[r.sev]}"><i></i>${esc(r.sev)}</span><h2>${esc(r.item)}</h2>
+      <table class="ck-kv"><tr><td>Category</td><td>${esc(r.cat)}</td></tr>${doc(1, r.d1, r.date1)}${doc(2, r.d2, r.date2)}</table>
+      ${says(1, r.v1)}${says(2, r.v2)}${r.note ? `<div class="ck-nt"><div class="ck-dh"><span>Comment</span></div>${esc(r.note)}</div>` : ""}`;
+    $("ckX").scrollTop = 0;
+  }
+  if (!PHONE){
+    // type pills: the first click shows only that type, later clicks add or drop types; none left is all of them
+    $("ckF").addEventListener("click", e => { const b = e.target.closest(".ck-p"); if (!b) return;
+      if (b.dataset.s){ const s = b.dataset.s; if (!off.size) off = new Set(SEV.filter(x => x !== s)); else if (off.has(s)) off.delete(s); else { off.add(s); if (off.size === SEV.length) off = new Set(); } }
+      else { const c = b.dataset.c; cats.has(c) ? cats.delete(c) : cats.add(c); }
+      draw(true); });
+    $("ckList").addEventListener("click", e => { const el = e.target.closest(".ck-row"); if (el) pick(F[+el.dataset.i]); });
+    // up and down move the pick (also while typing in the search box), unless the Sources view is open
+    addEventListener("keydown", e => { if ((e.key !== "ArrowDown" && e.key !== "ArrowUp") || $("checksPane").hidden || !F.length || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.target.closest && e.target.closest("select, textarea, .sv")) return;
+      const i = Math.max(0, Math.min(F.length - 1, F.indexOf(cur) + (e.key === "ArrowDown" ? 1 : -1))); e.preventDefault(); pick(F[i], true); });
+    // the divider: drag to share the width (kept on this computer), double click for the default
+    { const dv = $("ckDv"), ck = $("ck"), DEF = 780;
+      const setW = w => { w = Math.round(Math.max(520, Math.min(ck.clientWidth * .7, w))); ck.style.setProperty("--ckw", w + "px"); return w; };
+      try { const w = +localStorage.getItem("kcgm_chkw"); if (w) ck.style.setProperty("--ckw", w + "px"); } catch (e) {}   // (clamped by the CSS until the first drag)
+      let x0 = 0, w0 = 0, on = false;
+      dv.addEventListener("pointerdown", e => { on = true; x0 = e.clientX; w0 = ck.firstElementChild.getBoundingClientRect().width; dv.setPointerCapture(e.pointerId); dv.classList.add("drag"); document.body.classList.add("splitting"); e.preventDefault(); });
+      dv.addEventListener("pointermove", e => { if (on) setW(w0 + e.clientX - x0); });
+      const end = () => { if (!on) return; on = false; dv.classList.remove("drag"); document.body.classList.remove("splitting");
+        try { localStorage.setItem("kcgm_chkw", Math.round(ck.firstElementChild.getBoundingClientRect().width)); } catch (e) {} };
+      dv.addEventListener("pointerup", end); dv.addEventListener("pointercancel", end);
+      dv.addEventListener("dblclick", () => { ck.style.setProperty("--ckw", DEF + "px"); try { localStorage.removeItem("kcgm_chkw"); } catch (e) {} }); }
+  }
 
   // list checks (built offline)
   fetch("issues.json").then(r => r.json()).then(d => { all = all.concat(d.rows); sources(d.meta); chips(); draw(); diagram(); }).catch(e => { $("count").textContent = "Couldn't load issues.json: " + e.message; diagram(); });
