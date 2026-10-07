@@ -292,6 +292,7 @@ window.Tabs = (() => {
   function goBack(){
     if (mo && !mo.hidden){ more(false); return; }
     const h = document.getElementById("helpWin"); if (h && !h.hidden){ h.hidden = true; return; }
+    if (window.PdfView && PdfView.back && PdfView.back()) return;   // a drawing open: back one drawing (or out of it)
     if ((history.state && history.state.d > 0) || sameSite()) history.back(); else goHome();
   }
   // ⌂ is always the Assets front page with nothing searched, filtered or open (this page does it when it holds Assets)

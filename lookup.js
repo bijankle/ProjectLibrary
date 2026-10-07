@@ -561,7 +561,13 @@
 .sp-body.drag{cursor:grabbing}.sp-fn{min-width:0 !important;padding:0 4px;white-space:nowrap;max-width:210px;overflow:hidden;text-overflow:ellipsis}
 .sp-toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#171b21;color:#e9edf2;border:1px solid var(--th);border-radius:10px;padding:8px 12px;font-size:var(--fb,15px);max-width:90vw}.sp-toast[hidden]{display:none}
 .sp-msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font-size:var(--fb,15px)}.sp-msg[hidden]{display:none}
-body.sp-on{overflow:hidden}
+:root.phone body.sp-on{overflow:hidden}
+.sp-view.sp-phdock{top:var(--sp-top,0)}.sp-view.sp-phdock .sp-x{display:none!important}.sp-view.sp-phdock .sp-body{padding-top:8px!important}
+.ph-spx{display:none;width:42px;height:42px;flex:none;border-radius:50%;border:1.5px solid var(--line);background:var(--card,#fff);color:var(--ink);font-size:18px;font-weight:800;align-items:center;justify-content:center}
+:root.sp-open .ph-spx{display:flex}:root.sp-open .ph-sr .ph-cam,:root.sp-open .ph-sr .ph-upd{display:none!important}
+.sp-back,.sp-fwd{display:none!important}   /* (no arrows in the viewer: back is the app's own) */
+.sp-view.sp-dock{top:var(--sp-top,0);left:var(--sp-left,45vw);z-index:900;border-left:1px solid var(--line,#2c343e);box-shadow:-6px 0 18px #0003}
+.sp-dsplit{position:absolute;left:-6px;top:0;bottom:0;width:12px;cursor:col-resize;z-index:5;touch-action:none}.sp-dsplit:hover,.splitting .sp-dsplit{background:linear-gradient(90deg,transparent 5px,var(--th,#475569) 5px,var(--th,#475569) 7px,transparent 7px)}
 .sp-top button{font-size:18px;line-height:1}   /* the symbols 40% larger, the buttons the same size */
 .sp-top button[hidden]{display:none}.sp-top .sp-fwd:disabled{opacity:.4;cursor:default}.sp-refs{position:absolute;inset:0;pointer-events:none}
 /* tappable tags: a very light grey wash (links to other drawings a little darker), darker grey when hovered or tapped */
@@ -569,7 +575,7 @@ body.sp-on{overflow:hidden}
 .sp-ref.d{background:rgba(90,100,115,.11)}
 .sp-ref.hv,.sp-ref.hit{background:rgba(90,100,115,.22)}
 .sp-hb{position:absolute;box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:2px;pointer-events:none}.sp-hb.sp-hbon{border-width:calc(var(--rbw,1.5px) + 1px);border-color:#1e6ee6;background:rgba(30,110,230,.32);box-shadow:0 0 0 2px rgba(255,255,255,.7)}   /* the place tapped or stepped to: a stronger box, never an arrow */   /* a find result on any sheet */
-.sp-ref.fit{box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.28)}.sp-ref.fit.o{border-radius:50%}
+.sp-ref.fit{box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.1)}.sp-finding .sp-ref.fit:not(.off){background:rgba(30,110,230,.32);border-width:calc(var(--rbw,1.5px) + .5px)}.sp-ref.fit.o{border-radius:50%}
 .sp-ref.fit.off{border-color:rgba(90,100,115,.35);background:rgba(90,100,115,.1)}.sp-ref.fit.hv{background:rgba(30,110,230,.32)}.sp-ref.fit.off.hv{background:rgba(90,100,115,.22)}   /* a checked sheet: red labels, grey when a find leaves them out */.sp-refs .sp-ref{pointer-events:none}
 /* the page's text, invisible but selectable (left drag), on top of everything; a tag under it still opens on a click */
 .sp-text{position:absolute;inset:0;overflow:hidden;line-height:1;text-size-adjust:none;-webkit-text-size-adjust:none;z-index:2;user-select:text;-webkit-user-select:text}

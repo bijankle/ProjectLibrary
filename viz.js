@@ -289,7 +289,7 @@ window.AssetViz = (() => {
 .vz-sheet .vz-tx{z-index:2}.vz-mk{z-index:3}
 .vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}.vz-zb .vz-ze{border-radius:50%;border:1.5px solid var(--gold);color:color-mix(in srgb,var(--gold) 75%,var(--ink))}   /* zoom extents, in the corner as in the full screen viewer */
 .vz-zb button:hover{border-color:var(--gold)}
-.vz-mk{position:absolute;left:0;top:0;pointer-events:none}
+.vz-mk{position:absolute;left:0;top:0;pointer-events:none}:root:not(.phone) .vz-zb [data-z="full"]{display:none}
 .vz-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start}
 .vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:1px;min-width:0}.vz-tile em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vz-tile span{font-size:var(--fl,13px);color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}.vz-tile b{font-size:var(--fh,22px);line-height:1.15;font-variant-numeric:tabular-nums}.vz-tile em{font-style:normal;font-size:var(--fb,15px);color:var(--mute)}

@@ -163,9 +163,31 @@ window.PdfView = (() => {
   // portrait until the phone refreshes the app's settings). "any" follows the phone's sensor; closing puts it back.
   let freed = false;
   function freeRotate(){ const so = screen.orientation; if (!so || !so.lock || freed) return; so.lock("any").then(() => freed = true).catch(() => {}); }
+  // Desktop: no full screen. The viewer docks on the right of the page under the two top bars (on Assets exactly where
+  // the drawing beside an asset sits), with a divider on its left edge to drag; the width is remembered.
+  const desk = () => !document.documentElement.classList.contains("phone");
+  function dock(){
+    const on = desk(); V.el.classList.toggle("sp-dock", on);
+    if (!on){   // phone: under the app's two top rows (logo row, search row), down to the bottom; the ✕ sits where the camera was
+      const sr = document.querySelector(".ph-sr"), tp = document.querySelector(".ph-top"), r = (sr && sr.offsetHeight ? sr : tp);
+      const top = r ? Math.round(r.getBoundingClientRect().bottom) : 0; V.el.classList.toggle("sp-phdock", top > 0); V.el.style.setProperty("--sp-top", top + "px");
+      const slot = document.querySelector(".ph-sr .ph-slot"); if (slot && !slot.querySelector(".ph-spx")){ const x = document.createElement("button"); x.type = "button"; x.className = "ph-spx"; x.setAttribute("aria-label", "Close the drawing"); x.textContent = "✕"; x.onclick = () => close(); slot.appendChild(x); }
+      document.documentElement.classList.add("sp-open"); return; }
+    const tb = document.querySelector(".tb"), top = tb ? Math.round(tb.getBoundingClientRect().bottom) : 0;
+    const sp = document.getElementById("split"), sr = sp && sp.offsetParent ? sp.getBoundingClientRect() : null;
+    let left = sr ? Math.round(sr.right) : innerWidth - (+localStorage.getItem("kcgm_spw") || Math.round(innerWidth * .58));
+    left = Math.max(260, Math.min(innerWidth - 360, left));
+    V.el.style.setProperty("--sp-top", top + "px"); V.el.style.setProperty("--sp-left", left + "px");
+    if (!V.el.querySelector(".sp-dsplit")){ const h = document.createElement("div"); h.className = "sp-dsplit"; h.title = "Drag to resize"; V.el.appendChild(h);
+      let x0 = null; h.onpointerdown = e => { x0 = e.clientX; h.setPointerCapture(e.pointerId); document.body.classList.add("splitting"); };
+      h.onpointermove = e => { if (x0 == null) return; const l = Math.max(260, Math.min(innerWidth - 360, e.clientX)); V.el.style.setProperty("--sp-left", l + "px"); };
+      h.onpointerup = h.onpointercancel = () => { if (x0 == null) return; x0 = null; document.body.classList.remove("splitting");
+        try { localStorage.setItem("kcgm_spw", innerWidth - parseInt(V.el.style.getPropertyValue("--sp-left"))); } catch (e) {} V.size && V.size(); layout(false); }; }
+  }
+  addEventListener("resize", () => { if (V && !V.el.hidden && desk()) dock(); });
   async function open(o){
     ui(); freeRotate(); const wasOpen = !V.el.hidden; cur = Object.assign({ page: 1, fit: "width" }, o);
-    V.el.hidden = false; document.body.classList.add("sp-on"); V.el.querySelector(".sp-tt").textContent = cur.title || "";
+    V.el.hidden = false; document.body.classList.add("sp-on"); dock(); V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
     V.el.querySelector(".sp-dn").textContent = cur.number || "";
     if (cur.number && document.documentElement.classList.contains("phone")) V.el.querySelector(".sp-tt").textContent = (cur.title || "").replace(cur.number, "").replace(/^\s*·\s*/, "").trim() || cur.number;
@@ -232,8 +254,10 @@ window.PdfView = (() => {
   function push(v){
     // a new step drops the views ahead of it, as the browser does
     const me = REG.get(curId); if (me) [...REG.keys()].forEach(k => { if (REG.get(k).seq > me.seq) REG.delete(k); });
-    const id = ++seq; v.seq = id; v.depth = (me && !V.el.hidden ? me.depth : 0) + 1; REG.set(id, v); curId = id;
-    history.pushState({ sp: 1, id }, ""); fwdBtn();
+    const id = ++seq; v.seq = id; v.depth = 1; REG.set(id, v); curId = id;
+    // one browser history step for the whole visit: the phone's swipe back (or the browser's Back) leaves the viewer and
+    // returns to the page as it was; drawings and views within the visit step back with the app's ← (PdfView.back)
+    if (history.state && history.state.sp && !V.el.hidden) history.replaceState({ sp: 1, id }, ""); else history.pushState({ sp: 1, id }, ""); fwdBtn();
   }
   const fwdBtn = () => { const me = REG.get(curId), b = V && V.el.querySelector(".sp-fwd"); if (b) b.disabled = !me || ![...REG.values()].some(v => v.seq > me.seq); };
   function settleSoon(){ if (!V || V.el.hidden) return; clearTimeout(st8); st8 = setTimeout(settle, 500); }
@@ -278,6 +302,7 @@ window.PdfView = (() => {
   // whole-sheet zoom with the arrow above it; Shift+Enter goes back. The find bar says how many, then which one.
   function fitFilter(q, exact){
     V.fq = String(q || "").trim(); V.fstep = -2; const w = V.fq.toLowerCase(), wn = norm(V.fq);
+    V.sheet.classList.toggle("sp-finding", !!V.fq);   // (the labels a find keeps get the stronger blue)
     // literal: what is printed on the sheet, the tag's own text (no names or other details from the lists)
     const hit = r => r[6] !== "x" && r[5].split("|").some(t => exact ? norm(t) === wn : wn && norm(t).includes(wn));
     V.fmatch = V.fq ? V.refs.filter(hit).sort((a, b) => a[0] - b[0] || a[2] - b[2] || a[1] - b[1]) : [];
@@ -320,8 +345,13 @@ window.PdfView = (() => {
     }
   }
   async function unrot(){ if (V) V.rot = 0; if (freed){ freed = false; try { screen.orientation.unlock(); } catch (e) {} } if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
-  function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; document.body.classList.remove("sp-on"); clearTimeout(st8);
-    if (!fromPop && history.state && history.state.sp){ const me = REG.get(history.state.id); history.go(-((me && me.depth) || 1)); } }
+  function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
+    if (!fromPop && history.state && history.state.sp) history.back(); }
+  // the app's ←: back one drawing within this visit (views of the same drawing are skipped); from the first, close
+  function back(){ if (!V || V.el.hidden) return false; const me = REG.get(curId); if (!me) { close(); return true; }
+    const prev = [...REG.values()].filter(v => v.seq < me.seq && v.o.url !== me.o.url).sort((a, b) => b.seq - a.seq)[0];
+    if (!prev){ close(); return true; } const id = [...REG.entries()].find(([k, v]) => v === prev)[0];
+    restore(id).then(() => history.replaceState({ sp: 1, id }, "")); return true; }
   async function go(n, fromPop){
     const d = await getDoc(cur.url); n = Math.max(1, Math.min(d.numPages, n));
     if (!fromPop && V.pg && n !== V.page){ const me = REG.get(curId); if (me) me.snap = state(); quiet(); V.page = n; push({ o: me ? me.o : cur, snap: null }); }
@@ -493,5 +523,5 @@ window.PdfView = (() => {
   // of the boxes holding a point, the one whose centre is nearest (-1: none)
   const nearest = (B, x, y) => { let k = -1, d = 1e18; B.forEach(([l, t, w, h], i) => { if (x < l || x > l + w || y < t || y > t + h) return;
       const e = (x - l - w / 2) ** 2 + (y - t - h / 2) ** 2; if (e < d){ d = e; k = i; } }); return k; };
-  return { open, close, state, getDoc, grow, nearest, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
+  return { open, close, back, state, getDoc, grow, nearest, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
 })();
