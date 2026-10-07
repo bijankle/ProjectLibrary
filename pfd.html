@@ -518,10 +518,6 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
 .fx-w{flex:none;font-style:normal;font-size:11px;font-weight:700;color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:0 5px}.fx-w.pfd{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}.fx-w:empty{display:none}
 .fx-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-weight:700;cursor:pointer}
 .fx-none{color:var(--mute);padding:12px 2px}
-svg.focus .frame.pick{opacity:1}
-.frame.pick rect{stroke:var(--accent);stroke-dasharray:none;stroke-width:3}
-.frame.flash rect{animation:fxfl 1.6s ease-out}
-@keyframes fxfl{0%{stroke-width:3}20%{stroke-width:14;opacity:.9;fill:var(--accent)}45%{stroke-width:4}65%{stroke-width:12;opacity:.8;fill:color-mix(in srgb,var(--accent) 45%,#fff)}100%{stroke-width:3}}
 </style>
 </head>
 <body>
@@ -834,10 +830,10 @@ svg.focus .frame.pick{opacity:1}
   // ---------- build scene ----------
   const defs = el("defs", {}, svg);
   Object.entries(STREAM_TYPES).forEach(([k, v]) => {
-    const m = el("marker", { id: "ah_" + k, viewBox: "0 0 10 10", refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: "auto-start-reverse" }, defs);
+    const m = el("marker", { id: "ah_" + k, viewBox: "0 0 10 10", refX: 8, refY: 5, markerUnits: "userSpaceOnUse", markerWidth: 16, markerHeight: 16, orient: "auto-start-reverse" }, defs); m.dataset.base = 16;
     el("path", { d: "M0 0 L10 5 L0 10 z", style: `fill:${v.color}` }, m);
   });
-  [["sig", "var(--ink)"], ["ilk", "#ff3b30"]].forEach(([k, c]) => { const m = el("marker", { id: "ah_" + k, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto" }, defs); el("path", { d: "M0 0 L10 5 L0 10 z", style: `fill:${c}` }, m); });
+  [["sig", "var(--ink)", 12], ["ilk", "#ff3b30", 15]].forEach(([k, c, w]) => { const m = el("marker", { id: "ah_" + k, viewBox: "0 0 10 10", refX: 9, refY: 5, markerUnits: "userSpaceOnUse", markerWidth: w, markerHeight: w, orient: "auto" }, defs); m.dataset.base = w; el("path", { d: "M0 0 L10 5 L0 10 z", style: `fill:${c}` }, m); });
   // Symbol drawn along lines so each fluid is identifiable without colour
   function drawSym(g, t, x, y, r, parent){
     const c = t.color, solid = `fill:${c};stroke:var(--bg);stroke-width:1.2`, open = `fill:var(--bg);stroke:${c};stroke-width:2.2`;
@@ -1178,7 +1174,7 @@ svg.focus .frame.pick{opacity:1}
     return { ids, extra };
   }
   function clearSel(keepView){
-    const had = sel.length; sel = []; applySel(false);
+    const had = sel.length; sel = []; applySel(false); document.querySelectorAll(".frame.pick").forEach(g => g.classList.remove("pick"));
     if (had && !keepView) fitAnim();
   }
   function applySel(zoom){
@@ -1550,7 +1546,11 @@ svg.focus .frame.pick{opacity:1}
 
   // ---------- pan / zoom ----------
   let vb = { x: 0, y: 0, w: PFD_W, h: PFD_H };
-  function setVB(){ svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); const scale = svg.clientWidth / vb.w; svg.classList.toggle("far", scale < 0.42); }
+  // arrow heads: their drawn size zoomed out, but never more than 14 px on screen zoomed in
+  let ahK = 0;
+  const sizeArrows = scale => { const k = Math.round(Math.min(1, 14 / 16 / scale) * 100) / 100; if (k === ahK) return; ahK = k;
+    defs.querySelectorAll("marker[data-base]").forEach(m => { const w = m.dataset.base * k; m.setAttribute("markerWidth", w); m.setAttribute("markerHeight", w); }); };
+  function setVB(){ svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); const scale = svg.clientWidth / vb.w; svg.classList.toggle("far", scale < 0.42); if (scale > 0) sizeArrows(scale); }
   const phoneFit = () => matchMedia("(max-width: 900px)").matches && svg.clientHeight > svg.clientWidth;
   function fit(){ const W = svg.clientWidth, H = svg.clientHeight, ar = W / H; const pad = 40;
     let w = PFD_W + pad * 2, h = PFD_H + pad * 2; if (w / h > ar && !phoneFit()) h = w / ar; else w = h * ar;
@@ -1763,6 +1763,7 @@ svg.focus .frame.pick{opacity:1}
       if (cs.length) wbsGo(cs); else { markFrames(null); clearSel(false); note(""); }
     }
     PFDLayout.onWbs(cs => { F.wbs = new Set(cs); markFrames(null); note(""); render(); });
+    window.fxClearWbs = () => { if (!F.wbs.size) return; F.wbs = new Set(); applyWbs(); render(); };
     window.fxView = () => { if (F.wbs.size) applyWbs(); else PFDLayout.wbs([]); render(); };
     function wbsGo(c){
       const cs = [].concat(c); c = cs[0];
@@ -1826,7 +1827,7 @@ svg.focus .frame.pick{opacity:1}
       hit.go(); if (location.hash === "#layout"){ const nid = nd && byId[nd] ? nd : Object.keys(EQUIP_DATA).find(id => EQUIP_DATA[id].eq.some(r => Lookup.norm(r.tag) === k) || EQUIP_DATA[id].ins.some(i => Lookup.norm(i.tag) === k));
         setView("map"); if (nid) setTimeout(() => PFDLayout.focus(nid), 700); } }); }, 300); }
 
-  window.addEventListener("keydown", e => { if (e.key === "Escape"){ closeInfo(); if (focusFlow) setFlow(null); clearSel(); } });
+  window.addEventListener("keydown", e => { if (e.key === "Escape"){ closeInfo(); if (focusFlow) setFlow(null); clearSel(); if (window.fxClearWbs) fxClearWbs(); } });
 
   let tt; function toast(m){ const t = $("toast"); t.textContent = m; t.style.display = "block"; clearTimeout(tt); tt = setTimeout(() => t.style.display = "none", 4200); }
 
