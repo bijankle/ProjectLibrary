@@ -116,6 +116,13 @@
     return `<div class="pf" data-g="${esc(group)}"><div class="pf-bar">${secs.map(x => `<button type="button" class="pf-b${x.id === act ? " on" : ""}" data-p="${esc(x.id)}">${esc(x.label)}${x.n != null ? ` <i>${x.n}</i>` : ""}</button>`).join("")}</div>` + mid +
       secs.map(x => `<div class="pf-sec" data-p="${esc(x.id)}"${x.id === act ? "" : " hidden"}>${x.html}</div>`).join("") + `</div>`;
   };
+  // a line on one row: the number full size, its from / to shrinking to fit (down to 11px, then cut with …)
+  L.line1 = x => `<a class="lk-a lk-row lk-1l" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b><span title="${esc(L.lineText(x))}">${esc(L.lineText(x))}</span></a>`;
+  let fitQ = 0;
+  const fit1 = () => { fitQ = 0; document.querySelectorAll(".lk-1l").forEach(a => { const sp = a.lastElementChild, w = sp.clientWidth; if (!w || +a.dataset.fw === w) return;
+    a.dataset.fw = w; sp.style.fontSize = ""; let f = parseFloat(getComputedStyle(sp).fontSize); while (sp.scrollWidth > w + 1 && f > 11){ f = Math.max(11, f - .5); sp.style.fontSize = f + "px"; } }); };
+  const fitSoon = () => { if (!fitQ) fitQ = requestAnimationFrame(fit1); };
+  new MutationObserver(fitSoon).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] }); addEventListener("resize", fitSoon);
   document.addEventListener("click", e => { const b = e.target.closest && e.target.closest(".pf-b"); if (!b) return; const pf = b.closest(".pf"); pfLast[pf.dataset.g] = b.dataset.p;
     [...pf.children].forEach(c => { if (c.classList.contains("pf-bar")) c.querySelectorAll(".pf-b").forEach(x => x.classList.toggle("on", x === b)); else if (c.classList.contains("pf-sec")) c.hidden = c.dataset.p !== b.dataset.p; }); });
   L.refs = k => refs.get(norm(k)) || [];
@@ -219,13 +226,13 @@
       const g = {}; rf.forEach(x => (g[x.t] = g[x.t] || []).push(x));
       TYPE_ORDER.filter(t => g[t]).forEach(t => { const a = g[t], show = a.slice(0, 60);
         secs.push({ id: "r-" + t, label: (PILLN[t] || typeName(t)), n: a.length, html: 
-          show.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b> ${esc(L.lineText(x))}</a>`).join("") +
+          show.map(x => x.t === "line" ? L.line1(x) : `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b> ${esc(L.lineText(x))}</a>`).join("") +
           (a.length > show.length ? `<div class="lk-ns">and ${a.length - show.length} more; search the tag to see them all.</div>` : "") }); });
     }
     // a P&ID: the drawings it joins (P&IDs pill first) and the lines that cross, each split From / To one row below
     const pl = it.t === "pid" && /-PID-/.test(it.key) && L.pidLinks(it.key);
     if (pl){
-      const lineRow = x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b> ${esc(L.lineText(x))}</a>`;
+      const lineRow = L.line1;
       const pidRow = p => { const d = window.Pid && Pid.info(p.n), t = d && d.title ? ` (${esc(L.pidTitle(d.title))})` : "", c = ` <span class="lk-ns">(x${p.lines.length} line${p.lines.length > 1 ? "s" : ""})</span>`;
         return L.find(p.k, "pid") ? `<a class="lk-a lk-row" data-k="${p.k}" data-t="pid"><b>${esc(p.n)}</b>${t}${c}</a>` : `<div class="lk-row"><b>${esc(p.n)}</b>${t}${c}</div>`; };
       const none = w => `<div class="lk-ns">No line in the line list ${w}.</div>`;
@@ -510,7 +517,7 @@
 .lk-key{font-family:inherit;font-size:var(--fh,22px);font-weight:800;margin:4px 0 2px;word-break:break-all}.lk-name{font-size:var(--fb,15px);line-height:1.35;margin-bottom:8px}
 .lk-t{width:100%;border-collapse:collapse;font-size:var(--fb,15px);margin:6px 0}.lk-t td{padding:5px 4px;border-bottom:1px solid var(--lk-l);vertical-align:top;word-break:break-word}.lk-t td:first-child{color:var(--mute);width:13.5em;padding-right:10px;font-size:var(--fb,15px);word-break:normal;overflow-wrap:normal;hyphens:manual}
 .lk-a{color:var(--lk-a);text-decoration:underline;cursor:pointer}.lk-row{display:block;text-decoration:none;color:var(--ink);background:var(--lk-c);border-radius:8px;padding:6px 8px;margin:4px 0;font-size:var(--fb,15px)}
-.lk-row b{font-family:inherit;color:var(--lk-a);margin-right:4px}.lk-h{margin:14px 0 4px;font-size:var(--fl,13px);letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
+.lk-row b{font-family:inherit;color:var(--lk-a);margin-right:4px}.lk-1l{display:flex;align-items:baseline;white-space:nowrap}.lk-1l b{flex:none;margin-right:6px}.lk-1l span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lk-h{margin:14px 0 4px;font-size:var(--fl,13px);letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
 .pf-bar{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 8px}
 .pf-b{border:1px solid var(--lk-l,var(--line));background:var(--lk-c,var(--panel2));color:var(--ink);border-radius:99px;padding:4px 10px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;white-space:nowrap}
 .pf-b i{font-style:normal;color:var(--mute);font-weight:600;font-size:var(--fb,15px)}

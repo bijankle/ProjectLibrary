@@ -1,8 +1,8 @@
 // Sources: every document the app is built from, one row each (every P&ID and PFD sheet on its own), filtered by a
 // search and by type pills (P&IDs, PFDs, Lists, Reports, Specs, Drawings), with area pills under the drawing types.
 // Each row has two kinds of button: Save puts the redacted file (PDF, or the cleaned Excel copy) in the Downloads
-// folder; Keep stores it on this device (offline.js, the kcgm-docs cache) so it opens with no signal. "Keep all" does
-// the same for everything the filters show. Desktop: a filter panel on the left and a table (issues.html#sources).
+// folder; Cache stores it on this device (offline.js, the kcgm-docs cache) so it opens with no signal. "Cache all" does
+// the same for everything the filters show, and "Save all" (desktop) puts all of it in Downloads as one zip. Desktop: a filter panel on the left and a table (issues.html#sources).
 // Phone: pills over a list (Settings → Sources, the Settings search box filters it). SourcesList.mount(el, {phone, input}).
 window.SourcesList = (() => {
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -49,6 +49,20 @@ window.SourcesList = (() => {
     return (DOCS = out);
   }
 
+  // a zip with the files stored as they are (PDFs are already packed): [[name, bytes]] → Blob
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc = u => { let c = 0xffffffff; for (let i = 0; i < u.length; i++) c = CRC[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  function zip(files){
+    const enc = new TextEncoder(), parts = [], cen = []; let off = 0;
+    const hd = (n, f) => { const b = new DataView(new ArrayBuffer(n)); f(b); return new Uint8Array(b.buffer); };
+    files.forEach(([name, data]) => { const nm = enc.encode(name), c = crc(data), L = data.length;
+      const loc = hd(30, v => { v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint16(6, 0x800, true); v.setUint32(14, c, true); v.setUint32(18, L, true); v.setUint32(22, L, true); v.setUint16(26, nm.length, true); });
+      cen.push(hd(46, v => { v.setUint32(0, 0x02014b50, true); v.setUint16(4, 20, true); v.setUint16(6, 20, true); v.setUint16(8, 0x800, true); v.setUint32(16, c, true); v.setUint32(20, L, true); v.setUint32(24, L, true); v.setUint16(28, nm.length, true); v.setUint32(42, off, true); }), nm);
+      parts.push(loc, nm, data); off += 30 + nm.length + L; });
+    const cs = cen.reduce((t, u) => t + u.length, 0);
+    const end = hd(22, v => { v.setUint32(0, 0x06054b50, true); v.setUint16(8, files.length, true); v.setUint16(10, files.length, true); v.setUint32(12, cs, true); v.setUint32(16, off, true); });
+    return new Blob([...parts, ...cen, end], { type: "application/zip" }); }
+
   // ---------- one list on the page ----------
   function mount(el, o = {}){
     const phone = !!o.phone;
@@ -57,7 +71,7 @@ window.SourcesList = (() => {
     const keepF = () => { try { localStorage.setItem("kcgm_srcf", JSON.stringify({ t: type, a: area })); } catch (e) {} };
     el.classList.add("sl", phone ? "sl-ph" : "sl-dt");
     el.innerHTML = phone ? `<div class="sl-types sl-pills"></div><div class="sl-areas sl-pills"></div><div class="sl-bar"></div><div class="sl-list"></div>`
-      : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off"><div class="sl-h">Type</div><div class="sl-types"></div><div class="sl-ah"><div class="sl-h">Area</div><div class="sl-areas"></div></div></aside>
+      : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off"><div class="sl-hb"><button type="button" class="sl-b sl-sva" title="Save every document listed to Downloads, as one zip">${ICO.save}<span>Save all</span></button></div><div class="sl-h">Type</div><div class="sl-types"></div><div class="sl-ah"><div class="sl-h">Area</div><div class="sl-areas"></div></div></aside>
          <div class="sl-main"><div class="sl-bar"></div><table class="sl-tb"><thead><tr><th>Document number</th><th>Title</th><th>Rev</th><th>Size</th><th class="sl-bh" colspan="3"></th></tr></thead><tbody class="sl-list"></tbody></table></div>`;
     const $ = s => el.querySelector(s);
     const input = o.input || $(".sl-q");
@@ -71,23 +85,23 @@ window.SourcesList = (() => {
     const fname = d => (d.number + (d.rev ? " Rev " + d.rev : "") + (d.title && d.t !== "list" ? " " + d.title : "")).replace(/[\\/:*?"<>|]+/g, " ").trim();
     const saveBtn = (d, kind) => { const href = kind === "x" ? d.xlsx : d.pdf; if (!href) return phone ? "" : `<span class="sl-b sl-b0"></span>`;
       const name = kind === "x" ? d.xname || fname(d) + ".xlsx" : fname(d) + ".pdf", lab = kind === "x" ? "Excel" : "PDF";
-      return `<a class="sl-b sl-sv" href="${esc(href)}" download="${esc(name)}" title="Save the ${lab} to Downloads">${ICO.save}<span>${phone ? lab : "Save " + lab}</span></a>`; };
+      return `<a class="sl-b sl-sv" href="${esc(href)}" download="${esc(name)}" title="Save the ${lab} to Downloads">${ICO.save}<span>${lab}</span></a>`; };
     const keepBtn = d => { const s = stOf(d);
       if (!d.keep.length) return `<span class="sl-b sl-b0"></span>`;
-      const lab = s === "ok" ? "On this device" : s === "old" ? "Update" : "Keep on device";
-      return `<button type="button" class="sl-b sl-kp ${s}" data-k="${esc(d.k)}" title="${s === "ok" ? "Kept on this device. Tap to remove" : "Keep on this device to open with no signal"}">${s === "ok" ? ICO.devOk : ICO.dev}<span>${phone ? (s === "ok" ? "Kept" : s === "old" ? "Update" : "Keep") : lab}</span></button>`; };
+      const lab = s === "ok" ? "Cached" : s === "old" ? "Update" : "Cache";
+      return `<button type="button" class="sl-b sl-kp ${s}" data-k="${esc(d.k)}" title="${s === "ok" ? "Cached on this device. Tap to remove" : "Cache on this device to open with no signal"}">${s === "ok" ? ICO.devOk : ICO.dev}<span>${lab}</span></button>`; };
     function pills(){
       const base = DOCS.filter(match), cnt = {}; base.forEach(d => cnt[d.t] = (cnt[d.t] || 0) + 1);
       const tp = [["", "All", base.length], ...TYPES.filter(([k]) => cnt[k]).map(([k, n]) => [k, n, cnt[k]])];
       $(".sl-types").innerHTML = tp.map(([k, n, c]) => phone ? `<button type="button" class="sl-p${type === k ? " on" : ""}" data-t="${k}">${esc(n)}<i>${c}</i></button>`
-        : `<button type="button" class="sl-ck${type === k ? " on" : ""}" data-t="${k}"><b></b><span>${esc(n)}</span><i>${c}</i></button>`).join("");
+        : `<button type="button" class="sl-p${type === k ? " on" : ""}" data-t="${k}">${esc(n)}<i>${c}</i></button>`).join("");
       const ab = base.filter(d => d.t === type), ac = {}; ab.forEach(d => ac[d.area] = (ac[d.area] || 0) + 1);
       const areas = subOf(type) ? Object.keys(ac).sort((a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1))) : [];
       if (area && !ac[area]) area = "";
       const ae = $(".sl-areas"); ae.hidden = !areas.length; if (!phone) $(".sl-ah").hidden = !areas.length;
       ae.innerHTML = areas.length ? (phone ? `<button type="button" class="sl-p sl-ps${area ? "" : " on"}" data-a="">All areas</button>` : "") +
         areas.map(a => phone ? `<button type="button" class="sl-p sl-ps${area === a ? " on" : ""}" data-a="${a}">${a} ${esc(AREA[a] || "")}<i>${ac[a]}</i></button>`
-          : `<button type="button" class="sl-ck${area === a ? " on" : ""}" data-a="${a}"><b></b><span>${a} ${esc(AREA[a] || "")}</span><i>${ac[a]}</i></button>`).join("") : "";
+          : `<button type="button" class="sl-p${area === a ? " on" : ""}" data-a="${a}">${a} ${esc(AREA[a] || "")}<i>${ac[a]}</i></button>`).join("") : "";
       el.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { type = type === b.dataset.t ? "" : b.dataset.t; area = ""; keepF(); draw(); });
       el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { area = area === b.dataset.a ? "" : b.dataset.a; keepF(); draw(); });
     }
@@ -99,14 +113,19 @@ window.SourcesList = (() => {
       const left = files.reduce((t, f) => t + ((Offline.load && OFF && OFF.sz[f]) || 0), 0), what = type ? TN[type].replace("&amp;", "&") : "documents";
       const noun = list.length === 1 ? "document" : subOf(type) ? "drawings" : "documents";
       $(".sl-bar").innerHTML = `<span class="sl-n"><b>${list.length}</b> ${noun}${!phone && type ? ` · ${esc(TN[type])}` : ""}${!phone && area ? ` · ${area} ${esc(AREA[area] || "")}` : ""}</span>` +
-        (list.length ? need.length ? `<button type="button" class="sl-all">${phone ? `Keep all ${need.length}` : `Keep all ${need.length} on this device (${mb(left)} MB)`}</button>`
-          : `<span class="sl-allok">${ICO.devOk} All on this device</span>` : "") + `<i class="sl-pg"><i></i></i>`;
+        (list.length ? need.length ? (phone ? `<button type="button" class="sl-all">Cache all ${need.length}</button>`
+          : `<span class="sl-allr"><span class="sl-alln">${need.length} to cache, ${mb(left)} MB</span><button type="button" class="sl-b sl-all" title="Cache every document listed on this device">${ICO.dev}<span>Cache all</span></button></span>`)
+          : `<span class="sl-allok">${ICO.devOk} All cached</span>` : "") + `<i class="sl-pg"><i></i></i>`;
       const rows = list.slice(0, 400);
       // desktop: a Save column shows only when something listed has that file (the columns stay lined up)
-      if (!phone){ el.classList.toggle("sl-nox", !rows.some(d => d.xlsx)); el.classList.toggle("sl-nop", !rows.some(d => d.pdf)); }
+      // desktop: each row's buttons packed from the left (Cache, PDF, Excel), as many button columns as the fullest row
+      const btns = d => [d.keep.length ? keepBtn(d) : "", d.pdf ? saveBtn(d, "p") : "", d.xlsx ? saveBtn(d, "x") : ""].filter(Boolean);
+      const nb = phone ? 0 : Math.max(1, ...rows.map(d => btns(d).length));
+      const cells = d => { const b = btns(d); while (b.length < nb) b.push(`<span class="sl-b sl-b0"></span>`); return b.map((x, i) => `<td class="sl-c">${x}${i === 0 ? `<i class="sl-rb"><i></i></i>` : ""}</td>`).join(""); };
+      if (!phone) $(".sl-bh").colSpan = nb;
       $(".sl-list").innerHTML = rows.map(d => phone
         ? `<div class="sl-r" data-r="${esc(d.k)}"><div class="sl-t"><b>${esc(d.number.replace(/^2000-/, ""))}</b><span>${esc([d.title, d.rev ? "Rev " + d.rev : "", d.size ? mb(d.size) + " MB" : ""].filter(Boolean).join(" · "))}</span></div>${saveBtn(d, d.t === "list" || !d.pdf ? "x" : "p")}${keepBtn(d)}<i class="sl-rb"><i></i></i></div>`
-        : `<tr data-r="${esc(d.k)}"><td class="sl-num">${esc(d.number)}</td><td class="sl-ti"><button type="button" class="sl-op">${esc(d.title)}</button>${d.info ? `<button type="button" class="sl-ib" title="Details">ⓘ</button>` : ""}</td><td class="sl-rev">${d.rev ? "Rev " + esc(d.rev) : "–"}</td><td class="sl-sz">${d.size ? mb(d.size) + " MB" : ""}</td><td class="sl-c">${saveBtn(d, "p")}</td><td class="sl-c">${saveBtn(d, "x")}</td><td class="sl-c">${keepBtn(d)}<i class="sl-rb"><i></i></i></td></tr>`).join("") +
+        : `<tr data-r="${esc(d.k)}"><td class="sl-num">${esc(d.number)}</td><td class="sl-ti"><button type="button" class="sl-op">${esc(d.title)}</button>${d.info ? `<button type="button" class="sl-ib" title="Details">ⓘ</button>` : ""}</td><td class="sl-rev">${d.rev ? "Rev " + esc(d.rev) : "–"}</td><td class="sl-sz">${d.size ? mb(d.size) + " MB" : ""}</td>${cells(d)}</tr>`).join("") +
         (list.length > rows.length ? (phone ? `<div class="sl-none">${list.length - rows.length} more: search to narrow</div>` : `<tr><td colspan="7" class="sl-none">${list.length - rows.length} more: search to narrow</td></tr>`)
           : !list.length ? (phone ? `<div class="sl-none">Nothing matches.</div>` : `<tr><td colspan="7" class="sl-none">Nothing matches.</td></tr>`) : "");
       wire();
@@ -118,6 +137,7 @@ window.SourcesList = (() => {
         if (stOf(d) === "ok"){ if (confirm(`Remove ${d.number} from this device?`)) Offline.drop(d.keep).then(refresh); return; }
         run([d], b.closest("[data-r]")); });
       const all = $(".sl-all"); if (all) all.onclick = () => { if (busyRow){ stop.x = true; return; } run(list.filter(d => stOf(d) !== "ok"), null); };
+      const sva = $(".sl-sva"); if (sva) sva.onclick = () => saveAll(list, sva);
       el.querySelectorAll(".sl-sv").forEach(a => a.addEventListener("click", e => e.stopPropagation()));
       el.querySelectorAll(".sl-ib").forEach(b => b.onclick = e => { e.stopPropagation(); const tr = b.closest("tr"), nx = tr.nextElementSibling;
         if (nx && nx.classList.contains("sl-info")){ nx.remove(); b.classList.remove("on"); return; }
@@ -131,17 +151,26 @@ window.SourcesList = (() => {
       if (window.Pid && Pid.has && Pid.has(d.number)) return Pid.open(d.number);
       if (d.pdf) return window.open(d.pdf, "_blank", "noopener");
       if (window.SourceView && d.tables) SourceView.open(d.k, d.number + " " + d.title); }
+    // save all: every listed document's file (its PDF, or the Excel copy of a list) in one zip, named as Save names it
+    async function saveAll(ds, b){ if (b.disabled) return;
+      const items = ds.map(d => d.pdf ? [d.pdf, fname(d) + ".pdf"] : d.xlsx ? [d.xlsx, d.xname || fname(d) + ".xlsx"] : null).filter(Boolean); if (!items.length) return;
+      const lab = b.querySelector("span"), was = lab.textContent; b.disabled = true; const got = [];
+      try { for (let i = 0; i < items.length; i++){ lab.textContent = `${i + 1} / ${items.length}`;
+          const r = await fetch(items[i][0]); if (!r.ok) throw new Error(items[i][1] + " (" + r.status + ")"); got.push([items[i][1], new Uint8Array(await r.arrayBuffer())]); }
+        const a = document.createElement("a"); a.href = URL.createObjectURL(zip(got)); a.download = `Project Library ${type ? TN[type].replace("&amp;", "&") : "sources"}.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4e4);
+      } catch (e){ alert("Couldn't save all: " + e.message); }
+      b.disabled = false; lab.textContent = was; }
     // keep on the device: one row, or every row the filters show; the row's (or the bar's) text counts up the MB
     async function run(ds, row){
       const files = [...new Set(ds.flatMap(d => d.keep))]; if (!files.length) return;
       const total = files.reduce((t, f) => t + (OFF.sz[f] || 0), 0), have = files.filter(f => st[f] === "ok").reduce((t, f) => t + (OFF.sz[f] || 0), 0);
       busyRow = row || el; stop.x = false; el.classList.add("sl-busy"); busyRow.classList.add("sl-on");
-      const lab = row ? row.querySelector(".sl-kp span") : $(".sl-all"), bar = row ? row.querySelector(".sl-rb i") : $(".sl-pg i");
-      const kb = row && row.querySelector(".sl-kp"); if (kb) kb.innerHTML = ICO.stop + `<span></span>`;
-      const say = f => { const t = `${mb(have + f * (total - have))} / ${mb(total)} MB`; const l = row ? row.querySelector(".sl-kp span") : $(".sl-all"); if (l) l.textContent = row ? t : (phone ? t : "Stop · " + t); if (bar) bar.style.width = ((have + f * (total - have)) / total * 100).toFixed(1) + "%"; };
+      const bar = row ? row.querySelector(".sl-rb i") : $(".sl-pg i");
+      const kb = row ? row.querySelector(".sl-kp") : !phone && $(".sl-all"); if (kb) kb.innerHTML = ICO.stop + `<span>${row ? "" : "Stop"}</span>`;
+      const say = f => { const t = `${mb(have + f * (total - have))} / ${mb(total)} MB`; const l = row ? row.querySelector(".sl-kp span") : phone ? $(".sl-all") : $(".sl-alln"); if (l) l.textContent = row || phone ? t : "Stop · " + t; if (bar) bar.style.width = ((have + f * (total - have)) / total * 100).toFixed(1) + "%"; };
       say(0);
       if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
-      try { await Offline.get(files, say, stop); } catch (e){ if (e.message !== "stopped") alert("Stopped: " + e.message + ". What was saved is kept; tap Keep again to finish."); }
+      try { await Offline.get(files, say, stop); } catch (e){ if (e.message !== "stopped") alert("Stopped: " + e.message + ". What was saved is kept; tap Cache again to finish."); }
       busyRow.classList.remove("sl-on"); busyRow = null; el.classList.remove("sl-busy"); refresh();   // (refresh redraws, so a waiting redraw is done too)
     }
     async function refresh(){ if (!DOCS || !window.Offline) return draw(); st = await Offline.check([...new Set(DOCS.flatMap(d => d.keep))]).catch(() => ({})); draw(); }
@@ -171,8 +200,14 @@ window.SourcesList = (() => {
 /* the buttons: each kind in its own column, every one the same width, so they line up down the table */
 td.sl-c{width:1%;padding-left:3px;padding-right:3px;position:relative}td.sl-c:last-child{padding-right:10px}
 .sl-b{display:inline-flex;align-items:center;justify-content:center;gap:5px;box-sizing:border-box;height:30px;border:1.5px solid var(--gold);background:var(--card,var(--panel));color:color-mix(in srgb,var(--gold) 72%,var(--ink));border-radius:9px;padding:0 10px;font:inherit;font-size:var(--fl,13px);font-weight:800;text-decoration:none;white-space:nowrap;cursor:pointer;font-variant-numeric:tabular-nums}
-.sl-dt .sl-sv{width:112px}.sl-dt .sl-kp{width:154px}.sl-dt .sl-b0{width:112px;border:0;background:none}.sl-dt td.sl-c:last-child .sl-b0{width:154px}
-.sl-nox td.sl-c:nth-last-child(2),.sl-nop td.sl-c:nth-last-child(3){display:none}
+.sl-b0{border:0!important;background:none!important}
+/* desktop: square buttons as on the phone, short rows, pill filters */
+.sl-dt .sl-b{flex-direction:column;gap:1px;width:46px;height:34px;padding:0;border-radius:9px;font-size:10.5px;line-height:1}.sl-dt .sl-b svg{width:14px;height:14px}
+.sl-dt tr.sl-on .sl-kp{width:auto;min-width:46px;padding:0 6px}.sl-dt .sl-tb td{padding-top:3px;padding-bottom:3px}.sl-dt .sl-tb th{padding-top:7px;padding-bottom:7px}
+.sl-dt .sl-tb td.sl-ti{width:100%}.sl-dt td.sl-c{padding-left:2px;padding-right:2px}
+.sl-hb{display:flex;gap:6px;margin:10px 0 0}.sl-hb .sl-b,.sl-allr .sl-b{width:auto;min-width:54px;padding:0 8px}.sl-b:disabled{opacity:.6;cursor:progress}
+.sl-allr{display:inline-flex;align-items:center;gap:10px}.sl-alln{font-size:var(--fl,13px);color:var(--mute);font-variant-numeric:tabular-nums}
+.sl-dt .sl-types,.sl-dt .sl-areas{display:flex;flex-wrap:wrap;gap:6px}.sl-dt .sl-p{border-radius:9px;font-size:14px;padding:4px 10px}
 .sl-kp.ok{border-color:#2aa765;color:#1f9a55}.sl-b,.sl-p,.sl-all,.sl-r{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.sl-b:active,.sl-p:active,.sl-all:active{transform:scale(.93);background:var(--th-t,#eef1f5)!important;transition:transform .05s}.sl-r:active{background:var(--th-t,#eef1f5)}.sl-kp.old,.sl-kp.part{border-style:dashed}
 .sl-busy .sl-kp:not(.sl-on .sl-kp),.sl-busy .sl-all:not(.sl-dt.sl-on .sl-all,.sl-ph.sl-on .sl-all){opacity:.4;pointer-events:none}
 .sl-rb{display:none;position:absolute;left:3px;right:10px;bottom:3px;height:2px}tr.sl-on .sl-rb{display:block}
