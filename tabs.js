@@ -11,7 +11,7 @@ window.Tabs = (() => {
   // desktop: the project's documents, after a gap, as an outlined group of their own
   const XTABS = [["sources", "Sources", "issues.html#sources"], ["checks", "Checks", "issues.html"]];
   // the app's mark (the slate P tile, as the app icon; fixed, whatever the theme) for the logo at the top left
-  const mark = s => `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#475569"/><rect x="6" y="6" width="52" height="52" rx="13" fill="none" stroke="#fff" stroke-width="2.5"/><text x="32" y="44.5" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-weight="800" font-size="36" fill="#fff">P</text></svg>`;
+  const mark = s => `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#475569" style="fill:var(--thm,#475569)"/><rect x="6" y="6" width="52" height="52" rx="13" fill="none" stroke="#fff" stroke-width="2.5"/><text x="32" y="44.5" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-weight="800" font-size="36" fill="#fff">P</text></svg>`;
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const desk = () => matchMedia("(min-width: 901px) and (hover: hover)").matches;
   // phone (anything that isn't a desktop with a mouse): a slim top row (the P, the section's name, its search) and the
@@ -225,6 +225,11 @@ window.Tabs = (() => {
   applyBtn(); addEventListener("storage", e => { if (e.key === "kcgm_bsz" || e.key === "kcgm_bsp") applyBtn(); });
   // the accent themes (colours in each page's head: #kcgmThemes); none is blue, green, amber, orange or red, so the accent never reads as a status
   const THEMES = [["slate", "Slate", "#475569"], ["graphite", "Graphite", "#52525b"], ["navy", "Navy", "#1e3a5f"], ["petrol", "Petrol", "#1f4f5a"], ["olive", "Olive", "#5a5a2e"], ["stone", "Stone", "#7a6a5d"], ["rust", "Rust", "#9a3412"], ["ink", "Ink", "#111827"]];   // as ActionMap
+  // the browser tab's icon in the theme colour too (an installed app's home screen icon is fixed at install)
+  const tabIcon = () => { const c = (THEMES.find(t => t[0] === lsGet("kcgm_accent", "slate")) || THEMES[0])[2];
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="${c}"/><rect x="9" y="9" width="82" height="82" rx="16" fill="none" stroke="#fff" stroke-width="4"/><text x="50" y="70" font-size="56" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-weight="800" text-anchor="middle" fill="#fff">P</text></svg>`;
+    document.querySelectorAll('link[rel="icon"]').forEach(l => l.href = "data:image/svg+xml," + encodeURIComponent(svg)); };
+  tabIcon();
   const themeRow = () => { const cur = lsGet("kcgm_accent", "slate"), t = THEMES.find(x => x[0] === cur) || THEMES[0];
     return `<div class="ap-r ap-th"><span>Theme</span><div class="ap-thw"><div class="ap-ths" role="radiogroup" aria-label="Theme">${THEMES.map(([k, n, c]) => `<button type="button" role="radio" data-acc="${k}" title="${n}" aria-label="${n}" aria-checked="${k === t[0]}" style="--c:${c}"${k === t[0] ? ' class="on"' : ""}></button>`).join("")}</div><div class="ap-thn">${t[1]}</div></div></div>`; };
   function appearance(box){
@@ -232,7 +237,7 @@ window.Tabs = (() => {
     const sl = (k, label, min, max, step, v) => `<label class="ap-r"><span>${label}</span><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${v}" aria-label="${label}"></label>`;
     box.innerHTML = `<div class="ap"><label class="ap-r"><span>Dark mode</span><input type="checkbox" class="ap-sw" ${dark ? "checked" : ""} aria-label="Dark mode"></label>` +
       themeRow() + sl("tx", "Text size", 0, 4, 1, tx) + sl("bz", "Button size", 80, 120, 5, lsGet("kcgm_bsz", 100)) + sl("bp", "Button spacing", 0, 8, 2, lsGet("kcgm_bsp", 0)) + `</div>`;
-    box.querySelectorAll(".ap-th button").forEach(x => x.onclick = e => { e.stopPropagation(); lsSet("kcgm_accent", x.dataset.acc); if (window.kcgmAccent) kcgmAccent(x.dataset.acc);
+    box.querySelectorAll(".ap-th button").forEach(x => x.onclick = e => { e.stopPropagation(); lsSet("kcgm_accent", x.dataset.acc); if (window.kcgmAccent) kcgmAccent(x.dataset.acc); tabIcon();
       document.querySelectorAll(".ap-th").forEach(r => { r.querySelectorAll("button").forEach(y => { const on = y.dataset.acc === x.dataset.acc; y.classList.toggle("on", on); y.setAttribute("aria-checked", on); });
         r.querySelector(".ap-thn").textContent = THEMES.find(t => t[0] === x.dataset.acc)[1]; }); });
     box.querySelector(".ap-sw").onchange = e => { lsSet("kcgm_theme", e.target.checked ? "dark" : "light"); if (window.kcgmTheme) kcgmTheme(); };
