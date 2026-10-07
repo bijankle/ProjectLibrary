@@ -243,7 +243,7 @@ body.searching #homeMain{display:none}
 :root:not(.phone) .qd-side{border-right:1px solid var(--line);gap:8px}
 .qd-side>*,.qd-list>*{flex:none}
 :root:not(.phone) .qd-list{border-left:1px solid var(--line);gap:2px}
-:root:not(.phone) #qdBar{display:flex;align-items:center;gap:10px;justify-content:center}
+:root:not(.phone) #qdBar{display:none}
 :root:not(.phone) .card{touch-action:auto;user-select:text;-webkit-user-select:text}
 .qd-side h4,.qd-list h4{margin:8px 0 2px;font-size:var(--fl,13px);letter-spacing:.06em;text-transform:uppercase;color:var(--mute);display:flex;align-items:baseline}
 .qd-side h4:first-child,.qd-list h4:first-child{margin-top:0}
@@ -335,7 +335,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 .qd-acts{justify-content:flex-end}
 
 /* continuous quiz: topic pills (three rows, scroll sideways), a hairline of how much of them is seen, the answer blurred
-   under the question until the card is tapped, then Back / Shuffle / Next */
+   under the question until the card is tapped, then Back / Next */
 .qpills{display:none}
 :root.phone .qpills{display:flex;flex-direction:column;gap:6px;overflow-x:auto;scrollbar-width:none;margin:-4px -14px 4px;padding:2px 14px 4px;justify-content:start;flex:none}
 .qpills::-webkit-scrollbar{display:none}
@@ -348,9 +348,10 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 :root.phone .card:not(.shown) .scroll{filter:blur(7px);pointer-events:none;user-select:none;-webkit-user-select:none}
 .card:not(.shown) .scroll .qa{display:none}
 :root.phone #qBtns{display:flex!important;gap:10px;flex:none}:root.phone #qdBar{display:none!important}:root:not(.phone) #qBtns{display:none!important}
-.card .hint{display:none}:root:not(.phone) .card:not(.shown) .hint{display:block;margin:6px 0 10px}
+.card .hint{display:none}:root:not(.phone) .card:not(.shown) .hint{display:block}
+.q-nav{display:none}:root:not(.phone) .q-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0 10px}   /* Back | Show answer | Next on the card */
+:root:not(.phone) .q-nav .qn{padding:8px 14px}
 :root:not(.phone) .card:not(.shown) .scroll{visibility:hidden}
-#qdRev.on,#qBtns #qShuf.on{color:color-mix(in srgb,var(--gold) 70%,var(--ink))!important;border-color:var(--gold)!important;background:var(--card);box-shadow:inset 0 0 0 1px var(--gold)}
 #qBtns button{flex:1!important;border:1px solid var(--line)!important;background:var(--card)!important;color:var(--ink)!important;border-radius:14px;padding:12px 8px}
 #qBtns button:disabled{opacity:.4}
 .q-none{padding:40px 10px;text-align:center;color:var(--mute)}
@@ -409,9 +410,9 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
     <div class="prog"><i id="progBar"></i></div><div class="count" id="count"></div></div>
   <div class="stage" id="stage"></div>
   <div class="legend" id="legend"><span class="l">→ swipe right: back</span><span class="r">swipe left or tap: next ←</span></div>
-  <div id="qBtns"><button type="button" id="qBack">‹ Back</button><button type="button" id="qShuf" aria-pressed="true">⤨ Shuffle</button><button type="button" id="qMain">Next ›</button><button type="button" id="qLater" hidden></button></div>
+  <div id="qBtns"><button type="button" id="qBack">‹ Back</button><button type="button" id="qMain">Next ›</button><button type="button" id="qLater" hidden></button></div>
   <div id="qdBar"><button type="button" class="qd-b" id="qdPrev" title="Previous card (←)" aria-label="Previous card">‹</button><span class="qd-sp"></span>
-    <button type="button" class="qd-b" id="qdRev">↻ Revisit <kbd>R</kbd></button><button type="button" class="qd-b" id="qdKnew">✓ Knew it, next <kbd>→</kbd></button></div>
+    <button type="button" class="qd-b" id="qdKnew">✓ Knew it, next <kbd>→</kbd></button></div>
   </div>
   <aside class="qd-list" id="qdList" aria-label="History"></aside>
 </section>
@@ -590,15 +591,13 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
   }
   // ---------- continuous quiz ----------
   // No decks: questions keep coming from the topics switched on, the ones seen least first (new ones before seen ones);
-  // Shuffle mixes them within that order, off takes them in the cards' order. Each question shown counts as seen (kept
-  // on this device, kcgm_cards). The topics and shuffle are remembered.
-  let shuf = store.get("kcgm_shuf", true);
+  // mixed at random within that. Each question shown counts as seen (kept on this device, kcgm_cards); the topics are remembered.
   const seenN = c => (hist[c.q] && hist[c.q].s) || 0;
   function nextCard(){
     const pool = CARDS.filter(c => sel.has(c.t)); if (!pool.length) return null;
     const recent = new Set(run ? run.list.slice(-Math.min(pool.length - 1, 20)).map(c => c.q) : []);
     const cand = pool.filter(c => !recent.has(c.q)), use = cand.length ? cand : pool, low = Math.min(...use.map(seenN));
-    const g = use.filter(c => seenN(c) === low); return shuf ? g[Math.floor(Math.random() * g.length)] : g[0];
+    const g = use.filter(c => seenN(c) === low); return g[Math.floor(Math.random() * g.length)];
   }
   function start(){
     run = { list: [], i: 0, max: 0, marks: {}, done: {}, got: 0, again: [] }; card = null;
@@ -634,7 +633,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
         <div class="side front">
           <div class="chip"></div>
           <div class="qtext"></div>
-          <button type="button" class="hint">Show answer <kbd>Space</kbd></button>
+          <div class="q-nav"><button type="button" class="qd-b qn" data-a="back">‹ Back</button><button type="button" class="hint">Show answer <kbd>Space</kbd></button><button type="button" class="qd-b qn" data-a="next">Next › <kbd>→</kbd></button></div>
           <div class="scroll"><div class="atext"></div><div class="etext"></div><div class="qa"></div></div>
         </div>
       </div>`;
@@ -646,6 +645,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
     el.style.transform = `translateX(${dir * 40}px)`; el.style.opacity = "0";
     $("stage").innerHTML = ""; $("stage").appendChild(el);
     requestAnimationFrame(() => { el.style.transition = "transform .22s ease, opacity .22s ease"; el.style.transform = ""; el.style.opacity = "1"; });
+    el.querySelectorAll(".qn").forEach(b => b.onclick = e => { e.stopPropagation(); b.dataset.a === "back" ? back() : next(true); });
     card = el; bindSwipe(el);
     renderQA(el, c, []); qBtns();
   }
@@ -656,12 +656,10 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
     qBtns(); }
   // phone: the two buttons under the card (Later marks the card to see again)
   function qBtns(){ if (!run) return; drawDesk(); drawPills(); $("qBack").disabled = $("qdPrev").disabled = run.i === 0;
-    $("qdRev").textContent = "⤨ Shuffle"; $("qdRev").classList.toggle("on", shuf); $("qdKnew").innerHTML = "Next › <kbd>→</kbd>";
-    $("qShuf").classList.toggle("on", shuf); $("qShuf").setAttribute("aria-pressed", shuf); $("qShuf").textContent = "⤨ Shuffle"; }
+    if (card) card.querySelectorAll('.qn[data-a="back"]').forEach(b => b.disabled = run.i === 0); }
   $("qMain").onclick = () => next(true); $("qBack").onclick = () => back();
   // desktop: the same three in its own bar under the card
-  $("qdPrev").onclick = () => back(); $("qdRev").onclick = () => $("qShuf").click(); $("qdKnew").onclick = () => next(true);
-  $("qShuf").onclick = () => { shuf = !shuf; store.set("kcgm_shuf", shuf); rebuild(); };
+  $("qdPrev").onclick = () => back(); $("qdKnew").onclick = () => next(true);
   // the result for card i (first time past it, or again when its "revisit" tick changes)
   function record(i){
     const c = run.list[i], known = !run.marks[i], h = hist[c.q] || { s: 0, k: 0, last: 0 };
