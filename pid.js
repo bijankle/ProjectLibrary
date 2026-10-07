@@ -10,6 +10,8 @@ window.Pid = (() => {
     .then(d => { IX = d; Object.keys(d.pids).forEach(k => byN.set(norm(k), k)); return d; }).catch(e => { loading = null; throw e; }));
   const key = n => byN.get(norm(n));
   const info = n => { const k = key(n); return k ? Object.assign({ number: k }, IX.pids[k]) : null; };
+  // the drawing's name with its revision, as on the Sources tab file names: 2000-F13-PID-PR-10002_Rev2
+  const label = n => { const d = info(n); return d ? d.number + (d.rev ? "_Rev" + d.rev : "") : n; };
   // references printed on the sheets (pid-refs.json, tools/build_pid_refs.py): tapping another drawing opens it with the
   // way back marked, tapping a tag opens it in the lookup (window.kcgmOpenTag, set by the page). Back steps through the
   // views (pdfview.js keeps them as browser history).
@@ -18,8 +20,8 @@ window.Pid = (() => {
   function open(n, find, o = {}){
     const d = info(n); if (!d) return false;
     const r = o.restore;
-    PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc && !d.layout ? "width" : "page", find: find || null, download: d.number + ".pdf", restore: r || null,
-      number: d.number, title: d.number + (d.rev ? " Rev " + d.rev : "") + (d.title ? " · " + d.title : ""),
+    PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc && !d.layout ? "width" : "page", find: find || null, download: label(d.number) + ".pdf", restore: r || null,
+      number: d.number, label: label(d.number), title: label(d.number) + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []),
       back: o.back,
       onRef: (t, k, back, box) => {
@@ -36,5 +38,5 @@ window.Pid = (() => {
     return true;
   }
   const kind = n => /-PFD-/.test(n) ? "PFD" : "P&ID";
-  return { load, ready: () => !!IX, has: n => !!(IX && key(n)), info, open, kind, refs, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
+  return { load, ready: () => !!IX, has: n => !!(IX && key(n)), info, label, open, kind, refs, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
 })();

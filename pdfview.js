@@ -81,13 +81,20 @@ window.PdfView = (() => {
     let pan = null, glide = 0;
     const panFrom = e => { cancelAnimationFrame(glide); pan = { x: e.clientX, y: e.clientY, sl: V.body.scrollLeft, st: V.body.scrollTop, vx: 0, vy: 0, t: performance.now(), lx: e.clientX, ly: e.clientY }; };
     V.body.addEventListener("pointerdown", e => { if (e.pointerType === "touch" && pts.size === 0) panFrom(e); });
-    V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ pan = null; const [a, b] = [...pts.values()]; pin = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1 }; } });
+    V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ pan = null; const [a, b] = [...pts.values()]; pin = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1, mx: 0, my: 0 }; } });
     V.body.addEventListener("pointermove", e => { if (!pan || e.pointerType !== "touch" || pts.size !== 1 || !pts.has(e.pointerId)) return;
       V.body.scrollLeft = pan.sl - (e.clientX - pan.x); V.body.scrollTop = pan.st - (e.clientY - pan.y);
       const now = performance.now(), dt = Math.max(1, now - pan.t); pan.vx = .8 * (e.clientX - pan.lx) / dt + .2 * pan.vx; pan.vy = .8 * (e.clientY - pan.ly) / dt + .2 * pan.vy; pan.t = now; pan.lx = e.clientX; pan.ly = e.clientY; });
     V.body.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e); if (pin && pts.size === 2){ const [a, b] = [...pts.values()]; pin.f = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pin.d;
-      if (!pin.o){ const q = V.sheet.getBoundingClientRect(); pin.o = `${pin.cx - q.left}px ${pin.cy - q.top}px`; } V.sheet.style.transformOrigin = pin.o; V.sheet.style.transform = `scale(${pin.f})`; } });
-    const up = e => { pts.delete(e.pointerId); if (pin && pts.size < 2){ const p = pin; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx, p.cy); }
+      // pinch and move at once (as in a photo app): the sheet scales about where the fingers started and follows their midpoint
+      pin.mx = (a.clientX + b.clientX) / 2 - pin.cx; pin.my = (a.clientY + b.clientY) / 2 - pin.cy;
+      if (!pin.o){ const q = V.sheet.getBoundingClientRect(); pin.o = `${pin.cx - q.left}px ${pin.cy - q.top}px`; } V.sheet.style.transformOrigin = pin.o; V.sheet.style.transform = `translate(${pin.mx}px,${pin.my}px) scale(${pin.f})`; } });
+    let lastTap = null;
+    const up = e => { pts.delete(e.pointerId); if (pin && pts.size < 2){ const p = pin; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx, p.cy); V.body.scrollLeft -= p.mx; V.body.scrollTop -= p.my; slide(); sharp(); lastTap = null; }
+      // double-tap: in twice as close where tapped; again (zoomed in) back out to the whole sheet
+      if (e.pointerType === "touch" && e.type === "pointerup" && !pts.size && pan && Math.hypot(e.clientX - pan.x, e.clientY - pan.y) < 10){
+        const now = performance.now(); if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30){ lastTap = null; pan = null; zoomTo(V.zoom > 1.05 ? 1 : 2, e.clientX, e.clientY); return; }
+        lastTap = { t: now, x: e.clientX, y: e.clientY }; }
       if (e.pointerType !== "touch") return;
       if (pts.size === 1){ panFrom([...pts.values()][0]); return; }   // a pinch ends with one finger still down: it carries on panning
       if (pts.size || !pan) return; const g = pan; pan = null;
@@ -118,9 +125,9 @@ window.PdfView = (() => {
     addEventListener("mousemove", e => { if (!dr) return; if (Math.hypot(e.clientX - dr.x, e.clientY - dr.y) > 4) dr.m = true; if (!dr.m) return; V.body.scrollLeft = dr.l - (e.clientX - dr.x); V.body.scrollTop = dr.t - (e.clientY - dr.y); });
     addEventListener("mouseup", () => { if (dr && dr.m) V.dragged = true; setTimeout(() => { V.dragged = false; }, 0); dr = null; V.body.classList.remove("drag"); });
     // the hand / pointer switch, top centre of the sheet (desktop); the choice is remembered
-    const md = document.createElement("div"); md.className = "sp-mode"; md.innerHTML = `<button type="button" data-m="hand" title="Pan: drag the drawing">${HAND}</button><button type="button" data-m="sel" title="Select text">${ARROW}</button>`;
+    const md = document.createElement("div"); md.className = "sp-mode"; md.innerHTML = `<button type="button" data-m="hand" title="Pan: drag the drawing">${HAND}</button><button type="button" data-m="sel" title="Select text">${ARROW}</button><i></i><button type="button" data-a="fit" title="Zoom to fit the whole sheet"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>`;
     el.appendChild(md); const setMode = m => { el.classList.toggle("sp-hand", m !== "sel"); md.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m === (m === "sel" ? "sel" : "hand"))); try { localStorage.setItem("kcgm_spm", m); } catch (x) {} };
-    md.onclick = e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.m); }; setMode((() => { try { return localStorage.getItem("kcgm_spm") || "hand"; } catch (x) { return "hand"; } })());
+    md.onclick = e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.m) setMode(b.dataset.m); else if (b.dataset.a === "fit") el.querySelector(".sp-ze").click(); }; setMode((() => { try { return localStorage.getItem("kcgm_spm") || "hand"; } catch (x) { return "hand"; } })());
     V.body.style.touchAction = "none";   // (fingers pan and pinch through the handlers above, free in every direction; "pan-x pan-y" left the browser to scroll, locked to one axis)
     let down = null; V.body.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; }, true);
     // right click (long press on a phone) anywhere on the sheet: Save as PDF, and on a highlighted tag, copy its text
@@ -198,8 +205,8 @@ window.PdfView = (() => {
     ui(); freeRotate(); const wasOpen = !V.el.hidden; cur = Object.assign({ page: 1, fit: "width" }, o);
     V.el.hidden = false; document.body.classList.add("sp-on"); dock(); V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
-    V.el.querySelector(".sp-dn").textContent = cur.number || "";
-    if (cur.number && document.documentElement.classList.contains("phone")) V.el.querySelector(".sp-tt").textContent = (cur.title || "").replace(cur.number, "").replace(/^\s*·\s*/, "").trim() || cur.number;
+    V.el.querySelector(".sp-dn").textContent = cur.label || cur.number || "";
+    if (cur.number && document.documentElement.classList.contains("phone")) V.el.querySelector(".sp-tt").textContent = (cur.title || "").replace(cur.label || cur.number, "").replace(/^\s*·\s*/, "").trim() || cur.number;
     const dl = V.el.querySelector(".sp-dl"); dl.href = cur.url; dl.download = cur.download || cur.url.split("/").pop();
     // a new view entry, unless this open is a step back / forward through the history
     if (!o._pop){ const was = curId && REG.get(curId), st0 = state(); if (was && st0 && wasOpen) was.snap = st0; push({ o, snap: null }); }
@@ -212,7 +219,8 @@ window.PdfView = (() => {
       V.fit = V.refs.some(r => typeof r[7] === "string");
       // opened for an item (cur.find): on a checked sheet that item's labels stay red with the arrow, the rest grey
       if (V.fit && cur.find){ V.marks.innerHTML = ""; V.hits = []; fitFilter(cur.find, true); const m = V.fmatch.find(r => r[0] === V.page) || V.fmatch[0];
-        if (m && !o._pop && cur.back == null){ const [l, t, w, h] = boxOf(m); V.tap = { page: m[0], l: l / 1e4, t: t / 1e4, w: w / 1e4, h: h / 1e4 }; drawTap(); } }
+        if (m && !o._pop && cur.back == null){ const [l, t, w, h] = boxOf(m); V.tap = { page: m[0], l: l / 1e4, t: t / 1e4, w: w / 1e4, h: h / 1e4 }; drawTap();
+          if (!cur.restore) requestAnimationFrame(() => focusHits(V.fmatch.filter(r => r[0] === V.page).map(r => { const [a, b2, c, d] = boxOf(r); return { l: a / 1e4, t: b2 / 1e4, w: c / 1e4, h: d / 1e4 }; }))); } }
       else drawRefs(); });
     V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true;
     V.el.querySelector(".sp-q").value = cur.find || "";
@@ -356,6 +364,12 @@ window.PdfView = (() => {
   async function unrot(){ if (V) V.rot = 0; if (freed){ freed = false; try { screen.orientation.unlock(); } catch (e) {} } if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
   function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
     if (!fromPop && history.state && history.state.sp) history.back(); }
+  // opened for a searched item: one place on this page, four times closer centred on it; several, zoomed to fit them all
+  // (boxes in fractions of the sheet). Not when the drawing itself was what you searched (no find).
+  function focusHits(hs){ if (!V || !hs || !hs.length) return; const r = V.body.getBoundingClientRect(), z0 = V.zoom, sw = V.sheet.offsetWidth / z0, sh = V.sheet.offsetHeight / z0;
+    const l = Math.min(...hs.map(h => h.l)), t = Math.min(...hs.map(h => h.t)), rr = Math.max(...hs.map(h => h.l + h.w)), b = Math.max(...hs.map(h => h.t + h.h));
+    const z = hs.length === 1 ? 4 : Math.max(1, Math.min(4, .8 * Math.min(r.width / ((rr - l) * sw || 1), r.height / ((b - t) * sh || 1))));
+    zoomTo(z, r.left + r.width / 2, r.top + r.height / 2, (l + rr) / 2, (t + b) / 2); }
   // the app's ←: back one drawing within this visit (views of the same drawing are skipped); from the first, close
   function back(){ if (!V || V.el.hidden) return false; const me = REG.get(curId); if (!me) { close(); return true; }
     const prev = [...REG.values()].filter(v => v.seq < me.seq && v.o.url !== me.o.url).sort((a, b) => b.seq - a.seq)[0];
@@ -369,7 +383,7 @@ window.PdfView = (() => {
     await picsP; V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true);
     (window.requestIdleCallback || setTimeout)(() => textLayer(), { timeout: 1200 });   // (the selectable text after the picture is up)
     if (V.afterPage){ const f = V.afterPage; V.afterPage = null; f(); }
-    if (cur.find) mark(cur.find); drawTap();
+    if (cur.find){ const me2 = cur; Promise.resolve(mark(cur.find)).then(() => { if (cur === me2 && !V.fit && !cur.restore && !fromPop && V.hits && V.hits.length) focusHits(V.hits); }); } drawTap();
     const me = REG.get(curId); if (me && !me.snap && !fromPop){ me.snap = state(); me.at = me.snap; }
   }
   // the page's text as an invisible, selectable layer over the picture (PDF.js text layer; OCR'd sheets included),
