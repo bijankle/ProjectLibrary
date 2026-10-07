@@ -309,6 +309,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 :root.phone .gl-e{background:var(--card);border-bottom:1px solid var(--line);padding:9px 12px;margin-right:22px}
 :root.phone .gl-e b{display:block;color:var(--ink)}:root.phone .gl-e span{display:block;color:var(--mute)}
 :root.phone .gl-az{display:flex;flex-direction:column;justify-content:space-between;position:fixed;right:2px;top:calc(var(--tb) + 70px);bottom:calc(var(--bn) + 16px);z-index:3;touch-action:none}
+.gl-bub{position:fixed;transform:translateY(-50%);width:64px;height:64px;border-radius:16px;background:var(--th,#475569);color:#fff;font-size:34px;font-weight:900;display:grid;place-items:center;z-index:50;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.25)}.gl-bub[hidden]{display:none}
 :root.phone .gl-az i{font-style:normal;font-size:var(--fl,13px);font-weight:800;color:var(--gold);padding:0 5px;line-height:1}
 
 /* desktop quiz panel: search, then the topics in two columns (General and Project topics | Specific circuits) with how
@@ -865,12 +866,19 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
     const list = GLOSSARY.filter(([k, v]) => !f || k.toLowerCase().includes(f) || v.toLowerCase().includes(f));
     if (Tabs.phone){   // phone: A to Z, a sticky letter over each group and a strip down the side to jump
       const L = k => { const c = String(k).trim().charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
-      const sorted = list.slice().sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: "base", numeric: true }));
+      const sorted = list.slice().sort((a, b) => (L(b[0]) === "#") - (L(a[0]) === "#") || a[0].localeCompare(b[0], undefined, { sensitivity: "base", numeric: true }));   // (# first)
       let h = "", last = ""; sorted.forEach(([k, v]) => { const c = L(k); if (c !== last){ h += `<div class="gl-h" id="gl-${c}">${c}</div>`; last = c; } h += `<div class="gl-e"><b>${k}</b><span>${v}</span></div>`; });
       const letters = [...new Set(sorted.map(x => L(x[0])))];
       out.innerHTML = (h || `<div class="gl-e"><b>No match</b></div>`) + (letters.length > 1 ? `<div class="gl-az">${letters.map(c => `<i data-l="${c}">${c}</i>`).join("")}</div>` : "");
-      const az = out.querySelector(".gl-az"); if (az){ const go = e => { const t = document.elementFromPoint(az.getBoundingClientRect().left + 6, e.clientY); const c = t && t.dataset && t.dataset.l; if (c){ const g = out.querySelector("#gl-" + CSS.escape(c)); if (g){ if (box) box.scrollTop = g.offsetTop - box.offsetTop; else window.scrollTo(0, g.offsetTop - az.getBoundingClientRect().top + 60); } } };
-        az.addEventListener("pointerdown", e => { az.setPointerCapture(e.pointerId); go(e); }); az.addEventListener("pointermove", e => { if (e.buttons || e.pointerType === "touch") go(e); }); }
+      // sliding along the strip: a big letter beside the finger and a tick of vibration at each new letter (Android)
+      const az = out.querySelector(".gl-az"); if (az){ let cur = "", bub = document.querySelector(".gl-bub"), ht;
+        if (!bub){ bub = document.createElement("div"); bub.className = "gl-bub"; bub.hidden = true; document.body.appendChild(bub); }
+        const go = e => { let t = null, dmin = 1e9; az.querySelectorAll("i").forEach(i => { const q = i.getBoundingClientRect(), d = Math.abs(q.top + q.height / 2 - e.clientY); if (d < dmin){ dmin = d; t = i; } });   // (the letter nearest the finger)
+          const c = t && t.dataset.l; if (c){
+          clearTimeout(ht); bub.hidden = false; bub.textContent = c; bub.style.top = e.clientY + "px"; bub.style.right = (innerWidth - az.getBoundingClientRect().left + 14) + "px";
+          if (c !== cur){ cur = c; try { navigator.vibrate && navigator.vibrate(8); } catch (x) {} } const g = out.querySelector("#gl-" + CSS.escape(c)); if (g){ if (box) box.scrollTop = g.offsetTop - box.offsetTop; else window.scrollTo(0, g.offsetTop - az.getBoundingClientRect().top + 60); } } };
+        az.addEventListener("pointerdown", e => { az.setPointerCapture(e.pointerId); cur = ""; go(e); }); az.addEventListener("pointermove", e => { if (e.buttons || e.pointerType === "touch") go(e); });
+        const off = () => { ht = setTimeout(() => bub.hidden = true, 350); }; az.addEventListener("pointerup", off); az.addEventListener("pointercancel", off); }
       return; }
     out.innerHTML = list.map(([k, v]) => `<div class="k">${k}</div><div>${v}</div>`).join("") || `<div class="k">–</div><div>No match</div>`;
   }
