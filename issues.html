@@ -166,13 +166,12 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
 .ck-r #q{flex:0 0 34px;height:34px;width:100%;border:1.5px solid var(--line);border-radius:17px;padding:0 12px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink)}
 .ck-r #count{font-size:13px;color:var(--mute);margin:10px 2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ck-r #count b{color:var(--ink)}
 /* one grid for the header and the rows; minmax(0, …) so a long cell is cut, never pushed over the next */
-.ck-gh,.ck-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr);gap:8px;align-items:center}
+.ck-gh,.ck-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:8px;align-items:center}
 .ck-gh{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:0 8px 4px}.ck-gh span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ck-list{flex:1;min-height:0;overflow:auto;border-top:1px solid var(--line);outline:0}
 .ck-row{height:32px;padding:0 8px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:14px;cursor:pointer}
 .ck-row>*{min-width:0;overflow:hidden;text-overflow:ellipsis}.ck-row:hover{background:var(--card2)}
 .ck-row.sel{background:var(--th-t);box-shadow:inset 3px 0 0 var(--th)}
-.ck-d{font-size:12px;font-weight:700;background:var(--card2);border-radius:5px;padding:1px 6px;justify-self:start;max-width:100%}.ck-d.nw{background:var(--nw-bg);color:var(--nw-ink)}
 .ck-c{color:var(--mute);font-size:13px}
 .ck-none{color:var(--mute);font-size:14px;padding:14px 8px}
 .ck-dv{flex:0 0 24px;position:relative;cursor:col-resize;touch-action:none}
@@ -245,7 +244,7 @@ body.splitting{cursor:col-resize;user-select:none}
   <div class="more" id="more"></div>
   <div id="ck">
     <div class="ck-l"><div class="ck-f" id="ckF"><div id="ckP" style="display:contents"></div></div>
-      <div class="ck-r" id="ckR"><div class="ck-gh"><span>Item</span><span>Document 1</span><span>Document 2</span><span>Comment</span></div><div class="ck-list" id="ckList"></div></div></div>
+      <div class="ck-r" id="ckR"><div class="ck-gh"><span>Item</span><span>Comment</span></div><div class="ck-list" id="ckList"></div></div></div>
     <div class="ck-dv" id="ckDv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
     <div class="ck-x" id="ckX"></div>
   </div>
@@ -380,9 +379,6 @@ body.splitting{cursor:col-resize;user-select:none}
 
   // ---------- desktop: pills | search and one line per check | the picked check in full ----------
   const PL = { Decision: "decisions", Clash: "clashes", Missing: "missing", Placeholder: "placeholders", Check: "checks", Diagram: "diagram checks" };
-  // a readable document name for a chip: the words before the document number plus its revision ("Line List Rev 1")
-  const short = d => { if (!d) return ""; const m = d.match(/\d{4}-F\d+-[A-Z]+-[A-Z]+-\d+/), rv = (d.match(/Rev\s*(\w+)/) || [])[1];
-    const n = m ? d.slice(0, m.index).trim() || m[0].replace(/^2000-/, "") : d.split(/\s+/).slice(0, 3).join(" "); return n + (rv ? " Rev " + rv : ""); };
   const newer = r => r.date1 && r.date2 ? (r.date1 > r.date2 ? 1 : r.date2 > r.date1 ? 2 : 0) : 0;
   let F = [], cur = null;   // the list as drawn, the picked check (kept while it stays in the list)
   if (!PHONE){ $("ckR").prepend($("q"), $("count")); $("ckF").append($("xls")); $("xls").textContent = "Export to Excel"; }
@@ -397,8 +393,7 @@ body.splitting{cursor:col-resize;user-select:none}
     $("ckP").innerHTML = `<div class="ck-h">Type</div>${SEV.map(s => pill(s, off.size && !off.has(s), cnt(nT, "sev", s), 1)).join("")}
       <div class="ck-h">Category</div>${Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a] || a.localeCompare(b)).map(c => pill(c, cats.has(c), cnt(nC, "cat", c))).join("")}`;
     const L = $("ckList"), top = L.scrollTop;
-    L.innerHTML = n ? F.map((r, i) => { const w = newer(r);
-      return `<div class="ck-row" data-i="${i}"><b title="${esc(r.item)}">${esc(r.item)}</b><span class="ck-d${w === 1 ? " nw" : ""}" title="${esc(r.d1)}">${esc(short(r.d1))}</span>${r.d2 ? `<span class="ck-d${w === 2 ? " nw" : ""}" title="${esc(r.d2)}">${esc(short(r.d2))}</span>` : "<span></span>"}<span class="ck-c">${esc(r.note)}</span></div>`; }).join("")
+    L.innerHTML = n ? F.map((r, i) => `<div class="ck-row" data-i="${i}"><b title="${esc(r.item)}">${esc(r.item)}</b><span class="ck-c" title="${esc(r.note)}">${esc(r.note)}</span></div>`).join("")
       : `<div class="ck-none">No checks match.</div>`;
     L.scrollTop = reset ? 0 : top;
     pick(F.includes(cur) ? cur : F[0], false);
