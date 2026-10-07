@@ -30,7 +30,23 @@ kcgmText();
 try { addEventListener("storage", function(e){ if (e.key === "kcgm_text") { kcgmText(); dispatchEvent(new Event("resize")); } }); } catch (e) {}
 try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){ kcgmTheme(); });
   addEventListener("storage", function(e){ if (e.key === "kcgm_theme") kcgmTheme(); }); } catch (e) {}
+// the app's accent theme (View > Theme), also before the first paint, as data-accent on <html>; slate unless picked
+window.kcgmAccent = function(v){ try { v = v || localStorage.getItem("kcgm_accent") || "slate"; document.documentElement.dataset.accent = v; } catch (e) {} };
+kcgmAccent();
+try { addEventListener("storage", function(e){ if (e.key === "kcgm_accent") kcgmAccent(); }); } catch (e) {}
 </script>
+<style id="kcgmThemes">
+/* accent themes: main, darker, light tint, button fill. Only things that are "the app" follow them (selected pills,
+   sliders, tags, buttons, outlines, progress lines); colours that mean something (fluids, check types, stages, warnings,
+   search hits, chart series) never do, and none of these is blue, green, amber, orange, red or bright pink/purple */
+:root,html[data-accent="slate"]{--thm:#475569;--thd:#334155;--tht:#eef1f5;--thb:#64748b}
+html[data-accent="graphite"]{--thm:#52525b;--thd:#3f3f46;--tht:#f0f0f1;--thb:#71717a}
+html[data-accent="plum"]{--thm:#8e4c8a;--thd:#74386f;--tht:#f6edf5;--thb:#a0629c}
+html[data-accent="berry"]{--thm:#a8456b;--thd:#8a3557;--tht:#f8ecf1;--thb:#bb5d80}
+html[data-accent="stone"]{--thm:#7a6a5d;--thd:#5f5147;--tht:#f3efeb;--thb:#8f7f71}
+:root{--th:var(--thm);--th2:var(--thd);--th-t:var(--tht);--th-b:var(--thb);--on-th:#fff}
+html[data-theme="dark"]{--th:color-mix(in srgb,var(--thm) 62%,#fff);--th2:color-mix(in srgb,var(--thm) 78%,#fff);--th-t:color-mix(in srgb,var(--thm) 32%,#15191e);--th-b:color-mix(in srgb,var(--thb) 80%,#fff)}   /* lifted so it reads on black */
+</style>
 <meta name="theme-color" content="#0f1216">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -42,12 +58,12 @@ try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", fun
 <style>
 :root{--fh:22px;--fl:13px;--fb:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --bg:#0f1216; --card:#171b21; --card2:#1f252d; --ink:#e9edf2; --mute:#95a1ae;
-  --gold:#e8b44a; --ok:#4cc28a; --bad:#e2604f; --line:#2c343e; --face:#1c222a; --back:#15201c;
+  --gold:var(--th); --ok:#4cc28a; --bad:#e2604f; --line:#2c343e; --face:#1c222a; --back:#15201c;
 }
 /* one palette for every page (the PFD's cool slate); light when Settings → Theme says so (kcgmTheme in the head) */
 :root[data-theme="light"]{
   --bg:#f3f4f6; --card:#ffffff; --card2:#f0f2f5; --ink:#1d2430; --mute:#5d6875;
-  --gold:#b67d12; --ok:#1f8a58; --bad:#c2412f; --line:#d9dee5; --face:#ffffff; --back:#eef7f3;
+  --gold:var(--th); --ok:#1f8a58; --bad:#c2412f; --line:#d9dee5; --face:#ffffff; --back:#eef7f3;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
@@ -273,8 +289,8 @@ body.searching #homeMain{display:none}
 :root.phone .lt button.on{color:var(--ink);font-weight:900;border-bottom-color:var(--gold)}
 :root:not(.phone) .lt{position:absolute;left:22px;top:14px;width:556px;gap:2px;padding:3px;border-radius:10px;background:color-mix(in srgb,var(--ink) 8%,transparent);z-index:2}
 :root:not(.phone) .lt button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:6px 10px;border-radius:8px;cursor:pointer}
-:root:not(.phone) .lt button.on{background:#fdf6e6;color:#1d2430;box-shadow:inset 0 0 0 2.5px #e8b44a}
-html[data-theme="dark"]:not(.phone) .lt button.on{background:#3a3020;color:var(--ink)}
+:root:not(.phone) .lt button.on{background:var(--th-t);color:var(--ink);box-shadow:inset 0 0 0 2.5px var(--th)}
+html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:var(--ink)}
 :root:not(.phone) #deck{position:fixed}:root:not(.phone) .qd-side{padding-top:62px!important}
 #deck.glos .qd-main,#deck.glos .qd-list,#deck.glos #qdSideIn{display:none!important}
 #lgPane{flex:1;min-width:0;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px}#lgPane[hidden]{display:none}

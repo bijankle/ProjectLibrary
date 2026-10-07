@@ -10,8 +10,8 @@ window.Tabs = (() => {
     ["layout", "Layout", "pfd.html#layout"], ["quiz", "Learn", "index.html?cards#quiz"]];
   // desktop: the project's documents, after a gap, as an outlined group of their own
   const XTABS = [["sources", "Sources", "issues.html#sources"], ["checks", "Checks", "issues.html"]];
-  // the app's mark (the yellow P tile, as the app icon) for the logo at the top left
-  const mark = s => `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#e8b44a"/><rect x="6" y="6" width="52" height="52" rx="13" fill="none" stroke="#111418" stroke-width="2.5"/><text x="32" y="44.5" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-weight="800" font-size="36" fill="#111418">P</text></svg>`;
+  // the app's mark (the slate P tile, as the app icon; fixed, whatever the theme) for the logo at the top left
+  const mark = s => `<svg viewBox="0 0 64 64" width="${s}" height="${s}" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#475569"/><rect x="6" y="6" width="52" height="52" rx="13" fill="none" stroke="#fff" stroke-width="2.5"/><text x="32" y="44.5" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-weight="800" font-size="36" fill="#fff">P</text></svg>`;
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const desk = () => matchMedia("(min-width: 901px) and (hover: hover)").matches;
   // phone (anything that isn't a desktop with a mouse): a slim top row (the P, the section's name, its search) and the
@@ -52,6 +52,7 @@ window.Tabs = (() => {
   const FEATURES = () => [
     { t: "Sources: save or keep documents", k: "offline download save keep documents pids pfds spec sources lists drawings data excel pdf", st: "src", run: () => location.href = "issues.html#sources" },
     { t: "Dark mode", k: "theme dark light mode colours colors appearance", st: "look", run: () => viewMenu() },
+    { t: "Theme colour", k: "theme colour color accent slate graphite plum berry stone appearance", st: "look", run: () => viewMenu() },
     { t: "Text size", k: "text size font bigger smaller larger appearance", st: "look", run: () => viewMenu() },
     { t: "Button size and spacing", k: "button size spacing bigger smaller gap appearance", st: "look", run: () => viewMenu() },
     { t: "AI key and other settings", k: "settings preferences ai key gemini google app size", run: () => O.onSettings ? O.onSettings() : location.href = "index.html?cards#settings" },
@@ -222,11 +223,18 @@ window.Tabs = (() => {
   const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
   const applyBtn = () => { const r = document.documentElement.style; r.setProperty("--bz", (+lsGet("kcgm_bsz", 100) || 100) / 100); r.setProperty("--bsp", (+lsGet("kcgm_bsp", 0) || 0) + "px"); document.documentElement.classList.toggle("bsp", +lsGet("kcgm_bsp", 0) > 0); };
   applyBtn(); addEventListener("storage", e => { if (e.key === "kcgm_bsz" || e.key === "kcgm_bsp") applyBtn(); });
+  // the accent themes (colours in each page's head: #kcgmThemes); none is blue, green, amber, orange or red, so the accent never reads as a status
+  const THEMES = [["slate", "Slate", "#475569"], ["graphite", "Graphite", "#52525b"], ["plum", "Plum", "#8e4c8a"], ["berry", "Berry", "#a8456b"], ["stone", "Stone", "#7a6a5d"]];
+  const themeRow = () => { const cur = lsGet("kcgm_accent", "slate"), t = THEMES.find(x => x[0] === cur) || THEMES[0];
+    return `<div class="ap-r ap-th"><span>Theme</span><div class="ap-thw"><div class="ap-ths" role="radiogroup" aria-label="Theme">${THEMES.map(([k, n, c]) => `<button type="button" role="radio" data-th="${k}" title="${n}" aria-label="${n}" aria-checked="${k === t[0]}" style="--c:${c}"${k === t[0] ? ' class="on"' : ""}></button>`).join("")}</div><div class="ap-thn">${t[1]}</div></div></div>`; };
   function appearance(box){
     const dark = document.documentElement.dataset.theme === "dark", tx = Math.max(0, TXK.indexOf(curText()));
     const sl = (k, label, min, max, step, v) => `<label class="ap-r"><span>${label}</span><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${v}" aria-label="${label}"></label>`;
     box.innerHTML = `<div class="ap"><label class="ap-r"><span>Dark mode</span><input type="checkbox" class="ap-sw" ${dark ? "checked" : ""} aria-label="Dark mode"></label>` +
-      sl("tx", "Text size", 0, 4, 1, tx) + sl("bz", "Button size", 80, 120, 5, lsGet("kcgm_bsz", 100)) + sl("bp", "Button spacing", 0, 8, 2, lsGet("kcgm_bsp", 0)) + `</div>`;
+      themeRow() + sl("tx", "Text size", 0, 4, 1, tx) + sl("bz", "Button size", 80, 120, 5, lsGet("kcgm_bsz", 100)) + sl("bp", "Button spacing", 0, 8, 2, lsGet("kcgm_bsp", 0)) + `</div>`;
+    box.querySelectorAll(".ap-th button").forEach(x => x.onclick = e => { e.stopPropagation(); lsSet("kcgm_accent", x.dataset.th); if (window.kcgmAccent) kcgmAccent(x.dataset.th);
+      document.querySelectorAll(".ap-th").forEach(r => { r.querySelectorAll("button").forEach(y => { const on = y.dataset.th === x.dataset.th; y.classList.toggle("on", on); y.setAttribute("aria-checked", on); });
+        r.querySelector(".ap-thn").textContent = THEMES.find(t => t[0] === x.dataset.th)[1]; }); });
     box.querySelector(".ap-sw").onchange = e => { lsSet("kcgm_theme", e.target.checked ? "dark" : "light"); if (window.kcgmTheme) kcgmTheme(); };
     box.querySelectorAll("input[type=range]").forEach(r => { const fill = () => r.style.setProperty("--p", (r.value - r.min) / (r.max - r.min) * 100 + "%"); fill();
       r.oninput = () => { fill(); if (r.dataset.k === "bz"){ lsSet("kcgm_bsz", r.value); applyBtn(); } if (r.dataset.k === "bp"){ lsSet("kcgm_bsp", r.value); applyBtn(); } };
@@ -465,6 +473,10 @@ button:disabled{cursor:default}
 .ap{background:var(--card,var(--panel));border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .ap-r{display:flex;align-items:center;gap:14px;padding:11px 12px;border-bottom:1px solid var(--line);font-size:var(--fb,15px);font-weight:800;color:var(--ink);cursor:default}.ap-r:last-child{border-bottom:0}
 .ap-r span{flex:0 0 7.2em;line-height:1.2}
+.ap-th{align-items:flex-start}.ap-th>span{padding-top:3px}.ap-thw{flex:1;min-width:0}
+.ap-ths{display:flex;gap:min(10px,2.2vw);flex-wrap:nowrap}.ap-ths button{flex:none;width:clamp(18px,6vw,24px);height:clamp(18px,6vw,24px);border-radius:50%;border:0;padding:0;background:var(--c);cursor:pointer}
+.ap-ths button.on{box-shadow:0 0 0 2px var(--card,var(--panel,#fff)),0 0 0 4px var(--c)}
+.ap-thn{font-size:var(--fl,13px);font-weight:700;color:var(--mute);margin-top:6px}
 .ap-r input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:22px;background:linear-gradient(var(--gold,var(--accent)),var(--gold,var(--accent))) 0 50%/var(--p,50%) 4px no-repeat,linear-gradient(var(--line),var(--line)) 0 50%/100% 4px no-repeat;margin:0}
 .ap-r input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--card,#fff);border:2px solid var(--gold,var(--accent));box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .ap-r input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--card,#fff);border:2px solid var(--gold,var(--accent))}
@@ -477,7 +489,7 @@ button:disabled{cursor:default}
 :root.bsp :where(.btn,.hbtn,.pill,.chip,.nv-b,.lk-pill,.lk-btn,.lk-cam,.lk-st,.pf-b,.qp,#qBtns>button,.qd-b,.off-b,.dl-b,.ts-r,.hint,.bp-o,.bp-c,.bw-o,.bw-any,.bp-any,#pfab>button,.ph-upd){margin:calc(var(--bsp,0px) / 2)!important}
 /* selected: a cream fill, a solid gold ring (1.5px border plus a 1px inset shadow) and the normal ink colour for text and
    icons (counts inside stay grey); dark mode a warm brown fill. Phone only: pills, toggles, segments, chips, the tab bar */
-:root{--sel-bg:#fdf6e6;--sel-ring:#e8b44a;--sel-ink:#1d2430}html[data-theme="dark"]{--sel-bg:#3a3020;--sel-ink:#e9edf2}
+:root{--sel-bg:var(--th-t);--sel-ring:var(--th);--sel-ink:#1d2430}html[data-theme="dark"]{--sel-ink:#e9edf2}
 :root.phone :is(.lk-pill.on,.pf-b.on,.qp.on,#qBtns #qShuf.on,#qdRev.on,.sl-p.on,.bp-c.on,.bp-f.set,.fx-p.on,#pfab button.on,.lo-lb.on,.hbtn.on,.qfbtn.on,.seg button.on,.flow.on,.step.on,.lg-item.on,.lg-li.on,.mn-th button.on){background:var(--sel-bg)!important;border:1.5px solid var(--sel-ring)!important;box-shadow:inset 0 0 0 1px var(--sel-ring)!important;color:var(--sel-ink)!important}
 :root.phone :is(.tb-x .tb-t.on,.ts-th button.on,.qd-sg button.on,.lo-seg button.on,.lo-sw button.on),:root.phone[data-theme] :is(.tb-x .tb-t.on,.ts-th button.on,.qd-sg button.on,.lo-seg button.on,.lo-sw button.on){background:var(--sel-bg)!important;box-shadow:inset 0 0 0 2.5px var(--sel-ring)!important;color:var(--sel-ink)!important}
 :root.phone :is(.st-t button.on,.vz-tab.on){color:var(--sel-ink)!important;font-weight:900!important;border-bottom-color:var(--sel-ring)!important}

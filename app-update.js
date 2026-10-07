@@ -25,7 +25,7 @@
     const ch = new MessageChannel(); ch.port1.onmessage = e => ok(e.data); c.postMessage("ver", [ch.port2]); setTimeout(() => ok(null), 1500); });
   let barEl = null;
   const bar = f => { if (!barEl){ barEl = document.createElement("div"); barEl.className = "upd-line"; barEl.innerHTML = "<i></i>"; document.body.appendChild(barEl);
-      const st = document.createElement("style"); st.textContent = `.upd-line{position:fixed;left:0;right:0;top:var(--tb,0px);height:3px;z-index:90;pointer-events:none}.upd-line i{display:block;height:100%;width:0;background:var(--gold,var(--accent,#e8b44a));transition:width .25s,opacity .4s}.upd-line.done i{opacity:0}`; document.head.appendChild(st); }
+      const st = document.createElement("style"); st.textContent = `.upd-line{position:fixed;left:0;right:0;top:var(--tb,0px);height:3px;z-index:90;pointer-events:none}.upd-line i{display:block;height:100%;width:0;background:var(--gold,var(--accent,var(--th)));transition:width .25s,opacity .4s}.upd-line.done i{opacity:0}`; document.head.appendChild(st); }
     barEl.firstChild.style.width = Math.max(2, f * 100).toFixed(1) + "%"; barEl.classList.toggle("done", f >= 1); };
   let pending = false;
   function applyWhenIdle(){ pending = true; let t;

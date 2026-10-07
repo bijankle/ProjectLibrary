@@ -30,15 +30,31 @@ kcgmText();
 try { addEventListener("storage", function(e){ if (e.key === "kcgm_text") { kcgmText(); dispatchEvent(new Event("resize")); } }); } catch (e) {}
 try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){ kcgmTheme(); });
   addEventListener("storage", function(e){ if (e.key === "kcgm_theme") kcgmTheme(); }); } catch (e) {}
+// the app's accent theme (View > Theme), also before the first paint, as data-accent on <html>; slate unless picked
+window.kcgmAccent = function(v){ try { v = v || localStorage.getItem("kcgm_accent") || "slate"; document.documentElement.dataset.accent = v; } catch (e) {} };
+kcgmAccent();
+try { addEventListener("storage", function(e){ if (e.key === "kcgm_accent") kcgmAccent(); }); } catch (e) {}
 </script>
+<style id="kcgmThemes">
+/* accent themes: main, darker, light tint, button fill. Only things that are "the app" follow them (selected pills,
+   sliders, tags, buttons, outlines, progress lines); colours that mean something (fluids, check types, stages, warnings,
+   search hits, chart series) never do, and none of these is blue, green, amber, orange, red or bright pink/purple */
+:root,html[data-accent="slate"]{--thm:#475569;--thd:#334155;--tht:#eef1f5;--thb:#64748b}
+html[data-accent="graphite"]{--thm:#52525b;--thd:#3f3f46;--tht:#f0f0f1;--thb:#71717a}
+html[data-accent="plum"]{--thm:#8e4c8a;--thd:#74386f;--tht:#f6edf5;--thb:#a0629c}
+html[data-accent="berry"]{--thm:#a8456b;--thd:#8a3557;--tht:#f8ecf1;--thb:#bb5d80}
+html[data-accent="stone"]{--thm:#7a6a5d;--thd:#5f5147;--tht:#f3efeb;--thb:#8f7f71}
+:root{--th:var(--thm);--th2:var(--thd);--th-t:var(--tht);--th-b:var(--thb);--on-th:#fff}
+html[data-theme="dark"]{--th:color-mix(in srgb,var(--thm) 62%,#fff);--th2:color-mix(in srgb,var(--thm) 78%,#fff);--th-t:color-mix(in srgb,var(--thm) 32%,#15191e);--th-b:color-mix(in srgb,var(--thb) 80%,#fff)}   /* lifted so it reads on black */
+</style>
 <link rel="manifest" href="manifest.json?v=3">
 <title>Project Library Checks</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
-:root{--fh:22px;--fl:13px;--fb:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--bg:#0f1216;--card:#171b21;--card2:#1f252d;--ink:#e9edf2;--mute:#95a1ae;--gold:#e8b44a;--line:#2c343e;
-  --s-decision:#60a5fa;--s-clash:#f87171;--s-missing:#fbbf24;--s-placeholder:#a78bfa;--s-check:#94a3b8;--s-diagram:#34d399}
-:root[data-theme="light"]{--bg:#f3f4f6;--card:#fff;--card2:#f0f2f5;--ink:#1d2430;--mute:#5d6875;--gold:#b67d12;--line:#d9dee5;
-  --s-decision:#1d4ed8;--s-clash:#b91c1c;--s-missing:#a16207;--s-placeholder:#6d28d9;--s-check:#475569;--s-diagram:#047857}
+:root{--fh:22px;--fl:13px;--fb:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--bg:#0f1216;--card:#171b21;--card2:#1f252d;--ink:#e9edf2;--mute:#95a1ae;--gold:var(--th);--line:#2c343e;
+  --s-decision:#60a5fa;--s-clash:#f87171;--s-missing:#fbbf24;--s-placeholder:#a78bfa;--s-check:#9ca3af;--s-diagram:#34d399}
+:root[data-theme="light"]{--bg:#f3f4f6;--card:#fff;--card2:#f0f2f5;--ink:#1d2430;--mute:#5d6875;--gold:var(--th);--line:#d9dee5;
+  --s-decision:#1d4ed8;--s-clash:#b91c1c;--s-missing:#a16207;--s-placeholder:#6d28d9;--s-check:#6b7280;--s-diagram:#047857}
 @media (min-width:901px) and (hover:hover){.page{margin-left:24px !important;margin-right:auto !important}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ff)}

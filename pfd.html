@@ -30,7 +30,23 @@ kcgmText();
 try { addEventListener("storage", function(e){ if (e.key === "kcgm_text") { kcgmText(); dispatchEvent(new Event("resize")); } }); } catch (e) {}
 try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){ kcgmTheme(); });
   addEventListener("storage", function(e){ if (e.key === "kcgm_theme") kcgmTheme(); }); } catch (e) {}
+// the app's accent theme (View > Theme), also before the first paint, as data-accent on <html>; slate unless picked
+window.kcgmAccent = function(v){ try { v = v || localStorage.getItem("kcgm_accent") || "slate"; document.documentElement.dataset.accent = v; } catch (e) {} };
+kcgmAccent();
+try { addEventListener("storage", function(e){ if (e.key === "kcgm_accent") kcgmAccent(); }); } catch (e) {}
 </script>
+<style id="kcgmThemes">
+/* accent themes: main, darker, light tint, button fill. Only things that are "the app" follow them (selected pills,
+   sliders, tags, buttons, outlines, progress lines); colours that mean something (fluids, check types, stages, warnings,
+   search hits, chart series) never do, and none of these is blue, green, amber, orange, red or bright pink/purple */
+:root,html[data-accent="slate"]{--thm:#475569;--thd:#334155;--tht:#eef1f5;--thb:#64748b}
+html[data-accent="graphite"]{--thm:#52525b;--thd:#3f3f46;--tht:#f0f0f1;--thb:#71717a}
+html[data-accent="plum"]{--thm:#8e4c8a;--thd:#74386f;--tht:#f6edf5;--thb:#a0629c}
+html[data-accent="berry"]{--thm:#a8456b;--thd:#8a3557;--tht:#f8ecf1;--thb:#bb5d80}
+html[data-accent="stone"]{--thm:#7a6a5d;--thd:#5f5147;--tht:#f3efeb;--thb:#8f7f71}
+:root{--th:var(--thm);--th2:var(--thd);--th-t:var(--tht);--th-b:var(--thb);--on-th:#fff}
+html[data-theme="dark"]{--th:color-mix(in srgb,var(--thm) 62%,#fff);--th2:color-mix(in srgb,var(--thm) 78%,#fff);--th-t:color-mix(in srgb,var(--thm) 32%,#15191e);--th-b:color-mix(in srgb,var(--thb) 80%,#fff)}   /* lifted so it reads on black */
+</style>
 <link rel="manifest" href="manifest.json?v=3">
 <title>Project Library PFD</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -40,11 +56,11 @@ try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", fun
 
 :root{--fh:22px;--fl:13px;--fb:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --bg:#0f1216; --panel:#171b21; --panel2:#1f252d; --ink:#e9edf2; --mute:#95a1ae; --line:#2c343e;
-  --accent:#e8b44a; --carbon:#f2f2f2; --node:#1c222a; --nodeln:#566373; --grid:#161a20; --frame:#222932; --framet:#6f7c8a;
+  --accent:var(--th); --carbon:#f2f2f2; --node:#1c222a; --nodeln:#566373; --grid:#161a20; --frame:#222932; --framet:#6f7c8a;
 }
 :root[data-theme="light"]{
   --bg:#f3f4f6; --panel:#ffffff; --panel2:#f0f2f5; --ink:#1d2430; --mute:#5d6875; --line:#d9dee5;
-  --accent:#b67d12; --carbon:#111111; --node:#ffffff; --nodeln:#6d7a89; --grid:#e9ebef; --frame:#e3e7ec; --framet:#7a8594;
+  --accent:var(--th); --carbon:#111111; --node:#ffffff; --nodeln:#6d7a89; --grid:#e9ebef; --frame:#e3e7ec; --framet:#7a8594;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--ff);overflow:hidden}
@@ -164,6 +180,12 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 .lo-wl .flow span{font-weight:600;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lo-wl .flow.on span{color:var(--ink)}
 #mapView:not(.areas) path.lo-area.pick{display:inline}path.lo-area.pick{animation:loPick .65s ease-in-out 4;stroke-width:4px}
 @keyframes loPick{50%{fill-opacity:.6;stroke-opacity:1}}
+/* the WBS filter: everything outside the picked zones fades to grey */
+#mapView.wf path.lo-area:not(.wf-in),#mapView.wf .lo-s:not(.wf-in){opacity:.3;filter:grayscale(1)}
+#mapView.wf .lo-area-lab:not(.wf-in),#mapView.wf .lo-bw:not(.wf-in){opacity:.25;filter:grayscale(1)}
+.lo-wf{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:600;display:flex;align-items:center;gap:8px;background:var(--th-t);border:2px solid var(--th);border-radius:16px;padding:4px 6px 4px 12px;font:800 13px var(--ff);color:#1d2430;box-shadow:0 2px 8px #0004;white-space:nowrap;cursor:pointer}
+.lo-wf i{width:20px;height:20px;border-radius:50%;background:#1d2430;color:#fff;font:700 12px/20px var(--ff);text-align:center;font-style:normal}
+.lo-wf[hidden]{display:none}:root:not(.phone) .lo-wf{display:none}
 @media (max-width:700px){.lo-wbs .lo-wl{width:220px}}
 #mapView:not(.areas):not(.stack) .lo-area,#mapView:not(.areas):not(.stack) .lo-area-lab{display:none}
 #mapView.stack path.lo-area{fill-opacity:.06;stroke-dasharray:6 4;stroke-width:1.6px}
@@ -494,9 +516,9 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
 .fx-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-weight:700;cursor:pointer}
 .fx-none{color:var(--mute);padding:12px 2px}
 svg.focus .frame.pick{opacity:1}
-.frame.pick rect{stroke:#e8b44a;stroke-dasharray:none;stroke-width:3}
+.frame.pick rect{stroke:var(--accent);stroke-dasharray:none;stroke-width:3}
 .frame.flash rect{animation:fxfl 1.6s ease-out}
-@keyframes fxfl{0%{stroke-width:3}20%{stroke-width:14;opacity:.9;fill:#e8b44a}45%{stroke-width:4}65%{stroke-width:12;opacity:.8;fill:#f3d79a}100%{stroke-width:3}}
+@keyframes fxfl{0%{stroke-width:3}20%{stroke-width:14;opacity:.9;fill:var(--accent)}45%{stroke-width:4}65%{stroke-width:12;opacity:.8;fill:color-mix(in srgb,var(--accent) 45%,#fff)}100%{stroke-width:3}}
 </style>
 </head>
 <body>
@@ -1019,7 +1041,7 @@ svg.focus .frame.pick{opacity:1}
     { id: "tLoops", name: "Control loops", short: "Loops", c: "#3b82f6", sym: `<line x1="1" y1="8" x2="7.5" y2="8" stroke-dasharray="2 1.5"/><circle cx="11.5" cy="8" r="3.5" fill="none"/>` },
     { id: "tIlk", name: "Interlocks", short: "Interlocks", c: "#ff3b30", sym: `<path d="M8 2.5 13.5 8 8 13.5 2.5 8Z" style="fill:var(--c);stroke:none"/>` },
     { id: "tSvc", name: "Service lines", short: "Services", c: "#95a1ae", sym: `<line x1="1" y1="8" x2="15" y2="8"/><circle cx="8" cy="8" r="1.6" style="fill:var(--c)"/>` },
-    { id: "tAnim", name: "Animate all", short: "Animate", c: "#e8b44a", sym: `<path d="M5 3 13 8 5 13Z" style="fill:var(--c);stroke:none"/>` }];
+    { id: "tAnim", name: "Animate all", short: "Animate", c: "var(--accent)", sym: `<path d="M5 3 13 8 5 13Z" style="fill:var(--c);stroke:none"/>` }];
   function overlayPill(o, label){
     const c = document.createElement("button"); c.type = "button"; c.className = "fp"; c.dataset.ov = o.id; c.style.setProperty("--c", o.c); c.title = $(o.id).title;
     c.innerHTML = `<svg viewBox="0 0 16 16" style="stroke:var(--c);stroke-width:1.6;fill:none">${o.sym}</svg>${esc(label || o.name)}`;
@@ -1099,7 +1121,7 @@ svg.focus .frame.pick{opacity:1}
   const setView = (v, pop) => { const s2 = v === "map" ? "layout" : "pfd"; if (!pop && curView && curView !== s2 && Tabs.push) Tabs.push({ s: s2 }); else if (Tabs.replace) Tabs.replace({ s: s2 }); curView = s2;
     document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v); Tabs.set(v === "map" ? "layout" : "pfd");
     if (PHONE) $("search").placeholder = v === "map" ? "Search the layout" : "Search the PFD";
-    PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); });
+    PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); else if (window.fxView) fxView(); });
     if (v !== "map") setVB(); if (window.fxRefresh) fxRefresh(); };
   document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
   // the tab strip: PFD and Layout switch here, Assets and Quiz open the phone app page
@@ -1642,7 +1664,7 @@ svg.focus .frame.pick{opacity:1}
   // instrument's equipment); else the boxes on the same P&ID; else its WBS zone. The old panel (fluids, overlays,
   // narrative, loops) carries on below the filters. Phones keep their own layout.
   if (!PHONE) (() => {
-    const side = $("side"), fx = $("fx"), F = { q: "", wbs: null, type: null, st: null }; let N = 150, cur = null;
+    const side = $("side"), fx = $("fx"), F = { q: "", wbs: new Set(), type: null, st: null }; let N = 150, cur = null;
     fx.hidden = false; document.body.classList.add("fx-on");
     const fxF = $("fxF"), tail = document.createElement("div"); tail.className = "fx-old";
     [...side.children].filter(c => c !== fx).forEach(c => tail.appendChild(c));
@@ -1695,7 +1717,7 @@ svg.focus .frame.pick{opacity:1}
     function list(skip){
       if (!base) return [];
       let a = F.q.trim().length >= 2 ? Lookup.search(F.q, 3000).filter(it => it.r && TN[it.t] && Lookup.inProj(it)) : base;
-      if (skip !== "wbs" && F.wbs) a = a.filter(it => wbsOf(it) === F.wbs);
+      if (skip !== "wbs" && F.wbs.size) a = a.filter(it => F.wbs.has(wbsOf(it)));
       if (skip !== "type" && F.type) a = a.filter(it => it.t === F.type);
       if (skip !== "st" && F.st && lay()) a = a.filter(it => STAT(it) === F.st);
       return a;
@@ -1706,21 +1728,21 @@ svg.focus .frame.pick{opacity:1}
       if (!keepN) N = 150;
       if (!base){ groups.innerHTML = ""; $("fxN").textContent = "Loading the plant lists…"; $("fxL").innerHTML = ""; return; }
       const cw = count(list("wbs"), wbsOf), ct = count(list("type"), it => it.t), cs = lay() ? count(list("st"), STAT) : {};
-      const codes = [...WBS].filter(c => cw[c] || c === F.wbs).sort(ORD.compare);
-      groups.innerHTML = `<div class="fx-h">WBS${F.wbs ? `<button type="button" class="fx-clr" data-g="wbs">Clear</button>` : ""}</div><div class="fx-ps">${codes.map(c => pill("wbs", c, c, cw[c] || 0, F.wbs === c)).join("")}</div>` +
+      const codes = [...WBS].filter(c => cw[c] || F.wbs.has(c)).sort(ORD.compare);
+      groups.innerHTML = `<div class="fx-h">WBS${F.wbs.size ? `<button type="button" class="fx-clr" data-g="wbs">Clear</button>` : ""}</div><div class="fx-ps">${codes.map(c => pill("wbs", c, c, cw[c] || 0, F.wbs.has(c))).join("")}</div>` +
         `<div class="fx-h">Type${F.type ? `<button type="button" class="fx-clr" data-g="type">Clear</button>` : ""}</div><div class="fx-ps">${TYPES.filter(t => ct[t[0]] || F.type === t[0]).map(t => pill("type", t[0], t[1], ct[t[0]] || 0, F.type === t[0])).join("")}</div>` +
         (lay() ? `<div class="fx-h">Status${F.st ? `<button type="button" class="fx-clr" data-g="st">Clear</button>` : ""}</div><div class="fx-ps">${["New", "Existing", "Future"].filter(s => cs[s] || F.st === s).map(s => pill("st", s, s, cs[s] || 0, F.st === s)).join("")}</div>` : "");
       const a = list().slice().sort((x, y) => ORD.compare(x.key, y.key));
-      const where = [F.wbs && "WBS " + F.wbs, F.type && TN[F.type].toLowerCase(), lay() && F.st && F.st.toLowerCase()].filter(Boolean).join(", ");
+      const where = [F.wbs.size && "WBS " + [...F.wbs].sort(ORD.compare).join(", "), F.type && TN[F.type].toLowerCase(), lay() && F.st && F.st.toLowerCase()].filter(Boolean).join(", ");
       $("fxN").innerHTML = `<b>${a.length.toLocaleString()}</b> ${a.length === 1 ? "item" : "items"}${where ? " in " + esc(where) : ""}`;
       $("fxL").innerHTML = a.slice(0, N).map((it, i) => { const L = locate(it);
         return `<button type="button" class="fx-it${cur === it ? " on" : ""}" data-i="${i}" title="${esc(it.key + " · " + it.name)}"><b>${esc(it.key)}</b><span>${esc(it.name || "")}</span><i class="fx-w ${L.how}">${{ pfd: "on PFD", link: "linked", pid: "P&ID", wbs: "WBS", none: "" }[L.how]}</i></button>`; }).join("") +
         (a.length > N ? `<button type="button" class="fx-more">Show ${Math.min(150, a.length - N)} more</button>` : "") +
         (!a.length ? `<div class="fx-none">Nothing matches. Try another WBS or type, or clear the search.</div>` : "");
-      groups.querySelectorAll(".fx-p").forEach(b => b.onclick = () => { const g = b.dataset.g, v = b.dataset.v;
-        if (g === "wbs"){ F.wbs = F.wbs === v ? null : v; if (F.wbs) wbsGo(F.wbs); else { markFrames(null); clearSel(false); note(""); } }
+      groups.querySelectorAll(".fx-p").forEach(b => b.onclick = e => { const g = b.dataset.g, v = b.dataset.v;
+        if (g === "wbs"){ const w = F.wbs; F.wbs = e.ctrlKey || e.metaKey ? new Set(w.has(v) ? [...w].filter(c => c !== v) : [...w, v]) : new Set(w.size === 1 && w.has(v) ? [] : [v]); applyWbs(); }
         else F[g] = F[g] === v ? null : v; render(); });
-      groups.querySelectorAll(".fx-clr").forEach(b => b.onclick = () => { F[b.dataset.g] = null; if (b.dataset.g === "wbs"){ markFrames(null); clearSel(false); note(""); } render(); });
+      groups.querySelectorAll(".fx-clr").forEach(b => b.onclick = () => { if (b.dataset.g === "wbs"){ F.wbs = new Set(); applyWbs(); } else F[b.dataset.g] = null; render(); });
       $("fxL").querySelectorAll(".fx-it").forEach(b => b.onclick = () => { const it = a[+b.dataset.i]; cur = it; $("fxL").querySelectorAll(".fx-it.on").forEach(x => x.classList.remove("on")); b.classList.add("on"); show(it); });
       const mo = $("fxL").querySelector(".fx-more"); if (mo) mo.onclick = () => { N += 150; render(true); };
     }
@@ -1729,15 +1751,25 @@ svg.focus .frame.pick{opacity:1}
       FRAMES.forEach(f => { const on = !!c && codesOf(f.label).includes(c); f.g.classList.toggle("pick", on);
         if (on && flash){ f.g.classList.remove("flash"); void f.g.getBBox(); f.g.classList.add("flash"); setTimeout(() => f.g.classList.remove("flash"), 1700); } });
     }
+    const markFrames2 = c => FRAMES.forEach(f => { if (!codesOf(f.label).includes(c)) return; f.g.classList.add("pick"); f.g.classList.remove("flash"); void f.g.getBBox(); f.g.classList.add("flash"); setTimeout(() => f.g.classList.remove("flash"), 1700); });
     const toStage = st => { if (st && stage && st !== stage){ const b = document.querySelector(`#stageSeg button[data-s="${st}"]`); if (b) b.click(); } };
+    // the picked WBS codes: on the layout the map fades everything else (PFDLayout.wbs); on the PFD the frames light up
+    function applyWbs(){
+      const cs = [...F.wbs];
+      if (PFDLayout.active()){ markFrames(null); clearSel(false); PFDLayout.wbs(cs, true); note(cs.length ? `<b>WBS ${esc(cs.join(", "))}</b>${cs.length === 1 ? " " + esc(wbsName(cs[0])) : ""}: everything else faded. Esc clears it.` : ""); return; }
+      if (cs.length) wbsGo(cs); else { markFrames(null); clearSel(false); note(""); }
+    }
+    PFDLayout.onWbs(cs => { F.wbs = new Set(cs); markFrames(null); note(""); render(); });
+    window.fxView = () => { if (F.wbs.size) applyWbs(); else PFDLayout.wbs([]); render(); };
     function wbsGo(c){
-      const fr = framesOf(c); if (fr.length && fr.every(f => f.st && stage && f.st !== stage)) toStage(fr[0].st);
-      const ns = nodesOf(c).filter(n => shown(nEls[n.id]));
+      const cs = [].concat(c); c = cs[0];
+      const fr = cs.flatMap(framesOf); if (fr.length && fr.every(f => f.st && stage && f.st !== stage)) toStage(fr[0].st);
+      const ns = [...new Set(cs.flatMap(nodesOf))].filter(n => shown(nEls[n.id]));
       if (focusFlow) setFlow(null);
-      sel = ns.map(n => ({ k: "n", id: n.id })); applySel(false); markFrames(c, true);
+      sel = ns.map(n => ({ k: "n", id: n.id })); applySel(false); FRAMES.forEach(f => f.g.classList.remove("pick")); cs.forEach(x => markFrames2(x));
       if (PFDLayout.active()) PFDLayout.area(c);
       else if (fr.length){ const x1 = Math.min(...fr.map(f => f.x)), y1 = Math.min(...fr.map(f => f.y)), x2 = Math.max(...fr.map(f => f.x + f.w)), y2 = Math.max(...fr.map(f => f.y + f.h)); flyTo({ x: x1, y: y1, w: x2 - x1, h: y2 - y1 }, 1.05, 700); }
-      note(`<b>WBS ${esc(c)}</b> ${esc(wbsName(c))}: ${ns.length} PFD box${ns.length === 1 ? "" : "es"} lit, everything else dimmed.`);
+      note(`<b>WBS ${esc(cs.join(", "))}</b> ${cs.length === 1 ? esc(wbsName(c)) : ""}: ${ns.length} PFD box${ns.length === 1 ? "" : "es"} lit, everything else dimmed.`);
     }
     const wbsName = c => { const f = FRAMES.find(fr => codesOf(fr.label)[0] === c); return f ? f.label.replace(/^F\d\d\s*-\s*/, "").replace(/\s*\(.*$/, "").toLowerCase().replace(/(^|[\s/&,])([a-z])/g, (m, a, b) => a + b.toUpperCase()) : ""; };
     function note(h, it){ const n = $("fxNote"); n.hidden = !h; n.innerHTML = h + (it ? ` <button type="button" class="fx-det">Details ›</button>` : "");

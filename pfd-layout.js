@@ -40,7 +40,7 @@ window.PFDLayout = (() => {
     setBase(api.pref.get("lo_base", "sat"));
     home(false);
     map.on("zoomend", () => { zoomCls(); redrawStreamsOf(null); }); zoomCls(); map.on("moveend", () => setTimeout(() => { declutter(); declutterAreas(); }, 0));
-    map.on("click", () => { if (moving || Date.now() - dropped < 400) return; api.clearSel(true); api.closeInfo(); });
+    map.on("click", e => { if (moving || Date.now() - dropped < 400) return; if (wf.size && !inWbs(e.latlng)) wbsFilter([], true); api.clearSel(true); api.closeInfo(); });
     // corner controls: imagery, dim, home, export
     // top left: Plant and the WBS filters, Flow filters and Map options menus (folded until tapped)
     const tl = L.DomUtil.create("div", "lo-tl"); tl.id = "loTL"; $("mapView").appendChild(tl); L.DomEvent.disableClickPropagation(tl); L.DomEvent.disableScrollPropagation(tl);
@@ -294,12 +294,14 @@ window.PFDLayout = (() => {
         const big = cl.slice().sort((a, b) => b.length - a.length)[0], cx = big.reduce((t, p) => t + p.m[0], 0) / big.length, cy = big.reduce((t, p) => t + p.m[1], 0) / big.length;   // the label sits on the biggest part
         const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<i class="la-ld" style="--h:${hue}"></i><span style="--h:${hue}" title="${esc(code + " (" + wbsName(code) + ")")}"><b>${code}</b></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
         // a tap shows the whole area, every part of it, however far apart
-        const go = e => { L.DomEvent.stopPropagation(e); const b = L.featureGroup(mine).getBounds(); map.flyTo(b.getCenter(), Math.min(18.5, Math.max(AREA_Z + 1, map.getBoundsZoom(b, false, [40, 40]))), { duration: .6 }); flash(code); };
+        const go = e => { L.DomEvent.stopPropagation(e); const add = e.originalEvent && (e.originalEvent.ctrlKey || e.originalEvent.metaKey);
+          wbsFilter(add ? (wf.has(code) ? [...wf].filter(c => c !== code) : [...wf, code]) : [code], true);
+          if (add) return; const b = L.featureGroup(mine).getBounds(); map.flyTo(b.getCenter(), Math.min(18.5, Math.max(AREA_Z + 1, map.getBoundsZoom(b, false, [40, 40]))), { duration: .6 }); flash(code); };
         poly.on("click", go); lab.on("click", go); mine.push(poly);
         areas.push({ code, poly, lab, n: all.length, hue });
       });
     });
-    declutterAreas(); wbsPanel();
+    declutterAreas(); wbsPanel(); wbsMark();
   }
   // WBS buttons in the map's top right corner, A to Z like the Smart PFD's flow list: tap one to fly to that area
   // (all its zones) and flash it. Folds to one button on a phone.
@@ -309,18 +311,43 @@ window.PFDLayout = (() => {
     if (!el){ el = document.createElement("div"); el.id = "loWbs"; el.className = "lo-pan lo-wbs shut"; $("loHome").after(el); }
     const codes = [...new Set(areas.map(a => a.code))].sort();
     el.innerHTML = `<button class="lo-wh" type="button">WBS filters<span>▾</span></button><div class="lo-wl">` +
-      codes.map(c => `<button class="flow${c === wbsOn ? " on" : ""}" data-w="${c}" type="button"><i style="background:hsl(${areas.find(a => a.code === c).hue} 85% 55%)"></i><b>${c}</b><span>${esc(wbsName(c))}</span></button>`).join("") + `</div>`;
+      codes.map(c => `<button class="flow${wf.has(c) ? " on" : ""}" data-w="${c}" type="button"><i style="background:hsl(${areas.find(a => a.code === c).hue} 85% 55%)"></i><b>${c}</b><span>${esc(wbsName(c))}</span></button>`).join("") + `</div>`;
     el.querySelector(".lo-wh").onclick = () => el.classList.toggle("shut");
-    el.querySelectorAll("[data-w]").forEach(b => b.onclick = () => {
+    el.querySelectorAll("[data-w]").forEach(b => b.onclick = e => {
       const c = b.dataset.w, zs = areas.filter(a => a.code === c); if (!zs.length) return;
+      if (e.ctrlKey || e.metaKey){ wbsFilter(wf.has(c) ? [...wf].filter(x => x !== c) : [...wf, c], true); return; }
       const bb = zs.reduce((u, a) => u.extend(a.poly.getBounds()), L.latLngBounds(zs[0].poly.getBounds().getSouthWest(), zs[0].poly.getBounds().getNorthEast()));
       map.flyToBounds(bb, { padding: [50, 50], maxZoom: 18.5, duration: .6 });
-      wbsOn = c; el.querySelectorAll("[data-w]").forEach(x => x.classList.toggle("on", x === b));
+      wbsOn = c; wbsFilter([c], true);
       if (matchMedia("(max-width: 700px)").matches) el.classList.add("shut");
       if (PH) layers(false);
       flash(c);
     });
   }
+  // The WBS filter: a zone tapped (or picked from WBS filters or the side panel) keeps that zone, its name, its equipment
+  // and the lines touching it as they are while everything else fades to grey. Ctrl+click adds or removes a zone;
+  // Esc, a tap on the map outside the zones or the ✕ on the chip (phone) clears it.
+  let wf = new Set(), wfCb = null;
+  const inRing = (ll, R) => { let c = false; for (let i = 0, j = R.length - 1; i < R.length; j = i++){ const a = R[i], b = R[j];
+    if ((a.lat > ll.lat) !== (b.lat > ll.lat) && ll.lng < (b.lng - a.lng) * (ll.lat - a.lat) / (b.lat - a.lat) + a.lng) c = !c; } return c; };
+  const inWbs = ll => areas.some(a => wf.has(a.code) && inRing(ll, a.poly.getLatLngs()[0]));
+  function wbsFilter(codes, user){
+    const n = new Set(codes || []); if (n.size === wf.size && [...n].every(c => wf.has(c))) return;
+    wf = n; wbsOn = wf.size === 1 ? [...wf][0] : null; wbsMark(); if (user && wfCb) wfCb([...wf]);
+  }
+  function wbsMark(){
+    if (!map) return; const on = wf.size > 0, ids = new Set(); wf.forEach(c => (byCode[c] || []).forEach(id => ids.add(id)));
+    $("mapView").classList.toggle("wf", on);
+    areas.forEach(a => { const k = wf.has(a.code); if (a.poly._path) a.poly._path.classList.toggle("wf-in", k); const e = a.lab.getElement(); if (e) e.classList.toggle("wf-in", k); });
+    Object.keys(N).forEach(id => { const e = N[id].lay && N[id].lay.getElement(); if (e) e.classList.toggle("wf-in", ids.has(id)); });
+    Object.values(S).forEach(o => { const k = ids.has(o.s.f) || ids.has(o.s.to); [o.lay._path, o.mid && o.mid._path].forEach(q => q && q.classList.toggle("wf-in", k)); });
+    const el = $("loWbs"); if (el) el.querySelectorAll("[data-w]").forEach(x => x.classList.toggle("on", wf.has(x.dataset.w)));
+    let chip = $("loWf"); if (!chip){ chip = document.createElement("button"); chip.type = "button"; chip.id = "loWf"; chip.className = "lo-wf"; $("mapView").appendChild(chip);
+      L.DomEvent.disableClickPropagation(chip); chip.onclick = () => wbsFilter([], true); }
+    chip.hidden = !on; if (on){ const c = [...wf].sort(); chip.innerHTML = `<b>${c.length === 1 ? esc(c[0] + " " + wbsShort(c[0])) : esc(c.join(", "))}</b><i aria-label="Clear">✕</i>`; }
+  }
+  const wbsShort = c => wbsName(c).split(/[,(&]| and /)[0].trim().split(" ").slice(0, 2).join(" ");
+  addEventListener("keydown", e => { if (e.key === "Escape" && on && wf.size && !moving) wbsFilter([], true); });
   // area labels (the code; the name is in the WBS panel) never overlap: biggest areas first, the rest wait for a closer zoom
   function declutterAreas(){
     if (!map) return;
@@ -497,7 +524,7 @@ window.PFDLayout = (() => {
     Object.values(S).forEach(o => { const st = api.streamState(o.s.id), p = o.lay._path; if (!p) return;
       [p, o.mid._path].forEach(q => { if (!q) return; q.classList.toggle("hide", st.hidden); q.classList.toggle("ghost", st.ghost); q.classList.toggle("hl", hl.has(o.s.id)); q.classList.toggle("sel", sel.has(o.s.id)); });
       const hp = o.hit._path; if (hp){ hp.classList.toggle("hide", st.hidden); hp.classList.toggle("hl", hl.has(o.s.id)); } });
-    declutter();
+    declutter(); if (wf.size) wbsMark();
     const key = [...hl].sort().join(",");
     if (zoom && focus && key !== lastHl){
       const pts = [];
@@ -587,6 +614,10 @@ window.PFDLayout = (() => {
     zoomBy: d => map && (d > 0 ? map.zoomIn(.75) : map.zoomOut(.75)), home: () => map && home(true),
     focus: id => { if (map && LAYOUT.nodes[id]) map.flyTo(pos(id), Math.max(map.getZoom(), 19), { duration: .6 }); },
     // fly to a WBS area (all its zones) and flash it, as the WBS filters do
+    wbs: (codes, fly) => { if (!map) return false; wbsFilter(codes || []); if (fly && codes && codes.length){ const zs = areas.filter(a => codes.includes(a.code)); if (zs.length){
+        const bb = zs.reduce((u, a) => u.extend(a.poly.getBounds()), L.latLngBounds(zs[0].poly.getBounds().getSouthWest(), zs[0].poly.getBounds().getNorthEast()));
+        map.flyToBounds(bb, { padding: [50, 50], maxZoom: 18.5, duration: .6 }); codes.forEach(flash); } } return true; },
+    onWbs: f => { wfCb = f; }, wbsOn: () => [...wf], wbsIds: () => { const ids = new Set(); wf.forEach(c => (byCode[c] || []).forEach(id => ids.add(id))); return ids; },
     area: c => { const zs = areas.filter(a => a.code === c); if (!map || !zs.length) return false;
       const bb = zs.reduce((u, a) => u.extend(a.poly.getBounds()), L.latLngBounds(zs[0].poly.getBounds().getSouthWest(), zs[0].poly.getBounds().getNorthEast()));
       map.flyToBounds(bb, { padding: [50, 50], maxZoom: 18.5, duration: .6 }); flash(c); return true; }

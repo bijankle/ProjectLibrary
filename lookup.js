@@ -550,7 +550,7 @@
 .sp-top{display:flex;gap:8px;align-items:center;padding:8px 10px;background:#171b21;color:#e9edf2;border-bottom:1px solid #2c343e}
 .sp-tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--fb,15px)}
 .sp-q{flex:0 1 230px;min-width:90px;height:32px;box-sizing:border-box;border:1px solid #3a434f;background:#0f1216;color:#e9edf2;border-radius:8px;padding:0 9px;font:inherit;font-size:var(--fb,15px)}
-.sp-q:focus{outline:none;border-color:#e8b44a}
+.sp-q:focus{outline:none;border-color:var(--th)}
 .sp-nav{display:flex;align-items:center;gap:4px}.sp-nav[hidden]{display:none}.sp-nav span{font-size:var(--fb,15px);min-width:58px;text-align:center;color:#aab4c0}
 .sp-top button,.sp-dl{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;min-width:34px;height:32px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px}
 .sp-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}.sp-wait :is(.sp-refs,.sp-marks,.sp-tap,.sp-hi){visibility:hidden!important}.sp-sheet{position:relative;background:#fff;margin:0 auto;box-shadow:0 2px 14px #0008;transform-origin:0 0}
@@ -559,7 +559,7 @@
 .sp-marks .sp-arrow:not(.on){opacity:.3}.sp-tap .sp-arrow{opacity:.6}.sp-marks .sp-arrow:only-child{opacity:.6}   /* (with several places, the one stepped to is the stronger) */
 @keyframes spPulse{0%{box-shadow:0 0 0 0 rgba(255,45,85,.7)}100%{box-shadow:0 0 0 22px rgba(255,45,85,0)}}
 .sp-body.drag{cursor:grabbing}.sp-fn{min-width:0 !important;padding:0 4px;white-space:nowrap;max-width:210px;overflow:hidden;text-overflow:ellipsis}
-.sp-toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#171b21;color:#e9edf2;border:1px solid #e8b44a;border-radius:10px;padding:8px 12px;font-size:var(--fb,15px);max-width:90vw}.sp-toast[hidden]{display:none}
+.sp-toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#171b21;color:#e9edf2;border:1px solid var(--th);border-radius:10px;padding:8px 12px;font-size:var(--fb,15px);max-width:90vw}.sp-toast[hidden]{display:none}
 .sp-msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font-size:var(--fb,15px)}.sp-msg[hidden]{display:none}
 body.sp-on{overflow:hidden}
 .sp-top button{font-size:18px;line-height:1}   /* the symbols 40% larger, the buttons the same size */
@@ -578,7 +578,7 @@ body.sp-on{overflow:hidden}
 :root.phone .sp-text{pointer-events:none;user-select:none;-webkit-user-select:none}
 .sp-pick{position:absolute;z-index:5;display:flex;flex-direction:column;gap:4px;padding:6px;background:#1d222a;border:1px solid #3a434f;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.4);max-height:50vh;overflow:auto}
 .sp-pick button{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;padding:7px 12px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;text-align:left}
-.sp-pick button:hover{border-color:#e8b44a}
+.sp-pick button:hover{border-color:var(--th)}
 @media (min-width:901px) and (hover:hover){.sp-rot{display:none !important}}
 @media (max-width:600px){.sp-dl,.sp-view [data-a=fit]{display:none}.sp-top{flex-wrap:wrap;gap:5px;padding:6px 8px}.sp-tt{flex-basis:100%;font-size:var(--fb,15px);order:-1}.sp-top button{min-width:30px;height:30px;padding:0 6px}.sp-nav span{min-width:0}.sp-x{margin-left:auto}}
 /* phone: the sheet fills the screen; close and back float top left, the title beside them, and one floating bar at the
@@ -597,14 +597,14 @@ body.sp-on{overflow:hidden}
 :root.phone .sp-view .sp-q{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));width:auto;max-width:none;height:42px;display:none;z-index:4;font-size:16px;box-shadow:0 4px 16px #0008}
 :root.phone .sp-view.find-on .sp-q{display:block}
 :root.phone .sp-view.typing .sp-ze,:root.phone .sp-view.typing .sp-top>:not(.sp-finds):not(.sp-q){display:none!important}:root.phone .sp-view.typing .sp-body{padding-top:0}   /* keyboard up: just the find box and ‹ 1 of 9 › */
-.sp-view .sp-ze{position:fixed;right:22px;bottom:22px;z-index:4;width:52px;height:52px;padding:0;border-radius:50%;background:#fff;color:#8a5f0e;border:1.5px solid #b67d12;box-shadow:0 3px 12px #0005;display:grid;place-items:center;cursor:pointer}
-.sp-view .sp-ze:hover{background:#fbf6ec}   /* zoom extents: the whole sheet in one tap */
+.sp-view .sp-ze{position:fixed;right:22px;bottom:22px;z-index:4;width:52px;height:52px;padding:0;border-radius:50%;background:#fff;color:var(--th2);border:1.5px solid var(--th);box-shadow:0 3px 12px #0005;display:grid;place-items:center;cursor:pointer}
+.sp-view .sp-ze:hover{background:var(--th-t)}   /* zoom extents: the whole sheet in one tap */
 :root.phone .sp-view .sp-ze{right:12px;bottom:calc(76px + env(safe-area-inset-bottom))}:root.phone .sp-view.find-on .sp-ze{bottom:calc(128px + env(safe-area-inset-bottom))}
 :root.phone .sp-view .sp-pg{font-size:var(--fl,13px)}
 :root.phone .sp-view .sp-body{padding:calc(60px + var(--sat, env(safe-area-inset-top))) 0 0}   /* the page starts under the round buttons */
 .sp-dn{position:absolute;left:4px;top:3px;z-index:2;font:700 12px/1.2 system-ui,sans-serif;letter-spacing:.02em;color:#3b4552;background:#ffffffe6;padding:0 3px;border-radius:3px;white-space:nowrap;pointer-events:none}.sp-dn:empty{display:none}:root.phone .sp-dn{font-size:10px;left:2px;top:1px}
 :root.phone .lk-st{font-size:calc(var(--fb,15px) * 1.35)}:root.phone .lk-vw sup{font-size:max(.6em, calc(var(--fl,13px) * .8))}   /* phone: these follow the text size */
-:root.phone .lk-hb .lk-key.lk-dwg::after{content:"";display:inline-block;width:.8em;height:.8em;margin-left:.3em;vertical-align:-.05em;background:var(--lk-a,#b67d12);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4h6v6'/%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4h6v6'/%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'/%3E%3C/svg%3E") center/contain no-repeat}   /* a drawing's number opens it: a small open icon after it */
+:root.phone .lk-hb .lk-key.lk-dwg::after{content:"";display:inline-block;width:.8em;height:.8em;margin-left:.3em;vertical-align:-.05em;background:var(--lk-a,var(--th));-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4h6v6'/%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4h6v6'/%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'/%3E%3C/svg%3E") center/contain no-repeat}   /* a drawing's number opens it: a small open icon after it */
 :root.phone .lk-hb .lk-key{white-space:nowrap;word-break:normal;overflow:hidden;color:var(--ink)!important;text-decoration:none}   /* phone: every tag the same, one line */
 .lk-dwg{display:inline-block;color:#2f7cf6 !important;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.lk-dwg:hover{color:#5b9bff !important}
 .lk-dwgnote{font-size:var(--fb,15px);color:var(--mute);margin:-4px 0 8px;line-height:1.4}
