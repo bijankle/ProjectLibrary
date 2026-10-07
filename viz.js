@@ -216,8 +216,8 @@ window.AssetViz = (() => {
     const lines = L.filter(r => r.t === "line"), len = r => kwOf(get(r, "Pipe length (m)"));
     const totKw = live.reduce((s, r) => s + kw(r), 0), totLen = lines.reduce((s, r) => s + len(r), 0);
     const tiles = [["Assets", fmt(L.length), ctx.filtered ? "in this filter" : "across all lists"],
-      mel.length && ["Equipment", fmt(mel.length), fmt(live.length) + " not decommissioned"],
-      totKw && ["Installed power", (totKw / 1000).toFixed(1) + " MW", fmt(totKw) + " kW, excl. decommissioned"],
+      mel.length && ["Equipment", fmt(mel.length), fmt(live.length) + " in use"],
+      totKw && ["Installed power", (totKw / 1000).toFixed(1) + " MW", fmt(totKw) + " kW in use"],
       lines.length && ["Pipe length", (totLen / 1000).toFixed(1) + " km", fmt(lines.length) + " lines"]].filter(Boolean);
     const tilesH = `<div class="vz-tiles">${tiles.map(([a, b, c]) => `<div class="vz-tile"><span>${a}</span><b>${b}</b><em>${c}</em></div>`).join("")}</div>`;
     let h = "";
@@ -264,7 +264,7 @@ window.AssetViz = (() => {
     // sort the cards into their groups
     const secs = [...h.matchAll(/<section class="vz-card[^"]*" data-g="(\d+)" data-o="(\d+)">[\s\S]*?<\/section>/g)].map(m => ({ g: +m[1], o: +m[2], s: m[0] }));
     el.innerHTML = GRP.map(([name], g) => { const c = secs.filter(x => x.g === g).sort((a, b) => a.o - b.o);
-      if (!c.length && g) return ""; return `<h2 class="vz-gh">${name}</h2>` + (g ? "" : tilesH) + `<div class="vz-grid">${c.map(x => x.s).join("")}</div>`; }).join("");
+      if (!c.length && g) return ""; return `<h2 class="vz-gh">${name}</h2>` + `<div class="vz-grid">${g ? "" : tilesH}${c.map(x => x.s).join("")}</div>`; }).join("");   // the figures: a 2 by 2 block, the first cell of General
   }
   // "SAG MILL MOTOR 1" → "Sag mill motor 1"
   const nice = s => { s = String(s || ""); return s === s.toUpperCase() ? s.toLowerCase().replace(/^./, c => c.toUpperCase()).replace(/\b(sag|ufg|cil\d?|vsd|hpu|ew)\b/gi, x => x.toUpperCase()) : s; };
@@ -289,8 +289,8 @@ window.AssetViz = (() => {
 .vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}.vz-zb .vz-ze{border-radius:50%;border:1.5px solid var(--gold);color:color-mix(in srgb,var(--gold) 75%,var(--ink))}   /* zoom extents, in the corner as in the full screen viewer */
 .vz-zb button:hover{border-color:var(--gold)}
 .vz-mk{position:absolute;left:0;top:0;pointer-events:none}.vz-mk .sp-arrow{position:absolute;fill:#1e6ee6;opacity:.6;overflow:visible}
-.vz-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
-.vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}
+.vz-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start}
+.vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:1px;min-width:0}.vz-tile em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vz-tile span{font-size:var(--fl,13px);color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}.vz-tile b{font-size:var(--fh,22px);line-height:1.15;font-variant-numeric:tabular-nums}.vz-tile em{font-style:normal;font-size:var(--fb,15px);color:var(--mute)}
 .vz-gh{font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin:18px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--line)}.vz-gh:first-child{margin-top:0}
 .vz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
