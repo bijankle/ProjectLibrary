@@ -91,7 +91,7 @@ window.Tabs = (() => {
     wire();
   }
   function wire(){
-    el.querySelectorAll("[data-th]").forEach(b => b.onclick = () => theme(b.dataset.th));
+    el.querySelectorAll(".mn-i[data-th]").forEach(b => b.onclick = () => theme(b.dataset.th));   // (only the menu's Dark / Light items: the colour swatches have their own)
     el.querySelectorAll("[data-tx]").forEach(b => b.onclick = () => textSize(b.dataset.tx));
     el.querySelectorAll(".mn-i[data-a]").forEach(b => b.onclick = () => { close(); ({
       settings: () => O.onSettings && O.onSettings(), checks: () => location.href = "issues.html", sources: () => location.href = "issues.html#sources",
