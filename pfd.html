@@ -492,9 +492,16 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 
 
 /* desktop side panel (Assets style): search, filters and results beside the PFD / Layout */
-body.fx-on #side{width:600px;padding:14px 18px 0 22px;overflow:hidden;display:flex;flex-direction:column}
+body.fx-on{--fxw:600px}body.fx-on #side{width:var(--fxw);padding:14px 18px 0 22px;overflow:hidden;display:flex;flex-direction:column}
 body.fx-on.layout #side{display:flex!important}
-body.fx-on #stage,body.fx-on.layout #mapView{left:600px}
+body.fx-on #stage,body.fx-on.layout #mapView{left:var(--fxw)}
+/* the side panel's edge: drag to resize (kcgm_pfdw), double click to reset */
+#fxDv{display:none}body.fx-on #fxDv{display:block;position:fixed;left:calc(var(--fxw) - 12px);top:calc(54px + var(--tb,0px));bottom:0;width:24px;z-index:8;cursor:col-resize;touch-action:none}
+#fxDv::before{content:"";position:absolute;left:11px;top:0;bottom:0;width:1px;background:var(--line)}
+#fxDv i{position:absolute;left:7px;top:50%;margin-top:-22px;width:10px;height:44px;box-sizing:border-box;border-radius:5px;background:var(--card,var(--panel));border:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px}
+#fxDv i b{width:3px;height:3px;border-radius:50%;background:var(--mute)}
+#fxDv:hover::before,#fxDv.drag::before{background:var(--gold,var(--accent));width:2px}#fxDv:hover i,#fxDv.drag i{border-color:var(--gold,var(--accent))}
+body.fxdrag{cursor:col-resize;user-select:none}
 body.fx-on #search,body.fx-on #camBtn{display:none!important}
 #fx{display:flex;flex-direction:column;min-height:0;flex:1}#fx[hidden]{display:none}
 .fx-q{flex:none;display:flex;align-items:center;gap:10px;height:42px;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:0 12px;color:var(--mute)}
@@ -1669,6 +1676,16 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
   if (!PHONE) (() => {
     const side = $("side"), fx = $("fx"), F = { q: "", wbs: new Set(), type: null, st: null }; let N = 150, cur = null;
     fx.hidden = false; document.body.classList.add("fx-on");
+    { const dv = document.createElement("div"); dv.id = "fxDv"; dv.title = "Drag to resize, double click to reset"; dv.innerHTML = "<i><b></b><b></b><b></b></i>"; document.body.appendChild(dv);
+      const setW = w => { w = Math.round(Math.max(380, Math.min(innerWidth - 420, w))); document.body.style.setProperty("--fxw", w + "px"); return w; };
+      try { const w = +localStorage.getItem("kcgm_pfdw"); if (w) setW(w); } catch (e) {}
+      let x0 = 0, w0 = 0, on = false;
+      dv.addEventListener("pointerdown", e => { on = true; x0 = e.clientX; w0 = side.getBoundingClientRect().width; dv.setPointerCapture(e.pointerId); dv.classList.add("drag"); document.body.classList.add("fxdrag"); e.preventDefault(); });
+      dv.addEventListener("pointermove", e => { if (on){ setW(w0 + e.clientX - x0); dispatchEvent(new Event("resize")); } });
+      const end = () => { if (!on) return; on = false; dv.classList.remove("drag"); document.body.classList.remove("fxdrag");
+        try { localStorage.setItem("kcgm_pfdw", Math.round(side.getBoundingClientRect().width)); } catch (e) {} dispatchEvent(new Event("resize")); };
+      dv.addEventListener("pointerup", end); dv.addEventListener("pointercancel", end);
+      dv.addEventListener("dblclick", () => { setW(600); try { localStorage.removeItem("kcgm_pfdw"); } catch (e) {} dispatchEvent(new Event("resize")); }); }
     const fxF = $("fxF"), tail = document.createElement("div"); tail.className = "fx-old";
     [...side.children].filter(c => c !== fx).forEach(c => tail.appendChild(c));
     const groups = document.createElement("div"); fxF.append(groups, tail);
@@ -1687,9 +1704,10 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
     }
     const framesOf = c => FRAMES.filter(f => codesOf(f.label).includes(c));
     // where things are: tag → PFD box, loop device → loop, P&ID → the boxes whose MEL rows name it
-    const tagNode = new Map(), loopOf = new Map(), pidNodes = new Map();
+    const tagNode = new Map(), loopOf = new Map(), pidNodes = new Map(), major = new Set();   // major: equipment with its own labelled PFD box
     Object.entries(EQUIP_DATA).forEach(([id, d]) => {
-      d.eq.forEach(r => { tagNode.set(Lookup.norm(r.tag), id); String(r.pid || "").split(/[\s,;]+/).filter(Boolean).forEach(p => { const k = Lookup.norm(p); if (!pidNodes.has(k)) pidNodes.set(k, new Set()); pidNodes.get(k).add(id); }); });
+      const kind = t => (String(t || "").match(/^F\d+-([A-Z]+)-/) || [])[1], main = d.eq[0] && kind(d.eq[0].tag);   // (the box's own kind: the crushers, not their gates)
+      d.eq.forEach(r => { tagNode.set(Lookup.norm(r.tag), id); if (byId[id] && kind(r.tag) === main) major.add(Lookup.norm(r.tag)); String(r.pid || "").split(/[\s,;]+/).filter(Boolean).forEach(p => { const k = Lookup.norm(p); if (!pidNodes.has(k)) pidNodes.set(k, new Set()); pidNodes.get(k).add(id); }); });
       d.ins.forEach(i => { const k = Lookup.norm(i.tag); if (!tagNode.has(k)) tagNode.set(k, id); }); });
     LOOPS.forEach(L => [...(L.m || []), ...(L.f || [])].forEach(t => expandTag(t).forEach(x => { const k = Lookup.norm(x); if (!tagNode.has(k) && !loopOf.has(k)) loopOf.set(k, L); })));
     const TAGS = /F\d{2}-[A-Z]{1,4}-\d{2,4}[A-Z]?|\b[A-Z]{1,5} ?\d{5}[A-Z]?\b/g, PIDS = /2000-F\d\d-PID-PR-\d{5}|FME-\d+-PI-\d+/g;
@@ -1719,7 +1737,8 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
     const lay = () => document.body.classList.contains("layout");
     function list(skip){
       if (!base) return [];
-      let a = F.q.trim().length >= 2 ? Lookup.search(F.q, 3000).filter(it => it.r && TN[it.t] && Lookup.inProj(it)) : base;
+      // a search finds everything; the pills alone list only the major equipment (on the PFD with a label)
+      let a = F.q.trim().length >= 2 ? Lookup.search(F.q, 3000).filter(it => it.r && TN[it.t] && Lookup.inProj(it)) : lay() ? base : base.filter(it => major.has(Lookup.norm(it.key)));
       if (skip !== "wbs" && F.wbs.size) a = a.filter(it => F.wbs.has(wbsOf(it)));
       if (skip !== "type" && F.type) a = a.filter(it => it.t === F.type);
       if (skip !== "st" && F.st && lay()) a = a.filter(it => STAT(it) === F.st);
@@ -1780,10 +1799,11 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
       const d = n.querySelector(".fx-det"); if (d) d.onclick = () => { openSearch(""); setTimeout(() => lkUI && lkUI.openKey(it.key), 40); }; }
     function show(it){
       const L = locate(it); if (focusFlow) setFlow(null); markFrames(null);
-      if (L.loop){ toStage(L.loop.st); sel = [{ k: "loop", id: L.loop.id }]; applySel(true);
+      if (L.loop){ toStage(L.loop.st); sel = [{ k: "loop", id: L.loop.id }]; applySel(true); if (L.how === "pfd") showLoop(L.loop);
         note(`<b>${esc(it.key)}</b> ${L.how === "pfd" ? "is in" : "is tied to " + esc(L.via) + ", in"} the <b>${esc(L.loop.tag)}</b> control loop (${esc(L.loop.name)}).`, it); return; }
       if (L.ids){ const ns = L.ids.map(id => byId[id]).filter(Boolean); if (ns.length && !ns.some(n => !n.st || !stage || n.st === stage)) toStage(ns[0].st);
         sel = ns.filter(n => shown(nEls[n.id])).map(n => ({ k: "n", id: n.id })); applySel(true);
+        if (L.how === "pfd" && ns[0]) showNode(ns[0]);   // its properties on the right, as a tap on the box gives
         const names = ns.slice(0, 3).map(n => n.sn || n.n).join(", ") + (ns.length > 3 ? ` and ${ns.length - 3} more` : "");
         note(L.how === "pfd" ? `<b>${esc(it.key)}</b> is on the PFD as <b>${esc(names)}</b>.`
           : L.how === "link" ? `<b>${esc(it.key)}</b> isn't drawn on the PFD. Shown at <b>${esc(names)}</b>, which it's tied to (${esc(L.via)}).`
