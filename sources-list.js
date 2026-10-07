@@ -2,7 +2,9 @@
 // search and by type pills (P&IDs, PFDs, Lists, Reports, Specs, Drawings), with area pills under the drawing types.
 // Each row has two kinds of button: Save puts the redacted file (PDF, or the cleaned Excel copy) in the Downloads
 // folder; Cache stores it on this device (offline.js, the kcgm-docs cache) so it opens with no signal. "Cache all" does
-// the same for everything the filters show, and "Save all" (desktop) puts all of it in Downloads as one zip. Desktop: a filter panel on the left and a table (issues.html#sources).
+// the same for everything the filters show, and "Save all" (desktop) puts all of it in Downloads as one zip.
+// Desktop (issues.html#sources): sections on the left (one per type, each with its cached MB and a Cache all), a divider
+// to drag, and on the right a selection tree as in Navisworks: section → area (P&IDs, PFDs) → document → its revision.
 // Phone: pills over a list (Settings → Sources, the Settings search box filters it). SourcesList.mount(el, {phone, input}).
 window.SourcesList = (() => {
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -18,7 +20,15 @@ window.SourcesList = (() => {
     save: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10M7.5 9.5 12 14l4.5-4.5M5 19h14"/></svg>',
     dev: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 7v7M9.5 11.5 12 14l2.5-2.5"/></svg>',
     devOk: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M9.3 12l2 2 3.6-4"/></svg>',
-    stop: '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>' };
+    stop: '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>',
+    up: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19h14"/></svg>',
+    // the tree's small pictures (Windows Explorer colours: they read the same in light and dark)
+    fc: '<svg class="sl-ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1.5 4.5v8h13v-6.5h-6.5l-1.5-1.5z" fill="#e8c56a" stroke="#b8902c"/></svg>',
+    fo: '<svg class="sl-ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1.5 4.5v8h11l2-5.5h-11l-2 5.5" fill="#f2d98c" stroke="#b8902c"/><path d="M1.5 12.5v-8h5l1.5 1.5h4.5v1" fill="none" stroke="#b8902c"/></svg>',
+    pdf: '<svg class="sl-ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 1.5h6l3 3v10h-9z" fill="#fff" stroke="#6b7280"/><path d="M9.5 1.5v3h3" fill="none" stroke="#6b7280"/><rect x="4.5" y="9" width="7" height="3.5" rx=".5" fill="#d64545"/></svg>',
+    xls: '<svg class="sl-ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 1.5h6l3 3v10h-9z" fill="#fff" stroke="#6b7280"/><path d="M9.5 1.5v3h3" fill="none" stroke="#6b7280"/><rect x="4.5" y="9" width="7" height="3.5" rx=".5" fill="#1f8a4c"/></svg>',
+    rev: '<svg class="sl-ic" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="#fff" stroke="#6b7280"/><path d="M8 5v3.2l2 1.3" fill="none" stroke="#6b7280" stroke-width="1.3"/></svg>' };
+  const MEM = { open: null, sel: "" };   // the desktop tree's open nodes and selected document, kept while the page is open
 
   // ---------- the documents ----------
   let DOCS = null;
@@ -71,21 +81,31 @@ window.SourcesList = (() => {
     const keepF = () => { try { localStorage.setItem("kcgm_srcf", JSON.stringify({ t: type, a: area })); } catch (e) {} };
     el.classList.add("sl", phone ? "sl-ph" : "sl-dt");
     el.innerHTML = phone ? `<div class="sl-types sl-pills"></div><div class="sl-areas sl-pills"></div><div class="sl-bar"></div><div class="sl-list"></div>`
-      : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off"><div class="sl-hb"><button type="button" class="sl-b sl-sva" title="Save every document listed to Downloads, as one zip">${ICO.save}<span>Save all</span></button></div><div class="sl-h">Type</div><div class="sl-types"></div><div class="sl-ah"><div class="sl-h">Area</div><div class="sl-areas"></div></div></aside>
-         <div class="sl-main"><div class="sl-bar"></div><table class="sl-tb"><thead><tr><th>Document number</th><th>Title</th><th>Rev</th><th>Size</th><th class="sl-bh" colspan="3"></th></tr></thead><tbody class="sl-list"></tbody></table></div>`;
+      : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off"><div class="sl-hb"><button type="button" class="sl-b sl-sva">${ICO.save}<span>Save all</span></button><span class="sl-svn"></span></div>
+           <div class="sl-h">Sections</div><div class="sl-secs"></div><div class="sl-h">Everything</div><div class="sl-ev"></div></aside>
+         <div class="sl-dv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
+         <div class="sl-main"><div class="sl-tbar"><b>Selection tree</b><span class="sl-sp"></span><button type="button" class="sl-tbb" disabled title="Uploading comes later">${ICO.up}Upload</button><button type="button" class="sl-tbb" data-x="1">Expand all</button><button type="button" class="sl-tbb" data-x="0">Collapse all</button></div>
+           <div class="sl-tree"><div class="sl-gh"><span>Name</span><span>Title</span><span>Rev</span><span>Size</span><span>Cached</span><span></span></div><div class="sl-rows"></div></div></div>`;
     const $ = s => el.querySelector(s);
     const input = o.input || $(".sl-q");
-    if (input){ input.addEventListener("input", () => { q = input.value.trim().toLowerCase(); draw(); }); }
-    el.innerHTML.length && ($(".sl-list").innerHTML = `<div class="sl-none">Loading…</div>`);
+    if (input){ input.addEventListener("input", () => { q = input.value.trim().toLowerCase(); shut.clear(); draw(); }); }
+    $(phone ? ".sl-list" : ".sl-rows").innerHTML = `<div class="sl-none">Loading…</div>`;
+    // desktop: the section shown (a type, "" for all; it reuses the phone's type filter), the tree's open nodes
+    // ("r:pid" a section, "a:pid:F13" an area, "d:<key>" a document), and the groups closed by hand while searching
+    // (a search opens every group with a match)
+    const open = MEM.open || (MEM.open = new Set()), shut = new Set();
+    if (!phone){ area = ""; try { const v = localStorage.getItem("kcgm_srcsec"); type = v == null ? "pid" : v === "all" ? "" : v; } catch (e) { type = "pid"; }
+      if (!MEM.open.size) open.add("r:" + (type || "pid")); }
     const words = () => q.split(/\s+/).filter(Boolean);
     const match = d => { const w = words(); return w.every(x => d.hay.includes(x)); };
     const subOf = t => t === "pid" || t === "pfd";
     function shown(){ return DOCS.filter(d => match(d) && (!type || d.t === type) && (!area || d.area === area)); }
     const stOf = d => { const s = d.keep.map(f => st[f]); return !s.length ? "none" : s.every(x => x === "ok") ? "ok" : s.some(x => x === "old") ? "old" : s.some(x => x === "ok") ? "part" : "no"; };
     const fname = d => (d.number + (d.rev ? " Rev " + d.rev : "") + (d.title && d.t !== "list" ? " " + d.title : "")).replace(/[\\/:*?"<>|]+/g, " ").trim();
-    const saveBtn = (d, kind) => { const href = kind === "x" ? d.xlsx : d.pdf; if (!href) return phone ? "" : `<span class="sl-b sl-b0"></span>`;
+    // Save: a plain link with the file's tidy name (kind "x" the Excel copy, else the PDF); cls/inner make the tree's small one
+    const saveBtn = (d, kind, cls = "sl-b", inner) => { const href = kind === "x" ? d.xlsx : d.pdf; if (!href) return phone ? "" : `<span class="sl-b sl-b0"></span>`;
       const name = kind === "x" ? d.xname || fname(d) + ".xlsx" : fname(d) + ".pdf", lab = kind === "x" ? "Excel" : "PDF";
-      return `<a class="sl-b sl-sv" href="${esc(href)}" download="${esc(name)}" title="Save the ${lab} to Downloads">${ICO.save}<span>${lab}</span></a>`; };
+      return `<a class="${cls} sl-sv${kind === "x" ? " sl-x" : ""}" href="${esc(href)}" download="${esc(name)}" title="Save the ${lab} to Downloads">${ICO.save}${inner != null ? inner : `<span>${lab}</span>`}</a>`; };
     const keepBtn = d => { const s = stOf(d);
       if (!d.keep.length) return `<span class="sl-b sl-b0"></span>`;
       const lab = s === "ok" ? "Cached" : s === "old" ? "Update" : "Cache";
@@ -108,47 +128,121 @@ window.SourcesList = (() => {
     let list = [];
     let redraw = false;   // (a redraw asked for while a download runs waits for it: it would wipe the running row)
     function draw(){ if (busyRow){ redraw = true; return; } redraw = false;
-      if (!DOCS) return; pills(); list = shown();
-      const need = list.filter(d => stOf(d) !== "ok" && stOf(d) !== "none"), files = [...new Set(need.flatMap(d => d.keep.filter(f => st[f] !== "ok")))];
-      const left = files.reduce((t, f) => t + ((Offline.load && OFF && OFF.sz[f]) || 0), 0), allF = [...new Set(list.flatMap(d => d.keep))],
-        have = allF.filter(f => st[f] === "ok").reduce((t, f) => t + ((OFF && OFF.sz[f]) || 0), 0), what = type ? TN[type].replace("&amp;", "&") : "documents";
-      const noun = list.length === 1 ? "document" : subOf(type) ? "drawings" : "documents";
-      $(".sl-bar").innerHTML = `<span class="sl-n"><b>${list.length}</b> ${noun}${!phone && type ? ` · ${esc(TN[type])}` : ""}${!phone && area ? ` · ${area} ${esc(AREA[area] || "")}` : ""}</span>` +
-        (list.length ? need.length ? (phone ? `<button type="button" class="sl-all">Cache all ${need.length}</button>`
-          : `<span class="sl-alln">${mb(have)} of ${mb(have + left)} MB</span>`)
-          : phone ? `<span class="sl-allok">${ICO.devOk} All cached</span>` : `<span class="sl-alln">${mb(have)} of ${mb(have)} MB</span>` : "") + `<i class="sl-pg"><i></i></i>`;
-      // desktop: Cache all heads the button columns, its "x of y MB" just above it
-      if (!phone){ $(".sl-bh").innerHTML = !list.length ? "" : need.length ? `<button type="button" class="sl-b sl-all" title="Cache every document listed on this device">${ICO.dev}<span>Cache all</span></button>`
-          : `<span class="sl-b sl-kp ok sl-allc" title="Everything listed is cached on this device">${ICO.devOk}<span>All cached</span></span>`;
-        requestAnimationFrame(() => { const n = $(".sl-alln"), th = $(".sl-bh"); if (n && th) n.style.left = (th.getBoundingClientRect().left - $(".sl-bar").getBoundingClientRect().left + 2) + "px"; }); }
+      if (!DOCS) return; if (!phone) return drawDt(); pills(); list = shown();
+      const need = list.filter(d => stOf(d) !== "ok" && stOf(d) !== "none");
+      $(".sl-bar").innerHTML = `<span class="sl-n"><b>${list.length}</b> ${list.length === 1 ? "document" : subOf(type) ? "drawings" : "documents"}</span>` +
+        (list.length ? need.length ? `<button type="button" class="sl-all">Cache all ${need.length}</button>` : `<span class="sl-allok">${ICO.devOk} All cached</span>` : "") + `<i class="sl-pg"><i></i></i>`;
       const rows = list.slice(0, 400);
-      // desktop: a Save column shows only when something listed has that file (the columns stay lined up)
-      // desktop: each row's buttons packed from the left (Cache, PDF, Excel), as many button columns as the fullest row
-      const btns = d => [d.keep.length ? keepBtn(d) : "", d.pdf ? saveBtn(d, "p") : "", d.xlsx ? saveBtn(d, "x") : ""].filter(Boolean);
-      const nb = phone ? 0 : Math.max(1, ...rows.map(d => btns(d).length));
-      const cells = d => { const b = btns(d); while (b.length < nb) b.push(`<span class="sl-b sl-b0"></span>`); return b.map((x, i) => `<td class="sl-c">${x}${i === 0 ? `<i class="sl-rb"><i></i></i>` : ""}</td>`).join(""); };
-      if (!phone) $(".sl-bh").colSpan = nb;
-      $(".sl-list").innerHTML = rows.map(d => phone
-        ? `<div class="sl-r" data-r="${esc(d.k)}"><div class="sl-t"><b>${esc(d.number.replace(/^2000-/, ""))}</b><span>${esc([d.title, d.rev ? "Rev " + d.rev : "", d.size ? mb(d.size) + " MB" : ""].filter(Boolean).join(" · "))}</span></div>${saveBtn(d, d.t === "list" || !d.pdf ? "x" : "p")}${keepBtn(d)}<i class="sl-rb"><i></i></i></div>`
-        : `<tr data-r="${esc(d.k)}"><td class="sl-num">${esc(d.number)}</td><td class="sl-ti"><button type="button" class="sl-op">${esc(d.title)}</button>${d.info ? `<button type="button" class="sl-ib" title="Details">ⓘ</button>` : ""}</td><td class="sl-rev">${d.rev ? "Rev " + esc(d.rev) : "–"}</td><td class="sl-sz">${d.size ? mb(d.size) + " MB" : ""}</td>${cells(d)}</tr>`).join("") +
-        (list.length > rows.length ? (phone ? `<div class="sl-none">${list.length - rows.length} more: search to narrow</div>` : `<tr><td colspan="7" class="sl-none">${list.length - rows.length} more: search to narrow</td></tr>`)
-          : !list.length ? (phone ? `<div class="sl-none">Nothing matches.</div>` : `<tr><td colspan="7" class="sl-none">Nothing matches.</td></tr>`) : "");
+      $(".sl-list").innerHTML = rows.map(d => `<div class="sl-r" data-r="${esc(d.k)}"><div class="sl-t"><b>${esc(d.number.replace(/^2000-/, ""))}</b><span>${esc([d.title, d.rev ? "Rev " + d.rev : "", d.size ? mb(d.size) + " MB" : ""].filter(Boolean).join(" · "))}</span></div>${saveBtn(d, d.t === "list" || !d.pdf ? "x" : "p")}${keepBtn(d)}<i class="sl-rb"><i></i></i></div>`).join("") +
+        (list.length > rows.length ? `<div class="sl-none">${list.length - rows.length} more: search to narrow</div>` : !list.length ? `<div class="sl-none">Nothing matches.</div>` : "");
       wire();
     }
     let OFF = null;
-    function wire(){
+    function wire(){   // (phone; the desktop listens once on el, below)
       el.querySelectorAll(".sl-kp").forEach(b => b.onclick = e => { e.stopPropagation(); const d = DOCS.find(x => x.k === b.dataset.k); if (!d) return;
         if (busyRow){ stop.x = true; return; }
         if (stOf(d) === "ok"){ if (confirm(`Remove ${d.number} from this device?`)) Offline.drop(d.keep).then(refresh); return; }
         run([d], b.closest("[data-r]")); });
       const all = $(".sl-all"); if (all) all.onclick = () => { if (busyRow){ stop.x = true; return; } run(list.filter(d => stOf(d) !== "ok"), null); };
-      const sva = $(".sl-sva"); if (sva) sva.onclick = () => saveAll(list, sva);
       el.querySelectorAll(".sl-sv").forEach(a => a.addEventListener("click", e => e.stopPropagation()));
-      el.querySelectorAll(".sl-ib").forEach(b => b.onclick = e => { e.stopPropagation(); const tr = b.closest("tr"), nx = tr.nextElementSibling;
-        if (nx && nx.classList.contains("sl-info")){ nx.remove(); b.classList.remove("on"); return; }
-        const d = DOCS.find(x => x.k === tr.dataset.r), v = d.info || {}, kv = (l, x) => x ? `<div><span>${l}</span>${esc(x)}</div>` : "";
-        tr.insertAdjacentHTML("afterend", `<tr class="sl-info"><td colspan="7"><div class="sl-kv">${kv("Type", v.kind)}${kv("Revision date", v.date)}${kv("Status", v.status)}${kv("Used in the app for", v.used)}${kv("Note", v.note)}</div></td></tr>`); b.classList.add("on"); });
-      el.querySelectorAll(phone ? ".sl-r" : ".sl-op").forEach(x => x.onclick = () => openDoc(DOCS.find(d => d.k === x.closest("[data-r]").dataset.r)));
+      el.querySelectorAll(".sl-r").forEach(x => x.onclick = () => openDoc(DOCS.find(d => d.k === x.dataset.r)));
+    }
+
+    // ---------- desktop: sections on the left, the selection tree on the right ----------
+    // a download runs under an id ("s:pid" a section, "a:pid:F13" an area, "d:<key>" a document, "v:<key>" its revision
+    // row) rather than a row: the tree redraws freely while it runs (open, close, select) and paintBusy puts the progress
+    // back on the redrawn row, so a redraw never wipes it
+    let busy = null;
+    const sz = f => (OFF && OFF.sz[f]) || 0;
+    const mbOf = ds => { const f = [...new Set(ds.flatMap(d => d.keep))]; return [f.filter(x => st[x] === "ok").reduce((t, x) => t + sz(x), 0), f.reduce((t, x) => t + sz(x), 0)]; };
+    const allOk = ds => ds.every(d => !d.keep.length || stOf(d) === "ok");
+    const ofT = (ds, t) => t ? ds.filter(d => d.t === t) : ds;
+    const aKey = d => d.area || "–";
+    const byArea = ds => { const m = {}; ds.forEach(d => (m[aKey(d)] = m[aKey(d)] || []).push(d));
+      return Object.keys(m).sort((a, b) => (a === "–" ? 1e9 : parseInt(a.slice(1))) - (b === "–" ? 1e9 : parseInt(b.slice(1)))).map(a => [a, m[a]]); };
+    // a group's documents: a section's every one (its MB line counts them all), a tree group's those the search shows
+    function grpDocs(id){ const [w, t, a] = id.split(":"), ds = ofT(w === "s" ? DOCS : DOCS.filter(match), t); return w === "a" ? ds.filter(d => aKey(d) === a) : ds; }
+    const isOpen = id => q && id[0] !== "d" ? !shut.has(id) : open.has(id);
+    function toggle(id){ const s = q && id[0] !== "d" ? shut : open; s.has(id) ? s.delete(id) : s.add(id); draw(); }
+    // the groups the tree shows now (for Expand all / Collapse all)
+    const groups = () => { const hit = DOCS.filter(match); return (type ? [type] : TYPES.map(x => x[0])).flatMap(t => { const ds = ofT(hit, t); if (!ds.length) return [];
+      return ["r:" + t].concat(subOf(t) ? byArea(ds).map(([a]) => `a:${t}:${a}`) : []); }); };
+    // Cache all for a group: the section's square button, or the tree's small one; green once all of it is cached
+    const caBtn = (id, ds, big) => { if (!ds.some(d => d.keep.length)) return big ? `<span class="sl-b sl-b0"></span>` : "";
+      const ok = allOk(ds); return `<button type="button" class="${big ? "sl-b" : "sl-ib"} sl-kp${ok ? " ok" : ""}" data-ca="${esc(id)}" title="${ok ? "All cached on this device" : "Cache all of these on this device"}">${ok ? ICO.devOk : ICO.dev}${big ? `<span>${ok ? "Cached" : "Cache all"}</span>` : ""}</button>`; };
+    function secRow(id, name, ds, n){ const [h, t] = mbOf(ds);
+      return `<div class="sl-sec${id === "s:" + type ? " on" : ""}${q && !n ? " sl-z" : ""}" data-id="${esc(id)}" role="button" tabindex="0"><div class="sl-st"><b>${esc(name)}</b><small>${q ? `${n} of ${ds.length} match` : `${ds.length} document${ds.length === 1 ? "" : "s"}`} · <span class="sl-pt">${mb(h)} of ${mb(t)} MB</span></small><i class="sl-pb"><i style="width:${t ? (h / t * 100).toFixed(1) : 0}%"></i></i></div>${caBtn(id, ds, true)}</div>`; }
+    function drawDt(){
+      const hit = DOCS.filter(match); list = ofT(hit, type);
+      $(".sl-secs").innerHTML = TYPES.filter(([k]) => DOCS.some(d => d.t === k)).map(([k, n]) => secRow("s:" + k, n, ofT(DOCS, k), ofT(hit, k).length)).join("");
+      $(".sl-ev").innerHTML = secRow("s:", "All sources", DOCS, hit.length);
+      const what = type ? TN[type] : "documents";
+      $(".sl-sva").title = `Save every ${type ? TN[type].replace(/s$/, "") : "document"}${q ? " the search shows" : ""} to Downloads, as one zip`;
+      $(".sl-svn").textContent = `${list.length} ${list.length === 1 ? "document" : what} as one zip`;
+      // the tree, Explorer style: dotted guides (one per level, a line on when that level's branch goes on), +/− boxes;
+      // only open nodes are drawn, so a few hundred rows at most
+      const H = [], tail = `<i class="sl-rb"><i></i></i>`;
+      const gd = (pre, lv, last) => pre.map(c => `<span class="sl-g${c ? " sl-gv" : ""}"></span>`).join("") + (lv ? `<span class="sl-g sl-gt${last ? " sl-gl" : ""}"></span>` : "");
+      const tg = o => `<span class="sl-tg">${o ? "−" : "+"}</span>`;
+      const okIco = s => s === "ok" ? `<span class="sl-ok" title="Cached on this device">${ICO.devOk}</span>` : s === "old" ? `<span class="sl-ok old" title="An older copy is cached: cache it again to update">${ICO.devOk}</span>`
+        : s === "part" ? `<span class="sl-ok part" title="Partly cached">${ICO.dev}</span>` : "";
+      const kp = (d, s) => d.keep.length ? `<button type="button" class="sl-ib sl-kp ${s}" title="${s === "ok" ? "Cached on this device. Click to remove" : s === "old" ? "Update the cached copy" : "Cache on this device to open with no signal"}">${s === "ok" ? ICO.devOk : ICO.dev}</button>` : "";
+      const acts = (d, s) => (d.pdf ? saveBtn(d, "p", "sl-ib", "") : "") + (d.xlsx ? saveBtn(d, "x", "sl-ib", "") : "") + kp(d, s);
+      const grp = (id, lv, pre, last, label, ds, kids) => { const o = isOpen(id);
+        H.push(`<div class="sl-tr sl-grp" data-id="${esc(id)}"><span class="sl-nm">${gd(pre, lv, last)}${tg(o)}${o ? ICO.fo : ICO.fc}<span class="sl-l">${esc(label)}<em>(${ds.length})</em></span></span><span></span><span></span><span></span>` +
+          `<span class="sl-c sl-pt">${ds.filter(d => stOf(d) === "ok").length} of ${ds.length}</span><span class="sl-acts">${caBtn(id, ds)}</span>${tail}</div>`);
+        if (o) kids(lv ? pre.concat(!last) : pre); };
+      const doc = (d, lv, pre, last) => { const id = "d:" + d.k, o = isOpen(id), s = stOf(d), v = d.info || {}, sel = x => MEM.sel === x ? " sel" : "";
+        const tip = [v.kind, v.status, v.used && "Used for " + v.used, v.note].filter(Boolean).concat("Click to open").join("\n");
+        H.push(`<div class="sl-tr sl-doc${sel(id)}" data-id="${esc(id)}" data-r="${esc(d.k)}"><span class="sl-nm">${gd(pre, lv, last)}${tg(o)}${d.pdf ? ICO.pdf : ICO.xls}<span class="sl-l">${esc(d.number + (d.rev ? "_Rev" + d.rev : ""))}</span></span>` +
+          `<span class="sl-c"><button type="button" class="sl-op" title="${esc(tip)}">${esc(d.title)}</button></span><span class="sl-c">${d.rev ? "Rev " + esc(d.rev) : ""}</span><span class="sl-c">${d.size ? mb(d.size) + " MB" : ""}</span>` +
+          `<span class="sl-c sl-pt">${okIco(s)}</span><span class="sl-acts">${acts(d, s)}</span>${tail}</div>`);
+        // its revisions: the project library holds the latest only, so one row (no made up older ones)
+        if (o) H.push(`<div class="sl-tr sl-rv${sel("v:" + d.k)}" data-id="v:${esc(d.k)}" data-r="${esc(d.k)}"><span class="sl-nm">${gd(pre.concat(!last), lv + 1, true)}<span class="sl-tg0"></span>${ICO.rev}<span class="sl-l">Rev ${esc(d.rev || "–")}${d.date ? " · " + esc(d.date) : ""}<u>latest</u></span></span>` +
+          `<span class="sl-c">${esc(v.status || "")}</span><span></span><span class="sl-c">${d.size ? mb(d.size) + " MB" : ""}</span><span class="sl-c sl-pt">${okIco(s)}</span><span class="sl-acts">${acts(d, s)}</span>${tail}</div>`); };
+      (type ? [type] : TYPES.map(x => x[0])).forEach(t => { const ds = ofT(hit, t); if (!ds.length) return;
+        grp("r:" + t, 0, [], true, TN[t], ds, pre => subOf(t)
+          ? byArea(ds).forEach(([a, as], i, A) => grp(`a:${t}:${a}`, 1, pre, i === A.length - 1, a === "–" ? "Other" : `${a} ${AREA[a] || ""}`.trim(), as, p2 => as.forEach((d, j) => doc(d, 2, p2, j === as.length - 1))))
+          : ds.forEach((d, j) => doc(d, 1, pre, j === ds.length - 1))); });
+      $(".sl-rows").innerHTML = H.join("") || `<div class="sl-none">${q ? `Nothing matches${type && hit.length ? ` in ${esc(TN[type])}; ${hit.length} in All sources` : ""}.` : "Nothing here."}</div>`;
+      paintBusy();
+    }
+    function paintBusy(){ const r = busy && el.querySelector(`[data-id="${CSS.escape(busy.id)}"]`); if (!r) return;
+      const v = busy.have + busy.f * (busy.total - busy.have), kb = r.querySelector(".sl-kp"), l = r.querySelector(".sl-pt"), bar = r.querySelector(".sl-rb i,.sl-pb i");
+      r.classList.add("sl-on"); if (kb && !kb.dataset.stop){ kb.dataset.stop = 1; kb.title = "Stop"; kb.innerHTML = ICO.stop + (kb.classList.contains("sl-b") ? "<span>Stop</span>" : ""); }
+      if (l) l.textContent = `${mb(v)} ${r.classList.contains("sl-sec") ? "of" : "/"} ${mb(busy.total)} MB`;
+      if (bar) bar.style.width = (v / (busy.total || 1) * 100).toFixed(1) + "%"; }
+    if (!phone){
+      el.addEventListener("click", e => { const t = e.target; if (!DOCS || t.closest(".sl-sv")) return;   // (a Save link downloads by itself)
+        const x = t.closest("[data-x]");
+        if (x){ const g = groups(); if (x.dataset.x === "1"){ g.forEach(id => open.add(id)); shut.clear(); }
+          else { [...open].forEach(id => id[0] !== "r" && open.delete(id)); if (q) g.forEach(id => id[0] === "a" && shut.add(id)); } return draw(); }
+        const r = t.closest("[data-id]"); if (!r) return;
+        const kb = t.closest(".sl-kp");
+        if (kb){ if (busy){ stop.x = true; return; }
+          if (kb.dataset.ca){ const ds = grpDocs(kb.dataset.ca); if (!allOk(ds)) run(ds, r); return; }   // (all of it: the ones cached are skipped, the MB count on from them)
+          const d = DOCS.find(x => x.k === r.dataset.r); if (!d) return;
+          if (stOf(d) === "ok"){ if (confirm(`Remove ${d.number} from this device?`)) Offline.drop(d.keep).then(refresh); return; }
+          return run([d], r); }
+        if (r.classList.contains("sl-sec")){ type = r.dataset.id.slice(2); if (type) open.add("r:" + type);
+          try { localStorage.setItem("kcgm_srcsec", type || "all"); } catch (e) {} $(".sl-tree").scrollTop = 0; return draw(); }
+        if (t.closest(".sl-op")) return openDoc(DOCS.find(x => x.k === r.dataset.r));
+        if (t.closest(".sl-tg") || r.classList.contains("sl-grp")) return toggle(r.dataset.id);
+        if (r.dataset.r){ MEM.sel = r.dataset.id; el.querySelectorAll(".sl-tr.sel").forEach(x => x.classList.remove("sel")); r.classList.add("sel"); } });
+      el.addEventListener("dblclick", e => { const r = e.target.closest(".sl-tr[data-r]"); if (r && !e.target.closest(".sl-acts,.sl-tg,.sl-op")) openDoc(DOCS.find(x => x.k === r.dataset.r)); });
+      el.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList.contains("sl-sec")) e.target.click(); });
+      $(".sl-sva").onclick = () => saveAll(list, $(".sl-sva"));
+      // the divider: drag to share the width (the side 260px to half), double click for the default
+      const dv = $(".sl-dv"), side = $(".sl-side"), DEF = 330;
+      const setW = (w, lim) => { if (lim) w = Math.max(260, Math.min(Math.max(260, el.clientWidth * .5), w)); el.style.setProperty("--slw", Math.round(w) + "px"); };
+      try { const w = +localStorage.getItem("kcgm_srcw"); if (w) setW(w); } catch (e) {}   // (CSS keeps it in bounds: the pane may still be hidden)
+      let x0 = 0, w0 = 0, on = false;
+      dv.addEventListener("pointerdown", e => { on = true; x0 = e.clientX; w0 = side.getBoundingClientRect().width; dv.setPointerCapture(e.pointerId); dv.classList.add("drag"); document.body.classList.add("splitting"); e.preventDefault(); });
+      dv.addEventListener("pointermove", e => { if (on) setW(w0 + e.clientX - x0, true); });
+      const end = () => { if (!on) return; on = false; dv.classList.remove("drag"); document.body.classList.remove("splitting");
+        try { localStorage.setItem("kcgm_srcw", Math.round(side.getBoundingClientRect().width)); } catch (e) {} };
+      dv.addEventListener("pointerup", end); dv.addEventListener("pointercancel", end);
+      dv.addEventListener("dblclick", () => { setW(DEF); try { localStorage.removeItem("kcgm_srcw"); } catch (e) {} });
     }
     // open a document: a drawing in the app's viewer (or the browser's), a list as its tables
     function openDoc(d){ if (!d) return;
@@ -165,58 +259,74 @@ window.SourcesList = (() => {
         const a = document.createElement("a"); a.href = URL.createObjectURL(zip(got)); a.download = `Project Library ${type ? TN[type].replace("&amp;", "&") : "sources"}.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4e4);
       } catch (e){ alert("Couldn't save all: " + e.message); }
       b.disabled = false; lab.textContent = was; }
-    // keep on the device: one row, or every row the filters show; the row's (or the bar's) text counts up the MB
+    // keep on the device: one row, or every row the filters show (phone), a section or tree group (desktop); the row's (or
+    // the bar's) text counts up the MB
     async function run(ds, row){
       const files = [...new Set(ds.flatMap(d => d.keep))]; if (!files.length) return;
       const total = files.reduce((t, f) => t + (OFF.sz[f] || 0), 0), have = files.filter(f => st[f] === "ok").reduce((t, f) => t + (OFF.sz[f] || 0), 0);
-      busyRow = row || el; stop.x = false; el.classList.add("sl-busy"); busyRow.classList.add("sl-on");
-      const bar = row ? row.querySelector(".sl-rb i") : $(".sl-pg i");
-      const kb = row ? row.querySelector(".sl-kp") : !phone && $(".sl-all"); if (kb) kb.innerHTML = ICO.stop + `<span>${row ? "" : "Stop"}</span>`;
-      const say = f => { const t = `${mb(have + f * (total - have))} / ${mb(total)} MB`; const l = row ? row.querySelector(".sl-kp span") : phone ? $(".sl-all") : $(".sl-alln"); if (l) l.textContent = row || phone ? t : t.replace(" / ", " of "); if (bar) bar.style.width = ((have + f * (total - have)) / total * 100).toFixed(1) + "%"; };
+      stop.x = false; el.classList.add("sl-busy"); let say;
+      if (phone){ busyRow = row || el; busyRow.classList.add("sl-on");
+        const bar = row ? row.querySelector(".sl-rb i") : $(".sl-pg i");
+        const kb = row && row.querySelector(".sl-kp"); if (kb) kb.innerHTML = ICO.stop + `<span></span>`;
+        say = f => { const t = `${mb(have + f * (total - have))} / ${mb(total)} MB`; const l = row ? row.querySelector(".sl-kp span") : $(".sl-all"); if (l) l.textContent = t; if (bar) bar.style.width = ((have + f * (total - have)) / total * 100).toFixed(1) + "%"; }; }
+      else { busy = { id: row.dataset.id, have, total, f: 0 }; say = f => { busy.f = f; paintBusy(); }; }
       say(0);
       if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
       try { await Offline.get(files, say, stop); } catch (e){ if (e.message !== "stopped") alert("Stopped: " + e.message + ". What was saved is kept; tap Cache again to finish."); }
-      busyRow.classList.remove("sl-on"); busyRow = null; el.classList.remove("sl-busy"); refresh();   // (refresh redraws, so a waiting redraw is done too)
+      if (busyRow){ busyRow.classList.remove("sl-on"); busyRow = null; } busy = null; el.classList.remove("sl-busy"); refresh();   // (refresh redraws, so a waiting redraw is done too)
     }
     async function refresh(){ if (!DOCS || !window.Offline) return draw(); st = await Offline.check([...new Set(DOCS.flatMap(d => d.keep))]).catch(() => ({})); draw(); }
     load().then(async () => { OFF = await Offline.load().catch(() => ({ sz: {} })); draw(); refresh(); });
     return { refresh, filter: v => { q = String(v || "").trim().toLowerCase(); draw(); } };
   }
 
-  const css = `.sl-dt{display:flex;gap:18px;align-items:flex-start}
-.sl-side{flex:0 0 280px;position:sticky;top:calc(var(--tb,0px) + 12px);background:var(--card,var(--panel));border:1px solid var(--line);border-radius:12px;padding:12px;max-height:calc(100vh - var(--tb,0px) - 30px);overflow-y:auto;box-sizing:border-box}
-.sl-q{width:100%;box-sizing:border-box;height:36px;border:1.5px solid var(--line);border-radius:18px;background:var(--bg);color:var(--ink);padding:0 12px;font:inherit;font-size:var(--fb,15px)}
+  const css = `.sl-q{width:100%;box-sizing:border-box;height:36px;border:1.5px solid var(--line);border-radius:18px;background:var(--bg);color:var(--ink);padding:0 12px;font:inherit;font-size:var(--fb,15px)}
 .sl-h{font-size:var(--fl,13px);font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:14px 2px 6px}
-.sl-ck{display:flex;align-items:center;gap:9px;width:100%;border:0;background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:5px 2px;text-align:left;cursor:pointer;border-radius:6px}
-.sl-ck b{flex:none;width:16px;height:16px;border-radius:4px;border:2px solid color-mix(in srgb,var(--ink) 25%,var(--line));box-sizing:border-box}.sl-ck.on b{background:var(--gold);border-color:var(--gold)}
-.sl-ck span{flex:1;min-width:0}.sl-ck i{font-style:normal;color:var(--mute);font-weight:600;font-size:var(--fl,13px)}.sl-ck:hover{background:var(--card2,var(--panel2))}
-.sl-ah[hidden]{display:none}
-.sl-main{flex:1;min-width:0}
 .sl-bar{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 8px;font-size:var(--fb,15px);color:var(--mute);min-height:32px}.sl-bar b{color:var(--ink)}
 .sl-all{border:1.5px solid var(--gold);background:var(--card,var(--panel));color:color-mix(in srgb,var(--gold) 72%,var(--ink));border-radius:16px;padding:5px 12px;font:inherit;font-size:var(--fl,13px);font-weight:800;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
 .sl-allok{display:inline-flex;align-items:center;gap:5px;color:#1f9a55;font-weight:800;font-size:var(--fl,13px)}
 .sl-pg{position:absolute;left:0;right:0;bottom:-4px;height:3px;display:none}.sl-busy:not(:has(.sl-r.sl-on,tr.sl-on)) .sl-pg{display:block}.sl-pg i,.sl-rb i{display:block;height:100%;width:0;background:var(--gold);transition:width .2s}
-.sl-tb{width:100%;border-collapse:collapse;background:var(--card,var(--panel));border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:var(--fb,15px)}
-.sl-tb th{text-align:left;font-size:var(--fl,13px);letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:9px 10px;background:var(--card2,var(--panel2));font-weight:800}
-.sl-tb td{padding:6px 10px;border-top:1px solid var(--line);vertical-align:middle}.sl-num{font-weight:800;white-space:nowrap}.sl-rev,.sl-sz{white-space:nowrap;color:var(--mute)}
-.sl-op{border:0;background:none;color:var(--ink);font:inherit;padding:0;text-align:left;cursor:pointer}.sl-op:hover{color:var(--gold);text-decoration:underline}
-.sl-ib{border:0;background:none;color:var(--mute);cursor:pointer;font-size:var(--fb,15px);margin-left:6px;padding:0}.sl-ib.on{color:var(--gold)}
-.sl-info td{background:var(--card2,var(--panel2))}.sl-kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;font-size:var(--fb,15px)}.sl-kv span{color:var(--mute)}
-/* the buttons: each kind in its own column, every one the same width, so they line up down the table */
-td.sl-c{width:1%;padding-left:3px;padding-right:3px;position:relative}td.sl-c:last-child{padding-right:10px}
 .sl-b{display:inline-flex;align-items:center;justify-content:center;gap:5px;box-sizing:border-box;height:30px;border:1.5px solid var(--gold);background:var(--card,var(--panel));color:color-mix(in srgb,var(--gold) 72%,var(--ink));border-radius:9px;padding:0 10px;font:inherit;font-size:var(--fl,13px);font-weight:800;text-decoration:none;white-space:nowrap;cursor:pointer;font-variant-numeric:tabular-nums}
-.sl-b0{border:0!important;background:none!important}
-/* desktop: square buttons as on the phone, short rows, pill filters */
-.sl-dt .sl-b{flex-direction:column;gap:1px;width:46px;height:34px;padding:0;border-radius:9px;font-size:10.5px;line-height:1}.sl-dt .sl-b svg{width:14px;height:14px}
-.sl-dt tr.sl-on .sl-kp{width:auto;min-width:46px;padding:0 6px}.sl-dt .sl-tb td{padding-top:3px;padding-bottom:3px}.sl-dt .sl-tb th{padding-top:7px;padding-bottom:7px}
-.sl-dt .sl-tb td.sl-ti{width:100%}.sl-dt td.sl-c{padding-left:2px;padding-right:2px}
-.sl-hb{display:flex;gap:6px;margin:10px 0 0}.sl-hb .sl-b,.sl-bh .sl-b{width:auto;min-width:54px;padding:0 8px}.sl-dt .sl-tb th.sl-bh{padding:4px 2px;text-transform:none;letter-spacing:0}.sl-allc{cursor:default}.sl-b:disabled{opacity:.6;cursor:progress}
-.sl-dt .sl-alln{position:absolute;bottom:2px;white-space:nowrap}.sl-alln{font-size:var(--fl,13px);color:var(--mute);font-variant-numeric:tabular-nums}
-.sl-dt .sl-types,.sl-dt .sl-areas{display:flex;flex-wrap:wrap;gap:6px}.sl-dt .sl-p{border-radius:9px;font-size:14px;padding:4px 10px}
+.sl-b0{border:0!important;background:none!important}.sl-b:disabled{opacity:.6;cursor:progress}
 .sl-kp.ok{border-color:#2aa765;color:#1f9a55}.sl-b,.sl-p,.sl-all,.sl-r{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.sl-b:active,.sl-p:active,.sl-all:active{transform:scale(.93);background:var(--th-t,#eef1f5)!important;transition:transform .05s}.sl-r:active{background:var(--th-t,#eef1f5)}.sl-kp.old,.sl-kp.part{border-style:dashed}
-.sl-busy .sl-kp:not(.sl-on .sl-kp),.sl-busy .sl-all:not(.sl-dt.sl-on .sl-all,.sl-ph.sl-on .sl-all){opacity:.4;pointer-events:none}
-.sl-rb{display:none;position:absolute;left:3px;right:10px;bottom:3px;height:2px}tr.sl-on .sl-rb{display:block}
+.sl-busy .sl-kp:not(.sl-on .sl-kp),.sl-busy .sl-all:not(.sl-ph.sl-on .sl-all){opacity:.4;pointer-events:none}
+.sl-rb{display:none;position:absolute;left:3px;right:10px;bottom:3px;height:2px}
 .sl-none{color:var(--mute);padding:14px 10px;font-size:var(--fb,15px)}
+/* desktop: the side panel, the divider and the tree's card fill the window below the bar; each scrolls on its own */
+.sl-dt{display:flex;align-items:stretch;height:calc(100vh - var(--tb,0px) - 40px);min-height:420px}
+.sl-side{flex:0 0 var(--slw,330px);min-width:260px;max-width:50%;background:var(--card,var(--panel));border:1px solid var(--line);border-radius:12px;padding:12px;overflow-y:auto;box-sizing:border-box}
+.sl-dt .sl-b{flex-direction:column;gap:1px;width:46px;height:34px;padding:0;border-radius:9px;font-size:10.5px;line-height:1}.sl-dt .sl-b svg{width:14px;height:14px}
+.sl-hb{display:flex;align-items:center;gap:8px;margin:10px 0 0}.sl-hb .sl-b{width:auto;min-width:54px;padding:0 8px}.sl-svn{font-size:12px;color:var(--mute);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sl-sec{display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:2px;border-radius:9px;cursor:pointer;border:1.5px solid transparent;outline:0}.sl-sec.on{background:var(--th-t);border-color:var(--th)}.sl-sec:hover:not(.on),.sl-sec:focus-visible:not(.on){background:var(--card2,var(--panel2))}
+.sl-st{flex:1;min-width:0}.sl-st b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sl-st small{display:block;color:var(--mute);font-size:12px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.sl-pb{display:block;height:3px;border-radius:2px;background:var(--line);margin-top:5px;overflow:hidden}.sl-pb i{display:block;height:100%;background:#2aa765;transition:width .2s}
+.sl-sec.sl-z .sl-st{opacity:.5}.sl-sec .sl-b{flex:none;width:auto;min-width:54px;height:36px;padding:0 6px}
+/* the divider, as the app's others: a 2px line with a dotted grip, gold while dragged */
+.sl-dv{flex:0 0 24px;position:relative;cursor:col-resize;touch-action:none}.sl-dv::before{content:"";position:absolute;left:11px;top:14px;bottom:14px;width:2px;border-radius:1px;background:var(--line)}
+.sl-dv i{position:absolute;left:7px;top:50%;margin-top:-22px;width:10px;height:44px;box-sizing:border-box;border-radius:5px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px}.sl-dv i b{width:3px;height:3px;border-radius:50%;background:var(--mute)}
+.sl-dv:hover::before,.sl-dv.drag::before{background:var(--gold)}.sl-dv:hover i,.sl-dv.drag i{border-color:var(--gold)}.sl-dv:hover i b,.sl-dv.drag i b{background:var(--gold)}body.splitting{cursor:col-resize;user-select:none}
+.sl-main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card,var(--panel));border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sl-tbar{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--card2,var(--panel2))}.sl-tbar b{font-size:13px;letter-spacing:.04em}.sl-sp{flex:1}
+.sl-tbb{display:inline-flex;align-items:center;gap:5px;height:26px;border:1px solid var(--line);background:var(--card,var(--panel));border-radius:6px;font:inherit;font-size:12px;font-weight:700;padding:0 9px;cursor:pointer;color:var(--ink)}.sl-tbb:hover:not(:disabled){border-color:var(--th)}.sl-tbb:disabled{opacity:.45;cursor:default}
+/* the selection tree: a property grid's grey header, 22px rows, Navisworks' blue hover and selection */
+.sl-tree{flex:1;overflow:auto;font-size:13px;--cols:minmax(250px,2.4fr) minmax(110px,2fr) 58px 78px 92px 82px}
+.sl-gh,.sl-tr{display:grid;grid-template-columns:var(--cols);min-width:680px}
+.sl-gh{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute)}.sl-gh span{padding:4px 8px;border-right:1px solid var(--line)}.sl-gh span:last-child{border-right:0}
+.sl-tr{position:relative;height:22px;line-height:22px;white-space:nowrap;cursor:default}.sl-tr>span{padding:0 8px;min-width:0;overflow:hidden;text-overflow:ellipsis;border-right:1px solid color-mix(in srgb,var(--line) 55%,transparent)}.sl-tr>span:nth-child(6){border-right:0}
+.sl-tr:hover{background:#e5f1fb}.sl-tr.sel{background:#cce4f7;box-shadow:inset 0 0 0 1px #99c9ef}
+html[data-theme=dark] .sl-tr:hover{background:#26384a}html[data-theme=dark] .sl-tr.sel{background:#1f4466;box-shadow:inset 0 0 0 1px #3a78b0}
+.sl-nm{display:flex;align-items:center;gap:4px}.sl-c{color:var(--mute);font-variant-numeric:tabular-nums}.sl-grp[data-id^="r:"] .sl-l{font-weight:700}.sl-grp .sl-c{color:var(--ink)}
+.sl-g{flex:none;width:16px;height:22px;position:relative;margin-right:-4px}.sl-gv::before,.sl-gt::before{content:"";position:absolute;left:7px;top:0;bottom:0;border-left:1px dotted #8a929c}.sl-gl::before{bottom:11px}.sl-gt::after{content:"";position:absolute;left:8px;width:8px;top:11px;border-top:1px dotted #8a929c}
+.sl-tg{flex:none;box-sizing:border-box;width:11px;height:11px;margin:0 1px 0 2px;border:1px solid #8a929c;background:var(--card,var(--panel));font-size:11px;line-height:8px;text-align:center;color:var(--ink);font-weight:700;cursor:pointer;user-select:none}.sl-tg0{flex:none;width:14px}
+.sl-ic{flex:none;margin-right:2px}.sl-l{min-width:0;overflow:hidden;text-overflow:ellipsis}.sl-l em{font-style:normal;color:var(--mute);font-weight:400;margin-left:6px}
+.sl-l u{text-decoration:none;font-size:10.5px;font-weight:800;color:#1f9a55;border:1px solid #2aa765;border-radius:4px;padding:0 4px;margin-left:8px;line-height:14px;display:inline-block}
+.sl-op{border:0;background:none;color:inherit;font:inherit;padding:0;text-align:left;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sl-op:hover{color:var(--ink);text-decoration:underline}
+.sl-ok{display:inline-flex;vertical-align:-3px;color:#1f9a55}.sl-ok svg{width:14px;height:14px}.sl-ok.old{color:#c47f0a}.sl-ok.part{color:var(--mute)}
+.sl-acts{display:flex;align-items:center;justify-content:flex-end;gap:3px;padding:0 6px!important}
+.sl-ib{flex:none;box-sizing:border-box;width:22px;height:20px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--ink) 22%,var(--line));border-radius:5px;background:var(--card,var(--panel));color:var(--ink);padding:0;cursor:pointer;text-decoration:none}
+.sl-ib svg{width:13px;height:13px}.sl-ib:hover{border-color:var(--th);color:var(--th)}.sl-ib.sl-x{color:#1f8a4c}.sl-ib.ok{color:#1f9a55;border-color:#2aa765}.sl-ib.old,.sl-ib.part{border-style:dashed}
+.sl-tr .sl-rb{left:0;right:0;bottom:0}.sl-tr.sl-on .sl-rb{display:block}.sl-tr.sl-on .sl-pt{color:var(--ink)}
+.sl-dt .sl-none{font-size:13px}
 /* phone */
 .sl-ph .sl-pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -10px 7px;padding:0 10px}.sl-ph .sl-pills::-webkit-scrollbar{display:none}.sl-ph .sl-pills[hidden]{display:none}
 .sl-p{flex:none;border:1.5px solid color-mix(in srgb,var(--ink) 16%,var(--line));background:var(--card,var(--panel));color:var(--ink);border-radius:16px;padding:5px 11px;font:inherit;font-size:var(--fl,13px);font-weight:800;white-space:nowrap;cursor:pointer}
