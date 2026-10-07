@@ -568,9 +568,9 @@ body.sp-on{overflow:hidden}
 .sp-ref{position:absolute;pointer-events:auto;cursor:pointer;background:rgba(90,100,115,.06);border-radius:2px}
 .sp-ref.d{background:rgba(90,100,115,.11)}
 .sp-ref.hv,.sp-ref.hit{background:rgba(90,100,115,.22)}
-.sp-hb{position:absolute;box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.1);border-radius:2px;pointer-events:none}   /* a find result on any sheet */
-.sp-ref.fit{box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.1)}.sp-ref.fit.o{border-radius:50%}
-.sp-ref.fit.off{border-color:rgba(90,100,115,.35);background:rgba(90,100,115,.1)}.sp-ref.fit.hv{background:rgba(30,110,230,.22)}.sp-ref.fit.off.hv{background:rgba(90,100,115,.22)}   /* a checked sheet: red labels, grey when a find leaves them out */.sp-refs .sp-ref{pointer-events:none}
+.sp-hb{position:absolute;box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:2px;pointer-events:none}.sp-hb.sp-hbon{border-width:calc(var(--rbw,1.5px) + 1px);border-color:#1e6ee6;background:rgba(30,110,230,.32);box-shadow:0 0 0 2px rgba(255,255,255,.7)}   /* the place tapped or stepped to: a stronger box, never an arrow */   /* a find result on any sheet */
+.sp-ref.fit{box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.28)}.sp-ref.fit.o{border-radius:50%}
+.sp-ref.fit.off{border-color:rgba(90,100,115,.35);background:rgba(90,100,115,.1)}.sp-ref.fit.hv{background:rgba(30,110,230,.32)}.sp-ref.fit.off.hv{background:rgba(90,100,115,.22)}   /* a checked sheet: red labels, grey when a find leaves them out */.sp-refs .sp-ref{pointer-events:none}
 /* the page's text, invisible but selectable (left drag), on top of everything; a tag under it still opens on a click */
 .sp-text{position:absolute;inset:0;overflow:hidden;line-height:1;text-size-adjust:none;-webkit-text-size-adjust:none;z-index:2;user-select:text;-webkit-user-select:text}
 .sp-text span,.sp-text br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0 0}

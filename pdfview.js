@@ -186,6 +186,13 @@ window.PdfView = (() => {
     V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true;
     V.el.querySelector(".sp-q").value = cur.find || "";
     V.msg.textContent = "Loading…"; V.msg.hidden = false;
+    // the sheet's picture straight away, sized to the window, while the PDF itself loads behind it
+    picsP.then(() => { if (cur !== me || V.pgFor === me) return; const pn = cur.page || 1, key = cur.url.replace(/^\.\//, "").split("?")[0];
+      if (!(PICS && PICS[key] >= pn)) return; const im = new Image(); im.decoding = "async";
+      im.onload = () => { if (cur !== me || V.pgFor === me) return; const cs = getComputedStyle(V.body), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16 - Math.max(0, (parseFloat(cs.paddingTop) || 0) - 8);
+        const k = cur.fit === "page" ? Math.min(W / im.width, H / im.height) : W / im.width; V.sheet.style.width = Math.round(im.width * k) + "px"; V.sheet.style.height = Math.round(im.height * k) + "px";
+        V.bg.width = im.width; V.bg.height = im.height; V.bg.getContext("2d").drawImage(im, 0, 0); V.hi.style.visibility = "hidden"; V.msg.hidden = true; V.ox = V.oy = 0; slide(); };
+      im.src = `${cur.url.split("?")[0]}.p${pn}.png`; });
     let d; try { d = await getDoc(cur.url); } catch (e) { V.msg.textContent = "Couldn't load the PDF (" + e.message + "). Check the connection."; return; }
     V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
     V.zoom = 1; await go(cur.page);
@@ -210,11 +217,14 @@ window.PdfView = (() => {
     V.body.scrollTo({ left: (h.l + h.w / 2) * V.sheet.offsetWidth - V.body.clientWidth / 2, top: (h.t + h.h / 2) * V.sheet.offsetHeight - V.body.clientHeight / 2 });
     const v = REG.get(curId); if (v){ v.tap = V.tap; v.snap = state(); v.at = v.snap; }
   }
-  // a red see-through arrow pointing down at a box on the sheet (fractions of the sheet), 1.8% of its width
-  function arrowAt(h, cls){ const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), A = vp.width / vp.height, aw = .018, ah = aw * 1.7 * A;
-    return `<svg class="sp-arrow ${cls || ""}" viewBox="0 0 10 17" preserveAspectRatio="none" aria-hidden="true" style="left:${(h.l + h.w / 2 - aw / 2) * 100}%;top:${(h.t - .002 * A - ah) * 100}%;width:${aw * 100}%;height:${ah * 100}%"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; }
+  // the place tapped or found: a highlighted box on it (no arrow), grown a little round the tag like the search boxes
+  function arrowAt(h, cls){ const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), [l, t, w, hh] = PdfView.grow(h.l * 1e4, h.t * 1e4, h.w * 1e4, h.h * 1e4, vp.width / vp.height);
+    return `<i class="sp-hb sp-hbon ${cls || ""}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${hh / 100}%"></i>`; }
   function drawTap(){ if (!V.tapEl) return; const on = V.tap && V.pg && V.tap.page === V.page ? [V.tap, ...(V.tap.more || [])] : [];
-    V.tapEl.innerHTML = on.map(h => arrowAt(h, "on")).join("");
+    // a place that has its own tag box (a checked sheet) is already shown by that box turning blue: no second box on it
+    const own = h => V.refs.some(r => { if (r[0] !== V.page) return false; const [l, t, w, hh] = boxOf(r).map(x => x / 1e4);
+      return h.l < l + w && h.l + h.w > l && h.t < t + hh && h.t + h.h > t; });
+    V.tapEl.innerHTML = on.filter(h => !own(h)).map(h => arrowAt(h, "on")).join("");
  }
   // ---------- view history ----------
   const REG = new Map(); let curId = 0, seq = 0, hush = 0, st8 = null;
@@ -317,7 +327,8 @@ window.PdfView = (() => {
     if (!fromPop && V.pg && n !== V.page){ const me = REG.get(curId); if (me) me.snap = state(); quiet(); V.page = n; push({ o: me ? me.o : cur, snap: null }); }
     V.page = n;
     V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
-    V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true); textLayer();
+    await picsP; V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true);
+    (window.requestIdleCallback || setTimeout)(() => textLayer(), { timeout: 1200 });   // (the selectable text after the picture is up)
     if (V.afterPage){ const f = V.afterPage; V.afterPage = null; f(); }
     if (cur.find) mark(cur.find); drawTap();
     const me = REG.get(curId); if (me && !me.snap && !fromPop){ me.snap = state(); me.at = me.snap; }
@@ -345,9 +356,19 @@ window.PdfView = (() => {
   }
   // Both layers draw off screen and are swapped in whole when finished, so nothing blanks or jumps while panning.
   let bgTask = null, hiTask = null, bgGen = 0, hiGen = 0;
+  // the sheet's ready-made picture (tools/build_pics.py: PIDs/X.pdf.p1.png, 2400 px on the long side), shown at once;
+  // the PDF itself is only drawn where you zoom past the picture's detail (sharp). Without a picture, the PDF draws it.
+  let PICS = null; const picsP = fetch("pics.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(j => PICS = j);
+  const picOf = () => PICS && PICS[cur.url.replace(/^\.\//, "").split("?")[0]] >= V.page ? `${cur.url.split("?")[0]}.p${V.page}.png` : null;
   function drawBg(){
+    const g = ++bgGen, src = picOf();
+    if (src){ const im = new Image(); im.decoding = "async"; im.onload = () => { if (g !== bgGen) return;
+        const rot = V.rot || 0, c = V.bg; c.width = rot ? im.height : im.width; c.height = rot ? im.width : im.height; const x = c.getContext("2d");
+        if (rot){ x.translate(c.width, 0); x.rotate(Math.PI / 2); } x.drawImage(im, 0, 0); V.picW = c.width; V.sheet.classList.remove("sp-wait"); sharp(); };
+      im.onerror = () => { if (g === bgGen){ PICS[cur.url] = 0; drawBg(); } }; im.src = src; return; }
+    V.picW = 0;
     const dpr = Math.min(2, devicePixelRatio || 1), vp = V.pg.getViewport({ rotation: V.rot || 0, scale: V.base * dpr * (cur.fit === "page" ? 1.5 : 1) });
-    const off = document.createElement("canvas"), g = ++bgGen; off.width = vp.width; off.height = vp.height;
+    const off = document.createElement("canvas"); off.width = vp.width; off.height = vp.height;
     if (bgTask) bgTask.cancel(); bgTask = V.pg.render({ canvasContext: off.getContext("2d"), viewport: vp });
     bgTask.promise.then(() => { if (g !== bgGen) return; V.bg.width = off.width; V.bg.height = off.height; V.bg.getContext("2d").drawImage(off, 0, 0); V.sheet.classList.remove("sp-wait"); })
       .catch(() => { if (g === bgGen) V.sheet.classList.remove("sp-wait"); });
@@ -355,6 +376,7 @@ window.PdfView = (() => {
   function sharp(){
     if (!V.pg) return;
     const dpr = devicePixelRatio || 1, s = V.base * V.zoom, sw = V.sheet.offsetWidth, sh = V.sheet.offsetHeight;
+    if (V.picW && V.picW >= sw * dpr * .85){ hiGen++; if (hiTask) hiTask.cancel(); V.hi.style.visibility = "hidden"; return; }   // the picture is detailed enough at this zoom: no PDF drawing
     const x0 = Math.max(0, V.body.scrollLeft - 8), y0 = Math.max(0, V.body.scrollTop - 8);
     const w = Math.min(sw - x0, V.body.clientWidth + 16), h = Math.min(sh - y0, V.body.clientHeight + 16);
     if (w <= 0 || h <= 0) return;

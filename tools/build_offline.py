@@ -15,8 +15,10 @@ def add(id, name, note, files):
 add("spec", "Pipe & valve spec", "2000-F00-STS-PP-10001 Rev 3, every piping class and valve datasheet", ["spec/pvs.pdf"])
 dw = json.load(open(os.path.join(ROOT, "PIDs", "index.json")))["pids"] if os.path.exists(os.path.join(ROOT, "PIDs", "index.json")) else {}
 pid = sorted(v["file"] for k, v in dw.items() if "-PID-" in k); pfd = sorted(v["file"] for k, v in dw.items() if "-PFD-" in k)
-add("pids", "P&IDs", f"{len(pid)} drawings", pid)
-add("pfds", "PFD sheets", f"{len(pfd)} drawings", pfd)
+# each drawing with its ready-made sheet pictures (tools/build_pics.py), so a kept drawing opens at once
+pics = lambda fs: [x for f in fs for x in [f] + sorted(rel(p) for p in glob.glob(os.path.join(ROOT, f) + ".p*.png"))]
+add("pids", "P&IDs", f"{len(pid)} drawings", pics(pid))
+add("pfds", "PFD sheets", f"{len(pfd)} drawings", pics(pfd))
 six = json.load(open(os.path.join(ROOT, "sources", "index.json"))) if os.path.exists(os.path.join(ROOT, "sources", "index.json")) else {}
 revs = json.load(open(os.path.join(ROOT, "tools", "doc_revs.json")))
 for k, d in six.items():

@@ -80,6 +80,8 @@ window.AssetViz = (() => {
     el.querySelectorAll(".vz-tab[data-n]").forEach(b => b.onclick = () => { if (b.dataset.n) go(b.dataset.n); });
     const box = el.querySelector(".vz-sheet"), stage = box.querySelector(".vz-stage"), cv = box.querySelector("canvas"), key = cur.key;
     let z = 1, tx = 0, ty = 0, W = 0, H = 0, page = null, sc = 1, rz = 0, rt = null;
+    // the place tapped or found: a highlighted box on it (no arrow), in 1/10000 of the sheet, grown a little as in the full screen viewer
+    const hbox = (l, t, w, h) => { const [a, b, c, d] = PdfView.grow(l, t, w, h, W / H); return `<i class="sp-hb sp-hbon" style="left:${a / 1e4 * W}px;top:${b / 1e4 * H}px;width:${c / 1e4 * W}px;height:${d / 1e4 * H}px"></i>`; };
     const apply = () => { z = Math.max(1, Math.min(10, z)); tx = Math.min(0, Math.max(W - W * z, tx)); ty = Math.min(0, Math.max(H - H * z, ty));
       stage.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; clearTimeout(rt); rt = setTimeout(sharp, 180); };
     const zoomAt = (f, x, y) => { const z0 = z; z = Math.max(1, Math.min(10, z * f)); tx = x - (x - tx) * z / z0; ty = y - (y - ty) * z / z0; apply(); };
@@ -140,11 +142,10 @@ window.AssetViz = (() => {
         const arr = arrival && arrival.to === d.number && arrival.back != null ? arrival : null; arrival = null;
         if (arr){ const aw = W * .018, ah = aw * 1.7;
           box.querySelector(".vz-mk").innerHTML = [].concat(arr.back).map(j => (R[d.number] || [])[j]).filter(r => r && r[0] === 1).map(r => {
-            const cx = (r[1] + r[3] / 2) / 1e4 * W, top = r[2] / 1e4 * H;
-            return `<svg class="sp-arrow" viewBox="0 0 10 17" preserveAspectRatio="none" style="left:${cx - aw / 2}px;top:${top - 2 - ah}px;width:${aw}px;height:${ah}px"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; }).join(""); } });
+            return hbox(r[1], r[2], r[3], r[4]); }).join(""); } });
       // the tag tapped (here or in the full screen viewer): the arrow on that very spot
-      if (tap){ const aw = W * .018, ah = aw * 1.7, cx = (tap[0] + tap[2] / 2) / 1e4 * W, top = tap[1] / 1e4 * H;
-        box.querySelector(".vz-mk").innerHTML = `<svg class="sp-arrow" viewBox="0 0 10 17" preserveAspectRatio="none" style="left:${cx - aw / 2}px;top:${top - 2 - ah}px;width:${aw}px;height:${ah}px"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; return; }
+      if (tap){ const own = boxes.some(([l, t, w, h]) => tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t);   // its own tag box shows it: no second box
+        box.querySelector(".vz-mk").innerHTML = own ? "" : hbox(tap[0], tap[1], tap[2], tap[3]); return; }
       // mark the tag: a text piece holding it, or two neighbouring pieces that together do
       const want = nk(key); if (want.length < 3 || cur.t === "pid" || !own.includes(n)) return;
       const tc = await pg.getTextContent(), it = tc.items.filter(t => t.str && t.str.trim()), hits = [];
@@ -158,7 +159,7 @@ window.AssetViz = (() => {
       // (one arrow per place: a scanned sheet carries the tag twice, drawn and in the OCR layer under it)
       const same = (o, b) => { const h = Math.max(o[3] - o[1], b[3] - b[1]); return !(b[0] > o[2] || b[2] < o[0] || b[1] > o[3] || b[3] < o[1]) || Math.hypot((o[0] + o[2] - b[0] - b[2]) / 2, (o[1] + o[3] - b[1] - b[3]) / 2) < h * 1.5; };
       box.querySelector(".vz-mk").innerHTML = hits.filter((b, k) => !hits.slice(0, k).some(o => same(o, b))).slice(0, 20).map(b => { const [x1, y1, x2, y2] = vp.convertToViewportRectangle(b), cx = (x1 + x2) / 2, top = Math.min(y1, y2);
-        return `<svg class="sp-arrow" viewBox="0 0 10 17" preserveAspectRatio="none" style="left:${cx - aw / 2}px;top:${top - 2 - ah}px;width:${aw}px;height:${ah}px"><path d="M3.4 0h3.2v9H10L5 17 0 9h3.4z"/></svg>`; }).join("");
+        return hbox(Math.min(x1, x2) / W * 1e4, top / H * 1e4, Math.abs(x2 - x1) / W * 1e4, Math.abs(y2 - y1) / H * 1e4); }).join("");
     }).catch(e => { if (g === gen){ const p = box.querySelector(".vz-note"); if (p) p.textContent = "Couldn't load the drawing (" + (e.message || e) + ")."; } });
   }
 
@@ -283,12 +284,12 @@ window.AssetViz = (() => {
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
 .vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:2px;background:rgba(90,100,115,.06)}   /* as in the full screen viewer: a very light grey wash */
 .vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i.hv{background:rgba(90,100,115,.22)}.vz-sheet.on-ref,.vz-sheet.on-ref .vz-tx span{cursor:pointer}
-.vz-rf i.hit{box-shadow:inset 0 0 0 1.5px rgba(30,110,230,.85);background:rgba(30,110,230,.1)}
-.vz-fd{position:absolute;left:0;top:0;pointer-events:none}.vz-fd i{position:absolute;box-sizing:border-box;border:1.5px solid rgba(30,110,230,.85);background:rgba(30,110,230,.1);border-radius:2px}
+.vz-rf i.hit{box-shadow:inset 0 0 0 1.5px rgba(30,110,230,.85);background:rgba(30,110,230,.28)}
+.vz-fd{position:absolute;left:0;top:0;pointer-events:none}.vz-fd i{position:absolute;box-sizing:border-box;border:1.5px solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:2px}
 .vz-sheet .vz-tx{z-index:2}.vz-mk{z-index:3}
 .vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}.vz-zb .vz-ze{border-radius:50%;border:1.5px solid var(--gold);color:color-mix(in srgb,var(--gold) 75%,var(--ink))}   /* zoom extents, in the corner as in the full screen viewer */
 .vz-zb button:hover{border-color:var(--gold)}
-.vz-mk{position:absolute;left:0;top:0;pointer-events:none}.vz-mk .sp-arrow{position:absolute;fill:#1e6ee6;opacity:.6;overflow:visible}
+.vz-mk{position:absolute;left:0;top:0;pointer-events:none}
 .vz-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start}
 .vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:1px;min-width:0}.vz-tile em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vz-tile span{font-size:var(--fl,13px);color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}.vz-tile b{font-size:var(--fh,22px);line-height:1.15;font-variant-numeric:tabular-nums}.vz-tile em{font-style:normal;font-size:var(--fb,15px);color:var(--mute)}
