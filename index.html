@@ -290,7 +290,7 @@ body.searching #homeMain{display:none}
 :root.phone .lt{margin:-12px -14px 8px;background:var(--card);border-bottom:1px solid var(--line)}
 :root.phone .lt button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:var(--fl,13px);font-weight:800;padding:11px 4px 9px;border-bottom:3px solid transparent;cursor:pointer}
 :root.phone .lt button.on{color:var(--ink);font-weight:900;border-bottom-color:var(--gold)}
-:root:not(.phone) .lt{position:absolute;left:22px;top:14px;width:556px;gap:2px;padding:3px;border-radius:10px;background:color-mix(in srgb,var(--ink) 8%,transparent);z-index:2}
+:root:not(.phone) .lt{position:absolute;left:22px;top:14px;width:calc(var(--lsw) - 44px);box-sizing:border-box;gap:2px;padding:3px;border-radius:10px;background:color-mix(in srgb,var(--ink) 8%,transparent);z-index:2}
 :root:not(.phone) .lt button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:6px 10px;border-radius:8px;cursor:pointer}
 :root:not(.phone) .lt button.on{background:var(--th-t);color:var(--ink);box-shadow:inset 0 0 0 2.5px var(--th)}
 html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:var(--ink)}
@@ -298,8 +298,8 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 #deck.glos .qd-main,#deck.glos .qd-list,#deck.glos #qdSideIn{display:none!important}
 #lgPane{flex:1;min-width:0;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px}#lgPane[hidden]{display:none}
 #lgPane .search{flex:none}
-:root:not(.phone) #deck.glos #lgPane{padding:14px 22px 16px}:root:not(.phone) #deck.glos .qd-side{width:300px}:root:not(.phone) #deck.glos .lt{width:256px}
-:root:not(.phone) #deck.glos #lgQ{position:absolute;left:22px;top:62px;width:256px;box-sizing:border-box}   /* desktop: the glossary search under the switch */
+:root:not(.phone) #deck.glos #lgPane{padding:14px 22px 16px}
+:root:not(.phone) #deck.glos #lgQ{position:absolute;left:22px;top:62px;width:calc(var(--lsw) - 44px);box-sizing:border-box}   /* desktop: the glossary search under the switch */
 :root.phone #lgPane{margin:0 -14px -10px;padding:0 14px 10px}
 :root.phone #lgPane .gl-h{top:0}:root.phone #lgPane .gl-az{top:calc(var(--tb) + 110px)}
 /* glossary: A to Z with sticky letters and a letter strip */
@@ -313,7 +313,13 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 
 /* desktop quiz panel: search, then the topics in two columns (General and Project topics | Specific circuits) with how
    much of each you know, then order, length and this deck */
-:root:not(.phone) .qd-side{width:600px;padding:14px 18px 14px 22px}
+:root:not(.phone) #deck{--lsw:600px}:root:not(.phone) .qd-side{width:var(--lsw);box-sizing:border-box;padding:14px 18px 14px 22px;border-right:0!important}
+/* Learn (desktop): one width for the left panel on Quiz and Glossary, set by dragging its edge (kcgm_lsw) */
+.qd-dv{display:none}:root:not(.phone) .qd-dv{display:block;flex:none;position:relative;align-self:stretch;width:13px;margin:0 -6px;z-index:3;cursor:col-resize;touch-action:none}
+.qd-dv::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:1px;background:var(--line)}
+.qd-dv i{position:absolute;left:1px;top:50%;margin-top:-22px;width:11px;height:44px;box-sizing:border-box;border-radius:5px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px}
+.qd-dv i b{width:3px;height:3px;border-radius:50%;background:var(--mute)}
+.qd-dv:hover::before,.qd-dv.drag::before{background:var(--gold);width:2px}.qd-dv:hover i,.qd-dv.drag i{border-color:var(--gold)}.qd-dv:hover i b,.qd-dv.drag i b{background:var(--gold)}
 .qd-q{display:flex;align-items:center;gap:10px;height:42px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:0 12px;color:var(--mute);margin-bottom:10px}
 .qd-q input{flex:1;min-width:0;border:0;background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);outline:none}
 .qd-qn{font-size:var(--fl,13px);color:var(--mute);margin:-2px 0 8px}.qd-qn b{color:var(--ink)}
@@ -395,7 +401,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 <!-- DECK -->
 <section id="deck">
   <div class="lt" id="learnTabs" role="tablist"><button type="button" role="tab" data-lt="quiz">Quiz</button><button type="button" role="tab" data-lt="gloss">Glossary</button></div>
-  <aside class="qd-side" id="qdSide" aria-label="Deck settings"></aside>
+  <aside class="qd-side" id="qdSide" aria-label="Deck settings"></aside><div class="qd-dv" id="qdDv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
   <div id="lgPane" hidden><input class="search" id="lgQ" type="search" placeholder="Search the glossary, e.g. F21, PAX, roping" autocomplete="off" aria-label="Search the glossary"><div class="gl" id="lgList"></div></div>
   <div class="qd-main">
   <div class="qpills" id="qPills" aria-label="Topics"></div>
@@ -905,6 +911,16 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
   // home: Browse pickers by default, flashcards one tap away
   AssetViz.mount($("viz"));
   // the divider between the list and the charts / drawing (wide desktop): the list's width is kept on this computer
+  // Learn: drag the left panel's edge (the same width for Quiz and Glossary)
+  { const dv = $("qdDv"), deck = $("deck"), DEF = 600, setW = w => { w = Math.round(Math.max(300, Math.min(innerWidth - 560, w))); deck.style.setProperty("--lsw", w + "px"); return w; };
+    try { const w = +localStorage.getItem("kcgm_lsw"); if (w) setW(w); } catch (e) {}
+    let x0 = 0, w0 = 0, on = false;
+    dv.addEventListener("pointerdown", e => { on = true; x0 = e.clientX; w0 = $("qdSide").getBoundingClientRect().width; dv.setPointerCapture(e.pointerId); dv.classList.add("drag"); document.body.classList.add("splitting"); e.preventDefault(); });
+    dv.addEventListener("pointermove", e => { if (on) setW(w0 + e.clientX - x0); });
+    const end = () => { if (!on) return; on = false; dv.classList.remove("drag"); document.body.classList.remove("splitting");
+      try { localStorage.setItem("kcgm_lsw", Math.round($("qdSide").getBoundingClientRect().width)); } catch (e) {} };
+    dv.addEventListener("pointerup", end); dv.addEventListener("pointercancel", end);
+    dv.addEventListener("dblclick", () => { setW(DEF); try { localStorage.removeItem("kcgm_lsw"); } catch (e) {} }); }
   { const sp = $("split"), home = $("home"), MIN_L = 380, MIN_R = 420, DEF = 640;
     const setW = w => { const max = Math.max(MIN_L, innerWidth - MIN_R - 24); w = Math.round(Math.max(MIN_L, Math.min(max, w))); home.style.setProperty("--lw", w + "px"); return w; };
     try { const w = +localStorage.getItem("kcgm_split"); if (w) setW(w); } catch (e) {}
