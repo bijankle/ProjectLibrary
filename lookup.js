@@ -553,7 +553,7 @@
 .sp-q:focus{outline:none;border-color:var(--th)}
 .sp-nav{display:flex;align-items:center;gap:4px}.sp-nav[hidden]{display:none}.sp-nav span{font-size:var(--fb,15px);min-width:58px;text-align:center;color:#aab4c0}
 .sp-top button,.sp-dl{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;min-width:34px;height:32px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px}
-.sp-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}.sp-wait :is(.sp-refs,.sp-marks,.sp-tap,.sp-hi){visibility:hidden!important}.sp-sheet{position:relative;background:#fff;margin:0 auto;box-shadow:0 2px 14px #0008;transform-origin:0 0}
+.sp-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch;touch-action:none;overscroll-behavior:contain}   /* (touch pans and pinches are handled in pdfview.js, free in every direction) */.sp-wait :is(.sp-refs,.sp-marks,.sp-tap,.sp-hi){visibility:hidden!important}.sp-sheet{position:relative;background:#fff;margin:0 auto;box-shadow:0 2px 14px #0008;transform-origin:0 0}
 .sp-bg{position:absolute;inset:0;width:100%;height:100%}.sp-hi{position:absolute}
 .sp-marks,.sp-tap{position:absolute;inset:0;pointer-events:none}.sp-arrow{position:absolute;fill:#1e6ee6;opacity:.6;overflow:visible}
 .sp-marks .sp-arrow:not(.on){opacity:.3}.sp-tap .sp-arrow{opacity:.6}.sp-marks .sp-arrow:only-child{opacity:.6}   /* (with several places, the one stepped to is the stronger) */

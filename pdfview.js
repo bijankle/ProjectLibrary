@@ -74,10 +74,26 @@ window.PdfView = (() => {
     }, { passive: false });
     // touch pinch: scale the sheet while pinching, redraw sharp when the fingers lift
     const pts = new Map(); let pin = null;
-    V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ const [a, b] = [...pts.values()]; pin = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1 }; } });
+    // one finger pans here, not by the browser's scrolling: phones lock that to one axis when a drag starts mostly
+    // across or mostly down, so the sheet would only move in x or in y. Free in every direction, then a short glide.
+    let pan = null, glide = 0;
+    const panFrom = e => { cancelAnimationFrame(glide); pan = { x: e.clientX, y: e.clientY, sl: V.body.scrollLeft, st: V.body.scrollTop, vx: 0, vy: 0, t: performance.now(), lx: e.clientX, ly: e.clientY }; };
+    V.body.addEventListener("pointerdown", e => { if (e.pointerType === "touch" && pts.size === 0) panFrom(e); });
+    V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ pan = null; const [a, b] = [...pts.values()]; pin = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1 }; } });
+    V.body.addEventListener("pointermove", e => { if (!pan || e.pointerType !== "touch" || pts.size !== 1 || !pts.has(e.pointerId)) return;
+      V.body.scrollLeft = pan.sl - (e.clientX - pan.x); V.body.scrollTop = pan.st - (e.clientY - pan.y);
+      const now = performance.now(), dt = Math.max(1, now - pan.t); pan.vx = .8 * (e.clientX - pan.lx) / dt + .2 * pan.vx; pan.vy = .8 * (e.clientY - pan.ly) / dt + .2 * pan.vy; pan.t = now; pan.lx = e.clientX; pan.ly = e.clientY; });
     V.body.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e); if (pin && pts.size === 2){ const [a, b] = [...pts.values()]; pin.f = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pin.d;
       if (!pin.o){ const q = V.sheet.getBoundingClientRect(); pin.o = `${pin.cx - q.left}px ${pin.cy - q.top}px`; } V.sheet.style.transformOrigin = pin.o; V.sheet.style.transform = `scale(${pin.f})`; } });
-    const up = e => { pts.delete(e.pointerId); if (pin && pts.size < 2){ const p = pin; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx, p.cy); } };
+    const up = e => { pts.delete(e.pointerId); if (pin && pts.size < 2){ const p = pin; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx, p.cy); }
+      if (e.pointerType !== "touch") return;
+      if (pts.size === 1){ panFrom([...pts.values()][0]); return; }   // a pinch ends with one finger still down: it carries on panning
+      if (pts.size || !pan) return; const g = pan; pan = null;
+      if (e.type === "pointercancel" || performance.now() - g.t > 80) return;   // a finger that stopped before lifting: no glide
+      let vx = g.vx, vy = g.vy, t0 = performance.now();
+      const step = now => { const dt = Math.min(32, now - t0); t0 = now; V.body.scrollLeft -= vx * dt; V.body.scrollTop -= vy * dt; const k = Math.pow(.995, dt); vx *= k; vy *= k;
+        if (Math.hypot(vx, vy) > .02) glide = requestAnimationFrame(step); };
+      if (Math.hypot(vx, vy) > .15) glide = requestAnimationFrame(step); };
     V.body.addEventListener("pointerup", up); V.body.addEventListener("pointercancel", up);
     // mouse: middle button drag pans a drawing
     let dr = null;
@@ -96,7 +112,7 @@ window.PdfView = (() => {
     addEventListener("mouseup", () => { selA = null; });
     addEventListener("mousemove", e => { if (!dr) return; V.body.scrollLeft = dr.l - (e.clientX - dr.x); V.body.scrollTop = dr.t - (e.clientY - dr.y); });
     addEventListener("mouseup", () => { dr = null; V.body.classList.remove("drag"); });
-    V.body.style.touchAction = "pan-x pan-y";
+    V.body.style.touchAction = "none";   // (fingers pan and pinch through the handlers above, free in every direction; "pan-x pan-y" left the browser to scroll, locked to one axis)
     let down = null; V.body.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; }, true);
     // right click (long press on a phone) anywhere on the sheet: Save as PDF, and on a highlighted tag, copy its text
     V.body.addEventListener("contextmenu", e => {
