@@ -92,7 +92,8 @@ window.SourcesList = (() => {
       el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { area = area === b.dataset.a ? "" : b.dataset.a; keepF(); draw(); });
     }
     let list = [];
-    function draw(){
+    let redraw = false;   // (a redraw asked for while a download runs waits for it: it would wipe the running row)
+    function draw(){ if (busyRow){ redraw = true; return; } redraw = false;
       if (!DOCS) return; pills(); list = shown();
       const need = list.filter(d => stOf(d) !== "ok" && stOf(d) !== "none"), files = [...new Set(need.flatMap(d => d.keep.filter(f => st[f] !== "ok")))];
       const left = files.reduce((t, f) => t + ((Offline.load && OFF && OFF.sz[f]) || 0), 0), what = type ? TN[type].replace("&amp;", "&") : "documents";
@@ -141,7 +142,7 @@ window.SourcesList = (() => {
       say(0);
       if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
       try { await Offline.get(files, say, stop); } catch (e){ if (e.message !== "stopped") alert("Stopped: " + e.message + ". What was saved is kept; tap Keep again to finish."); }
-      busyRow.classList.remove("sl-on"); busyRow = null; el.classList.remove("sl-busy"); refresh();
+      busyRow.classList.remove("sl-on"); busyRow = null; el.classList.remove("sl-busy"); refresh();   // (refresh redraws, so a waiting redraw is done too)
     }
     async function refresh(){ if (!DOCS || !window.Offline) return draw(); st = await Offline.check([...new Set(DOCS.flatMap(d => d.keep))]).catch(() => ({})); draw(); }
     load().then(async () => { OFF = await Offline.load().catch(() => ({ sz: {} })); draw(); refresh(); });
@@ -172,7 +173,7 @@ td.sl-c{width:1%;padding-left:3px;padding-right:3px;position:relative}td.sl-c:la
 .sl-b{display:inline-flex;align-items:center;justify-content:center;gap:5px;box-sizing:border-box;height:30px;border:1.5px solid var(--gold);background:var(--card,var(--panel));color:color-mix(in srgb,var(--gold) 72%,var(--ink));border-radius:9px;padding:0 10px;font:inherit;font-size:var(--fl,13px);font-weight:800;text-decoration:none;white-space:nowrap;cursor:pointer;font-variant-numeric:tabular-nums}
 .sl-dt .sl-sv{width:112px}.sl-dt .sl-kp{width:154px}.sl-dt .sl-b0{width:112px;border:0;background:none}.sl-dt td.sl-c:last-child .sl-b0{width:154px}
 .sl-nox td.sl-c:nth-last-child(2),.sl-nop td.sl-c:nth-last-child(3){display:none}
-.sl-kp.ok{border-color:#2aa765;color:#1f9a55}.sl-kp.old,.sl-kp.part{border-style:dashed}
+.sl-kp.ok{border-color:#2aa765;color:#1f9a55}.sl-b,.sl-p,.sl-all,.sl-r{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.sl-b:active,.sl-p:active,.sl-all:active{transform:scale(.93);background:var(--th-t,#eef1f5)!important;transition:transform .05s}.sl-r:active{background:var(--th-t,#eef1f5)}.sl-kp.old,.sl-kp.part{border-style:dashed}
 .sl-busy .sl-kp:not(.sl-on .sl-kp),.sl-busy .sl-all:not(.sl-dt.sl-on .sl-all,.sl-ph.sl-on .sl-all){opacity:.4;pointer-events:none}
 .sl-rb{display:none;position:absolute;left:3px;right:10px;bottom:3px;height:2px}tr.sl-on .sl-rb{display:block}
 .sl-none{color:var(--mute);padding:14px 10px;font-size:var(--fb,15px)}

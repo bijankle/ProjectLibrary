@@ -16,9 +16,10 @@ window.Offline = (() => {
   // per file: "ok" (current), "old" (an older version is saved), "no" (not saved)
   async function check(files){
     const c = await caches.open(CACHE); await loadHeld(c); const out = {}; let changed = false;
+    // every saved address in one call (a match per file took seconds on a phone, hundreds of files)
+    const saved = new Set((await c.keys()).map(r => r.url.split("?")[0]));
     for (const f of files){
-      const has = await c.match(url(f));
-      if (!has){ out[f] = "no"; continue; }
+      if (!saved.has(url(f).split("?")[0])){ out[f] = "no"; continue; }
       if (!held[f]){ held[f] = M.ver[f]; changed = true; }   // saved on first open (sw.js): it came straight from the server
       out[f] = held[f] === M.ver[f] ? "ok" : "old";
     }
