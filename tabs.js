@@ -264,13 +264,16 @@ window.Tabs = (() => {
   const pjGet = () => { try { const v = JSON.parse(localStorage.getItem("kcgm_proj") || "null"); if (v && (v.main || v.tsf)) return { main: !!v.main, tsf: !!v.tsf }; } catch (e) {} return { main: true, tsf: true }; };
   const pjLabel = v => v.main && v.tsf ? "All" : v.main ? PJN.main : PJN.tsf;
   const PJ = `<div class="pj"><button type="button" class="pj-b" aria-haspopup="true" aria-expanded="false" title="Which project to show"><b class="pj-v">${pjLabel(pjGet())}</b></button><div class="pj-m" hidden></div></div>`;
+  const TICK = `<svg viewBox="1.4 2 9.2 8.2" width="100%" height="100%" style="display:block;overflow:visible" aria-hidden="true"><path d="M2.4 6.3 5 8.8 9.8 3.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   function wirePj(){
     const box = el.querySelector(".pj"); if (!box) return; const b = box.querySelector(".pj-b"), m = box.querySelector(".pj-m");
     const count = k => { try { if (window.Lookup && Lookup.ready()) return (window.Browse && Browse.projCount ? Browse.projCount(k) : Lookup.projCount(k)).toLocaleString(); } catch (e) {} return ""; };
     const label = () => { box.querySelector(".pj-v").textContent = pjLabel(pjGet()); };
     const draw = () => { const v = pjGet();
-      m.innerHTML = Object.entries(PJN).map(([k, n]) => `<button type="button" class="pj-o${v[k] ? " on" : ""}" data-k="${k}" role="menuitemcheckbox" aria-checked="${v[k]}"><i>${v[k] ? "✓" : ""}</i><span>${n}</span><em>${count(k)}</em></button>`).join("");
-      m.querySelectorAll(".pj-o").forEach(o => o.onclick = e => { e.stopPropagation(); const w = pjGet(); w[o.dataset.k] = !w[o.dataset.k];
+      m.innerHTML = Object.entries(PJN).concat([["all", "All"]]).map(([k, n]) => { const on = k === "all" ? v.main && v.tsf : v[k];
+        return `<button type="button" class="pj-o${on ? " on" : ""}${k === "all" ? " pj-all" : ""}" data-k="${k}" role="menuitemcheckbox" aria-checked="${on}"><span>${n}</span><i>${on ? TICK : ""}</i></button>`; }).join("");
+      m.querySelectorAll(".pj-o").forEach(o => o.onclick = e => { e.stopPropagation(); let w = pjGet();
+        if (o.dataset.k === "all") w = { main: true, tsf: true }; else w[o.dataset.k] = !w[o.dataset.k];   // (All ticks both)
         if (!w.main && !w.tsf){ o.classList.remove("pj-no"); void o.offsetWidth; o.classList.add("pj-no"); return; }   // one stays ticked
         if (window.Lookup && Lookup.setProj) Lookup.setProj(w); else { try { localStorage.setItem("kcgm_proj", JSON.stringify(w)); } catch (x) {} }
         label(); draw(); }); };
@@ -366,10 +369,12 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .pj-b{position:relative;width:104px;height:22px;display:flex;align-items:center;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:0 20px 0 8px;font:inherit;cursor:pointer;margin:0 4px}
 .pj-b b{font-size:13px;font-weight:800;line-height:1;white-space:nowrap}
 .pj-b:after{content:"▾";position:absolute;right:7px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:11px}
-.pj-m{position:absolute;top:calc(100% + 5px);left:4px;min-width:220px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.28);overflow:hidden;z-index:80}.pj-m[hidden]{display:none}
-.pj-o{display:flex;align-items:center;gap:12px;width:100%;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:10px 14px;font:inherit;font-size:var(--fb,15px);font-weight:700;text-align:left;cursor:pointer}
-.pj-o:last-child{border-bottom:0}.pj-o span{flex:1}.pj-o em{font-style:normal;font-weight:600;color:var(--mute);font-size:var(--fl,13px)}
-.pj-o i{flex:none;width:21px;height:21px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;font-style:normal;font-weight:900;font-size:13px;color:#1a1307}.pj-o.on i{border-color:var(--gold,var(--accent));background:var(--gold,var(--accent))}
+/* its list: the box's own size and lettering, each name right under the box's (a ✓ where the box has its ▾) */
+.pj-m{position:absolute;top:calc(100% + 2px);left:4px;width:104px;box-sizing:border-box;background:var(--card);border:1.5px solid var(--line);border-radius:6px;box-shadow:0 6px 16px rgba(0,0,0,.16);overflow:hidden;z-index:80}.pj-m[hidden]{display:none}
+.pj-o{position:relative;display:flex;align-items:center;width:100%;height:22px;box-sizing:border-box;border:0;background:none;color:var(--ink);padding:0 20px 0 8px;font:inherit;font-size:13px;font-weight:800;line-height:1;text-align:left;white-space:nowrap;cursor:pointer}
+.pj-o:hover{background:var(--card2,var(--panel2))}.pj-o span{flex:1;overflow:hidden;text-overflow:ellipsis}.pj-o em{display:none}.pj-all{border-top:1px solid var(--line)}
+.pj-o i{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:13px;height:13px;box-sizing:border-box;border:2px solid color-mix(in srgb,var(--ink) 55%,var(--line));border-radius:1px;padding:.5px;display:block}
+.pj-o.on i{background:var(--th);border-color:var(--th)}
 .pj-no{animation:pjno .3s}@keyframes pjno{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .lg b{font:900 var(--fl,13px)/1 var(--ff);letter-spacing:.08em;white-space:nowrap}.mb .lg{margin:6px 4px 6px 0}.lg-m{border:0;padding:0 4px 0 2px;margin:0}
 .mb .mn-b{border:0;background:none;color:var(--ink);font:inherit;font-size:var(--fb,15px);padding:0 10px;border-radius:5px;margin:3px 0;cursor:pointer}
@@ -428,7 +433,7 @@ button:disabled{cursor:default}
 .tbw.ph{border-bottom:1px solid var(--line)}
 .ph-top{height:52px;display:flex;align-items:center;gap:8px;padding:0 max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left))}
 .ph-top .lg-m{flex:none;display:flex}.ph-top .lg-m svg{width:30px;height:30px}
-:root.phone .pj-m{left:auto;right:-60px}:root.phone .pj{flex:1 1 auto;min-width:72px}:root.phone .pj-b{width:100%;max-width:none;min-width:0;height:36px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b b{font-size:var(--fb,15px);font-weight:700}   /* the same size as the rest of the text (it follows the text size setting) */
+:root.phone .pj-m{left:0;width:100%;border-radius:10px}:root.phone .pj-o{height:36px;padding:0 24px 0 10px;font-size:var(--fb,15px);font-weight:700}:root.phone .pj-o i{right:9px;width:17px;height:17px;padding:1.5px}:root.phone .pj{flex:1 1 auto;min-width:72px}:root.phone .pj-b{width:100%;max-width:none;min-width:0;height:36px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b b{font-size:var(--fb,15px);font-weight:700}   /* the same size as the rest of the text (it follows the text size setting) */
 .ph-top .ph-n{display:none}:root.in-settings .ph-top .ph-n{display:block}:root.in-settings .ph-top .pj{display:none}   /* (the page name only on Settings) */
 .ph-n{flex:0 1 auto;min-width:0;font-size:var(--fh,22px);font-weight:800;white-space:nowrap;overflow:hidden;line-height:1.1}   /* the page's name, like an item's tag (fitted to the row) */
 .ph-slot{flex:1;min-width:0;display:flex;align-items:center;gap:6px}.ph-slot>*{min-width:0}.ph-slot>.mo-off{display:none!important}
