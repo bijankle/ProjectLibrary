@@ -9,6 +9,8 @@
 // view of a run returns to the app page it was opened from. Zooming and panning make a new view only once they settle
 // and moved a little way (zoom by a tenth, or a fifth of the screen); smaller moves update the view you're on.
 window.PdfView = (() => {
+  const HAND = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4a1.5 1.5 0 0 1 3 0v7M14 10.5V5.5a1.5 1.5 0 0 1 3 0V13M17 9a1.5 1.5 0 0 1 3 0v5a7 7 0 0 1-7 7h-1.2a6 6 0 0 1-4.6-2.2L3.6 14.6a1.5 1.5 0 0 1 2.2-2L8 14.5"/></svg>',
+    ARROW = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M5 3l14 8.5-6.2 1.3L16.5 20l-2.8 1.3-3.7-7.2L5 18.5z"/></svg>';
   // OCR'd sheets: , ; : read for - or ., $ for S, O for 0 in numbers, so both sides are folded the same way
   const norm = s => String(s || "").toUpperCase().replace(/\$/g, "S").replace(/[\s\-_/.,;:|]+/g, "").replace(/(?<=\d)O|O(?=\d)/g, "0");
   let V = null, lib = null, cur = null;
@@ -98,7 +100,10 @@ window.PdfView = (() => {
     // mouse: middle button drag pans a drawing
     let dr = null;
     // (the left button selects text like any PDF; holding the middle button pans)
-    V.body.addEventListener("mousedown", e => { if (e.button !== 1) return; e.preventDefault(); dr = { x: e.clientX, y: e.clientY, l: V.body.scrollLeft, t: V.body.scrollTop }; V.body.classList.add("drag"); });
+    // desktop: the hand (default) drags the sheet with the left button, the pointer selects text; the middle button always pans
+    V.body.addEventListener("mousedown", e => { const hand = V.el.classList.contains("sp-hand");
+      if (e.button === 1 || (e.button === 0 && hand && !e.target.closest("input,button,a"))){ if (e.button === 1) e.preventDefault(); dr = { x: e.clientX, y: e.clientY, l: V.body.scrollLeft, t: V.body.scrollTop, b: e.button }; V.body.classList.add("drag"); } }, true);
+    V.body.addEventListener("click", e => { if (V.dragged){ V.dragged = false; e.stopPropagation(); e.preventDefault(); } }, true);   // (a drag is not a tap)
     V.body.addEventListener("auxclick", e => { if (e.button === 1) e.preventDefault(); });
     // left drag over the text selects it (done here, from the press point to the pointer, as the browser's own drag
     // selection drops out over the layer's pieces); a plain click still taps whatever tag is under it
@@ -110,8 +115,12 @@ window.PdfView = (() => {
     addEventListener("mousemove", e => { if (!selA || !(e.buttons & 1)) return; if (!selA.n){ const c = caret(e.clientX, e.clientY); if (c){ selA.n = c.startContainer; selA.o = c.startOffset; } return; }
       const c = caret(e.clientX, e.clientY); if (c) try { getSelection().setBaseAndExtent(selA.n, selA.o, c.startContainer, c.startOffset); } catch (x) {} });
     addEventListener("mouseup", () => { selA = null; });
-    addEventListener("mousemove", e => { if (!dr) return; V.body.scrollLeft = dr.l - (e.clientX - dr.x); V.body.scrollTop = dr.t - (e.clientY - dr.y); });
-    addEventListener("mouseup", () => { dr = null; V.body.classList.remove("drag"); });
+    addEventListener("mousemove", e => { if (!dr) return; if (Math.hypot(e.clientX - dr.x, e.clientY - dr.y) > 4) dr.m = true; if (!dr.m) return; V.body.scrollLeft = dr.l - (e.clientX - dr.x); V.body.scrollTop = dr.t - (e.clientY - dr.y); });
+    addEventListener("mouseup", () => { if (dr && dr.m) V.dragged = true; setTimeout(() => { V.dragged = false; }, 0); dr = null; V.body.classList.remove("drag"); });
+    // the hand / pointer switch, top centre of the sheet (desktop); the choice is remembered
+    const md = document.createElement("div"); md.className = "sp-mode"; md.innerHTML = `<button type="button" data-m="hand" title="Pan: drag the drawing">${HAND}</button><button type="button" data-m="sel" title="Select text">${ARROW}</button>`;
+    el.appendChild(md); const setMode = m => { el.classList.toggle("sp-hand", m !== "sel"); md.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m === (m === "sel" ? "sel" : "hand"))); try { localStorage.setItem("kcgm_spm", m); } catch (x) {} };
+    md.onclick = e => { const b = e.target.closest("button"); if (b) setMode(b.dataset.m); }; setMode((() => { try { return localStorage.getItem("kcgm_spm") || "hand"; } catch (x) { return "hand"; } })());
     V.body.style.touchAction = "none";   // (fingers pan and pinch through the handlers above, free in every direction; "pan-x pan-y" left the browser to scroll, locked to one axis)
     let down = null; V.body.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; }, true);
     // right click (long press on a phone) anywhere on the sheet: Save as PDF, and on a highlighted tag, copy its text

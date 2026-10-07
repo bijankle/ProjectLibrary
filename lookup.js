@@ -562,6 +562,10 @@
 .sp-toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#171b21;color:#e9edf2;border:1px solid var(--th);border-radius:10px;padding:8px 12px;font-size:var(--fb,15px);max-width:90vw}.sp-toast[hidden]{display:none}
 .sp-msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font-size:var(--fb,15px)}.sp-msg[hidden]{display:none}
 :root.phone body.sp-on{overflow:hidden}
+.sp-mode{position:absolute;right:86px;bottom:26px;z-index:6;display:flex;gap:3px;padding:3px;background:#fff;border:1.5px solid #dde1e6;border-radius:10px;box-shadow:0 2px 8px #0003}
+.sp-mode button{width:34px;height:34px;border:0;border-radius:8px;background:none;color:#1d2430;display:grid;place-items:center;cursor:pointer;padding:0}.sp-mode button.on{background:var(--th-t,#eef1f5);box-shadow:inset 0 0 0 2px var(--th,#475569)}
+:root.phone .sp-mode{display:none}
+.sp-view.sp-hand .sp-body{cursor:grab}.sp-view.sp-hand .sp-body.drag{cursor:grabbing}.sp-view.sp-hand .sp-text{pointer-events:none;user-select:none;-webkit-user-select:none}
 .sp-view.sp-phdock{top:var(--sp-top,0)}.sp-view.sp-phdock .sp-x{display:none!important}.sp-view.sp-phdock .sp-body{padding-top:8px!important}
 .ph-spx{display:none;width:42px;height:42px;flex:none;border-radius:50%;border:1.5px solid var(--line);background:var(--card,#fff);color:var(--ink);font-size:18px;font-weight:800;align-items:center;justify-content:center}
 :root.sp-open .ph-spx{display:flex}:root.sp-open .ph-sr .ph-cam,:root.sp-open .ph-sr .ph-upd{display:none!important}
