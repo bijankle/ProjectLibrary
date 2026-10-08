@@ -1806,7 +1806,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
       const where = [F.wbs.size && "WBS " + [...F.wbs].sort(ORD.compare).join(", "), F.type && TN[F.type].toLowerCase(), lay() && F.st && F.st.toLowerCase()].filter(Boolean).join(", ");
       $("fxN").innerHTML = `<span>Results</span><b>${a.length.toLocaleString()}</b>`;
       $("fxL").innerHTML = a.slice(0, N).map((it, i) => { const L = locate(it);
-        return `<button type="button" class="fx-it lk-1l${cur === it ? " on" : ""}" data-i="${i}">${Lookup.row1(it.key, it.name || "", "", `<i class="fx-w ${L.how}">${{ pfd: "on PFD", link: "linked", pid: "P&ID", wbs: "WBS", none: "" }[L.how]}</i>`)}</button>`; }).join("") +
+        return `<button type="button" class="fx-it lk-1l${cur === it ? " on" : ""}" data-i="${i}">${Lookup.row1(it.key, it.name || "", "", (!lay() && L.how === "pfd" ? "" : `<i class="fx-w ${L.how}">${{ pfd: "on PFD", link: "linked", pid: "P&ID", wbs: "WBS", none: "" }[L.how]}</i>`))}</button>`; }).join("") +
         (a.length > N ? `<button type="button" class="fx-more">Show ${Math.min(150, a.length - N)} more</button>` : "") +
         (!a.length ? `<div class="fx-none">Nothing matches. Try another WBS or type, or clear the search.</div>` : "");
       groups.querySelectorAll(".fx-p").forEach(b => b.onclick = e => { const g = b.dataset.g, v = b.dataset.v;
