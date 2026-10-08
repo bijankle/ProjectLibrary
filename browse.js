@@ -290,7 +290,7 @@ window.Browse = (() => {
 .bw-note{font-size:var(--fb,15px);color:var(--mute);line-height:1.4}
 /* design 14b: grey header bands over each section, results striped (no dividers). Desktop: the columns meet at the
    divider (no gap) so the bands run edge to edge; rows keep their text where it was, the stripe fills the column */
-.bw-band{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 4px;padding:5px 8px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.bw-band{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 4px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2)}
 .bw-band b{color:var(--ink);letter-spacing:.02em;font-variant-numeric:tabular-nums}.bw-band .bw-any{padding:0 8px}
 .bw{column-gap:0}.bw-l{padding-right:18px}.bw-opts .bw-band{margin:0 -18px 2px 0}.bw-opts.stack>.bw-o{margin-left:8px;max-width:calc(100% - 8px)}
 .bw-r{padding:0}.bw-r>.bw-band{margin:0 0 2px;padding-right:12px}
@@ -302,7 +302,7 @@ window.Browse = (() => {
 .bp-c{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:var(--fb,15px);font-weight:600;white-space:nowrap;cursor:pointer}
 .bp-c.on,.bp-f.set{background:var(--card);border-color:var(--gold);color:color-mix(in srgb,var(--gold) 70%,var(--ink));font-weight:700}.bp-c.on b{opacity:.6;margin-left:2px}
 .bp-f{font-weight:800}.bp-r{color:var(--mute)}.bp-sep{flex:none;width:1px;height:22px;background:var(--line)}
-:root.phone .bw-r.bp-l{flex:1;min-height:0;border-left:0;padding:0}
+:root.phone .bw-r.bp-l{flex:1;min-height:0;border-left:0;padding:0}:root.phone .bp-l>.bw-n{position:sticky;top:0;z-index:3}   /* Results stays at the top while the list scrolls under it */
 .bp-top{flex:none;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .bp-x{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;margin-left:7px;border-radius:50%;background:rgba(0,0,0,.18);font-size:11px;font-weight:900;vertical-align:1px}
 .bp-c.on{padding-right:6px}

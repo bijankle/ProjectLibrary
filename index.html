@@ -157,7 +157,7 @@ body.searching #homeMain{display:none}
 #lkResults .lk-status:empty{display:none}
 /* design 14b, as in the Browse list (browse.js .bw-band): a search's match count sits on a grey RESULTS band and its rows
    are striped; only while it shows a results list (pills), so photo reading messages and item pages stay plain */
-#lkResults:has(.lk-pills) .lk-status{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 6px;padding:5px 8px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:var(--fl,13px);font-weight:700;color:var(--ink)}
+#lkResults:has(.lk-pills) .lk-status{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 6px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:700;color:var(--ink);color:var(--th2)}
 #lkResults:has(.lk-pills) .lk-status::before{content:"Results";font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
 #lkResults .lk-row1{border-bottom:0;padding:7px 8px}#lkResults .lk-row1:nth-of-type(even){background:color-mix(in srgb,var(--ink) 3.5%,transparent)}
 #lkResults .lk-row1:is(:hover,:focus){background:var(--lk-c)}   /* (the stripe would hide lookup.js's hover) */
@@ -252,7 +252,7 @@ body.searching #homeMain{display:none}
 :root:not(.phone) .qd-list{border-left:1px solid var(--line);gap:2px}
 :root:not(.phone) #qdBar{display:none}
 :root:not(.phone) .card{touch-action:auto;user-select:text;-webkit-user-select:text}
-.qd-side h4,.qd-list h4{margin:8px 0 2px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.qd-side h4,.qd-list h4{margin:8px 0 2px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2)}
 .qd-side h4:first-child,.qd-list h4:first-child{margin-top:0}
 .qd-side h4 button{margin-left:auto;border:0;background:none;color:var(--gold);font:inherit;font-size:var(--fl,13px);text-transform:none;letter-spacing:0;cursor:pointer;padding:0 0 0 8px}
 .qd-tp{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:8px;font-size:var(--fl,13px);cursor:pointer;border:0;background:none;color:var(--ink);font-family:inherit;text-align:left;width:100%}
