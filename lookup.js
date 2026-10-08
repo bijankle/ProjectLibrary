@@ -93,7 +93,7 @@
     if (!hits.length) return `<div class="lk-empty">No match for “${esc(q)}”. Try fewer characters, e.g. the number only.</div>`;
     // one line per result: icon, code, description (the pill shows the list it comes from)
     const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
-    return hits.map((it, i) => `<button class="lk-row1${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}"><b>${esc(it.key)}</b>${L.tsfTag(it)}<span>${esc(L.listName(it))}</span></button>`).join("");
+    return hits.map((it, i) => `<button class="lk-row1 lk-1l${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}">${L.row1(it.key, L.listName(it), L.tsfTag(it))}</button>`).join("");
   };
   const PILLN = { mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
   const KEYF = {
@@ -116,13 +116,43 @@
     return `<div class="pf" data-g="${esc(group)}"><div class="pf-bar">${secs.map(x => `<button type="button" class="pf-b${x.id === act ? " on" : ""}" data-p="${esc(x.id)}">${esc(x.label)}${x.n != null ? ` <i>${x.n}</i>` : ""}</button>`).join("")}</div>` + mid +
       secs.map(x => `<div class="pf-sec" data-p="${esc(x.id)}"${x.id === act ? "" : " hidden"}>${x.html}</div>`).join("") + `</div>`;
   };
-  // a line on one row: the number full size, its from / to shrinking to fit (down to 11px, then cut with …)
-  L.line1 = x => `<a class="lk-a lk-row lk-1l" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b><span title="${esc(L.lineText(x))}">${esc(L.lineText(x))}</span></a>`;
-  let fitQ = 0;
-  const fit1 = () => { fitQ = 0; document.querySelectorAll(".lk-1l").forEach(a => { const sp = a.lastElementChild, w = sp.clientWidth; if (!w || +a.dataset.fw === w) return;
-    a.dataset.fw = w; sp.style.fontSize = ""; let f = parseFloat(getComputedStyle(sp).fontSize); while (sp.scrollWidth > w + 1 && f > 11){ f = Math.max(11, f - .5); sp.style.fontSize = f + "px"; } }); };
-  const fitSoon = () => { if (!fitQ) fitQ = requestAnimationFrame(fit1); };
-  new MutationObserver(fitSoon).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] }); addEventListener("resize", fitSoon);
+  // ---------- one line rows ----------
+  // ID then description on one row (row class .lk-1l, inner HTML from L.row1): the ID bold, full size, never cut; the
+  // description grey, no brackets, shrinking to fit (phone: words shortened first, L.abbr), down to 11px, then cut with …
+  // (full text in its tooltip). mid: e.g. the TSF tag; end: a badge kept at the right (the description shrinks first)
+  L.row1 = (id, desc, mid = "", end = "") => `<b>${esc(id)}</b>${mid}<span class="d1" title="${esc(desc)}">${esc(desc)}</span>${end}`;
+  L.line1 = x => `<a class="lk-a lk-row lk-1l" data-k="${x.k}" data-t="${x.t}">${L.row1(x.key, L.lineText(x))}</a>`;
+  const AB = [["primary","Pri"],["secondary","Sec"],["tertiary","Tert"],["conveyor","Conv"],["flotation","Flot"],["concentrate","Conc"],["tailings","Tails"],
+    ["thickener","Thkr"],["discharge","Disch"],["transmitter","Tx"],["indicator","Ind"],["indicating","Ind"],["pressure","Press"],["temperature","Temp"],["level","Lvl"],
+    ["valve","Vlv"],["control","Ctrl"],["cyclone","Cyc"],["cyclones","Cycs"],["water","Wtr"],["process","Proc"],["distribution","Dist"],["hopper","Hppr"],["feeder","Fdr"],
+    ["overflow","O/F"],["underflow","U/F"],["recovery","Rec"],["regrind","Regr"],["sampler","Smplr"],["sample","Smpl"],["agitator","Agit"],["compressor","Comp"],
+    ["electrical","Elec"],["instrument","Inst"],["isolation","Iso"],["solenoid","Sol"],["switch","Sw"],["position","Pos"],["differential","Diff"],["density","Dens"],
+    ["analyser","Anlsr"],["analyzer","Anlsr"],["emergency","Emerg"],["maintenance","Maint"],["launder","Ldr"],["reagent","Rgt"],["cyanide","CN"],["electrowinning","EW"],
+    ["transfer","Trans"],["storage","Stor"],["motor","Mtr"],["crusher","Crshr"],["gyratory","Gyr"],["bearing","Brg"],["lubrication","Lube"],["hydraulic","Hyd"],
+    ["station","Stn"],["assembly","Assy"],["stockpile","Stkpl"],["reclaim","Recl"],["scavenger","Scav"],["cleaner","Clnr"],["rougher","Rghr"],["vibrating","Vib"],
+    ["vibration","Vib"],["north","N"],["south","S"],["east","E"],["west","W"],["number","No."],["and","&"],["with","w/"],["building","Bldg"],["platform","Pltfm"],
+    ["compartment","Cpt"],["circuit","Ccts"],["dewatering","Dewat"],["filtration","Filt"],["transport","Trans"],["measurement","Meas"],["pneumatic","Pneu"],
+    ["automatic","Auto"],["manual","Man"],["intermediate","Int"],["classification","Class"],["grinding","Grind"],["leaching","Leach"],["adsorption","Ads"],
+    ["regeneration","Regen"],["elution","Elut"],["acid","Acid"],["caustic","Caus"],["collector","Coll"],["frother","Froth"],["flocculant","Floc"],["lime","Lime"],
+    ["oxygen","O₂"],["nitrogen","N₂"],["air","Air"],["return","Rtn"],["supply","Sup"],["header","Hdr"],["drain","Drn"],["bypass","Byp"],["isolating","Iso"]];
+  const ABM = new Map(AB);
+  L.abbr = t => String(t).replace(/[A-Za-z]+/g, w => { const a = ABM.get(w.toLowerCase()); return a && a !== w ? a : w; });
+  // one rAF batched pass over the rows on screen (hidden ones measure 0 and wait): reads and writes kept apart so a long
+  // list costs a few layouts, not one per row; a row is redone only when its width (or the text size) changed.
+  // Text width scales with font size, so one measured ratio gives the size (the last fraction of a px goes to the …)
+  let fitQ = 0, fitG = 0;
+  const over = s => s.scrollWidth > s.clientWidth + 1;
+  const fit1 = () => { fitQ = 0; const todo = [];
+    document.querySelectorAll(".lk-1l").forEach(a => { const w = a.clientWidth, k = fitG + "/" + w; if (!w || a.dataset.fw === k) return; a.dataset.fw = k; const s = a.querySelector(".d1"); if (s && s.firstChild) todo.push(s); });
+    if (!todo.length) return;
+    todo.forEach(s => { s.style.fontSize = s.style.display = ""; if (s.dataset.ab) { s.firstChild.data = s.title; delete s.dataset.ab; } });   // (text node edits: the observer below ignores them)
+    let big = todo.filter(over);
+    if (PHONE() && big.length){ big.forEach(s => { const t = L.abbr(s.title); if (t !== s.title){ s.firstChild.data = t; s.dataset.ab = 1; } }); big = big.filter(over); }
+    big.map(s => [s, s.clientWidth, parseFloat(getComputedStyle(s).fontSize) * (s.clientWidth - 1) / s.scrollWidth])   // (a sliver too narrow for "x…" is left out)
+      .forEach(([s, w, f]) => { if (w < 24) s.style.display = "none"; else s.style.fontSize = Math.max(11, Math.floor(f * 4) / 4) + "px"; }); };
+  const fitSoon = L.fitRows = () => { if (!fitQ) fitQ = requestAnimationFrame(fit1); };
+  new MutationObserver(fitSoon).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
+  addEventListener("resize", () => { fitG++; fitSoon(); });   // (the text size setting fires resize too)
   document.addEventListener("click", e => { const b = e.target.closest && e.target.closest(".pf-b"); if (!b) return; const pf = b.closest(".pf"); pfLast[pf.dataset.g] = b.dataset.p;
     [...pf.children].forEach(c => { if (c.classList.contains("pf-bar")) c.querySelectorAll(".pf-b").forEach(x => x.classList.toggle("on", x === b)); else if (c.classList.contains("pf-sec")) c.hidden = c.dataset.p !== b.dataset.p; }); });
   L.refs = k => refs.get(norm(k)) || [];
@@ -219,22 +249,22 @@
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
       if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
     }
-    if (others.length) secs.push({ id: "also", label: "Also in", n: others.length, html: others.map(x => `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}">${esc(typeName(x.t))}: ${esc(x.name)}</a>`).join("") });
+    if (others.length) secs.push({ id: "also", label: "Also in", n: others.length, html: others.map(x => `<a class="lk-a lk-row lk-1l" data-k="${x.k}" data-t="${x.t}">${L.row1(typeName(x.t), headName(x) || x.name)}</a>`).join("") });
     // related items: one pill per list that refers to this tag (or its twin entries)
     const rf = [...new Set([it, ...twins].flatMap(y => refs.get(y.k) || []))].filter(x => x !== it && !twins.includes(x));
     if (rf.length){
       const g = {}; rf.forEach(x => (g[x.t] = g[x.t] || []).push(x));
       TYPE_ORDER.filter(t => g[t]).forEach(t => { const a = g[t], show = a.slice(0, 60);
         secs.push({ id: "r-" + t, label: (PILLN[t] || typeName(t)), n: a.length, html: 
-          show.map(x => x.t === "line" ? L.line1(x) : `<a class="lk-a lk-row" data-k="${x.k}" data-t="${x.t}"><b>${esc(x.key)}</b> ${esc(L.lineText(x))}</a>`).join("") +
+          show.map(L.line1).join("") +
           (a.length > show.length ? `<div class="lk-ns">and ${a.length - show.length} more; search the tag to see them all.</div>` : "") }); });
     }
     // a P&ID: the drawings it joins (P&IDs pill first) and the lines that cross, each split From / To one row below
     const pl = it.t === "pid" && /-PID-/.test(it.key) && L.pidLinks(it.key);
     if (pl){
       const lineRow = L.line1;
-      const pidRow = p => { const d = window.Pid && Pid.info(p.n), t = d && d.title ? ` (${esc(L.pidTitle(d.title))})` : "", c = ` <span class="lk-ns">(x${p.lines.length} line${p.lines.length > 1 ? "s" : ""})</span>`;
-        return L.find(p.k, "pid") ? `<a class="lk-a lk-row" data-k="${p.k}" data-t="pid"><b>${esc(p.n)}</b>${t}${c}</a>` : `<div class="lk-row"><b>${esc(p.n)}</b>${t}${c}</div>`; };
+      const pidRow = p => { const d = window.Pid && Pid.info(p.n), r = L.row1(p.n, d && d.title ? L.pidTitle(d.title) : "", "", `<i class="lk-n1">${p.lines.length} line${p.lines.length > 1 ? "s" : ""}</i>`);
+        return L.find(p.k, "pid") ? `<a class="lk-a lk-row lk-1l" data-k="${p.k}" data-t="pid">${r}</a>` : `<div class="lk-row lk-1l">${r}</div>`; };
       const none = w => `<div class="lk-ns">No line in the line list ${w}.</div>`;
       const sub = (g, a, b) => L.pills([{ id: "from", label: "From", n: a.n, html: a.html }, { id: "to", label: "To", n: b.n, html: b.html }], g);
       const P = sub("pid-p", { n: pl.from.length, html: pl.from.length ? pl.from.map(pidRow).join("") : none("comes in from another P&ID") },
@@ -496,10 +526,9 @@
 .lk-pill i{font-style:normal;font-weight:600;color:var(--mute);margin-left:2px}.lk-pill.on{background:var(--lk-c);box-shadow:inset 0 0 0 1px var(--lk-a);border-color:var(--lk-a);color:color-mix(in srgb,var(--lk-a) 70%,var(--ink))}.lk-pill.on i{color:var(--mute)}
 .lk-row1{display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--lk-l);background:none;color:var(--ink);padding:7px 4px;cursor:pointer;font:inherit;font-size:var(--fb,15px);line-height:1.3}
 .lk-row1:hover,.lk-row1:focus{background:var(--lk-c)}.lk-ic1{flex:none;font-size:13px;width:18px;text-align:center}
-.lk-row1 b{flex:none;font-family:inherit;font-size:var(--fb,15px);color:var(--lk-a);max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lk-row1.txt b{font-family:inherit;font-size:var(--fb,15px);max-width:62%}.lk-row1.txt span{color:var(--mute)}
+.lk-row1 b{font-family:inherit;font-size:var(--fb,15px);color:var(--lk-a)}
+.lk-row1.txt b{flex:0 1 auto;max-width:62%;overflow:hidden;text-overflow:ellipsis}   /* a sentence for a key (PFD stream names): not an ID, so it may be cut */
 .pj-tsf{flex:none;align-self:center;font-style:normal;font-size:max(9px,calc(var(--fl,13px) * .8));font-weight:800;letter-spacing:.04em;line-height:1.35;color:#fff;background:#2f7d6b;border-radius:5px;padding:0 5px;margin:0 2px;vertical-align:1px}
-.lk-row1 span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
 .lk-more{width:100%;margin:8px 0;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:10px;padding:8px;font:inherit;font-weight:700;cursor:pointer}.lk-ic{font-size:18px;line-height:1.2}.lk-hb{display:flex;flex-direction:column;gap:2px;min-width:0}
 .lk-hb b{font-family:inherit;font-size:var(--fb,15px);color:var(--lk-a);word-break:break-all}.lk-hb span{font-size:var(--fb,15px);line-height:1.3}.lk-hb em{font-size:var(--fb,15px);color:var(--mute);font-style:normal}
 .lk-rh{display:flex;justify-content:space-between;align-items:center;font-size:var(--fl,13px);font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mute);margin:2px 2px 8px}
@@ -517,7 +546,9 @@
 .lk-key{font-family:inherit;font-size:var(--fh,22px);font-weight:800;margin:4px 0 2px;word-break:break-all}.lk-name{font-size:var(--fb,15px);line-height:1.35;margin-bottom:8px}
 .lk-t{width:100%;border-collapse:collapse;font-size:var(--fb,15px);margin:6px 0}.lk-t td{padding:5px 4px;border-bottom:1px solid var(--lk-l);vertical-align:top;word-break:break-word}.lk-t td:first-child{color:var(--mute);width:13.5em;padding-right:10px;font-size:var(--fb,15px);word-break:normal;overflow-wrap:normal;hyphens:manual}
 .lk-a{color:var(--lk-a);text-decoration:underline;cursor:pointer}.lk-row{display:block;text-decoration:none;color:var(--ink);background:var(--lk-c);border-radius:8px;padding:6px 8px;margin:4px 0;font-size:var(--fb,15px)}
-.lk-row b{font-family:inherit;color:var(--lk-a);margin-right:4px}.lk-1l{display:flex;align-items:baseline;white-space:nowrap}.lk-1l b{flex:none;margin-right:6px}.lk-1l span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lk-h{margin:14px 0 4px;font-size:var(--fl,13px);letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
+.lk-row b{font-family:inherit;color:var(--lk-a);margin-right:4px}.lk-1l{display:flex;align-items:baseline;gap:0 7px;white-space:nowrap;overflow:hidden;text-decoration:none}.lk-1l>*{flex:none;margin:0}.lk-1l>b{font-weight:700;margin:0}
+.lk-1l>.d1{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--mute);font-weight:400;font-size:var(--fb,15px)}.lk-1l>.d1:empty{display:none}
+.lk-n1{margin-left:auto!important;font-style:normal;font-size:var(--fl,13px);color:var(--mute)}.lk-h{margin:14px 0 4px;font-size:var(--fl,13px);letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
 .pf-bar{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 8px}
 .pf-b{border:1px solid var(--lk-l,var(--line));background:var(--lk-c,var(--panel2));color:var(--ink);border-radius:99px;padding:4px 10px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;white-space:nowrap}
 .pf-b i{font-style:normal;color:var(--mute);font-weight:600;font-size:var(--fb,15px)}

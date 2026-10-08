@@ -242,6 +242,7 @@ svg.dragging{cursor:grabbing}
 #info h4{margin:14px 0 4px;font-size:var(--fl,13px);letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
 #info .conn a{display:block;color:var(--ink);text-decoration:none;padding:5px 8px;border-radius:7px;background:var(--panel2);margin:4px 0;font-size:var(--fb,15px);cursor:pointer}
 #info .conn a:hover{outline:1px solid var(--accent)}
+#info .conn a.lk-1l{display:flex}   /* a line: number then from / to on one row (lookup.js) */
 #info .pill{display:inline-block;font-size:var(--fb,15px);font-weight:800;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
 #zoom{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:5}
 #info.on ~ #zoom{right:488px}
@@ -520,8 +521,8 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
 .fx-p.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);color:color-mix(in srgb,var(--accent) 70%,var(--ink))}
 .fx-old{border-top:1px solid var(--line);padding-top:12px}
 .fx-n{color:var(--mute);font-size:var(--fb,15px);margin:0 0 4px}.fx-n b{color:var(--ink)}
-.fx-it{display:flex;align-items:baseline;gap:6px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;padding:7px 4px;cursor:pointer;white-space:nowrap;overflow:hidden}
-.fx-it b{color:var(--accent);font-size:var(--fb,15px);flex:none}.fx-it span{color:var(--mute);font-size:var(--fl,13px);overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.fx-it{width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;padding:7px 4px;cursor:pointer}   /* one line: lookup.js .lk-1l */
+.fx-it b{color:var(--accent);font-size:var(--fb,15px)}.fx-it .fx-w{margin-left:auto}   /* the badge at the right; the description shrinks before it */
 .fx-it:hover{background:var(--panel2)}.fx-it.on{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .fx-w{flex:none;font-style:normal;font-size:11px;font-weight:700;color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:0 5px}.fx-w.pfd{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}.fx-w:empty{display:none}
 .fx-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-weight:700;cursor:pointer}
@@ -1367,7 +1368,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
     let h = Lookup.pills(secs, "node");
     if (eqTags.length) Lookup.load().then(() => { const el = $("nLines"); if (!el) return; const seen = new Set(), out = [];
       eqTags.forEach(t => Lookup.refs(t).forEach(x => { if (x.t === "line" && !seen.has(x.k)){ seen.add(x.k); out.push(x); } }));
-      el.innerHTML = out.length ? out.map(x => `<a data-find="${esc(x.key)}"><b style="font-family:var(--ff)">${esc(x.key)}</b> ${esc(Lookup.lineText(x))}</a>`).join("") : `<span style="color:var(--mute)">None in the line list name these equipment numbers.</span>`;
+      el.innerHTML = out.length ? out.map(x => `<a class="lk-1l" data-find="${esc(x.key)}">${Lookup.row1(x.key, Lookup.lineText(x))}</a>`).join("") : `<span style="color:var(--mute)">None in the line list name these equipment numbers.</span>`;
       el.querySelectorAll("a[data-find]").forEach(a => a.onclick = e => { e.preventDefault(); openSearch(a.dataset.find, true); });
       const b = el.closest(".pf").querySelector('.pf-b[data-p="lin"] i'); if (b) b.textContent = ins.length + outs.length + out.length; }).catch(() => { const el = $("nLines"); if (el) el.textContent = "Couldn't load the line list."; });
     $("iBody").innerHTML = PFDLayout.panelHtml(n) + h; bindLinks(); PFDLayout.bindPanel(n); openInfo();
@@ -1776,7 +1777,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
       const where = [F.wbs.size && "WBS " + [...F.wbs].sort(ORD.compare).join(", "), F.type && TN[F.type].toLowerCase(), lay() && F.st && F.st.toLowerCase()].filter(Boolean).join(", ");
       $("fxN").innerHTML = `<b>${a.length.toLocaleString()}</b> ${a.length === 1 ? "item" : "items"}${where ? " in " + esc(where) : ""}`;
       $("fxL").innerHTML = a.slice(0, N).map((it, i) => { const L = locate(it);
-        return `<button type="button" class="fx-it${cur === it ? " on" : ""}" data-i="${i}" title="${esc(it.key + " · " + it.name)}"><b>${esc(it.key)}</b><span>${esc(it.name || "")}</span><i class="fx-w ${L.how}">${{ pfd: "on PFD", link: "linked", pid: "P&ID", wbs: "WBS", none: "" }[L.how]}</i></button>`; }).join("") +
+        return `<button type="button" class="fx-it lk-1l${cur === it ? " on" : ""}" data-i="${i}">${Lookup.row1(it.key, it.name || "", "", `<i class="fx-w ${L.how}">${{ pfd: "on PFD", link: "linked", pid: "P&ID", wbs: "WBS", none: "" }[L.how]}</i>`)}</button>`; }).join("") +
         (a.length > N ? `<button type="button" class="fx-more">Show ${Math.min(150, a.length - N)} more</button>` : "") +
         (!a.length ? `<div class="fx-none">Nothing matches. Try another WBS or type, or clear the search.</div>` : "");
       groups.querySelectorAll(".fx-p").forEach(b => b.onclick = e => { const g = b.dataset.g, v = b.dataset.v;

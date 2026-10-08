@@ -128,7 +128,7 @@ window.Browse = (() => {
     const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = recBar() + `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts stack" style="--qw:${qw}ch">${opts}</div></div></div>
       <div class="bw-r">${resBand(list.length)}
-      ${hits.map((it, i) => `<button class="bw-it${it.t === "line" ? " ln" : ""}" data-i="${i}"><b>${esc(it.key)}</b>${Lookup.tsfTag(it)} <span>(${esc(resDesc(it))})</span></button>`).join("")}
+      ${hits.map((it, i) => `<button class="bw-it lk-1l" data-i="${i}">${Lookup.row1(it.key, resDesc(it), Lookup.tsfTag(it))}</button>`).join("")}
       ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bw-o").forEach(b => b.onclick = () => { path.push({ f: st[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
     const any = el.querySelector(".bw-any"); if (any) any.onclick = () => { path.push({ f: st[0], v: null }); after(); };
@@ -139,34 +139,7 @@ window.Browse = (() => {
     wireRec(); fit(); fitLayout();
   }
   // ---------- phone ----------
-  // the words a description is shortened with when its row doesn't fit on one line (then it shrinks, then it's cut)
-  const AB = [["primary","Pri"],["secondary","Sec"],["tertiary","Tert"],["conveyor","Conv"],["flotation","Flot"],["concentrate","Conc"],["tailings","Tails"],
-    ["thickener","Thkr"],["discharge","Disch"],["transmitter","Tx"],["indicator","Ind"],["indicating","Ind"],["pressure","Press"],["temperature","Temp"],["level","Lvl"],
-    ["valve","Vlv"],["control","Ctrl"],["cyclone","Cyc"],["cyclones","Cycs"],["water","Wtr"],["process","Proc"],["distribution","Dist"],["hopper","Hppr"],["feeder","Fdr"],
-    ["overflow","O/F"],["underflow","U/F"],["recovery","Rec"],["regrind","Regr"],["sampler","Smplr"],["sample","Smpl"],["agitator","Agit"],["compressor","Comp"],
-    ["electrical","Elec"],["instrument","Inst"],["isolation","Iso"],["solenoid","Sol"],["switch","Sw"],["position","Pos"],["differential","Diff"],["density","Dens"],
-    ["analyser","Anlsr"],["analyzer","Anlsr"],["emergency","Emerg"],["maintenance","Maint"],["launder","Ldr"],["reagent","Rgt"],["cyanide","CN"],["electrowinning","EW"],
-    ["transfer","Trans"],["storage","Stor"],["motor","Mtr"],["crusher","Crshr"],["gyratory","Gyr"],["bearing","Brg"],["lubrication","Lube"],["hydraulic","Hyd"],
-    ["station","Stn"],["assembly","Assy"],["stockpile","Stkpl"],["reclaim","Recl"],["scavenger","Scav"],["cleaner","Clnr"],["rougher","Rghr"],["vibrating","Vib"],
-    ["vibration","Vib"],["north","N"],["south","S"],["east","E"],["west","W"],["number","No."],["and","&"],["with","w/"],["building","Bldg"],["platform","Pltfm"],
-    ["compartment","Cpt"],["circuit","Ccts"],["dewatering","Dewat"],["filtration","Filt"],["transport","Trans"],["measurement","Meas"],["pneumatic","Pneu"],
-    ["automatic","Auto"],["manual","Man"],["intermediate","Int"],["classification","Class"],["grinding","Grind"],["leaching","Leach"],["adsorption","Ads"],
-    ["regeneration","Regen"],["elution","Elut"],["acid","Acid"],["caustic","Caus"],["collector","Coll"],["frother","Froth"],["flocculant","Floc"],["lime","Lime"],
-    ["oxygen","O₂"],["nitrogen","N₂"],["air","Air"],["return","Rtn"],["supply","Sup"],["header","Hdr"],["drain","Drn"],["bypass","Byp"],["isolating","Iso"]];
-  const ABM = new Map(AB.map(([w, a]) => [w, a]));
-  const abbr = t => String(t).replace(/[A-Za-z]+/g, w => { const a = ABM.get(w.toLowerCase()); return a && a !== w ? a : w; });
-  // a row: TAG (description) on one line: full words if they fit, else shortened words, then smaller (not under 11 px), then cut with …
-  const sm = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fl")) || 11;   // never smaller than the small text
-  function fitPhone(){
-    el.querySelectorAll(".bp-it").forEach(b => { const s = b.querySelector("span"); if (!s) return;
-      s.textContent = "(" + s.dataset.full + ")"; s.style.fontSize = "";
-      if (b.scrollWidth <= b.clientWidth + 1) return;
-      s.textContent = "(" + abbr(s.dataset.full) + ")";
-      const max = parseFloat(getComputedStyle(s).fontSize);
-      for (let k = 0; k < 3 && b.scrollWidth > b.clientWidth + 1; k++){
-        const cur = parseFloat(s.style.fontSize) || max, over = b.scrollWidth - b.clientWidth, w = s.getBoundingClientRect().width;
-        s.style.fontSize = Math.max(Math.min(sm(), max), cur * Math.max(0, w - over - 2) / w).toFixed(2) + "px"; } });
-  }
+  // result rows: one line each, fitted by Lookup's shared pass (.lk-1l: words shortened on the phone, then smaller, then …)
   // desktop: recent searches as a short row of chips over the filters (the phone has them in its chip bar)
   const recBar = () => { const rc = recents().slice(0, 8); return rc.length ? `<div class="bw-rec"><span>Recent</span>${rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("")}<button class="bw-rclr" title="Clear the recent searches">Clear</button></div>` : ""; };
   function wireRec(){ const rc = recents().slice(0, 8), bar = el.querySelector(".bw-rec"); if (!bar) return;
@@ -192,7 +165,7 @@ window.Browse = (() => {
     const rec = !path.length && !q && rc.length ? `<div class="bw-band">Recent</div><div class="bp-bar bp-recs">${rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("")}</div>` : "";
     el.innerHTML = `<div class="bp-top">${rec}${chips ? `<div class="bp-bar">${chips}</div>` : ""}${opts}</div>
       <div class="bw-r bp-l">${resBand(list.length)}${fromN ? `<button class="bw-more bw-prev">Show earlier rows</button>` : ""}
-      ${hits.map((it, i) => `<button class="bw-it bp-it" data-i="${fromN + i}"><b>${esc(it.key)}</b>${Lookup.tsfTag(it)} <span data-full="${esc(resDesc(it))}"></span></button>`).join("")}
+      ${hits.map((it, i) => `<button class="bw-it bp-it lk-1l" data-i="${fromN + i}">${Lookup.row1(it.key, resDesc(it), Lookup.tsfTag(it))}</button>`).join("")}
       ${list.length > shownN ? `<button class="bw-more">Show ${Math.min(200, list.length - shownN)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bp-c.on").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
     el.querySelectorAll(".bp-r").forEach(b => b.onclick = () => { const x = rc[+b.dataset.r]; if (x.q) lk.search(x.q); else lk.openKey(x.key); });
@@ -206,25 +179,23 @@ window.Browse = (() => {
     // (a row not drawn: draw from just before it, with "Show earlier rows" above, so a far jump stays quick)
     el.querySelector(".bw-r").fsList = { keys: list.map(r => r.it.key), go: i => { if (i < fromN || i >= shownN){ fromN = Math.max(0, i - 10); shownN = fromN + 200; draw(); }
       const b = el.querySelector(`.bp-it[data-i="${i}"]`), L = el.querySelector(".bw-r"); if (b && L) L.scrollTop = b.offsetTop - L.offsetTop - 40; } };
-    fit(); fitPhone();
+    fit(); Lookup.fitRows();
   }
   // design 14b: full width grey header bands split the page (Recent, Asset type, Results); Results carries the count
   const resBand = n => `<div class="bw-n bw-band"><span>Results</span><b>${n.toLocaleString()}</b></div>`;
-  // one row per result: code (description); a line reads code (from Name (tag), to Name (tag))
+  // one row per result: code then description; a line reads code from Name, to Name
   const resDesc = it => { if (it.t === "pid"){ const d = window.Pid && Pid.info(it.key); return d && d.title ? Lookup.pidTitle(d.title) : ""; }
     if (it.t === "line" && it.r){ const [a, b] = Lookup.lineEnds(it, true); return `from ${a}, to ${b}`; } return Lookup.listName(it); };
-  // the bracket text shrinks until its row fits on one line (never below 8px; then it ends with …);
+  // a filter chip's bracket text shrinks until it fits on one line (never below 8px; then it ends with …);
   // chips that still don't fit at 8px widen the filter column (up to half the screen)
-  // (min: the smallest size allowed; lines' "from …, to …" may go as small as it takes)
   function fitRows(sel, max, min = 8){
     el.querySelectorAll(sel).forEach(b => { const s = b.querySelector("span"); if (!s) return;
       // the bracket text is never bigger than the code before it: capped just under the code's own size
       const code = b.querySelector("b"), cap = code ? parseFloat(getComputedStyle(code).fontSize) - 1 : max;
       s.style.fontSize = Math.min(max, cap) + "px";
-      const lo = b.classList.contains("ln") ? 3 : min;
       for (let k = 0; k < 3 && b.scrollWidth > b.clientWidth + 1; k++){   // a couple of passes: padding and spacing don't scale
         const cur = parseFloat(s.style.fontSize), over = b.scrollWidth - b.clientWidth, w = s.getBoundingClientRect().width;
-        s.style.fontSize = Math.max(lo, cur * Math.max(0, w - over - 2) / w).toFixed(2) + "px"; } });
+        s.style.fontSize = Math.max(min, cur * Math.max(0, w - over - 2) / w).toFixed(2) + "px"; } });
   }
   function fitLayout(){
     if (!el || !el.offsetParent) return;
@@ -238,7 +209,7 @@ window.Browse = (() => {
     const W = el.clientWidth, lw = el.querySelector(".bw-lw"); let need = 0;
     el.querySelectorAll(".bw-o").forEach(b => { need = Math.max(need, b.scrollWidth - b.clientWidth); });
     if (need > 1 && lw){ const w = Math.min(W * .5, lw.getBoundingClientRect().width + need + 2); el.style.gridTemplateColumns = `${Math.round(w)}px minmax(0,1fr)`; fitRows(".bw-o", 11.5); }
-    fitRows(".bw-it", 11.5);
+    Lookup.fitRows();
   }
   const azKey = s => { const c = String(s).charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
   // Niagara style A–Z strip: slide a finger down it and the options jump to that letter, with a big letter bubble
@@ -267,7 +238,7 @@ window.Browse = (() => {
   function fit(){ if (!el || !el.offsetParent) return; const z = window.TextSize ? TextSize.z() : 1;   // inside a zoomed page, CSS pixels are scaled by the text size
     const bn = document.querySelector(".bn"), b = bn ? bn.offsetHeight : 0;
     el.style.height = Math.max(260, (window.innerHeight - el.getBoundingClientRect().top - window.scrollY - 6 - b) / z) + "px"; }
-  window.addEventListener("resize", () => { fit(); if (PH()) fitPhone(); else fitLayout(); });
+  window.addEventListener("resize", () => { fit(); if (!PH()) fitLayout(); });
   const save = () => {};   // the filter is not kept between visits
   function mount(root, box){
     el = root; lk = box; el.classList.add("bw");
@@ -281,7 +252,7 @@ window.Browse = (() => {
   // back from an item: the list where it was
   const restore = () => { if (!PH() && el){ const old = el.querySelector(".bw-rec"), nb = document.createElement("div"); nb.innerHTML = recBar();
       if (old) old.replaceWith(...nb.childNodes); else if (nb.firstChild) el.prepend(nb.firstChild); wireRec(); }
-    fit(); if (PH()) fitPhone(); else fitLayout(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
+    fit(); if (PH()) Lookup.fitRows(); else fitLayout(); const r = el && el.querySelector(".bw-r"); if (r) r.scrollTop = resY; };
   const css = `.bw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px;min-height:260px}
 .bw-rec{grid-column:1 / -1;display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}.bw-rec::-webkit-scrollbar{display:none}
 .bw-rec>span{flex:none;font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
@@ -313,9 +284,8 @@ window.Browse = (() => {
 .bw-r{border-left:1px solid var(--line);padding-left:8px;padding-right:12px}
 .bw-l{padding-right:10px}
 .bw-n{font-size:var(--fb,15px);color:var(--mute);margin:2px 0 4px}.bw-n b{color:var(--ink)}
-.bw-it{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:7px 0;font:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bw-it.ln b{font-size:var(--fb,15px)}.bw-it b{font-size:var(--fb,15px);color:var(--gold);font-family:inherit;font-weight:700}
-.bw-it span{font-size:var(--fb,15px);color:var(--mute)}
+.bw-it{width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:7px 0;font:inherit}
+.bw-it b{font-size:var(--fb,15px);color:var(--gold);font-family:inherit;font-weight:700}
 .bw-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-size:var(--fb,15px);font-weight:700}
 .bw-note{font-size:var(--fb,15px);color:var(--mute);line-height:1.4}
 /* design 14b: grey header bands over each section, results striped (no dividers). Desktop: the columns meet at the
@@ -333,7 +303,6 @@ window.Browse = (() => {
 .bp-c.on,.bp-f.set{background:var(--card);border-color:var(--gold);color:color-mix(in srgb,var(--gold) 70%,var(--ink));font-weight:700}.bp-c.on b{opacity:.6;margin-left:2px}
 .bp-f{font-weight:800}.bp-r{color:var(--mute)}.bp-sep{flex:none;width:1px;height:22px;background:var(--line)}
 :root.phone .bw-r.bp-l{flex:1;min-height:0;border-left:0;padding:0}
-.bp-it{display:block}.bp-it span{font-size:var(--fb,15px)}
 .bp-top{flex:none;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .bp-x{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;margin-left:7px;border-radius:50%;background:rgba(0,0,0,.18);font-size:11px;font-weight:900;vertical-align:1px}
 .bp-c.on{padding-right:6px}
