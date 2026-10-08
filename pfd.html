@@ -446,6 +446,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 :root.phone header{top:var(--tb);height:44px;padding:0 8px;gap:8px}
 :root.phone #menuBtn,:root.phone #side,:root.phone #scrim{display:none!important}
 :root.phone #stage,:root.phone #mapView{left:0;top:calc(44px + var(--tb));bottom:var(--bn)}
+:root.phone body.layout header{display:none}:root.phone body.layout #mapView{top:var(--tb)}   /* the Layout has no case to pick: no bar */
 :root.phone #zoom{bottom:calc(var(--bn) + 12px);right:10px}
 /* the drawing gets the whole screen: Fluids, Layers and Story float over it, each opening a sheet */
 :root.phone body:not(.layout):not(.flowing) #pfab{display:flex;position:fixed;left:10px;bottom:calc(var(--bn) + 12px);gap:8px;z-index:6}
