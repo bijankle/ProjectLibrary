@@ -89,6 +89,10 @@ window.AssetViz = (() => {
     const hbox = (l, t, w, h) => { const [a, b, c, d] = PdfView.grow(l, t, w, h, W / H); return `<i class="sp-hb sp-hbon" style="left:${a / 1e4 * W}px;top:${b / 1e4 * H}px;width:${c / 1e4 * W}px;height:${d / 1e4 * H}px"></i>`; };
     const apply = () => { z = Math.max(1, Math.min(10, z)); tx = Math.min(0, Math.max(W - W * z, tx)); ty = Math.min(0, Math.max(H - H * z, ty));
       stage.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; stage.style.setProperty("--iz", (1 / z).toFixed(4)); stage.style.setProperty("--rbw", (1.5 / z).toFixed(3) + "px"); clearTimeout(rt); rt = setTimeout(sharp, 180); };
+    // zoom onto boxes ([l, t, w, h] in 1/10000 of the sheet): all of them in view, but never closer than 4x
+    const focus = bs => { if (!bs.length) return; const l = Math.min(...bs.map(b => b[0])) / 1e4 * W, t = Math.min(...bs.map(b => b[1])) / 1e4 * H,
+      r = Math.max(...bs.map(b => b[0] + b[2])) / 1e4 * W, b = Math.max(...bs.map(q => q[1] + q[3])) / 1e4 * H, vw = box.clientWidth || W, vh = box.clientHeight || H;
+      z = Math.max(1, Math.min(4, .8 * Math.min(vw / Math.max(1, r - l), vh / Math.max(1, b - t)))); tx = vw / 2 - (l + r) / 2 * z; ty = vh / 2 - (t + b) / 2 * z; apply(); };
     const zoomAt = (f, x, y) => { const z0 = z; z = Math.max(1, Math.min(10, z * f)); tx = x - (x - tx) * z / z0; ty = y - (y - ty) * z / z0; apply(); };
     async function sharp(){ if (!page) return; const q = Math.min(4, Math.ceil(z)), dpr = devicePixelRatio || 1; if (q === rz) return; rz = q;
       const vp = page.getViewport({ scale: sc * q * dpr }), off = document.createElement("canvas"); off.width = Math.round(vp.width); off.height = Math.round(vp.height);
@@ -147,13 +151,15 @@ window.AssetViz = (() => {
       const refsP = Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
         const A = W / H; boxes = [];
         refsNow = (R[d.number] || []).filter(r => r[0] === 1 && r[6] !== "x");
-        rf.innerHTML = refsNow.map(r => { const [l, t, w, h] = PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
-          return `<i data-t="${esc(r[5])}" data-k="${esc(r[6])}"${r[7] != null ? ` data-b="${esc(JSON.stringify(r[7]))}"` : ""} title="${esc(String(r[5]).split("|").join(", "))}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%"></i>`; }).join("");
+        rf.innerHTML = refsNow.map(r => { const fit = r[7] === "o" || r[7] === "b";   // (fitted to the printed bubble or box: used as is, as in the full screen viewer)
+          const [l, t, w, h] = fit ? [r[1], r[2], r[3], r[4]] : PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
+          return `<i${r[7] === "o" ? ' class="o"' : ""} data-t="${esc(r[5])}" data-k="${esc(r[6])}"${r[7] != null ? ` data-b="${esc(JSON.stringify(r[7]))}"` : ""} title="${esc(String(r[5]).split("|").join(", "))}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%"></i>`; }).join("");
         // arrived through a continuation: the red arrow on the ribbon back to the drawing you came from
         const arr = arrival && arrival.to === d.number && arrival.back != null ? arrival : null; arrival = null;
         if (arr){ const aw = W * .018, ah = aw * 1.7;
-          box.querySelector(".vz-mk").innerHTML = [].concat(arr.back).map(j => (R[d.number] || [])[j]).filter(r => r && r[0] === 1).map(r => {
-            return hbox(r[1], r[2], r[3], r[4]); }).join(""); } });
+          const back = [].concat(arr.back).map(j => (R[d.number] || [])[j]).filter(r => r && r[0] === 1);
+          box.querySelector(".vz-mk").innerHTML = back.map(r => hbox(r[1], r[2], r[3], r[4])).join("");
+          focus(back.map(r => PdfView.grow(r[1], r[2], r[3], r[4], A))); } });   // (zoomed onto the ribbon back to where you came from)
       // the tag tapped (here or in the full screen viewer): the arrow on that very spot
       if (tap){ const own = boxes.some(([l, t, w, h]) => tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t);   // its own tag box shows it: no second box
         box.querySelector(".vz-mk").innerHTML = own ? "" : hbox(tap[0], tap[1], tap[2], tap[3]);
@@ -299,7 +305,7 @@ window.AssetViz = (() => {
 .vz-sheet.drag{cursor:default}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
 .vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:calc(2px * var(--iz,1));background:rgba(90,100,115,.06)}   /* as in the full screen viewer: a very light grey wash */
-.vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i.hv{background:rgba(90,100,115,.22)}.vz-sheet.on-ref,.vz-sheet.on-ref *{cursor:pointer!important}
+.vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i.hv{background:rgba(90,100,115,.22)}.vz-rf i.o{border-radius:50%}.vz-sheet.on-ref,.vz-sheet.on-ref *{cursor:pointer!important}
 .vz-rf i.pick{box-shadow:inset 0 0 0 calc(2.5px * var(--iz,1)) #1e6ee6,0 0 0 calc(2px * var(--iz,1)) rgba(255,255,255,.7);background:rgba(30,110,230,.32)}.vz-rf i.hit{box-shadow:inset 0 0 0 calc(1.5px * var(--iz,1)) rgba(30,110,230,.85);background:rgba(30,110,230,.28)}
 .vz-fd{position:absolute;left:0;top:0;pointer-events:none}.vz-fd i{position:absolute;box-sizing:border-box;border:1.5px solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:2px}
 .vz-sheet .vz-tx{z-index:2}.vz-mk{z-index:3}

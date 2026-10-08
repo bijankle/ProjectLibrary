@@ -249,11 +249,7 @@ window.PdfView = (() => {
     const bs = rs.map(r => V.boxes[V.pageRefs.indexOf(r)]).filter(Boolean).map(b => ({ page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }));
     if (!bs.length) return;
     V.tap = Object.assign({}, bs[0], { more: bs.slice(1) }); drawTap();
-    const h = bs[0]; quiet();
-    // phone: the sheet opens small, so zoom in until the ribbon is about a quarter of the screen wide
-    if (document.documentElement.classList.contains("phone")){ const z = Math.min(6, V.zoom * V.body.clientWidth * .25 / (h.w * V.sheet.offsetWidth || 1));
-      if (z > V.zoom){ V.zoom = z; layout(false); sharp(); } }
-    V.body.scrollTo({ left: (h.l + h.w / 2) * V.sheet.offsetWidth - V.body.clientWidth / 2, top: (h.t + h.h / 2) * V.sheet.offsetHeight - V.body.clientHeight / 2 });
+    quiet(); focusHits(bs, true);   // zoomed onto the ribbon(s) back to where you came from: all in view, never closer than 4x
     const v = REG.get(curId); if (v){ v.tap = V.tap; v.snap = state(); v.at = v.snap; }
   }
   // the place tapped or found: a highlighted box on it (no arrow), grown a little round the tag like the search boxes
@@ -366,9 +362,9 @@ window.PdfView = (() => {
     if (!fromPop && history.state && history.state.sp) history.back(); }
   // opened for a searched item: one place on this page, four times closer centred on it; several, zoomed to fit them all
   // (boxes in fractions of the sheet). Not when the drawing itself was what you searched (no find).
-  function focusHits(hs){ if (!V || !hs || !hs.length) return; const r = V.body.getBoundingClientRect(), z0 = V.zoom, sw = V.sheet.offsetWidth / z0, sh = V.sheet.offsetHeight / z0;
+  function focusHits(hs, ext){ if (!V || !hs || !hs.length) return; const r = V.body.getBoundingClientRect(), z0 = V.zoom, sw = V.sheet.offsetWidth / z0, sh = V.sheet.offsetHeight / z0;
     const l = Math.min(...hs.map(h => h.l)), t = Math.min(...hs.map(h => h.t)), rr = Math.max(...hs.map(h => h.l + h.w)), b = Math.max(...hs.map(h => h.t + h.h));
-    const z = hs.length === 1 ? 4 : Math.max(1, Math.min(4, .8 * Math.min(r.width / ((rr - l) * sw || 1), r.height / ((b - t) * sh || 1))));
+    const z = hs.length === 1 && !ext ? 4 : Math.max(1, Math.min(4, .8 * Math.min(r.width / ((rr - l) * sw || 1), r.height / ((b - t) * sh || 1))));
     zoomTo(z, r.left + r.width / 2, r.top + r.height / 2, (l + rr) / 2, (t + b) / 2); }
   // the app's ←: back one drawing within this visit (views of the same drawing are skipped); from the first, close
   function back(){ if (!V || V.el.hidden) return false; const me = REG.get(curId); if (!me) { close(); return true; }
