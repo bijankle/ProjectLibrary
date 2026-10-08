@@ -388,12 +388,15 @@ window.PFDLayout = (() => {
     const diag = quad(0, 1) + quad(1, 0) <= quad(0, 0) + quad(1, 1);   // true: bottom left and top right
     const key = r => r.p.x / W + (diag ? -1 : 1) * r.p.y / H, srt = its.slice().sort((p, q) => key(p) - key(q)), h = Math.ceil(srt.length / 2);
     const cols = [srt.slice(0, h), srt.slice(h)];   // [left column, right column]
-    const BOT = H - (ph ? 76 : 26);   // (clear of the Layers button / the map credit)
+    const BOT = H - (ph ? 76 : 26);
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; areas.forEach(a => { const b = a.poly.getBounds(), p = map.latLngToContainerPoint(b.getNorthWest()), q = map.latLngToContainerPoint(b.getSouthEast());
+      x0 = Math.min(x0, p.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, q.y); });   // (clear of the Layers button / the map credit)
     cols.forEach((col, k) => {
       const w = Math.max(0, ...col.map(r => r.sp.offsetWidth)), ch = col.reduce((t, r) => t + r.sp.offsetHeight, 0);
       const top = Math.max(50, bt(tl && tl.querySelector(".lo-pans")), k ? bt(nb) : 0) + 6;
-      const x = k ? W - (ph ? 6 : 60) - w : (ph ? 6 : 10), low = diag ? !k : !!k;   // (this column in a bottom corner)
-      let y = low ? Math.max(top, BOT - ch) : top;
+      // at the plant's own corner, just outside its side (on a wide screen the zones don't reach the screen's sides)
+      const x = k ? Math.min(W - (ph ? 6 : 60) - w, x1 + 16) : Math.max(ph ? 6 : 10, x0 - 16 - w), low = diag ? !k : !!k;   // (low: a bottom corner)
+      let y = low ? Math.max(top, Math.min(BOT, y1) - ch) : Math.min(Math.max(top, y0), BOT - ch);
       // rows in the order their leaders fan out from the column, so no two leaders cross
       const ex0 = k ? x : x + w, ey0 = y + ch / 2; col.sort((p, q) => Math.atan2(p.p.y - ey0, Math.abs(p.p.x - ex0)) - Math.atan2(q.p.y - ey0, Math.abs(q.p.x - ex0)));
       col.forEach(r => { const hh = r.sp.offsetHeight, dx = x - r.p.x, dy = y + hh / 2 - r.p.y; y += hh;
