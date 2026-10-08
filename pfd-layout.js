@@ -140,7 +140,7 @@ window.PFDLayout = (() => {
   // a dot at the equipment. Each side is ordered top to bottom so the leaders don't cross; a side too tall for the
   // screen spreads over more columns, outward.
   function stackOut(){
-    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, GAP = 2, CG = 8, zl = planAreas().lines, BOT = 34 + ROWH * zl[1];
+    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, GAP = 2, CG = 8, zl = [0, 0], BOT = 34 + ROWH * zl[1];
     const tl = $("loTL"), TOP = (tl ? Math.max(58, tl.querySelector(".lo-pans").getBoundingClientRect().bottom - box.top + 8) : 58) + ROWH * zl[0];   // below the menus and the zone codes (one or more lines)
     const items = [];
     Object.values(N).forEach(o => { if (!o.el) return; o.el.classList.remove("dc", "so"); if (o.el.classList.contains("lift")) return; setOff(o, 0, 0);
@@ -362,8 +362,7 @@ window.PFDLayout = (() => {
       const r = sp.getBoundingClientRect(); if (!hit(r)) return placed.push(r);
       sp.classList.add("off"); });
   }
-  // Plant view (callout stacks): the zones show as outlines and their codes line up in a row along the top and the
-  // bottom of the map (a zone in the upper half labels at the top), each joined to its zone by a leader
+  // Plant view (callout stacks): the zones show as outlines only (stackAreas)
   const ROWH = 30;
   // an area's zones flash a few times (picked from WBS filters or tapped on the map); they show while flashing at any zoom
   function flash(code){ areas.filter(a => a.code === code).forEach(a => { const p = a.poly._path; if (!p) return;
@@ -383,7 +382,10 @@ window.PFDLayout = (() => {
       row.forEach((r, k) => r.ln = k % nl); return nl; });
     return { W, H, G, rows, lines };
   }
+  // plant view: the zones keep their outlines but no codes (too crowded beside the name columns; the codes and names show
+  // zoomed right out)
   function stackAreas(){
+    areas.forEach(a => { const e = a.lab.getElement(); if (e) e.querySelector("span").classList.add("off"); }); return;
     const { W, H, G, rows } = planAreas();
     const tl = $("loTL"), top = (tl ? tl.querySelector(".lo-pans").getBoundingClientRect().bottom - $("mapView").getBoundingClientRect().top : 50) + ROWH / 2 + 4, bot = H - ROWH / 2 - 6;
     areas.forEach(a => { const e = a.lab.getElement(); if (e) e.querySelector("span").classList.add("off"); });
