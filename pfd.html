@@ -392,7 +392,11 @@ svg.focus .ctl, svg.focus .ilk{opacity:.12}
 .lab rect{stroke:var(--cc) !important}
 #case{font-weight:600;color:var(--ink)!important;opacity:1;border-color:var(--line)!important;border-width:1px;padding-left:28px;background-image:radial-gradient(circle at 14px 50%,var(--cc) 0 5px,transparent 5.5px);background-repeat:no-repeat}   /* grey border, a dot in the case colour before the name */
 #case option{font-weight:700;background:#fff}
-@media (min-width:901px){#case{min-width:240px}}   /* (no jump when the case list fills in after the data loads) */
+@media (min-width:901px){#case{min-width:240px}
+/* desktop PFD: no bar under the tabs, the case picker on the drawing (caseHome) */
+:root:not(.phone) body.pfd-nobar header{display:none}
+:root:not(.phone) body.pfd-nobar :is(#side,#stage){top:var(--tb,0px)!important}:root:not(.phone) body.pfd-nobar.fx-on #fxDv{top:var(--tb,0px)!important}
+#case.on-stage{position:absolute;left:14px;top:12px;z-index:5;height:38px;border:1px solid var(--line);border-radius:10px;background-color:var(--card,var(--panel));box-shadow:0 2px 8px rgba(0,0,0,.12)}}   /* (no jump when the case list fills in after the data loads) */
 #info .sc .cur{background:color-mix(in srgb,var(--cc) 35%,transparent)}
 #info .sc th.cur{color:var(--ink)}
 .casenote{font-size:var(--fb,15px);background:color-mix(in srgb,var(--cc) 35%,transparent);border:1px solid var(--cc);border-radius:8px;padding:7px 9px;margin:8px 0}
@@ -1150,7 +1154,11 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
     document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v); Tabs.set(v === "map" ? "layout" : "pfd");
     if (PHONE) $("search").placeholder = v === "map" ? "Search the layout" : "Search the PFD";
     PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); else if (window.fxView) fxView(); });
-    if (v !== "map") setVB(); if (window.fxRefresh) fxRefresh(); };
+    caseHome(v); if (v !== "map") setVB(); if (window.fxRefresh) fxRefresh(); };
+  // desktop PFD: the design case picker sits on the drawing, top left, and the bar it was on goes; Layout keeps it in the bar
+  function caseHome(v){ if (PHONE) return; const c = $("case"), on = v !== "map"; document.body.classList.toggle("pfd-nobar", on);
+    if (on && c.parentElement !== $("stage")){ c.classList.add("on-stage"); $("stage").appendChild(c); }
+    if (!on && c.parentElement === $("stage")){ c.classList.remove("on-stage"); $("stageSeg").after(c); } }
   document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
   // the tab strip: PFD and Layout switch here, Assets and Quiz open the phone app page
   Tabs.mount({ active: "pfd", onSettings: () => location.href = "index.html?cards#settings", settingsPage: false,   // (downloads: Sources)
@@ -1161,6 +1169,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
     onTab: t => { if (t !== "pfd" && t !== "layout") return false; setView(t === "layout" ? "map" : "pfd"); return true; } });
   if (Tabs.slot($("search"), { cam: true })) $("search").placeholder = "Search the PFD";
   if (Tabs.replace && !(history.state && history.state.s)) Tabs.replace({ s: curView });
+  caseHome(curView === "layout" ? "map" : "pfd");
   const openHash = () => { if (location.hash === "#layout") setView("map"); else if (location.hash === "#pfd" && PFDLayout.active()) setView("pfd"); };
   window.addEventListener("hashchange", openHash); if (location.hash === "#layout") setTimeout(openHash, 0);
   $("tSvc").addEventListener("click", () => $("mapView").classList.toggle("svcon", $("tSvc").classList.contains("on")));
@@ -1791,11 +1800,11 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
       const cw = count(list("wbs"), wbsOf), ct = count(list("type"), it => it.t), cs = lay() ? count(list("st"), STAT) : {};
       const codes = [...WBS].filter(c => cw[c] || F.wbs.has(c)).sort(ORD.compare);
       groups.innerHTML = `<div class="fx-h">WBS${F.wbs.size ? `<button type="button" class="fx-clr" data-g="wbs">Clear</button>` : ""}</div><div class="fx-ps">${codes.map(c => pill("wbs", c, c, cw[c] || 0, F.wbs.has(c))).join("")}</div>` +
-        `<div class="fx-h">Type${F.type ? `<button type="button" class="fx-clr" data-g="type">Clear</button>` : ""}</div><div class="fx-ps">${TYPES.filter(t => ct[t[0]] || F.type === t[0]).map(t => pill("type", t[0], t[1], ct[t[0]] || 0, F.type === t[0])).join("")}</div>` +
+        (lay() ? `<div class="fx-h">Type${F.type ? `<button type="button" class="fx-clr" data-g="type">Clear</button>` : ""}</div><div class="fx-ps">${TYPES.filter(t => ct[t[0]] || F.type === t[0]).map(t => pill("type", t[0], t[1], ct[t[0]] || 0, F.type === t[0])).join("")}</div>` : "") +
         (lay() ? `<div class="fx-h">Status${F.st ? `<button type="button" class="fx-clr" data-g="st">Clear</button>` : ""}</div><div class="fx-ps">${["New", "Existing", "Future"].filter(s => cs[s] || F.st === s).map(s => pill("st", s, s, cs[s] || 0, F.st === s)).join("")}</div>` : "");
       const a = list().slice().sort((x, y) => ORD.compare(x.key, y.key));
       const where = [F.wbs.size && "WBS " + [...F.wbs].sort(ORD.compare).join(", "), F.type && TN[F.type].toLowerCase(), lay() && F.st && F.st.toLowerCase()].filter(Boolean).join(", ");
-      $("fxN").innerHTML = `<span>Results${where ? " in " + esc(where) : ""}</span><b>${a.length.toLocaleString()}</b>`;
+      $("fxN").innerHTML = `<span>Results</span><b>${a.length.toLocaleString()}</b>`;
       $("fxL").innerHTML = a.slice(0, N).map((it, i) => { const L = locate(it);
         return `<button type="button" class="fx-it lk-1l${cur === it ? " on" : ""}" data-i="${i}">${Lookup.row1(it.key, it.name || "", "", `<i class="fx-w ${L.how}">${{ pfd: "on PFD", link: "linked", pid: "P&ID", wbs: "WBS", none: "" }[L.how]}</i>`)}</button>`; }).join("") +
         (a.length > N ? `<button type="button" class="fx-more">Show ${Math.min(150, a.length - N)} more</button>` : "") +

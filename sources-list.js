@@ -138,7 +138,7 @@ window.SourcesList = (() => {
     function draw(){ if (busyRow){ redraw = true; return; } redraw = false;
       if (!DOCS) return; if (!phone) return drawDt(); pills(); list = shown();
       const need = list.filter(d => stOf(d) !== "ok" && stOf(d) !== "none");
-      $(".sl-bar").innerHTML = `<span class="sl-n"><b>${list.length}</b> ${list.length === 1 ? "document" : subOf(type) ? "drawings" : "documents"}</span>` +
+      $(".sl-bar").innerHTML = `<span class="sl-n">Results <b>${list.length}</b></span>` +
         (list.length ? need.length ? `<button type="button" class="sl-all">Cache all ${need.length}</button>` : `<span class="sl-allok">${ICO.devOk} All cached</span>` : "") + `<i class="sl-pg"><i></i></i>`;
       const rows = list.slice(0, 400);
       $(".sl-list").innerHTML = rows.map(d => `<div class="sl-r" data-r="${esc(d.k)}"><div class="sl-t"><b>${esc(d.number.replace(/^2000-/, ""))}</b><span>${esc([d.title, d.rev ? "Rev " + d.rev : "", d.size ? mb(d.size) + " MB" : ""].filter(Boolean).join(" · "))}</span></div>${saveBtn(d, d.t === "list" || !d.pdf ? "x" : "p")}${keepBtn(d)}<i class="sl-rb"><i></i></i></div>`).join("") +
@@ -513,7 +513,7 @@ html[data-theme=dark] .up-ok{color:#4cc28a}html[data-theme=dark] .up-ck{color:#e
 .sl-ph .sl-pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -10px 7px;padding:0 10px}.sl-ph .sl-pills::-webkit-scrollbar{display:none}.sl-ph .sl-pills[hidden]{display:none}
 .sl-p{flex:none;border:1.5px solid color-mix(in srgb,var(--ink) 16%,var(--line));background:var(--card,var(--panel));color:var(--ink);border-radius:16px;padding:5px 11px;font:inherit;font-size:var(--fl,13px);font-weight:800;white-space:nowrap;cursor:pointer}
 .sl-p i{font-style:normal;color:var(--mute);font-weight:600;margin-left:4px}.sl-p.on{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);color:color-mix(in srgb,var(--gold) 72%,var(--ink))}.sl-ps{font-weight:700}
-.sl-ph .sl-bar{font-size:var(--fl,13px);margin:0 2px 7px}
+.sl-ph .sl-bar{font-size:var(--fl,13px);margin:0 2px 7px}.sl-n{font-weight:800;letter-spacing:.08em;text-transform:uppercase}.sl-n b{color:var(--ink);letter-spacing:.02em;margin-left:4px}
 .sl-ph .sl-list{background:var(--card,var(--panel));border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .sl-r{position:relative;display:flex;align-items:center;gap:5px;padding:7px 7px 7px 9px;border-bottom:1px solid var(--line);cursor:pointer}.sl-r:last-child{border-bottom:0}
 .sl-t{flex:1;min-width:0}.sl-t b{display:block;font-size:calc(var(--fb,15px) * .9);font-weight:800;white-space:nowrap;letter-spacing:-.01em}.sl-t span{display:block;font-size:var(--fl,13px);color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
