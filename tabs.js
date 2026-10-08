@@ -618,9 +618,10 @@ button:disabled{cursor:default}
 // them jumps through the list, the labels near the finger curve out with the one under it highlighted, a light backdrop
 // keeps them readable and each new group gives a tick of vibration (Android). A list with no groups gets a plain handle.
 (() => {
-  const ROWS = ".bw-it,.bp-it,.lk-row1,.sl-r,.ck-row,.fx-it,.lk-row,tbody tr";
-  const SKIP = ".gl-az,.sp-body,.leaflet-container,#stage,svg";   // (the glossary has its own A to Z; maps and drawings pan)
+  const ROWS = ".gl-e,.bw-it,.bp-it,.lk-row1,.sl-r,.ck-row,.fx-it,.lk-row,tbody tr";
+  const SKIP = ".sp-body,.leaflet-container,#stage,svg";   // (maps and drawings pan)
   const keyOf = r => { const t = ((r.querySelector("b,td") || r).textContent || "").trim();
+    if (r.classList && r.classList.contains("gl-e")){ const c = t.charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; }   // (the glossary: A to Z)
     let m = t.match(/^\d{4}-(F\d{2,3})-/) || t.match(/^(F\d{2,3})\b/); if (m) return m[1];
     m = t.match(/^(\d{2})-/); if (m) return m[1]; const c = t.charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
   let el = null, sc = null, groups = [], hideT = 0, on = false, last = "";

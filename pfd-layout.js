@@ -90,13 +90,14 @@ window.PFDLayout = (() => {
     api.pref.set("lo_base", k);
     document.querySelectorAll(".lo-seg [data-b]").forEach(b => b.classList.toggle("on", b.dataset.b === k));
   }
-  // home (the opening view and ⌂): every WBS zone, filling the screen, but never so close that the
-  // zones give way to the name stacks
+  // home (the opening view and ⌂): every WBS zone, filling the screen edge to edge; the WBS view reaches at least
+  // this close, so home always shows the zones and their names
   function home(anim){
     let b = null; areas.forEach(a => { const g = a.poly.getBounds(); b = b ? b.extend(g) : L.latLngBounds(g.getSouthWest(), g.getNorthEast()); });   // the WBS zones
     if (!b) b = L.latLngBounds(LAYOUT.home);
     const ph = document.documentElement.classList.contains("phone");   // (clear of the buttons over the map's top and bottom)
-    const o = { paddingTopLeft: ph ? [6, 30] : [20, 50], paddingBottomRight: ph ? [6, 40] : [20, 20], maxZoom: AREA_Z - .25 };
+    const o = { paddingTopLeft: ph ? [4, 20] : [10, 30], paddingBottomRight: ph ? [4, 20] : [10, 10], maxZoom: BOX_Z - 1 };
+    const hz = map.getBoundsZoom(b, false, L.point(o.paddingTopLeft).add(o.paddingBottomRight)); AREA_Z = Math.max(16.75, Math.min(BOX_Z - .75, hz + .25));
     anim ? map.flyToBounds(b, Object.assign(o, { duration: .6 })) : map.fitBounds(b, o);
   }
   function zoomCls(){
@@ -215,7 +216,7 @@ window.PFDLayout = (() => {
   // Zoomed far out the boxes can't be read: the map shows WBS areas instead, a soft zone round each area's equipment
   // (the area is the WBS code most of an item's MEL tags start with) labelled "F12 (Primary crushing)". Items of one
   // area more than 120 m from the rest get a zone of their own. Tapping a zone zooms in until the boxes show.
-  const AREA_Z = 16.75;
+  let AREA_Z = 16.75;   // (raised by home() so the home view, however close, is always the WBS view)
   const WBS = {F00: "General FIM Site", F10: "Primary Crushing 1 - Existing", F12: "Primary Crushing 2", F13: "Milling & Classification", F14: "Gravity Circuit & Intensive Leaching",
     F16: "Rougher & Scavenger Flotation", F17: "Flotation Tailings Pre-Leach Thickening", F18: "Cleaner & Cleaner Scavenger Flotation", F19: "Milling & Classification - Existing - Area A",
     F20: "Milling & Classification - Area B", F21: "Flotation Tailings CIL4", F22: "CIL4 - Carbon Treatment & Elution", F23: "Final Tailings Handling & Storage", F24: "Air & Water Services",
@@ -380,22 +381,27 @@ window.PFDLayout = (() => {
     const its = []; areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span");
       if (big[a.code] !== a){ sp.classList.add("off"); return; }
       sp.classList.remove("off"); sp.classList.add("col"); its.push({ a, e, sp, p: map.latLngToContainerPoint(a.lab.getLatLng()) }); });
-    // the plant's extent on screen (every zone), so the columns sit just outside it
-    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; areas.forEach(a => { const b = a.poly.getBounds(), p = map.latLngToContainerPoint(b.getNorthWest()), q = map.latLngToContainerPoint(b.getSouthEast());
-      x0 = Math.min(x0, p.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, q.y); });
-    const byX = its.slice().sort((x, y) => x.p.x - y.p.x), h = Math.ceil(byX.length / 2), cols = [byX.slice(0, h), byX.slice(h)].map(c => c.sort((x, y) => x.p.y - y.p.y));
+    // the two columns go in the emptier pair of opposite corners (the plant runs on a diagonal): each area to the
+    // column of its nearer corner, as many in each
     const tl = $("loTL"), nb = document.querySelector("#mapView .lo-north"), bt = el => el ? el.getBoundingClientRect().bottom - box.top : 0;
+    const quad = (cx, cy) => its.filter(r => (r.p.x < W / 2) === !cx && (r.p.y < H / 2) === !cy).length;
+    const diag = quad(0, 1) + quad(1, 0) <= quad(0, 0) + quad(1, 1);   // true: bottom left and top right
+    const key = r => r.p.x / W + (diag ? -1 : 1) * r.p.y / H, srt = its.slice().sort((p, q) => key(p) - key(q)), h = Math.ceil(srt.length / 2);
+    const cols = [srt.slice(0, h), srt.slice(h)];   // [left column, right column]
+    const BOT = H - (ph ? 76 : 26);   // (clear of the Layers button / the map credit)
     cols.forEach((col, k) => {
       const w = Math.max(0, ...col.map(r => r.sp.offsetWidth)), ch = col.reduce((t, r) => t + r.sp.offsetHeight, 0);
       const top = Math.max(50, bt(tl && tl.querySelector(".lo-pans")), k ? bt(nb) : 0) + 6;
-      const x = k ? Math.min(W - (ph ? 6 : 60) - w, x1 + GAP) : Math.max(ph ? 6 : 10, x0 - GAP - w);
-      let y = Math.max(top, Math.min(H - 8 - ch, (y0 + y1) / 2 - ch / 2));
+      const x = k ? W - (ph ? 6 : 60) - w : (ph ? 6 : 10), low = diag ? !k : !!k;   // (this column in a bottom corner)
+      let y = low ? Math.max(top, BOT - ch) : top;
+      // rows in the order their leaders fan out from the column, so no two leaders cross
+      const ex0 = k ? x : x + w, ey0 = y + ch / 2; col.sort((p, q) => Math.atan2(p.p.y - ey0, Math.abs(p.p.x - ex0)) - Math.atan2(q.p.y - ey0, Math.abs(q.p.x - ex0)));
       col.forEach(r => { const hh = r.sp.offsetHeight, dx = x - r.p.x, dy = y + hh / 2 - r.p.y; y += hh;
         r.sp.style.setProperty("--dx", dx + "px"); r.sp.style.setProperty("--dy", dy + "px");
-        // the leader: flat out of the label's inner edge, then 45 degrees into the area (straight in if there's no room for the bend)
-        const ex = (k ? x : x + r.sp.offsetWidth) - r.p.x, s = Math.sign(ex) || 1, run = Math.abs(ex) - Math.abs(dy), kx = run > 4 ? ex - s * Math.abs(dy) : ex - s * 4;
+        // the leader: straight from the column's inner edge to the area
+        const ex = (k ? x + 1 : x + w - 1) - r.p.x;
         let sv = r.e.querySelector(".la-sv"); if (!sv){ sv = document.createElementNS("http://www.w3.org/2000/svg", "svg"); sv.setAttribute("class", "la-sv"); sv.innerHTML = "<polyline/><circle r='2.2'/>"; r.e.prepend(sv); }
-        sv.style.setProperty("--h", r.a.hue); sv.style.display = "block"; sv.firstChild.setAttribute("points", `${ex},${dy} ${kx},${dy} 0,0`); }); });
+        sv.style.setProperty("--h", r.a.hue); sv.style.display = "block"; sv.firstChild.setAttribute("points", `${ex},${dy} 0,0`); }); });
   }
   // Plant view (callout stacks): the zones show as outlines only (stackAreas)
   const ROWH = 30;

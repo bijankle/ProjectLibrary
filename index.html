@@ -876,7 +876,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
       const sorted = list.slice().sort((a, b) => (L(b[0]) === "#") - (L(a[0]) === "#") || a[0].localeCompare(b[0], undefined, { sensitivity: "base", numeric: true }));   // (# first)
       let h = "", last = ""; sorted.forEach(([k, v]) => { const c = L(k); if (c !== last){ h += `<div class="gl-h" id="gl-${c}">${c}</div>`; last = c; } h += `<div class="gl-e"><b>${k}</b><span>${v}</span></div>`; });
       const letters = [...new Set(sorted.map(x => L(x[0])))];
-      out.innerHTML = (h || `<div class="gl-e"><b>No match</b></div>`) + (letters.length > 1 ? `<div class="gl-az">${letters.map(c => `<i data-l="${c}">${c}</i>`).join("")}</div>` : "");
+      out.innerHTML = (h || `<div class="gl-e"><b>No match</b></div>`) ;
       // sliding along the strip: a big letter beside the finger and a tick of vibration at each new letter (Android)
       const az = out.querySelector(".gl-az"); if (az){ let cur = "", bub = document.querySelector(".gl-bub"), ht;
         if (!bub){ bub = document.createElement("div"); bub.className = "gl-bub"; bub.hidden = true; document.body.appendChild(bub); }
