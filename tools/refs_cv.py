@@ -176,7 +176,12 @@ def vlines(page, k=Z):
             if len(pts) < 2: continue
             shut = abs(pts[0][0] - pts[-1][0]) + abs(pts[0][1] - pts[-1][1]) < 1.5 or (d.get("closePath") and j == len(pcs) - 1)
             if shut and len(pts) >= 4: P.append(pts)
-            elif not shut and max(max(p[0] for p in pts) - min(p[0] for p in pts), max(p[1] for p in pts) - min(p[1] for p in pts)) > 6 * k: O.append(pts)
+            elif not shut:   # an outline drawn in the same stroke as the line leading off it (a ribbon run straight into
+                # its pipe): the closed loop inside the stroke counts as an outline too
+                for i in range(len(pts)):
+                    j = next((j for j in range(i + 4, len(pts)) if abs(pts[i][0] - pts[j][0]) + abs(pts[i][1] - pts[j][1]) < 1.5), None)
+                    if j is not None: P.append(pts[i:j + 1]); break
+            if not shut and max(max(p[0] for p in pts) - min(p[0] for p in pts), max(p[1] for p in pts) - min(p[1] for p in pts)) > 6 * k: O.append(pts)
     def merge(L):   # collinear pieces of one line (a box side drawn in parts) joined
         out = []
         for c, a, b in sorted(L):
@@ -264,10 +269,10 @@ def ribbon(vl, t, g=None):
     end: "L" / "R" a point on the left / right, "l" / "r" a notch (swallow tail) there, "B" both ends square; the depth is
     that of the point (or notch) as a part of the width"""
     x0, y0, x1, y1 = t; s = min(x1 - x0, y1 - y0); best = None
-    for P in vl[2] + joined(vl[3] if len(vl) > 3 else [], (x0 - 8 * s, y0 - 3 * s, x1 + 8 * s, y1 + 3 * s)):
+    for P in vl[2] + joined(vl[3] if len(vl) > 3 else [], (x0 - 12 * s, y0 - 3 * s, x1 + 12 * s, y1 + 3 * s)):
         xs, ys = [p[0] for p in P], [p[1] for p in P]; b = (min(xs), min(ys), max(xs), max(ys)); w, h = b[2] - b[0], b[3] - b[1]
         if not (b[0] <= x0 + 2 and b[1] <= y0 + 2 and b[2] >= x1 - 2 and b[3] >= y1 - 2): continue
-        if h > s * 4.5 or w > (x1 - x0) + 8 * s or (best and w * h <= best[3]): continue   # the outermost (one may be drawn over another)
+        if h > s * 4.5 or w > (x1 - x0) + 12 * s or (best and w * h <= best[3]): continue   # the outermost (one may be drawn over another)
         e = max(2, h * .1); ym = (b[1] + b[3]) / 2; ends = []
         for X in (b[0], b[2]):
             at = [p for p in P if abs(p[0] - X) <= e]
