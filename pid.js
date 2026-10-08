@@ -40,7 +40,7 @@ window.Pid = (() => {
         if (k === "dwg"){ if (!key(t)) return; open(t, back == null ? d.number : null, { keep: true, back }); return; }
         // a tag: its item opens, with this sheet kept beside it and the arrow on the tag tapped (not the item's first drawing)
         if (window.AssetViz && AssetViz.keep && box) AssetViz.keep({ n: d.number, tap: box, key: String(t).split("|")[0] });
-        if (window.kcgmOpenTag){ PdfView.close(); setTimeout(() => kcgmOpenTag(t), 60); }
+        if (window.kcgmOpenTag){ PdfView.hide(); setTimeout(() => kcgmOpenTag(t), 60); }
       } });
     // the drawings its continuations lead to, fetched quietly in the background (kept on the device), so one opens at once
     refs().then(R => { const seen = new Set(); (R[d.number] || []).forEach(r => { if (r[6] === "d" && seen.size < 8){ const t = info(r[5]); if (t && t.file && !seen.has(t.file)) seen.add(t.file); } });

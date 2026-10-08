@@ -525,8 +525,12 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
     item: it ? { k: it.k, t: it.t } : null, path: window.Browse && Browse.getPath ? Browse.getPath() : [], q: lk ? lk.input.value : "" }; };
   let lastSig = "";
   function nav(isNew){ if (restoring || !window.Tabs || !Tabs.push) return; const st = snap(), sig = st.s + "|" + (st.item ? st.item.k : "");
+    if (history.state && history.state.sp){ if (sig !== lastSig){ Tabs.push(st); lastSig = sig; } return; }   // (never over a drawing viewer's step)
     if (isNew && sig !== lastSig) Tabs.push(st); else Tabs.replace(st); lastSig = sig; }
+  // the drawing beside the item, as you have it (sheet, zoom, place, the box picked): kept with this history step so Back returns to it
+  window.kcgmDv = dv => { const h = history.state; if (restoring || !h || !h.item || !dv || String(h.item.k).toUpperCase().replace(/[^A-Z0-9]/g, "") !== String(dv.key).toUpperCase().replace(/[^A-Z0-9]/g, "")) return; history.replaceState(Object.assign({}, h, { dv }), ""); };
   function restore(st){
+    if (st && st.sp && !st.s) return;   // (a drawing viewer step: pdfview.js reopens that view over the page)
     restoring = true;
     const done = () => { restoring = false; lastSig = (st.s || "home") + "|" + (st.item ? st.item.k : ""); };
     const sc = st.s || "home";
@@ -540,6 +544,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
       if (window.Browse && Browse.setPath) Browse.setPath(st.path || []);
       lk.input.value = st.q || "";
       const it = st.item && Lookup.find(st.item.k, st.item.t);
+      if (it && st.dv && window.AssetViz && AssetViz.restoreView) AssetViz.restoreView(st.dv);
       if (it) lk.openItem(it); else lk.close();
       done(); }).catch(done);
   }

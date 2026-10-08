@@ -39,13 +39,15 @@ window.AssetViz = (() => {
   // drawing of its own opens, and goes back to the charts on Home.
   function item(it){
     const own = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(it) : [];
-    const tapped = keepView && keepView.tap && nk(keepView.key) === nk(it.key);   // (opened by a tap on its label: that sheet, the label blue)
+    const tapped = keepView && (keepView.tap || keepView.force) && nk(keepView.key) === nk(it.key);   // (opened by a tap on its label: that sheet, the label blue)
     if (!own.length && !tapped && cur && shown && (!window.Pid || Pid.ready())) return;   // (an item with no drawing: keep the one on show)
     // (a kept view waits for the item it was kept for: closing the full screen viewer steps back through the one before)
     if (keepView && keepView.key && nk(keepView.key) !== nk(it.key)){ cur = it; return; }
-    const kv = keepView && (own.includes(keepView.n) || keepView.tap) ? keepView : null; keepView = null;
+    const kv = keepView && (own.includes(keepView.n) || keepView.tap || keepView.force) ? keepView : null; keepView = null;
     cur = it; shown = kv ? kv.n : null; hist = []; lastSig = ""; held = kv; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
   function list(){}
+  // Back to an item: its drawing as it was left (index.html keeps it with the history step)
+  const restoreView = v => { if (!v || !v.n || (window.Pid && Pid.ready() && !Pid.has(v.n))) return; keepView = { n: v.n, z: v.z, tx: v.tx, ty: v.ty, tap: v.tap || null, key: v.key, force: true }; setTimeout(() => { if (keepView && keepView.force) keepView = null; }, 2500); };
   const keep = o => { keepView = { n: o.n, tap: o.tap || null, key: o.key || null }; setTimeout(() => { keepView = null; }, 2500); };
   // the Assets search box finds on the drawing on show, literally, as the full screen viewer does: the labels it holds
   // (references whose printed tag has the typed text) in blue, else the sheet's own words that do
@@ -86,10 +88,14 @@ window.AssetViz = (() => {
     let z = 1, tx = 0, ty = 0, W = 0, H = 0, page = null, sc = 1, rz = 0, rt = null;
     // the place tapped or found: a highlighted box on it (no arrow), in 1/10000 of the sheet, grown a little as in the full screen viewer
     // turn the click boxes passing test(i, ref) blue; how many
-    const pick = test => { const rf = box.querySelector(".vz-rf"); let n = 0; [...rf.children].forEach((e, i) => { const on = !!(refsNow[i] && test(i, refsNow[i])); e.classList.toggle("pick", on); n += on; }); return n; };
+    const pick = test => { const rf = box.querySelector(".vz-rf"); let n = 0; [...rf.children].forEach((e, i) => { const on = !!(refsNow[i] && test(i, refsNow[i])); e.classList.toggle("pick", on); n += on; }); report(); return n; };
+    // this view (sheet, zoom, place, the box picked) into the page's history step, for Back (index.html kcgmDv)
+    let dvT = 0; const report = () => { clearTimeout(dvT); dvT = setTimeout(() => { if (g !== gen || !cur || !window.kcgmDv) return; const rf = box.querySelector(".vz-rf"), pi = rf ? [...rf.children].findIndex(e => e.classList.contains("pick")) : -1;
+      kcgmDv({ key: cur.key, n, z, tx, ty, tap: pi >= 0 && boxes[pi] ? boxes[pi] : (tapNow || null) }); }, 350); };
+    let tapNow = null;
     const hbox = (l, t, w, h) => { const [a, b, c, d] = PdfView.grow(l, t, w, h, W / H); return `<i class="sp-hb sp-hbon" style="left:${a / 1e4 * W}px;top:${b / 1e4 * H}px;width:${c / 1e4 * W}px;height:${d / 1e4 * H}px"></i>`; };
     const apply = () => { z = Math.max(1, Math.min(10, z)); tx = Math.min(0, Math.max(W - W * z, tx)); ty = Math.min(0, Math.max(H - H * z, ty));
-      stage.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; stage.style.setProperty("--iz", (1 / z).toFixed(4)); stage.style.setProperty("--rbw", (1.5 / z).toFixed(3) + "px"); clearTimeout(rt); rt = setTimeout(sharp, 180); };
+      stage.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; stage.style.setProperty("--iz", (1 / z).toFixed(4)); stage.style.setProperty("--rbw", (1.5 / z).toFixed(3) + "px"); clearTimeout(rt); rt = setTimeout(sharp, 180); report(); };
     // zoom onto boxes ([l, t, w, h] in 1/10000 of the sheet): all of them in view, but never closer than 4x
     const focus = bs => { if (!bs.length) return; const l = Math.min(...bs.map(b => b[0])) / 1e4 * W, t = Math.min(...bs.map(b => b[1])) / 1e4 * H,
       r = Math.max(...bs.map(b => b[0] + b[2])) / 1e4 * W, b = Math.max(...bs.map(q => q[1] + q[3])) / 1e4 * H, vw = box.clientWidth || W, vh = box.clientHeight || H;
@@ -143,7 +149,7 @@ window.AssetViz = (() => {
       const v1 = pg.getViewport({ scale: 1 }), bw = box.clientWidth, bh = Math.max(200, innerHeight - box.getBoundingClientRect().top - 24);
       sc = Math.min(bw / v1.width, bh / v1.height); const vp = pg.getViewport({ scale: sc }); W = vp.width; H = vp.height;
       box.style.height = H + "px"; stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
-      const tap = held && held.n === n ? held.tap : null; if (held && held.n === n && held.z){ z = held.z; tx = held.tx; ty = held.ty; apply(); } held = null;
+      const tap = held && held.n === n ? held.tap : null; tapNow = tap; if (held && held.n === n && held.z){ z = held.z; tx = held.tx; ty = held.ty; apply(); } held = null;
       rz = 0; await sharp(); if (g !== gen) return; const nt = box.querySelector(".vz-note"); if (nt) nt.remove();
       const txl = box.querySelector(".vz-tx"); txl.style.setProperty("--scale-factor", sc);
       pg.getTextContent().then(tc => { if (g !== gen || !window.pdfjsLib || !pdfjsLib.renderTextLayer) return;
@@ -306,10 +312,10 @@ window.AssetViz = (() => {
 .vz-sheet{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;touch-action:none;cursor:default;user-select:none}
 .vz-sheet.drag{cursor:default}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
-.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:calc(2px * var(--iz,1));background:rgba(90,100,115,.06)}   /* as in the full screen viewer: a very light grey wash */
-.vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i.hv{background:rgba(90,100,115,.22)}.vz-rf i.o{border-radius:50%}
-.vz-rf i.rb{background:none!important;box-shadow:none!important}.vz-rf i.rb svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.vz-rf i.rb polygon{fill:rgba(90,100,115,.11);stroke:none}
-.vz-rf i.rb.hv polygon{fill:rgba(90,100,115,.22)}.vz-rf i.rb.hit polygon{fill:rgba(30,110,230,.28);stroke:rgba(30,110,230,.85);stroke-width:1.5px}.vz-rf i.rb.pick polygon{fill:rgba(30,110,230,.32);stroke:#1e6ee6;stroke-width:2.5px}.vz-sheet.on-ref,.vz-sheet.on-ref *{cursor:pointer!important}
+.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:calc(2px * var(--iz,1));background:rgba(90,100,115,.15)}   /* as in the full screen viewer: a 15% grey wash */
+.vz-rf i[data-k="d"]{background:rgba(90,100,115,.15)}.vz-rf i.hv{background:rgba(90,100,115,.28)}.vz-rf i.o{border-radius:50%}
+.vz-rf i.rb{background:none!important;box-shadow:none!important}.vz-rf i.rb svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.vz-rf i.rb polygon{fill:rgba(90,100,115,.15);stroke:none}
+.vz-rf i.rb.hv polygon{fill:rgba(90,100,115,.28)}.vz-rf i.rb.hit polygon{fill:rgba(30,110,230,.28);stroke:rgba(30,110,230,.85);stroke-width:1.5px}.vz-rf i.rb.pick polygon{fill:rgba(30,110,230,.32);stroke:#1e6ee6;stroke-width:2.5px}.vz-sheet.on-ref,.vz-sheet.on-ref *{cursor:pointer!important}
 .vz-rf i.pick{box-shadow:inset 0 0 0 calc(2.5px * var(--iz,1)) #1e6ee6,0 0 0 calc(2px * var(--iz,1)) rgba(255,255,255,.7);background:rgba(30,110,230,.32)}.vz-rf i.hit{box-shadow:inset 0 0 0 calc(1.5px * var(--iz,1)) rgba(30,110,230,.85);background:rgba(30,110,230,.28)}
 .vz-fd{position:absolute;left:0;top:0;pointer-events:none}.vz-fd i{position:absolute;box-sizing:border-box;border:1.5px solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:2px}
 .vz-sheet .vz-tx{z-index:2}.vz-mk{z-index:3}
@@ -341,5 +347,5 @@ window.AssetViz = (() => {
 .vz-tip{position:fixed;z-index:200;pointer-events:none;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:var(--fb,15px);line-height:1.35;box-shadow:0 6px 18px #0006;max-width:260px}
 .vz-tip[hidden]{display:none}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  return { mount, update, item, list, home, find, keep };
+  return { mount, update, item, list, home, find, keep, restoreView };
 })();

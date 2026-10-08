@@ -371,6 +371,8 @@ window.PdfView = (() => {
   async function unrot(){ if (V) V.rot = 0; if (freed){ freed = false; try { screen.orientation.unlock(); } catch (e) {} } if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
   function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
     if (!fromPop && history.state && history.state.sp) history.back(); }
+  // out of the way for a tag tapped on the sheet, its history step kept: Back from the tag's item reopens this view
+  const hide = () => close(true);
   // opened for a searched item: one place on this page, four times closer centred on it; several, zoomed to fit them all
   // (boxes in fractions of the sheet). Not when the drawing itself was what you searched (no find).
   function focusHits(hs, ext){ if (!V || !hs || !hs.length) return; const r = V.body.getBoundingClientRect(), z0 = V.zoom, sw = V.sheet.offsetWidth / z0, sh = V.sheet.offsetHeight / z0;
@@ -466,6 +468,15 @@ window.PdfView = (() => {
     else { V.sheet.style.left = V.ox ? V.ox + "px" : ""; V.sheet.style.top = V.oy ? V.oy + "px" : "";
       const q = V.sheet.getBoundingClientRect(), r = V.body.getBoundingClientRect(), mx = r.left + r.width / 2, my = r.top + r.height / 2;
       if (q.left > mx) V.ox -= q.left - mx; if (q.right < mx) V.ox += mx - q.right; if (q.top > my) V.oy -= q.top - my; if (q.bottom < my) V.oy += my - q.bottom; }
+    // once the sheet overflows the window a slide is traded for scroll (same view), or the part slid off the top or left
+    // edge could never be scrolled back to
+    if (V.zoom > 1.001 && (V.ox || V.oy)){ const b = V.body; V.sheet.style.left = V.sheet.style.top = "";
+      const mx = b.scrollWidth - b.clientWidth, my = b.scrollHeight - b.clientHeight;
+      const trade = (o, pos, max) => o < 0 ? Math.min(-o, Math.max(0, max - pos)) : -Math.min(o, pos);   // the scroll change
+      const dx = trade(V.ox, b.scrollLeft, mx), dy = trade(V.oy, b.scrollTop, my);
+      b.scrollLeft += dx; b.scrollTop += dy; V.ox += dx; V.oy += dy;
+      // (what's left would hold the sheet past its own end: dropped, as a scroll stops at the end)
+      if (V.sheet.offsetWidth > b.clientWidth) V.ox = 0; if (V.sheet.offsetHeight > b.clientHeight) V.oy = 0; }
     V.sheet.style.left = V.ox ? V.ox + "px" : ""; V.sheet.style.top = V.oy ? V.oy + "px" : ""; }
 
   // ---------- mark a tag on the page ----------
@@ -553,5 +564,5 @@ window.PdfView = (() => {
   // of the boxes holding a point, the one whose centre is nearest (-1: none)
   const nearest = (B, x, y) => { let k = -1, d = 1e18; B.forEach(([l, t, w, h], i) => { if (x < l || x > l + w || y < t || y > t + h) return;
       const e = (x - l - w / 2) ** 2 + (y - t - h / 2) ** 2; if (e < d){ d = e; k = i; } }); return k; };
-  return { open, close, back, state, getDoc, grow, ribbon, nearest, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
+  return { open, close, hide, back, state, getDoc, grow, ribbon, nearest, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
 })();
