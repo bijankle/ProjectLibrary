@@ -1,0 +1,3 @@
+# Documents the sync uploads to Project Library: one document number per line. * matches anything,
+# e.g. 2000-F00-LST-* takes every list. Lines starting with # are ignored.
+2000-F00-LST-EL-20002
