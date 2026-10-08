@@ -950,40 +950,6 @@
    "size": 344719,
    "ocr": 1
   },
-  "2000-F19-PID-PR-10002": {
-   "file": "PIDs/2000-F19-PID-PR-10002.pdf",
-   "title": "Mt Charlotte leach feed thickener",
-   "rev": "",
-   "date": "",
-   "pages": 1,
-   "size": 287773,
-   "ocr": 1
-  },
-  "2000-F19-PID-PR-10003": {
-   "file": "PIDs/2000-F19-PID-PR-10003.pdf",
-   "title": "Regrind mill thickener overflow pump",
-   "rev": "B",
-   "date": "",
-   "pages": 1,
-   "size": 78962
-  },
-  "2000-F19-PID-PR-10004": {
-   "file": "PIDs/2000-F19-PID-PR-10004.pdf",
-   "title": "Ball milling, Mt Charlotte",
-   "rev": "",
-   "date": "",
-   "pages": 1,
-   "size": 250840,
-   "ocr": 1
-  },
-  "2000-F19-PID-PR-10005": {
-   "file": "PIDs/2000-F19-PID-PR-10005.pdf",
-   "title": "Regrind mill discharge",
-   "rev": "B",
-   "date": "",
-   "pages": 1,
-   "size": 91576
-  },
   "2000-F19-PID-PR-10006": {
    "file": "PIDs/2000-F19-PID-PR-10006.pdf",
    "title": "Ball charging system",
@@ -1573,24 +1539,6 @@
    "pages": 1,
    "size": 157133
   },
-  "2000-F30-PID-PR-10014": {
-   "file": "PIDs/2000-F30-PID-PR-10014.pdf",
-   "title": "Tailings sampling circuit",
-   "rev": "",
-   "date": "",
-   "pages": 1,
-   "size": 190570,
-   "ocr": 1
-  },
-  "2000-F30-PID-PR-10015": {
-   "file": "PIDs/2000-F30-PID-PR-10015.pdf",
-   "title": "Carbon safety screens, CIL3",
-   "rev": "E",
-   "date": "2025-02-11",
-   "pages": 1,
-   "size": 231230,
-   "ocr": 1
-  },
   "2000-F30-PID-PR-10016": {
    "file": "PIDs/2000-F30-PID-PR-10016.pdf",
    "title": "CIL2 reagent dosing",
@@ -2013,31 +1961,6 @@
    "date": "",
    "pages": 1,
    "size": 343237
-  },
-  "2000-F75-PID-PR-10004": {
-   "file": "PIDs/2000-F75-PID-PR-10004.pdf",
-   "title": "Decant dam 3 pump upgrade",
-   "rev": "",
-   "date": "",
-   "pages": 1,
-   "size": 121149
-  },
-  "2000-F75-PID-PR-10005": {
-   "file": "PIDs/2000-F75-PID-PR-10005.pdf",
-   "title": "TSF recommissioning, decant return",
-   "rev": "",
-   "date": "",
-   "pages": 1,
-   "size": 151940
-  },
-  "2000-F75-PID-PR-10006": {
-   "file": "PIDs/2000-F75-PID-PR-10006.pdf",
-   "title": "Tails TSF recommissioning, Kearns Corner",
-   "rev": "",
-   "date": "",
-   "pages": 1,
-   "size": 142409,
-   "ocr": 1
   },
   "2000-F75-PID-PR-10007": {
    "file": "PIDs/2000-F75-PID-PR-10007.pdf",

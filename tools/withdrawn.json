@@ -1,0 +1,26 @@
+{
+ "note": "Drawings stamped cancelled or superseded, and the assets only they showed (checked against every live P&ID and the MEL). The build tools leave these out.",
+ "pids": {
+  "2000-F19-PID-PR-10002": "CANCELLED stamp",
+  "2000-F19-PID-PR-10003": "CANCELLED stamp",
+  "2000-F19-PID-PR-10004": "CANCELLED stamp",
+  "2000-F19-PID-PR-10005": "CANCELLED stamp",
+  "2000-F30-PID-PR-10014": "CANCELLED stamp",
+  "2000-F30-PID-PR-10015": "SUPERSEDED BY 2000-F30-PID-PR-10010 stamp",
+  "2000-F75-PID-PR-10004": "CANCELLED stamp",
+  "2000-F75-PID-PR-10005": "CANCELLED stamp",
+  "2000-F75-PID-PR-10006": "CANCELLED stamp"
+ },
+ "assets": {
+  "F19-CH-56": "only on a stamped P&ID and Decommissioned in the MEL",
+  "F19-MB-51": "only on a stamped P&ID and Decommissioned in the MEL",
+  "F19-PP-52A": "only on a stamped P&ID and Decommissioned in the MEL",
+  "F19-TH-51": "only on a stamped P&ID and Decommissioned in the MEL",
+  "F19-TK-51": "only on a stamped P&ID and Decommissioned in the MEL",
+  "F30-CS-61A": "only on a stamped P&ID and Decommissioned in the MEL",
+  "F30-CS-61B": "only on a stamped P&ID and Decommissioned in the MEL",
+  "F30-CS-61C": "only on a stamped P&ID and Decommissioned in the MEL",
+  "F30-SC-64A": "only on a stamped P&ID and Decommissioned in the MEL",
+  "F30-SC-64B": "only on a stamped P&ID and Decommissioned in the MEL"
+ }
+}

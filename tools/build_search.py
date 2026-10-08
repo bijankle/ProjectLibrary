@@ -151,6 +151,11 @@ for doc, st, shift in (("2000-F00-LST-PP-10032", "Stage 1", 0), ("2000-F00-LST-P
             rec.append(clean(r[cc]) if cc < len(r) else "")
         DATA["hose"].append(rec)
 
+# assets only on withdrawn drawings and decommissioned in the MEL (tools/withdrawn.json) stay out
+try:
+    _wd = set(json.load(open(os.path.join(os.path.dirname(__file__), "withdrawn.json")))["assets"])
+    DATA = {k: [r for r in v if r[0] not in _wd] for k, v in DATA.items()}
+except (OSError, ValueError, KeyError): pass
 out = {"built": "tools/build_search.py", "types": TYPES, "data": DATA}
 json.dump(out, open(OUT, "w"), ensure_ascii=False, separators=(",", ":"))
 print({k: len(v) for k, v in DATA.items()}, round(os.path.getsize(OUT) / 1e6, 2), "MB")
