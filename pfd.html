@@ -142,6 +142,7 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 .lo-mo .lo-fb{display:flex;flex-direction:column;align-items:stretch;gap:6px;width:230px}.lo-mo.shut .lo-fb{display:none}
 .lo-mo .lo-seg{display:flex}.lo-mo .lo-seg button{flex:1}.lo-home{align-self:flex-start;padding:8px 11px !important}
 .lo-pan .lo-wh{white-space:nowrap}
+#fxFlow,#loFF,body.layout #mleg,:root.phone body.layout #case{display:none!important}   /* the Layout has no flows */
 .lo-ff #mleg,#fxFlow #mleg{position:static;display:flex !important;flex-direction:column;gap:5px;padding:0;border:0;background:none}
 .lo-ff .mrow,#fxFlow .mrow{display:flex;flex-wrap:wrap;gap:5px}.lo-ff .mrow[hidden],#fxFlow .mrow[hidden]{display:none}
 #fxFlow #mshH{display:none}#fxFlow{margin-top:4px}body:not(.layout) #fxFlow,:root.phone #fxFlow{display:none}
@@ -396,7 +397,6 @@ svg.focus .ctl, svg.focus .ilk{opacity:.12}
 /* desktop PFD: no bar under the tabs, the case picker on the drawing (caseHome) */
 :root:not(.phone) body.pfd-nobar header{display:none}
 :root:not(.phone) body.pfd-nobar :is(#side,#stage,#mapView){top:var(--tb,0px)!important}:root:not(.phone) body.pfd-nobar.fx-on #fxDv{top:var(--tb,0px)!important}
-#fxFlow,#loFF{display:none!important}body.layout #mleg{display:none!important}:root.phone body.layout #case{display:none!important}
 #case.on-stage{position:absolute;left:14px;top:12px;z-index:5;height:38px;border:1px solid var(--line);border-radius:10px;background-color:var(--card,var(--panel));box-shadow:0 2px 8px rgba(0,0,0,.12)}}   /* (no jump when the case list fills in after the data loads) */
 #info .sc .cur{background:color-mix(in srgb,var(--cc) 35%,transparent)}
 #info .sc th.cur{color:var(--ink)}
