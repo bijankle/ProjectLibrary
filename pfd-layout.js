@@ -372,58 +372,49 @@ window.PFDLayout = (() => {
       const r = sp.getBoundingClientRect(); if (!hit(r)) return placed.push(r);
       sp.classList.add("off"); });
   }
-  // Zoomed right out: every area's code and name in two tight columns in the top corners (as many in each, left aligned),
-  // each joined by a leader to its area; an area in several zones labels once, on its biggest
+  // Zoomed right out: each area's code and name beside its own zone, pointing away from the plant (zones on the left
+  // out to the left, on the right to the right, the top ones up, the bottom ones down), joined by a short leader; it
+  // keeps off the zones if it can, never sits on its own, and tries the other sides when there's no room
+  // (an area in several zones labels once, on its biggest)
   function colAreas(){
     const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, ph = document.documentElement.classList.contains("phone");
-    const GAP = 24;
     const big = {}; areas.forEach(a => { if (!big[a.code] || a.n > big[a.code].n) big[a.code] = a; });
     const its = []; areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span");
       if (big[a.code] !== a){ sp.classList.add("off"); return; }
       sp.classList.remove("off"); sp.classList.add("col"); its.push({ a, e, sp, p: map.latLngToContainerPoint(a.lab.getLatLng()) }); });
-    // the two columns go in the emptier pair of opposite corners (the plant runs on a diagonal): each area to the
-    // column of its nearer corner, as many in each
+    const pt = ll => map.latLngToContainerPoint(ll), bb = a => { const b = a.poly.getBounds(), p = pt(b.getNorthWest()), q = pt(b.getSouthEast()); return [p.x, p.y, q.x, q.y]; };
+    const polys = areas.map(a => ({ a, P: a.poly.getLatLngs().flat(2).map(pt) }));
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; areas.forEach(a => { const [p, q, r, t] = bb(a); x0 = Math.min(x0, p); y0 = Math.min(y0, q); x1 = Math.max(x1, r); y1 = Math.max(y1, t); });
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, sx = (x1 - x0) / 2 || 1, sy = (y1 - y0) / 2 || 1;
     const tl = $("loTL"), nb = document.querySelector("#mapView .lo-north"), bt = el => el ? el.getBoundingClientRect().bottom - box.top : 0;
-    const quad = (cx, cy) => its.filter(r => (r.p.x < W / 2) === !cx && (r.p.y < H / 2) === !cy).length;
-    const diag = quad(0, 1) + quad(1, 0) <= quad(0, 0) + quad(1, 1);   // true: bottom left and top right
-    const key = r => r.p.x / W + (diag ? -1 : 1) * r.p.y / H, srt = its.slice().sort((p, q) => key(p) - key(q)), h = Math.ceil(srt.length / 2);
-    const cols = [srt.slice(0, h), srt.slice(h)];   // [left column, right column]
-    const BOT = H - (ph ? 76 : 26);
-    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; areas.forEach(a => { const b = a.poly.getBounds(), p = map.latLngToContainerPoint(b.getNorthWest()), q = map.latLngToContainerPoint(b.getSouthEast());
-      x0 = Math.min(x0, p.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, q.y); });   // (clear of the Layers button / the map credit)
-    cols.forEach((col, k) => {
-      const w = Math.max(0, ...col.map(r => r.sp.offsetWidth)), ch = col.reduce((t, r) => t + r.sp.offsetHeight, 0);
-      const top = Math.max(50, bt(tl && tl.querySelector(".lo-pans")), k ? bt(nb) : 0) + 6;
-      // at the plant's own corner, just outside its side (on a wide screen the zones don't reach the screen's sides)
-      let x = k ? Math.min(W - (ph ? 6 : 60) - w, x1 + 16) : Math.max(ph ? 6 : 10, x0 - 16 - w); const low = diag ? !k : !!k;   // (low: a bottom corner)
-      // no room beside the plant (a phone): under it or over it instead
-      const over = k ? x < x1 - 8 : x + w > x0 + 8;
-      let y = low ? (over ? Math.max(top, Math.min(BOT - ch, y1 + 10)) : Math.max(top, Math.min(BOT, y1) - ch))
-        : (over ? Math.min(BOT - ch, Math.max(top, y0 - 10 - ch)) : Math.min(Math.max(top, y0), BOT - ch));
-      // then slid in towards the middle of the plant, through the empty ground, until it would touch a zone (its outline,
-      // with a little margin); a column that starts on a zone first backs out
-      const PAD = 8, polys = areas.map(a => a.poly.getLatLngs().flat(2).map(ll => map.latLngToContainerPoint(ll)));
-      const inP = (P, X, Y) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++){ const a = P[i], b = P[j]; if ((a.y > Y) !== (b.y > Y) && X < (b.x - a.x) * (Y - a.y) / (b.y - a.y) + a.x) c = !c; } return c; };
-      const hit = (X, Y) => polys.some(P => P.some(q => q.x > X - PAD && q.x < X + w + PAD && q.y > Y - PAD && q.y < Y + ch + PAD)
-        || [[X, Y], [X + w, Y], [X, Y + ch], [X + w, Y + ch], [X + w / 2, Y + ch / 2]].some(([a, b]) => inP(P, a, b)));
-      const ok = (X, Y) => X >= (ph ? 6 : 10) && X + w <= W - (ph ? 6 : 60) && Y >= top && Y + ch <= BOT;
-      const ux0 = (x0 + x1) / 2 - (x + w / 2), uy0 = (y0 + y1) / 2 - (y + ch / 2), L0 = Math.hypot(ux0, uy0) || 1, ux = ux0 / L0, uy = uy0 / L0;
-      for (let i = 1; i < 120 && hit(x, y); i++){ const nx = x - ux * 4, ny = y - uy * 4; if (!ok(nx, ny)) break; x = nx; y = ny; }
-      // (straight in, or along the free side of whatever it meets: each step the move that gets nearest the middle)
-      const mx = (x0 + x1) / 2 - w / 2, my = (y0 + y1) / 2 - ch / 2, dist = (X, Y) => Math.hypot(X - mx, Y - my);
-      if (!hit(x, y)) for (let i = 0; i < 400; i++){ let best = null;
-        [[ux, uy], [Math.sign(ux), 0], [0, Math.sign(uy)]].forEach(([a, b]) => { const nx = x + a * 4, ny = y + b * 4;
-          if ((a || b) && ok(nx, ny) && !hit(nx, ny) && dist(nx, ny) < dist(x, y) - .5 && (!best || dist(nx, ny) < dist(best[0], best[1]))) best = [nx, ny]; });
-        if (!best) break; [x, y] = best; }
-      // rows in the order their leaders fan out from the column, so no two leaders cross
-      const ex0 = k ? x : x + w, ey0 = y + ch / 2; col.sort((p, q) => Math.atan2(p.p.y - ey0, Math.abs(p.p.x - ex0)) - Math.atan2(q.p.y - ey0, Math.abs(q.p.x - ex0)));
-      col.forEach(r => { const hh = r.sp.offsetHeight, dx = x - r.p.x, dy = y + hh / 2 - r.p.y; y += hh;
-        r.sp.style.setProperty("--dx", dx + "px"); r.sp.style.setProperty("--dy", dy + "px");
-        // the leader: along the row from the end of its name to the column's inner edge, then straight to the area
-        const ex = (k ? x + 1 : x + w - 1) - r.p.x, lx = (k ? x + 1 : x + r.sp.offsetWidth - 1) - r.p.x;
-        let sv = r.e.querySelector(".la-sv"); if (!sv){ sv = document.createElementNS("http://www.w3.org/2000/svg", "svg"); sv.setAttribute("class", "la-sv"); sv.innerHTML = "<polyline/><circle r='2.2'/>"; r.e.prepend(sv); }
-        sv.style.setProperty("--h", r.a.hue); sv.style.display = "block"; sv.firstChild.setAttribute("points", `${lx},${dy} ${ex},${dy} 0,0`); }); });
+    const TOP = Math.max(50, bt(tl && tl.querySelector(".lo-pans"))) + 4, BOT = H - (ph ? 76 : 26), RGT = W - (ph ? 4 : 60), NR = nb ? nb.getBoundingClientRect().left - box.left : W;
+    const inP = (P, X, Y) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++){ const a = P[i], b = P[j]; if ((a.y > Y) !== (b.y > Y) && X < (b.x - a.x) * (Y - a.y) / (b.y - a.y) + a.x) c = !c; } return c; };
+    const onZ = (r, list) => list.some(({ P }) => P.some(q => q.x > r.l - 3 && q.x < r.r + 3 && q.y > r.t - 3 && q.y < r.b + 3) || [[r.l, r.t], [r.r, r.t], [r.l, r.b], [r.r, r.b], [(r.l + r.r) / 2, (r.t + r.b) / 2]].some(([x, y]) => inP(P, x, y)));
+    const taken = [], inside = r => r.l > 4 && r.r < RGT && r.t > TOP && r.b < BOT && !(r.r > NR - 4 && r.t < bt(nb) + 4);
+    const clear = r => !taken.some(q => r.l < q.r + 3 && r.r > q.l - 3 && r.t < q.b + 2 && r.b > q.t - 2);
+    its.sort((p, q) => { const s = a => { const [l, t, r, b] = bb(a); return (r - l) * (b - t); }; return s(q.a) - s(p.a); }).forEach(it => {
+      const w = it.sp.offsetWidth, h = it.sp.offsetHeight, [bl, btp, br, bbm] = bb(it.a), dx = (it.p.x - cx) / sx, dy = (it.p.y - cy) / sy;
+      const want = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "l" : "r") : (dy < 0 ? "u" : "d");
+      const order = want === "l" || want === "r" ? [want, dy < 0 ? "u" : "d", dy < 0 ? "d" : "u", want === "l" ? "r" : "l"] : [want, dx < 0 ? "l" : "r", dx < 0 ? "r" : "l", want === "u" ? "d" : "u"];
+      const own = polys.filter(z => z.a.code === it.a.code);
+      let got = null;
+      // each side in turn: first clear of every zone, then (failing that) clear of its own only; further out step by step, sliding along
+      for (const strict of [true, false]) for (const dir of order){ if (got) break;
+        for (let g = 0; g < 10 && !got; g++) for (let k = 0; k < 24 && !got; k++){ const G = 10 + g * 16, sh = (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (dir === "u" || dir === "d" ? 10 : 6);
+          const x = dir === "l" ? bl - G - w : dir === "r" ? br + G : it.p.x - w / 2 + sh, y = dir === "u" ? btp - G - h : dir === "d" ? bbm + G : it.p.y - h / 2 + sh;
+          const r = { l: x, r: x + w, t: y, b: y + h };
+          if (inside(r) && clear(r) && !onZ(r, strict ? polys : own)) got = { r, dir }; }
+        if (got) break; }
+      if (!got){ const x = Math.min(RGT - w, Math.max(4, it.p.x + 8)), y = Math.min(BOT - h, Math.max(TOP, it.p.y - h / 2)); got = { r: { l: x, r: x + w, t: y, b: y + h }, dir: "r" }; }
+      taken.push(got.r);
+      const { r, dir } = got;
+      it.sp.style.setProperty("--dx", r.l - it.p.x + "px"); it.sp.style.setProperty("--dy", r.t + h / 2 - it.p.y + "px");
+      // the leader: from the label's near edge to the area's own spot
+      const ex = (dir === "l" ? r.r : dir === "r" ? r.l : Math.max(r.l + 2, Math.min(r.r - 2, it.p.x))) - it.p.x, ey = (dir === "u" ? r.b : dir === "d" ? r.t : r.t + h / 2) - it.p.y;
+      let sv = it.e.querySelector(".la-sv"); if (!sv){ sv = document.createElementNS("http://www.w3.org/2000/svg", "svg"); sv.setAttribute("class", "la-sv"); sv.innerHTML = "<polyline/><circle r='2.2'/>"; it.e.prepend(sv); }
+      sv.style.setProperty("--h", it.a.hue); sv.style.display = "block"; sv.firstChild.setAttribute("points", `${ex},${ey} 0,0`); });
   }
+
   // Plant view (callout stacks): the zones show as outlines only (stackAreas)
   const ROWH = 30;
   // an area's zones flash a few times (picked from WBS filters or tapped on the map); they show while flashing at any zoom
