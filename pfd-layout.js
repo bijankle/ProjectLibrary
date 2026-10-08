@@ -74,7 +74,7 @@ window.PFDLayout = (() => {
     // flow lines: off unless asked for; a highlighted flow still shows
     const flows = () => { const shown = api.pref.get("lo_flows", "0") === "1"; $("mapView").classList.toggle("noflows", !shown);
       $("loFlows").textContent = shown ? "Hide flow lines" : "Show flow lines"; $("loFlows").classList.toggle("on", shown); };
-    $("loFlows").onclick = () => { api.pref.set("lo_flows", api.pref.get("lo_flows", "0") === "1" ? "0" : "1"); flows(); }; flows();
+    $("loFlows").hidden = true;   // (the Layout shows no flow lines)
     $("loMinor").onclick = () => { api.pref.set("lo_minor", api.pref.get("lo_minor", "0") === "1" ? "0" : "1"); minor(); }; minor();
     bar.querySelectorAll(".lo-dwg").forEach(b => b.onclick = () => window.Pid && Pid.load().then(() => { if (!Pid.open(b.dataset.dwg)) api.toast("That drawing isn't in the app yet."); }).catch(() => api.toast("Couldn't load the drawing list.")));
     addEventListener("keydown", e => { if (e.key === "Escape" && moving) moving.cancel(); });
@@ -636,7 +636,7 @@ window.PFDLayout = (() => {
     lbtn = document.createElement("button"); lbtn.type = "button"; lbtn.className = "lo-lb"; lbtn.textContent = "▣ Layers"; mv.appendChild(lbtn); L.DomEvent.disableClickPropagation(lbtn);
     lscrim = document.createElement("div"); lscrim.className = "lo-scrim"; lscrim.hidden = true;
     lsh = document.createElement("div"); lsh.className = "lo-sh"; lsh.hidden = true;
-    lsh.innerHTML = `<div class="lo-shh"><div class="lo-seg lo-tabs"><button data-lt="areas" data-p="loShA" class="on">Areas</button><button data-lt="flows" data-p="loShF">Flows</button><button data-lt="map" data-p="loShM">Map</button></div><button type="button" class="lo-done">Done</button></div>
+    lsh.innerHTML = `<div class="lo-shh"><div class="lo-seg lo-tabs"><button data-lt="areas" data-p="loShA" class="on">Areas</button><button data-lt="map" data-p="loShM">Map</button></div><button type="button" class="lo-done">Done</button></div>
       <div class="lo-shb" id="loShA"></div><div class="lo-shb" id="loShF" hidden></div><div class="lo-shb" id="loShM" hidden></div>`;
     document.body.append(lscrim, lsh);
     let wb = $("loWbs"); if (!wb){ wb = document.createElement("div"); wb.id = "loWbs"; wb.className = "lo-pan lo-wbs"; }
@@ -666,8 +666,8 @@ window.PFDLayout = (() => {
     const mleg = $("mleg");
     if (!v){ if (moving) moving.cancel(); if (PH) layers(false); document.body.classList.remove("lo-listing"); if (mleg && mleg.closest("#loFF,#fxFlow")) { document.body.appendChild(mleg); dispatchEvent(new Event("resize")); } return true; }
     try { await load(); } catch (e) { api.toast("Couldn't load the map (" + e.message + "). Check the connection."); on = false; document.body.classList.remove("layout"); $("mapView").hidden = true; return false; }
-    if (!map){ build(); drawStreams(); markers(); Object.values(S).forEach(o => { arrow(o.lay, o.s.ty); arrow(o.mid, o.s.ty); }); if (PH) phoneSetup(); }
-    if (mleg) { (!PH && $("fxFlow") ? $("fxFlow").querySelector(".fx-flb") : $("loFF").querySelector(".lo-fb")).appendChild(mleg); dispatchEvent(new Event("resize")); }
+    if (!map){ build(); markers(); Object.values(S).forEach(o => { arrow(o.lay, o.s.ty); arrow(o.mid, o.s.ty); }); if (PH) phoneSetup(); }
+
     if (PH && list && !list.hidden) document.body.classList.add("lo-listing");
     setTimeout(declutter, 50);
     map.invalidateSize(); sync(false); return true;

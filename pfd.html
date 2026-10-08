@@ -395,7 +395,8 @@ svg.focus .ctl, svg.focus .ilk{opacity:.12}
 @media (min-width:901px){#case{min-width:240px}
 /* desktop PFD: no bar under the tabs, the case picker on the drawing (caseHome) */
 :root:not(.phone) body.pfd-nobar header{display:none}
-:root:not(.phone) body.pfd-nobar :is(#side,#stage){top:var(--tb,0px)!important}:root:not(.phone) body.pfd-nobar.fx-on #fxDv{top:var(--tb,0px)!important}
+:root:not(.phone) body.pfd-nobar :is(#side,#stage,#mapView){top:var(--tb,0px)!important}:root:not(.phone) body.pfd-nobar.fx-on #fxDv{top:var(--tb,0px)!important}
+#fxFlow,#loFF{display:none!important}:root.phone body.layout #case{display:none!important}
 #case.on-stage{position:absolute;left:14px;top:12px;z-index:5;height:38px;border:1px solid var(--line);border-radius:10px;background-color:var(--card,var(--panel));box-shadow:0 2px 8px rgba(0,0,0,.12)}}   /* (no jump when the case list fills in after the data loads) */
 #info .sc .cur{background:color-mix(in srgb,var(--cc) 35%,transparent)}
 #info .sc th.cur{color:var(--ink)}
@@ -1156,7 +1157,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
     PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); else if (window.fxView) fxView(); });
     caseHome(v); if (v !== "map") setVB(); if (window.fxRefresh) fxRefresh(); };
   // desktop PFD: the design case picker sits on the drawing, top left, and the bar it was on goes; Layout keeps it in the bar
-  function caseHome(v){ if (PHONE) return; const c = $("case"), on = v !== "map"; document.body.classList.toggle("pfd-nobar", on);
+  function caseHome(v){ if (PHONE) return; const c = $("case"), on = v !== "map"; document.body.classList.add("pfd-nobar");   // (no bar on either view: the Layout has no flows to pick a case, show services or animate)
     if (on && c.parentElement !== $("stage")){ c.classList.add("on-stage"); $("stage").appendChild(c); }
     if (!on && c.parentElement === $("stage")){ c.classList.remove("on-stage"); $("stageSeg").after(c); } }
   document.querySelectorAll("#viewSeg button").forEach(b => b.onclick = () => setView(b.dataset.v));
