@@ -395,16 +395,34 @@ window.PFDLayout = (() => {
       const w = Math.max(0, ...col.map(r => r.sp.offsetWidth)), ch = col.reduce((t, r) => t + r.sp.offsetHeight, 0);
       const top = Math.max(50, bt(tl && tl.querySelector(".lo-pans")), k ? bt(nb) : 0) + 6;
       // at the plant's own corner, just outside its side (on a wide screen the zones don't reach the screen's sides)
-      const x = k ? Math.min(W - (ph ? 6 : 60) - w, x1 + 16) : Math.max(ph ? 6 : 10, x0 - 16 - w), low = diag ? !k : !!k;   // (low: a bottom corner)
-      let y = low ? Math.max(top, Math.min(BOT, y1) - ch) : Math.min(Math.max(top, y0), BOT - ch);
+      let x = k ? Math.min(W - (ph ? 6 : 60) - w, x1 + 16) : Math.max(ph ? 6 : 10, x0 - 16 - w); const low = diag ? !k : !!k;   // (low: a bottom corner)
+      // no room beside the plant (a phone): under it or over it instead
+      const over = k ? x < x1 - 8 : x + w > x0 + 8;
+      let y = low ? (over ? Math.max(top, Math.min(BOT - ch, y1 + 10)) : Math.max(top, Math.min(BOT, y1) - ch))
+        : (over ? Math.min(BOT - ch, Math.max(top, y0 - 10 - ch)) : Math.min(Math.max(top, y0), BOT - ch));
+      // then slid in towards the middle of the plant, through the empty ground, until it would touch a zone (its outline,
+      // with a little margin); a column that starts on a zone first backs out
+      const PAD = 8, polys = areas.map(a => a.poly.getLatLngs().flat(2).map(ll => map.latLngToContainerPoint(ll)));
+      const inP = (P, X, Y) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++){ const a = P[i], b = P[j]; if ((a.y > Y) !== (b.y > Y) && X < (b.x - a.x) * (Y - a.y) / (b.y - a.y) + a.x) c = !c; } return c; };
+      const hit = (X, Y) => polys.some(P => P.some(q => q.x > X - PAD && q.x < X + w + PAD && q.y > Y - PAD && q.y < Y + ch + PAD)
+        || [[X, Y], [X + w, Y], [X, Y + ch], [X + w, Y + ch], [X + w / 2, Y + ch / 2]].some(([a, b]) => inP(P, a, b)));
+      const ok = (X, Y) => X >= (ph ? 6 : 10) && X + w <= W - (ph ? 6 : 60) && Y >= top && Y + ch <= BOT;
+      const ux0 = (x0 + x1) / 2 - (x + w / 2), uy0 = (y0 + y1) / 2 - (y + ch / 2), L0 = Math.hypot(ux0, uy0) || 1, ux = ux0 / L0, uy = uy0 / L0;
+      for (let i = 1; i < 120 && hit(x, y); i++){ const nx = x - ux * 4, ny = y - uy * 4; if (!ok(nx, ny)) break; x = nx; y = ny; }
+      // (straight in, or along the free side of whatever it meets: each step the move that gets nearest the middle)
+      const mx = (x0 + x1) / 2 - w / 2, my = (y0 + y1) / 2 - ch / 2, dist = (X, Y) => Math.hypot(X - mx, Y - my);
+      if (!hit(x, y)) for (let i = 0; i < 400; i++){ let best = null;
+        [[ux, uy], [Math.sign(ux), 0], [0, Math.sign(uy)]].forEach(([a, b]) => { const nx = x + a * 4, ny = y + b * 4;
+          if ((a || b) && ok(nx, ny) && !hit(nx, ny) && dist(nx, ny) < dist(x, y) - .5 && (!best || dist(nx, ny) < dist(best[0], best[1]))) best = [nx, ny]; });
+        if (!best) break; [x, y] = best; }
       // rows in the order their leaders fan out from the column, so no two leaders cross
       const ex0 = k ? x : x + w, ey0 = y + ch / 2; col.sort((p, q) => Math.atan2(p.p.y - ey0, Math.abs(p.p.x - ex0)) - Math.atan2(q.p.y - ey0, Math.abs(q.p.x - ex0)));
       col.forEach(r => { const hh = r.sp.offsetHeight, dx = x - r.p.x, dy = y + hh / 2 - r.p.y; y += hh;
         r.sp.style.setProperty("--dx", dx + "px"); r.sp.style.setProperty("--dy", dy + "px");
-        // the leader: straight from the column's inner edge to the area
-        const ex = (k ? x + 1 : x + w - 1) - r.p.x;
+        // the leader: along the row from the end of its name to the column's inner edge, then straight to the area
+        const ex = (k ? x + 1 : x + w - 1) - r.p.x, lx = (k ? x + 1 : x + r.sp.offsetWidth - 1) - r.p.x;
         let sv = r.e.querySelector(".la-sv"); if (!sv){ sv = document.createElementNS("http://www.w3.org/2000/svg", "svg"); sv.setAttribute("class", "la-sv"); sv.innerHTML = "<polyline/><circle r='2.2'/>"; r.e.prepend(sv); }
-        sv.style.setProperty("--h", r.a.hue); sv.style.display = "block"; sv.firstChild.setAttribute("points", `${ex},${dy} 0,0`); }); });
+        sv.style.setProperty("--h", r.a.hue); sv.style.display = "block"; sv.firstChild.setAttribute("points", `${lx},${dy} ${ex},${dy} 0,0`); }); });
   }
   // Plant view (callout stacks): the zones show as outlines only (stackAreas)
   const ROWH = 30;
