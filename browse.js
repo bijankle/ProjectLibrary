@@ -17,7 +17,7 @@ window.Browse = (() => {
   // phone: one full width list; the filter steps sit over it (drawPhone), the chosen steps and recent
   // searches sit as chips above the list
   const PH = () => document.documentElement.classList.contains("phone");
-  let B = null, rows = [], path = [], shownN = 60, names = {}, q = "", ph0 = "";
+  let B = null, rows = [], path = [], shownN = 60, fromN = 0, names = {}, q = "", ph0 = "";
 
   const area = s => { const m = /\bF(\d{2})\b/.exec(s || ""); return m ? "F" + m[1] : ""; };
   // instrument letters, e.g. PIT = Pressure Indicating Transmitter (ISA style; later letters use their second meaning)
@@ -177,7 +177,7 @@ window.Browse = (() => {
   // the ones after it), then the options of the next step in a three-line block that scrolls sideways (Any first);
   // nothing chosen yet: the asset types in that block, and recent searches in a row above it. The results fill the rest.
   function drawPhone(list, st){
-    const hits = list.slice(0, shownN).map(r => r.it), rc = recents().slice(0, 8);
+    const hits = list.slice(fromN, shownN).map(r => r.it), rc = recents().slice(0, 8);
     const lab = (p, i) => p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : (p.v === "?" ? "Other" : p.v);
     const chips = path.map((p, i) => `<button class="bp-c on" data-i="${i}">${esc(lab(p, i))}<i class="bp-x" aria-label="Remove">✕</i></button>`).join("");
     const nx = nextStep(), q = lk && lk.input ? lk.input.value.trim() : "";
@@ -191,15 +191,21 @@ window.Browse = (() => {
     }
     const rec = !path.length && !q && rc.length ? `<div class="bw-band">Recent</div><div class="bp-bar bp-recs">${rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("")}</div>` : "";
     el.innerHTML = `<div class="bp-top">${rec}${chips ? `<div class="bp-bar">${chips}</div>` : ""}${opts}</div>
-      <div class="bw-r bp-l">${resBand(list.length)}
-      ${hits.map((it, i) => `<button class="bw-it bp-it" data-i="${i}"><b>${esc(it.key)}</b>${Lookup.tsfTag(it)} <span data-full="${esc(resDesc(it))}"></span></button>`).join("")}
-      ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
+      <div class="bw-r bp-l">${resBand(list.length)}${fromN ? `<button class="bw-more bw-prev">Show earlier rows</button>` : ""}
+      ${hits.map((it, i) => `<button class="bw-it bp-it" data-i="${fromN + i}"><b>${esc(it.key)}</b>${Lookup.tsfTag(it)} <span data-full="${esc(resDesc(it))}"></span></button>`).join("")}
+      ${list.length > shownN ? `<button class="bw-more">Show ${Math.min(200, list.length - shownN)} more</button>` : ""}</div>`;
     el.querySelectorAll(".bp-c.on").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
     el.querySelectorAll(".bp-r").forEach(b => b.onclick = () => { const x = rc[+b.dataset.r]; if (x.q) lk.search(x.q); else lk.openKey(x.key); });
     el.querySelectorAll(".bp-o[data-v]").forEach(b => b.onclick = () => { path.push({ f: nx[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
     const any = el.querySelector(".bp-any"); if (any) any.onclick = () => { path.push({ f: nx[0], v: null }); after(); };
-    el.querySelectorAll(".bp-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i], list.map(r => r.it)); });
+    el.querySelectorAll(".bp-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(list[+b.dataset.i].it, list.map(r => r.it)); });
+    const pv = el.querySelector(".bw-prev"); if (pv) pv.onclick = () => { fromN = Math.max(0, fromN - 200); draw(); };
     const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
+    // the whole list for the fast scroll index (tabs.js), not just the rows drawn so far: jumping to a group further on
+    // draws the rows up to it first
+    // (a row not drawn: draw from just before it, with "Show earlier rows" above, so a far jump stays quick)
+    el.querySelector(".bw-r").fsList = { keys: list.map(r => r.it.key), go: i => { if (i < fromN || i >= shownN){ fromN = Math.max(0, i - 10); shownN = fromN + 200; draw(); }
+      const b = el.querySelector(`.bp-it[data-i="${i}"]`), L = el.querySelector(".bw-r"); if (b && L) L.scrollTop = b.offsetTop - L.offsetTop - 40; } };
     fit(); fitPhone();
   }
   // design 14b: full width grey header bands split the page (Recent, Asset type, Results); Results carries the count
@@ -256,7 +262,7 @@ window.Browse = (() => {
     strip.addEventListener("pointerup", end); strip.addEventListener("pointercancel", end);
   }
   let changed = null;
-  const after = () => { shownN = 60; save(); draw(); if (changed) changed(); };
+  const after = () => { fromN = 0; shownN = 60; save(); draw(); if (changed) changed(); };
   // the two panes fill the screen below the search bar and scroll on their own
   function fit(){ if (!el || !el.offsetParent) return; const z = window.TextSize ? TextSize.z() : 1;   // inside a zoomed page, CSS pixels are scaled by the text size
     const bn = document.querySelector(".bn"), b = bn ? bn.offsetHeight : 0;
@@ -265,7 +271,7 @@ window.Browse = (() => {
   const save = () => {};   // the filter is not kept between visits
   function mount(root, box){
     el = root; lk = box; el.classList.add("bw");
-    Lookup.onProj(() => { if (!B) return; shownN = 60; draw(); });   // the project picker (Main plant / TSF)
+    Lookup.onProj(() => { if (!B) return; fromN = 0; shownN = 60; draw(); });   // the project picker (Main plant / TSF)
     path = [];   // every visit starts unfiltered (the search box keeps its own history)
     el.innerHTML = `<div class="bw-note">Loading the plant lists…</div>`;
     Promise.all([Lookup.load(), fetch("browse.json").then(r => { if (!r.ok) throw new Error("browse.json " + r.status); return r.json(); })])
@@ -345,10 +351,10 @@ window.Browse = (() => {
   // back to no filter (the Assets tab calls this each time it opens)
   const reset = () => { if (!path.length && !q) return; path = []; q = ""; if (lk) lk.input.value = ""; if (B) after(); };
   // the search box's text while filters are set (index.html hands it over); returns true when Browse took it
-  const query = v => { q = v || ""; if (!path.length) return false; if (B){ shownN = 60; draw(); } return q.trim().length >= 2; };
+  const query = v => { q = v || ""; if (!path.length) return false; if (B){ fromN = 0; shownN = 60; draw(); } return q.trim().length >= 2; };
   // the filter as history keeps it (Back returns to it, also from another page)
   const getPath = () => path.map(p => ({ f: p.f, v: p.v, n: p.n }));
-  const setPath = p => { path = Array.isArray(p) ? p.map(x => Object.assign({}, x)) : []; if (B){ if (path.length && (path[0].f !== "t" || !TN[path[0].v])) path = []; shownN = 60; draw(); } };
+  const setPath = p => { path = Array.isArray(p) ? p.map(x => Object.assign({}, x)) : []; if (B){ if (path.length && (path[0].f !== "t" || !TN[path[0].v])) path = []; fromN = 0; shownN = 60; draw(); } };
   const onChange = fn => { changed = fn; };
   return { reset, query, mount, restore, fit: () => fit(), getPath, setPath, onChange, projCount: p => rows.filter(r => r.it.p === p).length };
 })();

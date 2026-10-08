@@ -465,14 +465,14 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .tb-toast{position:fixed;left:50%;bottom:calc(24px + var(--bn,0px));transform:translateX(-50%);z-index:400;background:#171b21;color:#e9edf2;border:1px solid var(--th);border-radius:10px;padding:8px 14px;font-size:var(--fb,15px);box-shadow:0 6px 20px #0006;max-width:90vw}.tb-toast[hidden]{display:none}
 @media print{.tbw,.bn,.hw,.tb-toast{display:none!important}}
 .hw-l h4{margin:4px 0;font-size:var(--fb,15px)}.hw-l p{margin:4px 0;font-size:var(--fb,15px);line-height:1.5;color:var(--ink)}.hw-ver{color:var(--mute) !important}
-/* scroll bars across the app: barely there until you hover the area, clearer on the bar itself, gold while dragging */
+/* scroll bars across the app: always showing (so the bar can be grabbed while scrolling with the wheel), darker on the
+   bar itself, the theme colour while dragging */
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}
-::-webkit-scrollbar-thumb{background-color:transparent;border:3px solid transparent;background-clip:padding-box;border-radius:6px;transition:background-color .2s}
-:hover::-webkit-scrollbar-thumb{background-color:color-mix(in srgb,var(--mute) 30%,transparent)}
-::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--mute) 75%,transparent);border-width:2px}
-::-webkit-scrollbar-thumb:active{background-color:var(--gold,var(--accent));border-width:2px}
-@supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:transparent transparent}*:hover{scrollbar-color:color-mix(in srgb,var(--mute) 45%,transparent) transparent}}
+::-webkit-scrollbar-thumb{background-color:color-mix(in srgb,var(--mute) 42%,transparent);border:2px solid transparent;background-clip:padding-box;border-radius:6px;min-height:36px}
+::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--mute) 75%,transparent)}
+::-webkit-scrollbar-thumb:active{background-color:var(--th,var(--accent))}
+@supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--mute) 50%,transparent) transparent}}
 /* back and home: before the tabs (desktop) and at the start of the phone's top row */
 .nv-bh{display:flex;gap:6px;flex:none;margin-right:8px}
 .nv-b{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card,var(--panel));color:var(--ink);display:grid;place-items:center;padding:0;cursor:pointer;flex:none}
@@ -611,4 +611,76 @@ button:disabled{cursor:default}
   const scan = () => document.querySelectorAll(SEL).forEach(t => { if (!seen.has(t)){ seen.add(t); ro.observe(t); fit(t); } });   // (new tables; the observer refits on a width change)
   let q = 0; new MutationObserver(() => { if (!q) q = requestAnimationFrame(() => { q = 0; scan(); }); }).observe(document.documentElement, { childList: true, subtree: true });
   scan(); addEventListener("resize", () => document.querySelectorAll(SEL).forEach(fit));   // (a text size change)
+})();
+
+// Phone: a fast scroll index on any list longer than a page (Niagara style). While the list scrolls, its groups (a tag's
+// area "00", "13", "F21"…, a document's area, or a first letter) show as small labels down the right edge; a finger on
+// them jumps through the list, the labels near the finger curve out with the one under it highlighted, a light backdrop
+// keeps them readable and each new group gives a tick of vibration (Android). A list with no groups gets a plain handle.
+(() => {
+  const ROWS = ".bw-it,.bp-it,.lk-row1,.sl-r,.ck-row,.fx-it,.lk-row,tbody tr";
+  const SKIP = ".gl-az,.sp-body,.leaflet-container,#stage,svg";   // (the glossary has its own A to Z; maps and drawings pan)
+  const keyOf = r => { const t = ((r.querySelector("b,td") || r).textContent || "").trim();
+    let m = t.match(/^\d{4}-(F\d{2,3})-/) || t.match(/^(F\d{2,3})\b/); if (m) return m[1];
+    m = t.match(/^(\d{2})-/); if (m) return m[1]; const c = t.charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
+  let el = null, sc = null, groups = [], hideT = 0, on = false, last = "";
+  const css = `.fs{position:fixed;right:0;z-index:60;width:30px;pointer-events:auto;touch-action:none;opacity:0;transition:opacity .25s;-webkit-user-select:none;user-select:none}.fs.show{opacity:1}.fs[hidden]{display:none}
+.fs.on{width:190px;background:linear-gradient(to left,var(--bg) 40%,color-mix(in srgb,var(--bg) 0%,transparent))}
+.fs i{position:absolute;right:10px;font:800 10.5px/1 var(--ff,system-ui);font-style:normal;color:var(--mute);transform-origin:right center;white-space:nowrap;padding:3px 0}
+.fs i.cur{color:var(--ink);background:var(--th-t);box-shadow:inset 0 0 0 1.5px var(--th);border-radius:10px;padding:3px 6px;right:6px}.fs.on i.cur{color:#fff;background:var(--th);border-radius:12px;padding:4px 9px}
+.fs b{position:absolute;right:3px;width:6px;height:52px;border-radius:3px;background:color-mix(in srgb,var(--mute) 70%,transparent)}.fs.on b{width:10px;right:2px;background:var(--th)}.fs b.pos{width:4px;height:26px;right:1px;background:var(--th)}.fs.on b.pos{width:4px;right:1px}`;
+  function setup(){ if (!document.documentElement.classList.contains("phone")) return false; if (el) return true;
+    const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
+    el = document.createElement("div"); el.className = "fs"; el.hidden = true; document.body.appendChild(el);
+    el.addEventListener("pointerdown", e => { on = true; el.setPointerCapture(e.pointerId); el.classList.add("on", "show"); clearTimeout(hideT); drag(e); });
+    el.addEventListener("pointermove", e => { if (on) drag(e); });
+    const up = () => { if (!on) return; on = false; el.classList.remove("on"); paint(); hideSoon(); }; el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+    return true; }
+  const isDoc = s => s === document.scrollingElement;
+  const box = () => { const tb = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tb")) || 52, bn = el && parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--bn")) || 58;
+    if (isDoc(sc)) return [tb + 8, innerHeight - bn - 8]; const r = sc.getBoundingClientRect(); return [Math.max(r.top, tb) + 6, Math.min(r.bottom, innerHeight - bn) - 6]; };
+  // the list's groups, each at where its first row sits in the scroll (0 to 1)
+  function measure(){
+    // a list that gives its whole contents (browse.js fsList): groups from every key, placed by row number
+    const F = sc.fsList; if (F && F.keys && F.keys.length){ const n = F.keys.length; groups = [];
+      F.keys.forEach((k0, i) => { const k = keyOf({ querySelector: () => null, textContent: k0 }); if (!groups.length || groups[groups.length - 1].k !== k) groups.push({ k, f: i / n, i }); });
+      if (groups.length < 3) groups = []; else if (groups.length > cap()){ const g = groups, keep = []; const c = cap(); for (let j = 0; j < c; j++) keep.push(g[Math.round(j * (g.length - 1) / (c - 1))]); groups = keep; }
+      return; }
+    const rows = [...sc.querySelectorAll(ROWS)].filter(r => r.offsetParent && !r.closest(SKIP)); groups = [];
+    if (rows.length < 30) return;
+    const top0 = isDoc(sc) ? -scrollY : sc.getBoundingClientRect().top - sc.scrollTop, span = Math.max(1, sc.scrollHeight - sc.clientHeight);
+    rows.forEach(r => { const k = keyOf(r); if (!groups.length || groups[groups.length - 1].k !== k) groups.push({ k, f: Math.min(1, Math.max(0, (r.getBoundingClientRect().top - top0) / span)) }); });
+    if (groups.length < 3) groups = [];   // (one or two groups: just the handle)
+    else if (groups.length > cap()){ const n = groups.length, keep = [], c = cap(); for (let i = 0; i < c; i++) keep.push(groups[Math.round(i * (n - 1) / (c - 1))]); groups = keep; }
+  }
+  const cap = () => { const [t, b] = box(); return Math.max(3, Math.min(18, Math.floor((b - t) / 24))); };   // (labels that fit the strip)
+  const frac = () => { const F = sc.fsList; if (F && F.keys && F.keys.length){   // (with the whole list: the first row in view of all rows)
+      const top = sc.getBoundingClientRect().top + 50, r = [...sc.querySelectorAll("[data-i]")].find(x => x.getBoundingClientRect().bottom > top);
+      return r ? +r.dataset.i / F.keys.length : 0; }
+    return sc.scrollTop / Math.max(1, sc.scrollHeight - sc.clientHeight); };
+  // draw: the labels evenly down the strip (or the handle); with a finger on it (sf: its place down the strip, 0 to 1)
+  // the labels near it curve out and the one under it is picked, else the group being looked at is
+  function paint(sf){
+    const [t, b] = box(), H = b - t, f = frac(); el.style.top = t + "px"; el.style.height = H + "px";
+    if (!groups.length){ el.innerHTML = `<b style="top:${(sf == null ? f : sf) * (H - 52)}px"></b>`; return; }
+    const n = groups.length; let cur = 0;
+    if (sf != null) cur = Math.round(sf * (n - 1)); else groups.forEach((g, i) => { if (g.f <= f + 1e-6) cur = i; });
+    // (the marker on the edge: where the view is in the whole list, also while just swiping)
+    el.innerHTML = `<b class="pos" style="top:${f * (H - 26)}px"></b>` + groups.map((g, i) => { const y = i / (n - 1) * (H - 16);
+      const k = sf != null ? Math.max(0, 1 - Math.abs(y - sf * (H - 16)) / 120) : 0, dx = Math.sin(k * Math.PI / 2) * 46, s = 1 + k * .35;
+      return `<i class="${i === cur ? "cur" : ""}" style="top:${y}px;transform:translateX(${-dx}px) scale(${s});opacity:${sf != null ? .55 + k * .45 : 1}">${g.k}</i>`; }).join("");
+    if (sf != null && groups[cur].k !== last){ last = groups[cur].k; try { navigator.vibrate && navigator.vibrate(8); } catch (e) {} }
+  }
+  // a finger on the strip: jump to the group under it (its first row), or straight to the spot when there are no groups
+  function drag(e){ const [t, b] = box(), sf = Math.min(1, Math.max(0, (e.clientY - t) / (b - t))), span = Math.max(1, sc.scrollHeight - sc.clientHeight);
+    const g = groups.length && groups[Math.round(sf * (groups.length - 1))];
+    if (g && sc.fsList && g.i != null){ const was = sc; sc.fsList.go(g.i); sc = document.querySelector(".bw-r") || was; }
+    else sc.scrollTop = (g ? g.f : sf) * span; paint(sf); }
+  function hideSoon(){ clearTimeout(hideT); hideT = setTimeout(() => { if (!on) el.classList.remove("show"); }, 1300); }
+  addEventListener("scroll", e => {
+    if (on || !setup()) return;
+    const s = e.target === document ? document.scrollingElement : e.target;
+    if (!(s instanceof Element) || s.closest(SKIP) || [...s.querySelectorAll(".gl-az")].some(x => x.offsetParent) || s.scrollHeight < s.clientHeight * 2 || s.scrollWidth > s.clientWidth + 40 && s.scrollHeight < s.clientHeight * 2) return;
+    if (s !== sc){ sc = s; last = ""; } measure(); el.hidden = false; el.classList.add("show"); paint(); hideSoon();
+  }, { capture: true, passive: true });
 })();
