@@ -229,6 +229,8 @@ window.PFDLayout = (() => {
     [/\bprimary\b/g, "prim."], [/\bcircuit\b/g, "circ."], [/\bstorage\b/g, "stor."], [/\breagents\b/g, "reag."], [/\bcarbon\b/g, "carb."]];
   const wbsName = c => { let t = (WBS[c] || "").replace(/\s+-\s+/g, ", ").toLowerCase(); SHORT.forEach(([r, v]) => t = t.replace(r, v));
     return t.replace(/^./, x => x.toUpperCase()).replace(/\b(cil\d?|ufg|ew|ilr)\b/gi, x => x.toUpperCase()).replace(/\barea ([a-z])\b/, (m, x) => "area " + x.toUpperCase()); };
+  const fullName = c => { const f = (typeof FRAMES != "undefined" ? FRAMES : []).find(fr => (String(fr.label).match(/^F\d+/) || [])[0] === c), m = f && f.label.match(/^F\d+\s*-\s*(.*?)(\s*\(.*)?$/);
+    return m ? m[1].replace(/^CIL\d\s+/i, "").toLowerCase().replace(/(^|[\s/&,])([a-z])/g, (x, a, b) => a + b.toUpperCase()).replace(/\bCil(\d)/gi, "CIL$1").replace(/\bUfg\b/g, "UFG").replace(/\bEw\b/g, "EW") : wbsName(c); };
   const HUE = [42, 200, 140, 330, 20, 265, 95, 180, 0, 300];
   let areas = [], byCode = {};
   function hull(P){   // convex hull, monotone chain
@@ -292,7 +294,7 @@ window.PFDLayout = (() => {
         const shape = cl.length > 1 ? outline(rings, necks, 7) : rings[0], all = cl.flat();
         const poly = L.polygon(shape.map(m => toLL(m, o)), { renderer: rend, className: "lo-area", color: `hsl(${hue} 85% 62%)`, weight: 1.5, fillColor: `hsl(${hue} 85% 55%)`, fillOpacity: .22, smoothFactor: 0 }).addTo(map);
         const big = cl.slice().sort((a, b) => b.length - a.length)[0], cx = big.reduce((t, p) => t + p.m[0], 0) / big.length, cy = big.reduce((t, p) => t + p.m[1], 0) / big.length;   // the label sits on the biggest part
-        const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<i class="la-ld" style="--h:${hue}"></i><span style="--h:${hue}" title="${esc(code + " (" + wbsName(code) + ")")}"><b>${code}</b></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
+        const lab = L.marker(toLL([cx, cy], o), { icon: L.divIcon({ className: "lo-area-lab", html: `<i class="la-ld" style="--h:${hue}"></i><span style="--h:${hue}" title="${esc(code + " (" + wbsName(code) + ")")}"><b>${code}</b><em class="la-n">${esc(wbsName(code))}</em></span>`, iconSize: null }), keyboard: false, zIndexOffset: 500 }).addTo(map);
         // a tap shows the whole area, every part of it, however far apart
         const go = e => { L.DomEvent.stopPropagation(e); const add = e.originalEvent && (e.originalEvent.ctrlKey || e.originalEvent.metaKey);
           wbsFilter(add ? (wf.has(code) ? [...wf].filter(c => c !== code) : [...wf, code]) : [code], true);
@@ -335,6 +337,7 @@ window.PFDLayout = (() => {
     const n = new Set(codes || []); if (n.size === wf.size && [...n].every(c => wf.has(c))) return;
     wf = n; wbsOn = wf.size === 1 ? [...wf][0] : null; wbsMark(); if (user && wfCb) wfCb([...wf]);
   }
+  let head = null;
   function wbsMark(){
     if (!map) return; const on = wf.size > 0, ids = new Set(); wf.forEach(c => (byCode[c] || []).forEach(id => ids.add(id)));
     $("mapView").classList.toggle("wf", on);
@@ -344,6 +347,11 @@ window.PFDLayout = (() => {
     const el = $("loWbs"); if (el) el.querySelectorAll("[data-w]").forEach(x => x.classList.toggle("on", wf.has(x.dataset.w)));
     let chip = $("loWf"); if (!chip){ chip = document.createElement("button"); chip.type = "button"; chip.id = "loWf"; chip.className = "lo-wf"; $("mapView").appendChild(chip);
       L.DomEvent.disableClickPropagation(chip); chip.onclick = () => wbsFilter([], true); }
+    // one area picked: its name in a label just above it (the zones' combined top edge)
+    if (head){ head.remove(); head = null; }
+    if (wf.size === 1){ const c = [...wf][0], zs = areas.filter(a => a.code === c); if (zs.length){
+      const bb = zs.reduce((u, a) => u.extend(a.poly.getBounds()), L.latLngBounds(zs[0].poly.getBounds().getSouthWest(), zs[0].poly.getBounds().getNorthEast()));
+      head = L.marker([bb.getNorth(), bb.getCenter().lng], { icon: L.divIcon({ className: "lo-whd", html: `<span style="--h:${zs[0].hue}"><b>${esc(c)} –</b> ${esc(fullName(c))}</span>`, iconSize: null }), interactive: false, keyboard: false, zIndexOffset: 900 }).addTo(map); } }
     chip.hidden = !on; if (on){ const c = [...wf].sort(); chip.innerHTML = `<b>${c.length === 1 ? esc(c[0] + " " + wbsShort(c[0])) : esc(c.join(", "))}</b><i aria-label="Clear">✕</i>`; }
   }
   const wbsShort = c => wbsName(c).split(/[,(&]| and /)[0].trim().split(" ").slice(0, 2).join(" ");
@@ -353,14 +361,32 @@ window.PFDLayout = (() => {
     if (!map) return;
     const mv = $("mapView").classList;
     areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span"), ld = e.querySelector(".la-ld");
-      sp.style.removeProperty("--dx"); sp.style.removeProperty("--dy"); ld.style.display = ""; });
+      sp.style.removeProperty("--dx"); sp.style.removeProperty("--dy"); sp.classList.remove("col"); ld.style.display = ""; });
     if (mv.contains("stack")) return stackAreas();
     if (!mv.contains("areas")) return;
+    return colAreas();
     const placed = [], hit = r => placed.some(b => r.left < b.right + 4 && r.right > b.left - 4 && r.top < b.bottom + 3 && r.bottom > b.top - 3);
     areas.slice().sort((a, b) => b.n - a.n).forEach(a => { const sp = a.lab.getElement() && a.lab.getElement().querySelector("span"); if (!sp) return;
       sp.classList.remove("off");
       const r = sp.getBoundingClientRect(); if (!hit(r)) return placed.push(r);
       sp.classList.add("off"); });
+  }
+  // Zoomed right out: every area's code and name in two tight columns in the top corners (as many in each, left aligned),
+  // each joined by a leader to its area; an area in several zones labels once, on its biggest
+  function colAreas(){
+    const box = $("mapView").getBoundingClientRect(), W = box.width, ph = document.documentElement.classList.contains("phone");
+    const big = {}; areas.forEach(a => { if (!big[a.code] || a.n > big[a.code].n) big[a.code] = a; });
+    const its = []; areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span");
+      if (big[a.code] !== a){ sp.classList.add("off"); return; }
+      sp.classList.remove("off"); sp.classList.add("col"); its.push({ a, e, sp, p: map.latLngToContainerPoint(a.lab.getLatLng()) }); });
+    const byX = its.slice().sort((x, y) => x.p.x - y.p.x), h = Math.ceil(byX.length / 2), cols = [byX.slice(0, h), byX.slice(h)].map(c => c.sort((x, y) => x.p.y - y.p.y));
+    const tl = $("loTL"), nb = document.querySelector("#mapView .lo-north"), bt = el => el ? el.getBoundingClientRect().bottom - box.top : 0;
+    cols.forEach((col, k) => { let y = Math.max(50, bt(tl && tl.querySelector(".lo-pans")), k ? bt(nb) : 0) + 6;
+      const w = Math.max(0, ...col.map(r => r.sp.offsetWidth)), x = k ? W - (ph ? 6 : 60) - w : (ph ? 6 : 10);
+      col.forEach(r => { const hh = r.sp.offsetHeight, dx = x - r.p.x, dy = y + hh / 2 - r.p.y; y += hh;
+        r.sp.style.setProperty("--dx", dx + "px"); r.sp.style.setProperty("--dy", dy + "px");
+        const ex = (k ? x : x + r.sp.offsetWidth) - r.p.x, ld = r.e.querySelector(".la-ld");   // (the leader to the label's inner edge)
+        ld.style.display = "block"; ld.style.width = Math.hypot(ex, dy) + "px"; ld.style.transform = `rotate(${Math.atan2(dy, ex)}rad)`; }); });
   }
   // Plant view (callout stacks): the zones show as outlines only (stackAreas)
   const ROWH = 30;
