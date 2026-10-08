@@ -296,7 +296,15 @@ window.AssetViz = (() => {
     const secs = [...h.matchAll(/<section class="vz-card[^"]*" data-g="(\d+)" data-o="(\d+)">[\s\S]*?<\/section>/g)].map(m => ({ g: +m[1], o: +m[2], s: m[0] }));
     el.innerHTML = GRP.map(([name], g) => { const c = secs.filter(x => x.g === g).sort((a, b) => a.o - b.o);
       if (!c.length && g) return ""; return `<h2 class="vz-gh">${name}</h2>` + `<div class="vz-grid">${g ? "" : tilesH}${c.map(x => x.s).join("")}</div>`; }).join("");   // the figures: a 2 by 2 block, the first cell of General
+    alignTop();
   }
+  // the charts' first header (General) level with the list's first band (Asset type)
+  function alignTop(){ if (!el) return; watchAlign(); el.style.paddingTop = "";
+    const band = document.querySelector(".bw-l .bw-band, .bw .bw-band"), gh = el.querySelector(".vz-gh"); if (!band || !gh || cur) return;
+    const d = band.getBoundingClientRect().top - gh.getBoundingClientRect().top; if (d > 0 && d < 300) el.style.paddingTop = (parseFloat(getComputedStyle(el).paddingTop) || 0) + d + "px"; }
+  addEventListener("resize", () => { if (el && !cur) alignTop(); });
+  // (the list draws after the charts and its top moves with Recent: watch it)
+  let alignRO = null; const watchAlign = () => { const bw = document.querySelector(".bw"); if (!bw || alignRO || !window.ResizeObserver) return; alignRO = new ResizeObserver(() => { if (el && !cur) alignTop(); }); alignRO.observe(bw); let p = bw.parentElement; while (p && p !== document.body){ alignRO.observe(p); [...p.children].forEach(c => c !== el && !c.contains(el) && alignRO.observe(c)); p = p.parentElement; } };
   // "SAG MILL MOTOR 1" → "Sag mill motor 1"
   const nice = s => { s = String(s || ""); return s === s.toUpperCase() ? s.toLowerCase().replace(/^./, c => c.toUpperCase()).replace(/\b(sag|ufg|cil\d?|vsd|hpu|ew)\b/gi, x => x.toUpperCase()) : s; };
 
@@ -325,7 +333,7 @@ window.AssetViz = (() => {
 .vz-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start}
 .vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:1px;min-width:0}.vz-tile em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vz-tile span{font-size:var(--fl,13px);color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}.vz-tile b{font-size:var(--fh,22px);line-height:1.15;font-variant-numeric:tabular-nums}.vz-tile em{font-style:normal;font-size:var(--fb,15px);color:var(--mute)}
-.vz-gh{font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin:18px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--line)}.vz-gh:first-child{margin-top:0}
+.vz-gh{display:flex;align-items:center;margin:18px 0 10px;padding:5px 8px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);border:0}   /* the same grey band as Asset type and Results */.vz-gh:first-child{margin-top:0}
 .vz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
 .vz-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}.vz-card.span{grid-column:1/-1}
 .vz-card h3{margin:0 0 8px;font-size:var(--fl,13px);text-transform:uppercase;letter-spacing:.05em;color:var(--ink)}.vz-card h3 .vz-u{text-transform:none;letter-spacing:0}
