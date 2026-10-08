@@ -157,14 +157,14 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
 :root:not(.phone) #ck{display:flex;height:calc(100vh - var(--tb,0px) - 40px);min-height:420px;--ckw:780px}
 .ck-l{flex:0 0 var(--ckw);min-width:520px;max-width:70%;display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:0}
 .ck-f{flex:0 0 190px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;overflow:auto;min-height:0}
-.ck-h{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:6px 2px 2px}
+.ck-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);flex-basis:100%;width:100%;box-sizing:border-box;margin:6px 0 2px}
 .ck-p{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1.5px solid color-mix(in srgb,var(--ink) 16%,var(--line));background:var(--card);color:var(--ink);border-radius:9px;padding:4px 10px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap}
 .ck-p i{flex:none;width:9px;height:9px;border-radius:50%}.ck-p s{text-decoration:none;overflow:hidden;text-overflow:ellipsis}.ck-p em{font-style:normal;color:var(--mute);font-weight:600}
 .ck-p.on{border-color:var(--th);box-shadow:inset 0 0 0 1px var(--th);background:var(--th-t)}.ck-p.z:not(.on){opacity:.45}
 .ck-f #xls{margin-top:auto;font-size:13px;padding:5px 10px;border-radius:9px}
 .ck-r{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
 .ck-r #q{flex:0 0 34px;height:34px;width:100%;border:1.5px solid var(--line);border-radius:17px;padding:0 12px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink)}
-.ck-r #count{font-size:13px;color:var(--mute);margin:10px 2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ck-r #count b{color:var(--ink)}
+.ck-r #count{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:10px 0 6px;white-space:nowrap;overflow:hidden}#count b{color:var(--ink);letter-spacing:.02em;font-variant-numeric:tabular-nums}.ck-r #count b{color:var(--ink)}
 /* one grid for the header and the rows; minmax(0, …) so a long cell is cut, never pushed over the next */
 .ck-gh,.ck-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:8px;align-items:center}
 .ck-gh{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:0 8px 4px}.ck-gh span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -386,7 +386,7 @@ body.splitting{cursor:col-resize;user-select:none}
     F = filtered(); const n = F.length, nT = filtered("sev"), nC = filtered("cat"), cnt = (a, k, v) => a.reduce((t, r) => t + (r[k] === v), 0);
     $("nChecks").textContent = `(${all.length})`;
     const one = off.size === SEV.length - 1 ? SEV.find(s => !off.has(s)) : "";
-    $("count").innerHTML = one ? `<b>${n}</b> ${PL[one]}` : `<b>${n}</b> of ${all.length} checks`;
+    $("count").innerHTML = `<span>${one ? PL[one] : "Results"}</span><b>${n === all.length ? n : n + " of " + all.length}</b>`;
     // categories in a fixed order (most checks first), so the pills don't jump about as the counts change
     const byCat = {}; all.forEach(r => byCat[r.cat] = (byCat[r.cat] || 0) + 1);
     const pill = (k, on, c, dot) => `<button class="ck-p${on ? " on" : ""}${c ? "" : " z"}" data-${dot ? "s" : "c"}="${esc(k)}"${dot ? ` title="${SEVTIP[k]}"` : ` title="${esc(k)}"`}>${dot ? `<i style="background:${SEVC[k]}"></i>` : ""}<s>${esc(k)}</s><em>${c}</em></button>`;

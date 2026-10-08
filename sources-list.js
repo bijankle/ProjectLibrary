@@ -440,7 +440,7 @@ window.SourcesList = (() => {
     throw new Error(`GitHub answered ${r.status}${why ? ": " + why : ""}`); }
 
   const css = `.sl-q{width:100%;box-sizing:border-box;height:36px;border:1.5px solid var(--line);border-radius:18px;background:var(--bg);color:var(--ink);padding:0 12px;font:inherit;font-size:var(--fb,15px)}
-.sl-h{font-size:var(--fl,13px);font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:14px 2px 6px}
+.sl-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:14px 0 6px}
 .sl-bar{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 8px;font-size:var(--fb,15px);color:var(--mute);min-height:32px}.sl-bar b{color:var(--ink)}
 .sl-all{border:1.5px solid var(--gold);background:var(--card,var(--panel));color:color-mix(in srgb,var(--gold) 72%,var(--ink));border-radius:16px;padding:5px 12px;font:inherit;font-size:var(--fl,13px);font-weight:800;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
 .sl-allok{display:inline-flex;align-items:center;gap:5px;color:#1f9a55;font-weight:800;font-size:var(--fl,13px)}
