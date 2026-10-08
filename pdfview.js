@@ -375,7 +375,7 @@ window.PdfView = (() => {
   // (boxes in fractions of the sheet). Not when the drawing itself was what you searched (no find).
   function focusHits(hs, ext){ if (!V || !hs || !hs.length) return; const r = V.body.getBoundingClientRect(), z0 = V.zoom, sw = V.sheet.offsetWidth / z0, sh = V.sheet.offsetHeight / z0;
     const l = Math.min(...hs.map(h => h.l)), t = Math.min(...hs.map(h => h.t)), rr = Math.max(...hs.map(h => h.l + h.w)), b = Math.max(...hs.map(h => h.t + h.h));
-    const z = hs.length === 1 && !ext ? 4 : Math.max(1, Math.min(4, .8 * Math.min(r.width / ((rr - l) * sw || 1), r.height / ((b - t) * sh || 1))));
+    const z = hs.length === 1 && !ext ? 4 : Math.max(1, Math.min(ext ? 2 : 4, .8 * Math.min(r.width / ((rr - l) * sw || 1), r.height / ((b - t) * sh || 1))));
     zoomTo(z, r.left + r.width / 2, r.top + r.height / 2, (l + rr) / 2, (t + b) / 2); }
   // the app's ←: back one drawing within this visit (views of the same drawing are skipped); from the first, close
   function back(){ if (!V || V.el.hidden) return false; const me = REG.get(curId); if (!me) { close(); return true; }

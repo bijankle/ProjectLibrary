@@ -7,7 +7,7 @@ window.Pid = (() => {
   const norm = s => String(s || "").toUpperCase().replace(/[\s\-_/.]+/g, "");
   const byN = new Map();
   const load = () => loading || (loading = fetch("PIDs/index.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(d => { IX = d; Object.keys(d.pids).forEach(k => byN.set(norm(k), k)); return d; }).catch(e => { loading = null; throw e; }));
+    .then(d => { IX = d; Object.keys(d.pids).forEach(k => byN.set(norm(k), k)); setTimeout(() => refs(), 1500); return d; }).catch(e => { loading = null; throw e; }));
   const key = n => byN.get(norm(n));
   const info = n => { const k = key(n); return k ? Object.assign({ number: k }, IX.pids[k]) : null; };
   // the drawing's name with its revision, as on the Sources tab file names: 2000-F13-PID-PR-10002_Rev2
@@ -21,7 +21,12 @@ window.Pid = (() => {
   const same = (a, b) => { if (a[0] !== b[0] || a[5] !== b[5]) return false; const x = Math.min(a[1] + a[3], b[1] + b[3]) - Math.max(a[1], b[1]), y = Math.min(a[2] + a[4], b[2] + b[4]) - Math.max(a[2], b[2]);
     return x > 0 && y > 0 && x * y > .4 * Math.min(a[3] * a[4], b[3] * b[4]); };
   const dedupe = R => { Object.values(R).forEach(a => { const keep = []; a.forEach(r => { if (r[6] !== "x" && keep.some(o => same(o, r))) r[6] = "x"; else keep.push(r); }); }); return R; };   // (marked, not removed: links name refs by their place in the list)
-  const refs = () => REFS || (REFS = fetch("pid-refs.json").then(r => r.ok ? r.json() : {}).then(dedupe).catch(() => { REFS = null; return {}; }));
+  const refs = () => REFS || (REFS = fetch("pid-refs.json").then(r => r.ok ? r.json() : {}).then(dedupe).then(index).catch(() => { REFS = null; return {}; }));
+  // which P&IDs print each tag (for an item whose own P&ID field names a vendor drawing the library doesn't hold)
+  let BYTAG = null;
+  const index = R => { BYTAG = new Map(); Object.entries(R).forEach(([n, a]) => a.forEach(r => { if (r[6] === "d" || r[6] === "x" || r[6] === "q") return;
+    String(r[5]).split("|").forEach(t => { const k = norm(t), m = BYTAG.get(k) || new Map(); m.set(n, (m.get(n) || 0) + 1); BYTAG.set(k, m); }); })); return R; };
+  const printedOn = t => { const m = BYTAG && BYTAG.get(norm(t)); return m ? [...m.entries()].filter(([n]) => /-PID-/.test(n) && key(n)).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(x => x[0]) : []; };
   function open(n, find, o = {}){
     const d = info(n); if (!d) return false;
     const r = o.restore;
@@ -43,5 +48,5 @@ window.Pid = (() => {
     return true;
   }
   const kind = n => /-PFD-/.test(n) ? "PFD" : "P&ID";
-  return { load, ready: () => !!IX, has: n => !!(IX && key(n)), info, label, open, kind, refs, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
+  return { load, printedOn, ready: () => !!IX, has: n => !!(IX && key(n)), info, label, open, kind, refs, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
 })();

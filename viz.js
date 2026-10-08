@@ -39,7 +39,8 @@ window.AssetViz = (() => {
   // drawing of its own opens, and goes back to the charts on Home.
   function item(it){
     const own = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(it) : [];
-    if (!own.length && cur && shown && (!window.Pid || Pid.ready())) return;   // (an item with no drawing: keep the one on show)
+    const tapped = keepView && keepView.tap && nk(keepView.key) === nk(it.key);   // (opened by a tap on its label: that sheet, the label blue)
+    if (!own.length && !tapped && cur && shown && (!window.Pid || Pid.ready())) return;   // (an item with no drawing: keep the one on show)
     // (a kept view waits for the item it was kept for: closing the full screen viewer steps back through the one before)
     if (keepView && keepView.key && nk(keepView.key) !== nk(it.key)){ cur = it; return; }
     const kv = keepView && (own.includes(keepView.n) || keepView.tap) ? keepView : null; keepView = null;
@@ -92,7 +93,7 @@ window.AssetViz = (() => {
     // zoom onto boxes ([l, t, w, h] in 1/10000 of the sheet): all of them in view, but never closer than 4x
     const focus = bs => { if (!bs.length) return; const l = Math.min(...bs.map(b => b[0])) / 1e4 * W, t = Math.min(...bs.map(b => b[1])) / 1e4 * H,
       r = Math.max(...bs.map(b => b[0] + b[2])) / 1e4 * W, b = Math.max(...bs.map(q => q[1] + q[3])) / 1e4 * H, vw = box.clientWidth || W, vh = box.clientHeight || H;
-      z = Math.max(1, Math.min(4, .8 * Math.min(vw / Math.max(1, r - l), vh / Math.max(1, b - t)))); tx = vw / 2 - (l + r) / 2 * z; ty = vh / 2 - (t + b) / 2 * z; apply(); };
+      z = Math.max(1, Math.min(2, .8 * Math.min(vw / Math.max(1, r - l), vh / Math.max(1, b - t)))); tx = vw / 2 - (l + r) / 2 * z; ty = vh / 2 - (t + b) / 2 * z; apply(); };
     const zoomAt = (f, x, y) => { const z0 = z; z = Math.max(1, Math.min(10, z * f)); tx = x - (x - tx) * z / z0; ty = y - (y - ty) * z / z0; apply(); };
     async function sharp(){ if (!page) return; const q = Math.min(4, Math.ceil(z)), dpr = devicePixelRatio || 1; if (q === rz) return; rz = q;
       const vp = page.getViewport({ scale: sc * q * dpr }), off = document.createElement("canvas"); off.width = Math.round(vp.width); off.height = Math.round(vp.height);

@@ -329,6 +329,7 @@
     const has = n => window.Pid && Pid.has(n);
     const pids = [...new Set((it.r || []).join(" ").match(DRE) || [])].filter(n => /-PID-/.test(n) && has(n));
     if (pids.length) return pids;
+    const pr = window.Pid && Pid.printedOn ? Pid.printedOn(it.key) : []; if (pr.length) return pr;   // (the P&IDs its label is printed on)
     if (it.t !== "mel") return [];
     const seen = (DT && DT[it.key]) || [];
     return [...new Set([...(String(L.get(it, "PFD")).match(DRE) || []), ...seen.map(x => x[0])])].filter(n => /-PFD-/.test(n) && has(n)); };
