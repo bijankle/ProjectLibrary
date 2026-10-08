@@ -89,8 +89,8 @@ window.SourcesList = (() => {
     const keepF = () => { try { localStorage.setItem("kcgm_srcf", JSON.stringify({ t: type, a: area })); } catch (e) {} };
     el.classList.add("sl", phone ? "sl-ph" : "sl-dt");
     el.innerHTML = phone ? `<div class="sl-types sl-pills"></div><div class="sl-areas sl-pills"></div><div class="sl-bar"></div><div class="sl-list"></div>`
-      : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off"><div class="sl-hb"><button type="button" class="sl-b sl-sva">${ICO.save}<span>Save all</span></button><span class="sl-svn"></span></div>
-           <div class="sl-h">Sections</div><div class="sl-secs"></div><div class="sl-h">Everything</div><div class="sl-ev"></div></aside>
+      : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off">
+           <div class="sl-h">Everything</div><div class="sl-ev"></div><div class="sl-h">Sections</div><div class="sl-secs"></div></aside>
          <div class="sl-dv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
          <div class="sl-main"><div class="sl-tbar"><b>Selection tree</b><span class="sl-sp"></span><button type="button" class="sl-tbb sl-upb" data-up="">${ICO.up}Upload</button><input type="file" class="sl-file" accept="application/pdf,.pdf" multiple hidden><button type="button" class="sl-tbb" data-x="1">Expand all</button><button type="button" class="sl-tbb" data-x="0">Collapse all</button></div>
            <div class="sl-tree"><div class="sl-gh"><span>Name</span><span>Title</span><span>Rev</span><span>Size</span><span>Cached</span><span></span></div><div class="sl-rows"></div></div></div>`;
@@ -177,7 +177,7 @@ window.SourcesList = (() => {
       return ["r:" + t].concat(subOf(t) ? byArea(ds).map(([a]) => `a:${t}:${a}`) : []); }); };
     // Cache all for a group: the section's square button, or the tree's small one; green once all of it is cached
     const caBtn = (id, ds, big) => { if (!ds.some(d => d.keep.length)) return big ? `<span class="sl-b sl-b0"></span>` : "";
-      const ok = allOk(ds); return `<button type="button" class="${big ? "sl-b" : "sl-ib"} sl-kp${ok ? " ok" : ""}" data-ca="${esc(id)}" title="${ok ? "All cached on this device" : "Cache all of these on this device"}">${ok ? ICO.devOk : ICO.dev}${big ? `<span>${ok ? "Cached" : "Cache all"}</span>` : ""}</button>`; };
+      const ok = allOk(ds); return `<button type="button" class="${big ? "sl-b" : "sl-ib"} sl-kp${ok ? " ok" : ""}" data-ca="${esc(id)}" title="${ok ? "All cached on this device" : "Cache all of these on this device"}">${ok ? ICO.devOk : ICO.dev}${big ? `<span>${ok ? "Cached" : id === "s:" ? "Cache all" : "Cache"}</span>` : ""}</button>`; };
     function secRow(id, name, ds, n){ const [h, t] = mbOf(ds);
       return `<div class="sl-sec${id === "s:" + type ? " on" : ""}${q && !n ? " sl-z" : ""}" data-id="${esc(id)}" role="button" tabindex="0"><div class="sl-st"><b>${esc(name)}</b><small>${q ? `${n} of ${ds.length} match` : `${ds.length} document${ds.length === 1 ? "" : "s"}`} · <span class="sl-pt">${mb(h)} of ${mb(t)} MB</span></small><i class="sl-pb"><i style="width:${t ? (h / t * 100).toFixed(1) : 0}%"></i></i></div>${caBtn(id, ds, true)}</div>`; }
     function drawDt(){
@@ -185,8 +185,6 @@ window.SourcesList = (() => {
       $(".sl-secs").innerHTML = TYPES.filter(([k]) => DOCS.some(d => d.t === k)).map(([k, n]) => secRow("s:" + k, n, ofT(DOCS, k), ofT(hit, k).length)).join("");
       $(".sl-ev").innerHTML = secRow("s:", "All sources", DOCS, hit.length);
       const what = type ? TN[type] : "documents";
-      $(".sl-sva").title = `Save every ${type ? TN[type].replace(/s$/, "") : "document"}${q ? " the search shows" : ""} to Downloads, as one zip`;
-      $(".sl-svn").textContent = `${list.length} ${list.length === 1 ? "document" : what} as one zip`;
       // the tree, Explorer style: dotted guides (one per level, a line on when that level's branch goes on), +/− boxes;
       // only open nodes are drawn, so a few hundred rows at most
       const H = [], tail = `<i class="sl-rb"><i></i></i>`;
@@ -197,10 +195,12 @@ window.SourcesList = (() => {
       const okIco = s => s === "ok" ? `<span class="sl-ok" title="Cached on this device">${ICO.devOk}</span>` : s === "old" ? `<span class="sl-ok old" title="An older copy is cached: cache it again to update">${ICO.devOk}</span>`
         : s === "part" ? `<span class="sl-ok part" title="Partly cached">${ICO.dev}</span>` : "";
       const kp = (d, s) => d.keep.length ? `<button type="button" class="sl-ib sl-kp ${s}" title="${s === "ok" ? "Cached on this device. Click to remove" : s === "old" ? "Update the cached copy" : "Cache on this device to open with no signal"}">${s === "ok" ? ICO.devOk : ICO.dev}</button>` : "";
-      const acts = (d, s, up) => (up ? upB("d:" + d.k, [d]) : "") + (d.pdf ? saveBtn(d, "p", "sl-ib", "") : "") + (d.xlsx ? saveBtn(d, "x", "sl-ib", "") : "") + kp(d, s);
+      const acts = (d, s, up) => (up ? upB("d:" + d.k, [d]) : "") + `<span class="sl-dl">${(d.pdf ? saveBtn(d, "p", "sl-ib", "") : "") + (d.xlsx ? saveBtn(d, "x", "sl-ib", "") : "")}</span>` + kp(d, s);
+      // ↓ a folder's files in Downloads as one zip
+      const zpBtn = (id, ds, label) => ds.some(d => d.pdf || d.xlsx) ? `<button type="button" class="sl-ib sl-zp" data-zp="${esc(id)}" data-zn="${esc(label)}" title="Download these ${ds.length} as one zip">${ICO.save}</button>` : "";
       const grp = (id, lv, pre, last, label, ds, kids) => { const o = isOpen(id);
         H.push(`<div class="sl-tr sl-grp" data-id="${esc(id)}"><span class="sl-nm">${gd(pre, lv, last)}${tg(o)}${o ? ICO.fo : ICO.fc}<span class="sl-l">${esc(label)}<em>(${ds.length})</em></span></span><span></span><span></span><span></span>` +
-          `<span class="sl-c sl-pt">${ds.filter(d => stOf(d) === "ok").length} of ${ds.length}</span><span class="sl-acts">${upB(id, ds)}${caBtn(id, ds)}</span>${tail}</div>`);
+          `<span class="sl-c sl-pt">${ds.filter(d => stOf(d) === "ok").length} of ${ds.length}</span><span class="sl-acts">${upB(id, ds)}${zpBtn(id, ds, label)}${caBtn(id, ds)}</span>${tail}</div>`);
         if (o) kids(lv ? pre.concat(!last) : pre); };
       const doc = (d, lv, pre, last) => { const id = "d:" + d.k, o = isOpen(id), s = stOf(d), v = d.info || {}, sel = x => MEM.sel === x ? " sel" : "";
         const tip = [v.kind, v.status, v.used && "Used for " + v.used, v.note].filter(Boolean).concat("Click to open").join("\n");
@@ -233,6 +233,7 @@ window.SourcesList = (() => {
         if (x){ const g = groups(); if (x.dataset.x === "1"){ g.forEach(id => open.add(id)); shut.clear(); }
           else { [...open].forEach(id => id[0] !== "r" && open.delete(id)); if (q) g.forEach(id => id[0] === "a" && shut.add(id)); } return draw(); }
         const ub = t.closest(".sl-upb"); if (ub) return pickUp(ub.dataset.up);
+        const zb = t.closest("[data-zp]"); if (zb) return saveAll(grpDocs(zb.dataset.zp), zb, zb.dataset.zn);
         const r = t.closest("[data-id]"); if (!r) return;
         if (t.closest(".sl-vw")) return window.open(r.dataset.pdf, "_blank", "noopener");
         const kb = t.closest(".sl-kp");
@@ -255,7 +256,6 @@ window.SourcesList = (() => {
       const relock = () => { const lk = !ghKey(); el.querySelectorAll(".sl-tbar .sl-upb").forEach(b => setLock(b, lk)); draw(); };
       addEventListener("kcgm-keys", relock); addEventListener("storage", e => { if (e.key === "kcgm_ghkey") relock(); }); relock();
       el.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList.contains("sl-sec")) e.target.click(); });
-      $(".sl-sva").onclick = () => saveAll(list, $(".sl-sva"));
       // the divider: drag to share the width (the side 260px to half), double click for the default
       const dv = $(".sl-dv"), side = $(".sl-side"), DEF = 330;
       const setW = (w, lim) => { if (lim) w = Math.max(260, Math.min(Math.max(260, el.clientWidth * .5), w)); el.style.setProperty("--slw", Math.round(w) + "px"); };
@@ -275,14 +275,14 @@ window.SourcesList = (() => {
       if (d.pdf) return window.open(d.pdf, "_blank", "noopener");
       if (window.SourceView && d.tables) SourceView.open(d.k, d.number + " " + d.title); }
     // save all: every listed document's file (its PDF, or the Excel copy of a list) in one zip, named as Save names it
-    async function saveAll(ds, b){ if (b.disabled) return;
+    async function saveAll(ds, b, name){ if (b.disabled) return;
       const items = ds.map(d => d.pdf ? [d.pdf, fname(d) + ".pdf"] : d.xlsx ? [d.xlsx, d.xname || fname(d) + ".xlsx"] : null).filter(Boolean); if (!items.length) return;
-      const lab = b.querySelector("span"), was = lab.textContent; b.disabled = true; const got = [];
-      try { for (let i = 0; i < items.length; i++){ lab.textContent = `${i + 1} / ${items.length}`;
+      const was = b.title; b.disabled = true; b.classList.add("sl-on"); const got = [];
+      try { for (let i = 0; i < items.length; i++){ b.title = `Fetching ${i + 1} / ${items.length}`;
           const r = await fetch(items[i][0]); if (!r.ok) throw new Error(items[i][1] + " (" + r.status + ")"); got.push([items[i][1], new Uint8Array(await r.arrayBuffer())]); }
-        const a = document.createElement("a"); a.href = URL.createObjectURL(zip(got)); a.download = `Project Library ${type ? TN[type].replace("&amp;", "&") : "sources"}.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4e4);
+        const a = document.createElement("a"); a.href = URL.createObjectURL(zip(got)); a.download = `Project Library ${String(name || "sources").replace(/&amp;/g, "&").replace(/[\\/:*?"<>|]/g, "-")}.zip`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4e4);
       } catch (e){ alert("Couldn't save all: " + e.message); }
-      b.disabled = false; lab.textContent = was; }
+      b.disabled = false; b.classList.remove("sl-on"); b.title = was; }
     // keep on the device: one row, or every row the filters show (phone), a section or tree group (desktop); the row's (or
     // the bar's) text counts up the MB
     async function run(ds, row){
@@ -468,7 +468,7 @@ window.SourcesList = (() => {
 .sl-tbar{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--card2,var(--panel2))}.sl-tbar b{font-size:13px;letter-spacing:.04em}.sl-sp{flex:1}
 .sl-tbb{display:inline-flex;align-items:center;gap:5px;height:26px;border:1px solid var(--line);background:var(--card,var(--panel));border-radius:6px;font:inherit;font-size:12px;font-weight:700;padding:0 9px;cursor:pointer;color:var(--ink)}.sl-tbb:hover:not(:disabled){border-color:var(--th)}.sl-tbb:disabled{opacity:.45;cursor:default}
 /* the selection tree: a property grid's grey header, 22px rows, Navisworks' blue hover and selection */
-.sl-tree{flex:1;overflow:auto;font-size:13px;--cols:minmax(250px,2.4fr) minmax(110px,2fr) 58px 78px 92px 108px}
+.sl-tree{flex:1;overflow:auto;font-size:13px;--cols:minmax(250px,2.4fr) minmax(110px,2fr) 58px 78px 92px 84px}
 .sl-gh,.sl-tr{display:grid;grid-template-columns:var(--cols);min-width:706px}
 .sl-gh{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute)}.sl-gh span{padding:4px 8px;border-right:1px solid var(--line)}.sl-gh span:last-child{border-right:0}
 .sl-tr{position:relative;height:22px;line-height:22px;white-space:nowrap;cursor:default}.sl-tr>span{padding:0 8px;min-width:0;overflow:hidden;text-overflow:ellipsis;border-right:1px solid color-mix(in srgb,var(--line) 55%,transparent)}.sl-tr>span:nth-child(6){border-right:0}
@@ -481,7 +481,7 @@ html[data-theme=dark] .sl-tr:hover{background:#26384a}html[data-theme=dark] .sl-
 .sl-l u{text-decoration:none;font-size:10.5px;font-weight:800;color:#1f9a55;border:1px solid #2aa765;border-radius:4px;padding:0 4px;margin-left:8px;line-height:14px;display:inline-block}
 .sl-op{border:0;background:none;color:inherit;font:inherit;padding:0;text-align:left;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sl-op:hover{color:var(--ink);text-decoration:underline}
 .sl-ok{display:inline-flex;vertical-align:-3px;color:#1f9a55}.sl-ok svg{width:14px;height:14px}.sl-ok.old{color:#c47f0a}.sl-ok.part{color:var(--mute)}
-.sl-acts{display:flex;align-items:center;justify-content:flex-end;gap:3px;padding:0 6px!important}
+.sl-acts{display:grid;grid-template-columns:22px auto 22px;align-items:center;justify-content:start;gap:3px;padding:0 6px!important}.sl-acts>.sl-upb{grid-column:1}.sl-acts>.sl-zp,.sl-acts>.sl-dl{grid-column:2;display:flex;gap:3px}.sl-acts>.sl-kp{grid-column:3}.sl-zp.sl-on{opacity:.5;cursor:progress}
 .sl-ib{flex:none;box-sizing:border-box;width:22px;height:20px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--ink) 22%,var(--line));border-radius:5px;background:var(--card,var(--panel));color:var(--ink);padding:0;cursor:pointer;text-decoration:none}
 .sl-ib svg{width:13px;height:13px}.sl-ib:hover{border-color:var(--th);color:var(--th)}.sl-ib.sl-x{color:#1f8a4c}.sl-ib.ok{color:#1f9a55;border-color:#2aa765}.sl-ib.old,.sl-ib.part{border-style:dashed}
 /* upload: the ↑ with a small lock at its corner while there's no GitHub key; superseded revisions in grey */
