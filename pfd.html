@@ -85,7 +85,7 @@ select.hbtn{padding:6px 8px}
 a.hbtn{text-decoration:none;color:var(--ink)}
 #side{position:fixed;left:0;top:calc(54px + var(--tb,0px));bottom:0;width:270px;background:var(--panel);border-right:1px solid var(--line);
   overflow-y:auto;padding:14px;z-index:4}
-#side h2{font-size:var(--fl,13px);letter-spacing:1.2px;text-transform:uppercase;color:var(--mute);margin:16px 0 8px}
+#side h2{display:flex;align-items:center;padding:5px 8px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:16px 0 8px}   /* the grey band of the Assets tab */
 #side h2:first-child{margin-top:0}
 .flow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--panel2);
   border-radius:10px;padding:9px 10px;margin-bottom:7px;cursor:pointer;font-size:var(--fb,15px);font-weight:600}
@@ -409,7 +409,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 .ctl .seg-hit{fill:transparent;cursor:pointer}
 .ctl .seg-hit:hover + .sp,.ctl .sp.on{fill:var(--accent)}
 .ctl.hl .sig{stroke:var(--accent);opacity:1}
-.lg-sub{font-size:var(--fb,15px);font-weight:700;color:var(--mute);margin:10px 0 4px;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.lg-sub{padding:5px 8px;background:color-mix(in srgb,var(--ink) 7%,transparent);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:10px 0 4px;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
 .lg-sub::before{content:"▸";font-size:10px}
 .lg-sub.open::before{content:"▾"}
 .lg-list{display:none;flex-direction:column;gap:1px}
@@ -1082,7 +1082,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
   }
   OVERLAYS.forEach(o => $("overlays").appendChild(overlayPill(o)));
   const mkList = (title, arr, kind, label) => {
-    const h = document.createElement("div"); h.className = "lg-sub"; h.textContent = title + " (" + arr.length + ")";
+    const h = document.createElement("div"); h.className = "lg-sub"; h.innerHTML = `<span>${esc(title)}</span><b style="margin-left:auto;color:var(--ink);letter-spacing:.02em">${arr.length}</b>`;
     const box = document.createElement("div"); box.className = "lg-list";
     h.onclick = () => h.classList.toggle("open");   // always starts closed
     arr.forEach(x => { const d = document.createElement("div"); d.className = "lg-li"; d.innerHTML = label(x); d.onclick = e => pick(e, { k: kind, id: x.id }, null, true); x.li = d; box.appendChild(d); });
