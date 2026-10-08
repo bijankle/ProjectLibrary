@@ -16,7 +16,12 @@ window.Pid = (() => {
   // way back marked, tapping a tag opens it in the lookup (window.kcgmOpenTag, set by the page). Back steps through the
   // views (pdfview.js keeps them as browser history).
   let REFS = null;
-  const refs = () => REFS || (REFS = fetch("pid-refs.json").then(r => r.ok ? r.json() : {}).catch(() => { REFS = null; return {}; }));
+  // (a scanned sheet carries a tag twice, drawn and in the text layer under it: the second, mostly on top of the first
+  // with the same text, is hidden so a match shows one box)
+  const same = (a, b) => { if (a[0] !== b[0] || a[5] !== b[5]) return false; const x = Math.min(a[1] + a[3], b[1] + b[3]) - Math.max(a[1], b[1]), y = Math.min(a[2] + a[4], b[2] + b[4]) - Math.max(a[2], b[2]);
+    return x > 0 && y > 0 && x * y > .4 * Math.min(a[3] * a[4], b[3] * b[4]); };
+  const dedupe = R => { Object.values(R).forEach(a => { const keep = []; a.forEach(r => { if (r[6] !== "x" && keep.some(o => same(o, r))) r[6] = "x"; else keep.push(r); }); }); return R; };   // (marked, not removed: links name refs by their place in the list)
+  const refs = () => REFS || (REFS = fetch("pid-refs.json").then(r => r.ok ? r.json() : {}).then(dedupe).catch(() => { REFS = null; return {}; }));
   function open(n, find, o = {}){
     const d = info(n); if (!d) return false;
     const r = o.restore;

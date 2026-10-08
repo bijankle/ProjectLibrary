@@ -88,7 +88,7 @@ window.AssetViz = (() => {
     const pick = test => { const rf = box.querySelector(".vz-rf"); let n = 0; [...rf.children].forEach((e, i) => { const on = !!(refsNow[i] && test(i, refsNow[i])); e.classList.toggle("pick", on); n += on; }); return n; };
     const hbox = (l, t, w, h) => { const [a, b, c, d] = PdfView.grow(l, t, w, h, W / H); return `<i class="sp-hb sp-hbon" style="left:${a / 1e4 * W}px;top:${b / 1e4 * H}px;width:${c / 1e4 * W}px;height:${d / 1e4 * H}px"></i>`; };
     const apply = () => { z = Math.max(1, Math.min(10, z)); tx = Math.min(0, Math.max(W - W * z, tx)); ty = Math.min(0, Math.max(H - H * z, ty));
-      stage.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; clearTimeout(rt); rt = setTimeout(sharp, 180); };
+      stage.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; stage.style.setProperty("--iz", (1 / z).toFixed(4)); stage.style.setProperty("--rbw", (1.5 / z).toFixed(3) + "px"); clearTimeout(rt); rt = setTimeout(sharp, 180); };
     const zoomAt = (f, x, y) => { const z0 = z; z = Math.max(1, Math.min(10, z * f)); tx = x - (x - tx) * z / z0; ty = y - (y - ty) * z / z0; apply(); };
     async function sharp(){ if (!page) return; const q = Math.min(4, Math.ceil(z)), dpr = devicePixelRatio || 1; if (q === rz) return; rz = q;
       const vp = page.getViewport({ scale: sc * q * dpr }), off = document.createElement("canvas"); off.width = Math.round(vp.width); off.height = Math.round(vp.height);
@@ -146,7 +146,7 @@ window.AssetViz = (() => {
       finder = { box, stage, get z(){ return z; }, n: d.number, g };
       const refsP = Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
         const A = W / H; boxes = [];
-        refsNow = (R[d.number] || []).filter(r => r[0] === 1);
+        refsNow = (R[d.number] || []).filter(r => r[0] === 1 && r[6] !== "x");
         rf.innerHTML = refsNow.map(r => { const [l, t, w, h] = PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
           return `<i data-t="${esc(r[5])}" data-k="${esc(r[6])}"${r[7] != null ? ` data-b="${esc(JSON.stringify(r[7]))}"` : ""} title="${esc(String(r[5]).split("|").join(", "))}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%"></i>`; }).join("");
         // arrived through a continuation: the red arrow on the ribbon back to the drawing you came from
@@ -298,9 +298,9 @@ window.AssetViz = (() => {
 .vz-sheet{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;touch-action:none;cursor:default;user-select:none}
 .vz-sheet.drag{cursor:default}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
-.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:2px;background:rgba(90,100,115,.06)}   /* as in the full screen viewer: a very light grey wash */
-.vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i.hv{background:rgba(90,100,115,.22)}.vz-sheet.on-ref,.vz-sheet.on-ref .vz-tx span{cursor:pointer}
-.vz-rf i.pick{box-shadow:inset 0 0 0 2.5px #1e6ee6,0 0 0 2px rgba(255,255,255,.7);background:rgba(30,110,230,.32)}.vz-rf i.hit{box-shadow:inset 0 0 0 1.5px rgba(30,110,230,.85);background:rgba(30,110,230,.28)}
+.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:calc(2px * var(--iz,1));background:rgba(90,100,115,.06)}   /* as in the full screen viewer: a very light grey wash */
+.vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i.hv{background:rgba(90,100,115,.22)}.vz-sheet.on-ref,.vz-sheet.on-ref *{cursor:pointer!important}
+.vz-rf i.pick{box-shadow:inset 0 0 0 calc(2.5px * var(--iz,1)) #1e6ee6,0 0 0 calc(2px * var(--iz,1)) rgba(255,255,255,.7);background:rgba(30,110,230,.32)}.vz-rf i.hit{box-shadow:inset 0 0 0 calc(1.5px * var(--iz,1)) rgba(30,110,230,.85);background:rgba(30,110,230,.28)}
 .vz-fd{position:absolute;left:0;top:0;pointer-events:none}.vz-fd i{position:absolute;box-sizing:border-box;border:1.5px solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:2px}
 .vz-sheet .vz-tx{z-index:2}.vz-mk{z-index:3}
 .vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}.vz-zb .vz-ze{border-radius:50%;border:1.5px solid var(--gold);color:color-mix(in srgb,var(--gold) 75%,var(--ink))}   /* zoom extents, in the corner as in the full screen viewer */

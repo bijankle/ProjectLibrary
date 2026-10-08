@@ -585,13 +585,13 @@
 .sp-ref{position:absolute;pointer-events:auto;cursor:pointer;background:rgba(90,100,115,.06);border-radius:2px}
 .sp-ref.d{background:rgba(90,100,115,.11)}
 .sp-ref.hv,.sp-ref.hit{background:rgba(90,100,115,.22)}
-.sp-hb{position:absolute;box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:2px;pointer-events:none}.sp-hb.sp-hbon{border-width:calc(var(--rbw,1.5px) + 1px);border-color:#1e6ee6;background:rgba(30,110,230,.32);box-shadow:0 0 0 2px rgba(255,255,255,.7)}   /* the place tapped or stepped to: a stronger box, never an arrow */   /* a find result on any sheet */
+.sp-hb{position:absolute;box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:calc(var(--rbw,1.5px) * 1.3);pointer-events:none}.sp-hb.sp-hbon{border-width:calc(var(--rbw,1.5px) + 1px);border-color:#1e6ee6;background:rgba(30,110,230,.32);box-shadow:0 0 0 2px rgba(255,255,255,.7)}   /* the place tapped or stepped to: a stronger box, never an arrow */   /* a find result on any sheet */
 .sp-ref.fit{box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.1)}.sp-finding .sp-ref.fit:not(.off){background:rgba(30,110,230,.32);border-width:calc(var(--rbw,1.5px) + .5px)}.sp-ref.fit.o{border-radius:50%}
 .sp-ref.fit.off{border-color:rgba(90,100,115,.35);background:rgba(90,100,115,.1)}.sp-ref.fit.hv{background:rgba(30,110,230,.32)}.sp-ref.fit.off.hv{background:rgba(90,100,115,.22)}   /* a checked sheet: red labels, grey when a find leaves them out */.sp-refs .sp-ref{pointer-events:none}
 /* the page's text, invisible but selectable (left drag), on top of everything; a tag under it still opens on a click */
 .sp-text{position:absolute;inset:0;overflow:hidden;line-height:1;text-size-adjust:none;-webkit-text-size-adjust:none;z-index:2;user-select:text;-webkit-user-select:text}
 .sp-text span,.sp-text br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0 0}
-.sp-text ::selection{background:rgba(30,110,230,.3)}.sp-body.on-ref .sp-text span,.sp-body.on-ref .sp-text{cursor:pointer}.sp-body.drag .sp-text{cursor:grabbing}
+.sp-text ::selection{background:rgba(30,110,230,.3)}.sp-body.on-ref,.sp-body.on-ref *{cursor:pointer!important}.sp-body.drag .sp-text{cursor:grabbing}
 :root.phone .sp-text{pointer-events:none;user-select:none;-webkit-user-select:none}
 .sp-pick{position:absolute;z-index:5;display:flex;flex-direction:column;gap:4px;padding:6px;background:#1d222a;border:1px solid #3a434f;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.4);max-height:50vh;overflow:auto}
 .sp-pick button{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;padding:7px 12px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;text-align:left}
