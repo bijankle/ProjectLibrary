@@ -260,6 +260,9 @@ window.PdfView = (() => {
     const own = h => V.refs.some(r => { if (r[0] !== V.page) return false; const [l, t, w, hh] = boxOf(r).map(x => x / 1e4);
       return h.l < l + w && h.l + h.w > l && h.t < t + hh && h.t + h.h > t; });
     V.tapEl.innerHTML = on.filter(h => !own(h)).map(h => arrowAt(h, "on")).join("");
+    // (and those own boxes are marked instead, ribbon shaped where the ribbon is known)
+    if (V.refsEl && V.boxes) [...V.refsEl.children].forEach((a, i) => { const b = V.boxes[i]; if (!b) return; const [l, t, w, hh] = b.map(x => x / 1e4);
+      a.classList.toggle("tp", on.some(h => h.l < l + w && h.l + h.w > l && h.t < t + hh && h.t + h.h > t)); });
  }
   // ---------- view history ----------
   const REG = new Map(); let curId = 0, seq = 0, hush = 0, st8 = null;
@@ -292,6 +295,11 @@ window.PdfView = (() => {
   }
   // where the reader is on the sheet, to come back to it (Back)
   const state = () => V && V.pg ? { page: V.page, zoom: V.zoom, sl: V.body.scrollLeft, st: V.body.scrollTop } : null;
+  // a ribbon's outline as an svg filling its box: [, , , , shape, depth] with shape R / L (point right / left) and
+  // l / r (a notched tail on that side), depth the point's length as a part of the width
+  function ribbon(rb){ const k = rb[4] || "", d = Math.max(.02, Math.min(.4, +rb[5] || .08)) * 100, L = /L/.test(k), Rt = /R/.test(k), nl = /l/.test(k), nr = /r/.test(k);
+    const pts = [[L ? d : 0, 0], [Rt ? 100 - d : 100, 0], ...(Rt ? [[100, 50]] : nr ? [[100 - d, 50]] : []), [Rt ? 100 - d : 100, 100], [L ? d : 0, 100], ...(L ? [[0, 50]] : nl ? [[d, 50]] : [])];
+    return `<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="${pts.map(p => p.join(",")).join(" ")}" vector-effect="non-scaling-stroke"/></svg>`; }
   function drawRefs(){
     if (!V.pg) return;
     V.pageRefs = V.refs.filter(r => r[0] === V.page && r[6] !== "x");
@@ -299,15 +307,18 @@ window.PdfView = (() => {
     // a checked sheet (tools/refs_cv.py): every label red, the ones a find leaves out grey; bubbles round
     V.refsEl.innerHTML = V.pageRefs.map((r, i) => { const [l, t, w, h] = V.boxes[i];
       const cls = V.fit ? " fit" + (shape(r) === "o" ? " o" : "") + (V.fq && !V.fset.has(r) ? " off" : "") : r[6] === "d" ? " d" : "";
-      return `<a class="sp-ref${cls}" data-i="${i}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%" title="${esc(r[5].replace(/\|/g, ", "))}"></a>`; }).join("");
+      const rb = r[6] === "d" && Array.isArray(r[8]) && !V.rot;
+      return `<a class="sp-ref${cls}${rb ? " rb" : ""}" data-i="${i}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%" title="${esc(r[5].replace(/\|/g, ", "))}">${rb ? ribbon(r[8]) : ""}</a>`; }).join("");
+    drawTap();
   }
   // how a ref was fitted to the print on a checked sheet: "o" bubble, "b" drawn box (both exact), "t" text (a margin added)
   const shape = r => typeof r[7] === "string" ? r[7] : V.fit && r[6] === "d" ? "t" : null;
   // a ref's box on the sheet as shown (turned with it), in 1/10000 of the sheet
   function boxOf(r){
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), A = vp.width / vp.height;
-    let [, l, t, w, h] = r; if (V.rot) [l, t, w, h] = [1e4 - t - h, l, h, w];   // sheet turned a quarter
-    return shape(r) === "o" || shape(r) === "b" ? [l, t, w, h] : PdfView.grow(l, t, w, h, A);
+    const rb = r[6] === "d" && Array.isArray(r[8]);   // a continuation with its ribbon's outline (tools/refs_cv.py --ribbons): its box is the ribbon
+    let [l, t, w, h] = rb ? r[8] : r.slice(1, 5); if (V.rot) [l, t, w, h] = [1e4 - t - h, l, h, w];   // sheet turned a quarter
+    return rb || shape(r) === "o" || shape(r) === "b" ? [l, t, w, h] : PdfView.grow(l, t, w, h, A);
   }
   // ---------- find on a checked sheet ----------
   // Typing narrows the red to the labels whose tag or name holds what is typed (the rest go grey). The first Enter
@@ -542,5 +553,5 @@ window.PdfView = (() => {
   // of the boxes holding a point, the one whose centre is nearest (-1: none)
   const nearest = (B, x, y) => { let k = -1, d = 1e18; B.forEach(([l, t, w, h], i) => { if (x < l || x > l + w || y < t || y > t + h) return;
       const e = (x - l - w / 2) ** 2 + (y - t - h / 2) ** 2; if (e < d){ d = e; k = i; } }); return k; };
-  return { open, close, back, state, getDoc, grow, nearest, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
+  return { open, close, back, state, getDoc, grow, ribbon, nearest, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
 })();

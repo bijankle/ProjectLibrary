@@ -152,14 +152,15 @@ window.AssetViz = (() => {
         const A = W / H; boxes = [];
         refsNow = (R[d.number] || []).filter(r => r[0] === 1 && r[6] !== "x");
         rf.innerHTML = refsNow.map(r => { const fit = r[7] === "o" || r[7] === "b";   // (fitted to the printed bubble or box: used as is, as in the full screen viewer)
-          const [l, t, w, h] = fit ? [r[1], r[2], r[3], r[4]] : PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
-          return `<i${r[7] === "o" ? ' class="o"' : ""} data-t="${esc(r[5])}" data-k="${esc(r[6])}"${r[7] != null ? ` data-b="${esc(JSON.stringify(r[7]))}"` : ""} title="${esc(String(r[5]).split("|").join(", "))}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%"></i>`; }).join("");
+          const rb = r[6] === "d" && Array.isArray(r[8]);   // (a continuation: its ribbon's outline)
+          const [l, t, w, h] = rb ? r[8] : fit ? [r[1], r[2], r[3], r[4]] : PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
+          return `<i${r[7] === "o" ? ' class="o"' : rb ? ' class="rb"' : ""} data-t="${esc(r[5])}" data-k="${esc(r[6])}"${r[7] != null ? ` data-b="${esc(JSON.stringify(r[7]))}"` : ""} title="${esc(String(r[5]).split("|").join(", "))}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%">${rb ? PdfView.ribbon(r[8]) : ""}</i>`; }).join("");
         // arrived through a continuation: the red arrow on the ribbon back to the drawing you came from
         const arr = arrival && arrival.to === d.number && arrival.back != null ? arrival : null; arrival = null;
         if (arr){ const aw = W * .018, ah = aw * 1.7;
           const back = [].concat(arr.back).map(j => (R[d.number] || [])[j]).filter(r => r && r[0] === 1);
-          box.querySelector(".vz-mk").innerHTML = back.map(r => hbox(r[1], r[2], r[3], r[4])).join("");
-          focus(back.map(r => PdfView.grow(r[1], r[2], r[3], r[4], A))); } });   // (zoomed onto the ribbon back to where you came from)
+          pick((i, r) => back.includes(r));   // (its own ribbon turns blue)
+          focus(back.map(r => boxes[refsNow.indexOf(r)]).filter(Boolean)); } });   // (zoomed onto the ribbon back to where you came from)
       // the tag tapped (here or in the full screen viewer): the arrow on that very spot
       if (tap){ const own = boxes.some(([l, t, w, h]) => tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t);   // its own tag box shows it: no second box
         box.querySelector(".vz-mk").innerHTML = own ? "" : hbox(tap[0], tap[1], tap[2], tap[3]);
@@ -305,7 +306,9 @@ window.AssetViz = (() => {
 .vz-sheet.drag{cursor:default}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
 .vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:calc(2px * var(--iz,1));background:rgba(90,100,115,.06)}   /* as in the full screen viewer: a very light grey wash */
-.vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i.hv{background:rgba(90,100,115,.22)}.vz-rf i.o{border-radius:50%}.vz-sheet.on-ref,.vz-sheet.on-ref *{cursor:pointer!important}
+.vz-rf i[data-k="d"]{background:rgba(90,100,115,.11)}.vz-rf i.hv{background:rgba(90,100,115,.22)}.vz-rf i.o{border-radius:50%}
+.vz-rf i.rb{background:none!important;box-shadow:none!important}.vz-rf i.rb svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.vz-rf i.rb polygon{fill:rgba(90,100,115,.11);stroke:none}
+.vz-rf i.rb.hv polygon{fill:rgba(90,100,115,.22)}.vz-rf i.rb.hit polygon{fill:rgba(30,110,230,.28);stroke:rgba(30,110,230,.85);stroke-width:1.5px}.vz-rf i.rb.pick polygon{fill:rgba(30,110,230,.32);stroke:#1e6ee6;stroke-width:2.5px}.vz-sheet.on-ref,.vz-sheet.on-ref *{cursor:pointer!important}
 .vz-rf i.pick{box-shadow:inset 0 0 0 calc(2.5px * var(--iz,1)) #1e6ee6,0 0 0 calc(2px * var(--iz,1)) rgba(255,255,255,.7);background:rgba(30,110,230,.32)}.vz-rf i.hit{box-shadow:inset 0 0 0 calc(1.5px * var(--iz,1)) rgba(30,110,230,.85);background:rgba(30,110,230,.28)}
 .vz-fd{position:absolute;left:0;top:0;pointer-events:none}.vz-fd i{position:absolute;box-sizing:border-box;border:1.5px solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:2px}
 .vz-sheet .vz-tx{z-index:2}.vz-mk{z-index:3}

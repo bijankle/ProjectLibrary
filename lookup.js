@@ -618,6 +618,12 @@
 .sp-ref.hv,.sp-ref.hit{background:rgba(90,100,115,.22)}
 .sp-hb{position:absolute;box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.28);border-radius:calc(var(--rbw,1.5px) * 1.3);pointer-events:none}.sp-hb.sp-hbon{border-width:calc(var(--rbw,1.5px) + 1px);border-color:#1e6ee6;background:rgba(30,110,230,.32);box-shadow:0 0 0 2px rgba(255,255,255,.7)}   /* the place tapped or stepped to: a stronger box, never an arrow */   /* a find result on any sheet */
 .sp-ref.fit{box-sizing:border-box;border:var(--rbw,1.5px) solid rgba(30,110,230,.85);background:rgba(30,110,230,.1)}.sp-finding .sp-ref.fit:not(.off){background:rgba(30,110,230,.32);border-width:calc(var(--rbw,1.5px) + .5px)}.sp-ref.fit.o{border-radius:50%}
+/* the tapped / arrived at label's own box, marked blue; a continuation drawn as its ribbon (an svg outline) */
+.sp-ref.tp{background:rgba(30,110,230,.32);box-shadow:inset 0 0 0 calc(var(--rbw,1.5px) + 1px) #1e6ee6}
+.sp-ref.rb{background:none!important;border:0!important;box-shadow:none!important}.sp-ref.rb svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.sp-ref.rb polygon{fill:rgba(90,100,115,.06);stroke:none}.sp-ref.fit.rb polygon{fill:rgba(30,110,230,.1);stroke:rgba(30,110,230,.85);stroke-width:var(--rbw,1.5px)}
+.sp-finding .sp-ref.fit.rb:not(.off) polygon,.sp-ref.rb.hv polygon{fill:rgba(30,110,230,.32)}.sp-ref.fit.off.rb polygon{stroke:rgba(90,100,115,.35);fill:rgba(90,100,115,.1)}
+.sp-ref.rb.tp polygon{fill:rgba(30,110,230,.32);stroke:#1e6ee6;stroke-width:calc(var(--rbw,1.5px) + 1px)}
 .sp-ref.fit.off{border-color:rgba(90,100,115,.35);background:rgba(90,100,115,.1)}.sp-ref.fit.hv{background:rgba(30,110,230,.32)}.sp-ref.fit.off.hv{background:rgba(90,100,115,.22)}   /* a checked sheet: red labels, grey when a find leaves them out */.sp-refs .sp-ref{pointer-events:none}
 /* the page's text, invisible but selectable (left drag), on top of everything; a tag under it still opens on a click */
 .sp-text{position:absolute;inset:0;overflow:hidden;line-height:1;text-size-adjust:none;-webkit-text-size-adjust:none;z-index:2;user-select:text;-webkit-user-select:text}

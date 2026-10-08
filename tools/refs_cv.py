@@ -18,6 +18,16 @@ For each sheet of the drawing, rendered in grey at 288 dpi:
 The ref's 8th entry (after page, box, target, kind) says how it was fitted: "o" circle, "b" drawn box, "t" text;
 continuation refs ("d") keep their way back there and are only hugged to their text. --preview writes before / after
 images of the sheet to the folder and changes nothing.
+On the fitted sheets, without fitting again (a few minutes for all, CVDIR as above; each change only adds to the fitting):
+  python3 tools/refs_cv.py [<drawing number> ...] --boxes --ribbons [--preview <folder>]
+  --boxes: a tag fitted to its letters ("t", or not fitted) printed alone in a drawn box looser than frame() takes (up
+     to about one and a half letter heights round it, maybe with one short line more, e.g. SP over SP-005) gets that box
+     ("b"). The box is looked for in the sheet's vector lines (a scanned sheet: frame(), loosened), and must show on the
+     print and hold no other line, symbol or tag.
+  --ribbons: a continuation ref gets the ribbon (flag) drawn round it as a 9th entry [l, t, w, h, shape, depth]: its
+     outer box, then each end, "L" / "R" a point on the left / right, "l" / "r" a notch (swallow tail) there ("lR" a
+     notched tail pointing right), "B" square, and the point's depth as a part of w. A continuation without a way back
+     gets null as its 8th entry first. None where no ribbon was found (a reference in the notes).
 """
 import json, os, re, subprocess, sys, tempfile
 import numpy as np, pymupdf, cv2
@@ -114,7 +124,7 @@ def hug(g, box, want=None, td=None, whole=False):
     if ((t[3] - t[1]) if vert else (t[2] - t[0])) < (bh if vert else bw) * .35: return None
     return t
 
-def frame(g, t, gap=1.0):
+def frame(g, t, gap=1.0, area=3.5):
     """a drawn rectangle closely around the letters t: its outline, or None"""
     x0, y0, x1, y1 = t; s = min(x1 - x0, y1 - y0); m = 2.6 * s
     X0, Y0, X1, Y1 = int(max(0, x0 - m)), int(max(0, y0 - m)), int(min(g.shape[1], x1 + m)), int(min(g.shape[0], y1 + m))
@@ -130,12 +140,169 @@ def frame(g, t, gap=1.0):
         if not (bx0 <= x0 + 2 and by0 <= y0 + 2 and bx1 >= x1 - 2 and by1 >= y1 - 2): continue
         # close along the writing; across it there may be another line of the label (the SP over MC-001)
         if max(x0 - bx0, bx1 - x1) > gap * s or max(y0 - by0, by1 - y1) > (gap if gap < 1 else 2.4) * s: continue
-        if (bx1 - bx0) * (by1 - by0) > 3.5 * (x1 - x0) * (y1 - y0): continue
+        if area and (bx1 - bx0) * (by1 - by0) > area * (x1 - x0) * (y1 - y0): continue
         # a drawn box: all four sides solid straight lines (not a symbol or leader that happens to wrap the text)
         sub = g[by0:by1, bx0:bx1] < INK; e = max(2, int(s * .15))
         if min(sub[:e].any(0).mean(), sub[-e:].any(0).mean(), sub[:, :e].any(1).mean(), sub[:, -e:].any(1).mean()) < .9: continue
-        area = (bx1 - bx0) * (by1 - by0)
-        if not best or area < best[1]: best = ((bx0, by0, bx1, by1), area)
+        ar = (bx1 - bx0) * (by1 - by0)
+        if not best or ar < best[1]: best = ((bx0, by0, bx1, by1), ar)
+    return best and best[0]
+
+def vlines(page, k=Z):
+    """the drawn straight lines of a vector sheet, in pixels at scale k: (horizontal [(y, x0, x1)], vertical [(x, y0, y1)],
+    the outlines drawn in one stroke [[(x, y), ...]] (a ribbon, a box), the longer open strokes (an outline drawn in parts)),
+    or None for a scanned sheet"""
+    dr = page.get_drawings()
+    if len(dr) < 200: return None
+    m = page.rotation_matrix * pymupdf.Matrix(k, k); H, V, P, O = [], [], [], []
+    for d in dr:
+        if d.get("color") is None or d.get("width") == 0: continue   # only what is stroked (a white fill behind the text is no box)
+        segs = []
+        for it in d["items"]:
+            if it[0] == "l": segs.append((it[1], it[2]))
+            elif it[0] == "re": r = it[1]; segs += [(r.tl, r.tr), (r.tr, r.br), (r.br, r.bl), (r.bl, r.tl)]
+            elif it[0] == "qu": q = it[1]; segs += [(q.ul, q.ur), (q.ur, q.lr), (q.lr, q.ll), (q.ll, q.ul)]
+            else: segs.append(None)   # a curve: no straight outline through here (its straight bits still count)
+        pcs = [[]]
+        for s in segs:
+            if s is None: pcs.append([]); continue
+            a, b = s[0] * m, s[1] * m
+            if abs(a.y - b.y) < .6 and abs(a.x - b.x) > 2: H.append(((a.y + b.y) / 2, min(a.x, b.x), max(a.x, b.x)))
+            elif abs(a.x - b.x) < .6 and abs(a.y - b.y) > 2: V.append(((a.x + b.x) / 2, min(a.y, b.y), max(a.y, b.y)))
+            if pcs[-1] and abs(pcs[-1][-1][0] - a.x) + abs(pcs[-1][-1][1] - a.y) > 1.5: pcs.append([])
+            if not pcs[-1]: pcs[-1].append((a.x, a.y))
+            pcs[-1].append((b.x, b.y))
+        for j, pts in enumerate(pcs):
+            if len(pts) < 2: continue
+            shut = abs(pts[0][0] - pts[-1][0]) + abs(pts[0][1] - pts[-1][1]) < 1.5 or (d.get("closePath") and j == len(pcs) - 1)
+            if shut and len(pts) >= 4: P.append(pts)
+            elif not shut and max(max(p[0] for p in pts) - min(p[0] for p in pts), max(p[1] for p in pts) - min(p[1] for p in pts)) > 6 * k: O.append(pts)
+    def merge(L):   # collinear pieces of one line (a box side drawn in parts) joined
+        out = []
+        for c, a, b in sorted(L):
+            j = next((i for i in range(len(out) - 1, max(-1, len(out) - 40), -1) if abs(out[i][0] - c) < 1.5 and a <= out[i][2] + 2 and b >= out[i][1] - 2), None)
+            if j is None: out.append([c, a, b])
+            else: out[j][1], out[j][2] = min(out[j][1], a), max(out[j][2], b)
+        return out
+    return merge(H), merge(V), P, O
+
+def drawn(g, pts, part=.85):
+    """whether the outline through pts (closed) shows dark on the print (a white or hidden stroke does not)"""
+    ok = n = 0
+    for (ax, ay), (bx, by) in zip(pts, pts[1:] + pts[:1]):
+        for f in np.linspace(0, 1, max(2, int(abs(bx - ax) + abs(by - ay)) // 6)):
+            x, y = int(ax + (bx - ax) * f), int(ay + (by - ay) * f); w = g[max(0, y - 3):y + 4, max(0, x - 3):x + 4]
+            n += 1; ok += bool(w.size) and w.min() < INK
+    return n and ok >= part * n
+
+def vframe(vl, t):
+    """the drawn rectangles around the letters t made of the sheet's vector lines, smallest first: [(x0, y0, x1, y1)]"""
+    H, V = vl[:2]; x0, y0, x1, y1 = t; s = min(x1 - x0, y1 - y0); c = max(3, .3 * s)
+    # far enough for a second line across the writing, and along it for the rest of a tag only partly fitted (alone() decides)
+    fx, fy = 3.8 * s + (x1 - x0 if s == y1 - y0 else 0), 3.8 * s + (y1 - y0 if s == x1 - x0 else 0)
+    tops = [h for h in H if y0 - fy <= h[0] <= y0 + 1 and h[1] <= x0 + 1 and h[2] >= x1 - 1]
+    bots = [h for h in H if y1 - 1 <= h[0] <= y1 + fy and h[1] <= x0 + 1 and h[2] >= x1 - 1]
+    lefs = [v for v in V if x0 - fx <= v[0] <= x0 + 1 and v[1] <= y0 + 1 and v[2] >= y1 - 1]
+    rigs = [v for v in V if x1 - 1 <= v[0] <= x1 + fx and v[1] <= y0 + 1 and v[2] >= y1 - 1]
+    out = []
+    for tp in tops:
+        for bt in bots:
+            for lf in lefs:
+                for rg in rigs:
+                    # closed at the corners, and no side running on past them (pipes crossing around the text are no box)
+                    if all(abs(h[1] - lf[0]) <= c and abs(h[2] - rg[0]) <= c for h in (tp, bt)) and all(abs(v[1] - tp[0]) <= c and abs(v[2] - bt[0]) <= c for v in (lf, rg)):
+                        out.append((lf[0], tp[0], rg[0], bt[0]))
+    return sorted(set(out), key=lambda b: (b[2] - b[0]) * (b[3] - b[1]))
+
+def alone(g, f, t, others=()):
+    """whether the drawn box f holds only the text t (and at most one short line more, a label), not far from it all round"""
+    x0, y0, x1, y1 = t; vert = (y1 - y0) > (x1 - x0) * 1.6; s = (x1 - x0) if vert else (y1 - y0)
+    if any(f[0] < cx < f[2] and f[1] < cy < f[3] and not (x0 - s < cx < x1 + s and y0 - s < cy < y1 + s) for cx, cy in others): return False
+    e = max(3, int(s * .15)); X0, Y0, X1, Y1 = int(f[0]) + e, int(f[1]) + e, int(f[2]) - e, int(f[3]) - e
+    if X1 - X0 < 3 or Y1 - Y0 < 3: return False
+    tol = s * .35; extra = []; m = g[Y0:Y1, X0:X1] < INK
+    # a divider straight across the box (the SP over MC-001) is part of the box, not something else in it
+    if vert: m[:, (m.mean(0) >= .9) & ((np.arange(X0, X1) < x0) | (np.arange(X0, X1) > x1))] = False
+    else: m[(m.mean(1) >= .9) & ((np.arange(Y0, Y1) < y0) | (np.arange(Y0, Y1) > y1))] = False
+    for (a, b, c, d, n) in comps(m):
+        bb = (X0 + b, Y0 + a, X0 + d, Y0 + c)
+        if n < 4 or (bb[0] >= x0 - tol and bb[1] >= y0 - tol and bb[2] <= x1 + tol and bb[3] <= y1 + tol): continue
+        hh, ww = (bb[2] - bb[0], bb[3] - bb[1]) if vert else (bb[3] - bb[1], bb[2] - bb[0])
+        if hh > s * 1.5 or ww > s * 4.5: return False   # a line or symbol in the box
+        extra.append(bb)
+    ax = 0 if vert else 1
+    # letters on the tag's own line are the rest of it (a fit that caught only part of the tag)
+    row = [b for b in extra if min(b[ax + 2], t[ax + 2]) - max(b[ax], t[ax]) > s * .5]
+    if row:
+        t = (min([t[0]] + [b[0] for b in row]), min([t[1]] + [b[1] for b in row]), max([t[2]] + [b[2] for b in row]), max([t[3]] + [b[3] for b in row]))
+        extra = [b for b in extra if b not in row]
+    u = t
+    if extra:
+        e0 = (min(b[0] for b in extra), min(b[1] for b in extra), max(b[2] for b in extra), max(b[3] for b in extra))
+        # across the writing: one more line (above or below, or beside when vertical) ...
+        if e0[ax + 2] - e0[ax] > s * 1.6 or min(e0[ax + 2], t[ax + 2]) - max(e0[ax], t[ax]) > s * .3: return False
+        if e0[3 - ax] - e0[1 - ax] > (t[3 - ax] - t[1 - ax]) * 1.3: return False   # ... and no longer than the tag
+        u = (min(t[0], e0[0]), min(t[1], e0[1]), max(t[2], e0[2]), max(t[3], e0[3]))
+    return max(u[0] - f[0], u[1] - f[1], f[2] - u[2], f[3] - u[3]) <= s * 1.6
+
+def joined(O, area, near=1.5):
+    """the closed outlines made of the open strokes lying wholly in area (a ribbon drawn in two halves): [[(x, y), ...]]"""
+    L = [p for p in O if all(area[0] <= x <= area[2] and area[1] <= y <= area[3] for x, y in p)][:60]; out = []
+    close = lambda a, b: abs(a[0] - b[0]) + abs(a[1] - b[1]) < near
+    def grow(path, used):
+        if len(used) > 1 and close(path[0], path[-1]): out.append(path); return
+        if len(used) >= 6 or len(out) > 20: return
+        for i, p in enumerate(L):
+            if i in used: continue
+            if close(p[0], path[-1]): grow(path + p[1:], used | {i})
+            elif close(p[-1], path[-1]): grow(path + p[::-1][1:], used | {i})
+    for i in range(len(L)): grow(L[i], {i})
+    return out
+
+def ribbon(vl, t, g=None):
+    """the drawn ribbon (continuation flag) around the text t: ((x0, y0, x1, y1), shape, depth) or None. The shape tells each
+    end: "L" / "R" a point on the left / right, "l" / "r" a notch (swallow tail) there, "B" both ends square; the depth is
+    that of the point (or notch) as a part of the width"""
+    x0, y0, x1, y1 = t; s = min(x1 - x0, y1 - y0); best = None
+    for P in vl[2] + joined(vl[3] if len(vl) > 3 else [], (x0 - 8 * s, y0 - 3 * s, x1 + 8 * s, y1 + 3 * s)):
+        xs, ys = [p[0] for p in P], [p[1] for p in P]; b = (min(xs), min(ys), max(xs), max(ys)); w, h = b[2] - b[0], b[3] - b[1]
+        if not (b[0] <= x0 + 2 and b[1] <= y0 + 2 and b[2] >= x1 - 2 and b[3] >= y1 - 2): continue
+        if h > s * 4.5 or w > (x1 - x0) + 8 * s or (best and w * h <= best[3]): continue   # the outermost (one may be drawn over another)
+        e = max(2, h * .1); ym = (b[1] + b[3]) / 2; ends = []
+        for X in (b[0], b[2]):
+            at = [p for p in P if abs(p[0] - X) <= e]
+            flat = any(abs(p[1] - b[1]) <= e for p in at) and any(abs(p[1] - b[3]) <= e for p in at)
+            mid = [abs(p[0] - X) for p in P if abs(p[1] - ym) <= h * .2 and e < abs(p[0] - X) < w * .45]
+            tip = not flat and at and all(abs(p[1] - ym) <= h * .2 for p in at)
+            # where the top and bottom edges end: the point's depth
+            cn = [abs(p[0] - X) for p in P if (abs(p[1] - b[1]) <= e or abs(p[1] - b[3]) <= e) and abs(p[0] - X) < w / 2]
+            if tip and cn: ends.append(("P", min(cn)))
+            elif flat and mid: ends.append(("N", min(mid)))
+            elif flat: ends.append(("", 0))
+            else: ends = None; break
+        if not ends: continue
+        sh = {"P": "L", "N": "l"}.get(ends[0][0], "") + {"P": "R", "N": "r"}.get(ends[1][0], "") or "B"
+        dep = max(d for k, d in ends) / w
+        if dep > .45 or sh in ("l", "r", "lr"): continue   # a notch alone (no point): not a ribbon seen before, unsure
+        if g is not None and not drawn(g, P[:-1] if P[0] == P[-1] else P, .45): continue   # (may be dashed)
+        best = (b, sh, round(dep, 3), w * h)
+    return best and best[:3]
+
+def ribbon_raster(g, t):
+    """a scanned sheet's ribbon: the outline (one dark blob) closely around t, read as a polygon"""
+    x0, y0, x1, y1 = t; s = min(x1 - x0, y1 - y0); m = 4 * s
+    X0, Y0, X1, Y1 = int(max(0, x0 - m)), int(max(0, y0 - 2 * s)), int(min(g.shape[1], x1 + m)), int(min(g.shape[0], y1 + 2 * s))
+    n, lab, st, _ = cv2.connectedComponentsWithStats((g[Y0:Y1, X0:X1] < INK).astype(np.uint8), connectivity=8); best = None
+    for i in range(1, n):
+        bx0, by0, bw, bh = X0 + st[i, 0], Y0 + st[i, 1], st[i, 2], st[i, 3]
+        if not (bx0 <= x0 and by0 <= y0 and bx0 + bw >= x1 and by0 + bh >= y1) or bh > 4.5 * s: continue
+        if bx0 <= X0 or by0 <= Y0 or bx0 + bw >= X1 or by0 + bh >= Y1: continue   # runs off (a pipe or frame): unsure
+        cs, _ = cv2.findContours((lab == i).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        hull = cv2.convexHull(max(cs, key=cv2.contourArea)); ap = cv2.approxPolyDP(hull, .02 * cv2.arcLength(hull, True), True)
+        if not 4 <= len(ap) <= 6: continue
+        P = [(X0 + p[0][0], Y0 + p[0][1]) for p in ap]; P.append(P[0])
+        r = ribbon(([], [], [P]), t, g)
+        if r and (not best or bw * bh < best[1]): best = (r, bw * bh)
     return best and best[0]
 
 def process(num, refs, own, ix, td, preview=None):
@@ -198,6 +365,54 @@ def process(num, refs, own, ix, td, preview=None):
         if preview: shots.append((pno, g, sx, sy, before, [r for r in refs if r[0] == pno]))
     return stats, shots, rem
 
+TAGS = ("mel", "spi", "q", "cv", "mv", "ins")
+
+def upgrade(num, refs, ix, td, preview=None, boxes=True, ribs=True):
+    """on a fitted sheet, only: a tag fitted to its letters (or not fitted) that sits alone in a drawn box gets that box
+    ("b"), and a continuation ref gets the ribbon drawn round it as a 9th entry [l, t, w, h, shape, point depth / w]"""
+    doc = pymupdf.open(os.path.join(ROOT, ix[num]["file"])); stats = {"b": 0, "ribbon": 0}; shots = []
+    for pno in sorted({r[0] for r in refs}):
+        page = doc[pno - 1]
+        # in colour, each pixel its darkest channel: thin red or blue lines and letters are ink, not light grey
+        pm = page.get_pixmap(matrix=pymupdf.Matrix(Z, Z), colorspace=pymupdf.csRGB, alpha=False)
+        g = np.frombuffer(pm.samples, dtype=np.uint8).reshape(pm.height, pm.stride)[:, :pm.width * 3].reshape(pm.height, pm.width, 3).min(2)
+        sx, sy = pm.width / 1e4, pm.height / 1e4; vl = vlines(page)
+        before = [r[:] for r in refs if r[0] == pno]
+        px = lambda r: (r[1] * sx, r[2] * sy, (r[1] + r[3]) * sx, (r[2] + r[4]) * sy)
+        others = [((b[0] + b[2]) / 2, (b[1] + b[3]) / 2) for b in (px(r) for r in refs if r[0] == pno and r[6] not in ("d", "x"))]
+        for rr in refs:
+            if rr[0] != pno: continue
+            fit = rr[7] if len(rr) > 7 else None
+            if boxes and rr[6] in TAGS and fit in ("t", None):
+                t = px(rr) if fit == "t" else hug(g, px(rr), rr[5].split("|")[0], td)
+                if not t: continue
+                # the sheet's own lines first; a scanned sheet's dark outlines (the box loose round the text allowed)
+                fs = vframe(vl, t)[:3] if vl else [frame(g, t, 1.6, None)]
+                f = next((f for f in fs if f and drawn(g, [(f[0], f[1]), (f[2], f[1]), (f[2], f[3]), (f[0], f[3])]) and alone(g, f, t, others)), None)
+                if not f: continue
+                rr[1], rr[2], rr[3], rr[4] = round(f[0] / sx), round(f[1] / sy), max(1, round((f[2] - f[0]) / sx)), max(1, round((f[3] - f[1]) / sy))
+                while len(rr) < 8: rr.append(None)
+                rr[7] = "b"; stats["b"] += 1
+            elif ribs and rr[6] == "d":
+                r = None
+                if max(rr[3], rr[4]) > 1500 or min(rr[3], rr[4]) > 150: continue   # no line of text: unsure
+                for t in (px(rr), hug(g, px(rr), whole=True)):
+                    r = t and (ribbon(vl, t, g) if vl else ribbon_raster(g, t))
+                    if r: break
+                if not r: continue
+                (b0, b1, b2, b3), sh, dep = r
+                while len(rr) < 8: rr.append(None)   # (a continuation without a way back keeps none: null)
+                del rr[8:]; rr.append([round(b0 / sx), round(b1 / sy), max(1, round((b2 - b0) / sx)), max(1, round((b3 - b1) / sy)), sh, dep])
+                stats["ribbon"] += 1; stats[sh] = stats.get(sh, 0) + 1
+        if preview: shots.append((pno, g, sx, sy, before, [r for r in refs if r[0] == pno]))
+    return stats, shots
+
+def _up(a):
+    num, refs, boxes, ribs = a; ix = json.load(open(os.path.join(ROOT, "PIDs/index.json")))["pids"]
+    try: st, _ = upgrade(num, refs, ix, tempfile.mkdtemp(), None, boxes, ribs)
+    except Exception as e: return num, None, {"error": str(e)[:80]}
+    return num, refs, st
+
 def draw(g, sx, sy, refs, old=False):
     from PIL import Image, ImageDraw
     im = Image.fromarray(g).convert("RGB"); d = ImageDraw.Draw(im, "RGBA")
@@ -208,6 +423,12 @@ def draw(g, sx, sy, refs, old=False):
         elif how == "t": m = float(os.environ.get("TM", ".15")) * min(x1 - x0, y1 - y0); x0, y0, x1, y1 = x0 - m, y0 - m, x1 + m, y1 + m
         new = len(r) > 8 and r[8] == "new"
         col = (30, 140, 60) if new else (224, 32, 27)
+        if r[6] == "d" and len(r) > 8 and isinstance(r[8], list) and not old:   # the ribbon round a continuation
+            l, t, w, h, sh, dep = r[8]; x0, y0, x1, y1 = l * sx, t * sy, (l + w) * sx, (t + h) * sy; k = dep * (x1 - x0); ym = (y0 + y1) / 2
+            l0, r0 = x0 + k * ("L" in sh), x1 - k * ("R" in sh)
+            pts = [(l0, y0), (r0, y0)] + ([(x1, ym)] if "R" in sh else [(x1 - k, ym)] if "r" in sh else []) + [(r0, y1), (l0, y1)]
+            pts += [(x0, ym)] if "L" in sh else [(x0 + k, ym)] if "l" in sh else []
+            d.polygon(pts, outline=(30, 90, 220, 230), fill=(30, 90, 220, 40), width=4); continue
         (d.ellipse if how == "o" and not old else d.rectangle)([x0, y0, x1, y1], outline=col + (210,), width=4, fill=col + (26,))
     return im
 
@@ -224,6 +445,30 @@ def main():
     ix = json.load(open(os.path.join(ROOT, "PIDs/index.json")))["pids"]
     R = json.load(open(os.path.join(ROOT, "pid-refs.json"))); OWN = own_items(); td = tempfile.mkdtemp()
     if not args: args = json.load(open(os.path.join(ROOT, "tools/refs_checked.json")))   # the checked sheets
+    boxes, ribs = "--boxes" in sys.argv, "--ribbons" in sys.argv
+    if boxes or ribs:   # on the fitted sheets: only the boxes round tags and the ribbons round continuations
+        out = os.path.join(ROOT, "pid-refs.json")
+        if prev:
+            for num in args:
+                st, shots = upgrade(num, R[num], ix, td, prev, boxes, ribs); print(num, st, flush=True)
+                for pno, g, sx, sy, before, after in shots:
+                    draw(g, sx, sy, before).save(os.path.join(prev, f"{num}-p{pno}-before.png"))
+                    draw(g, sx, sy, after).save(os.path.join(prev, f"{num}-p{pno}-after.png"))
+            return
+        from multiprocessing import Pool
+        # each sheet is kept as it finishes (in $CVDIR), so a run that stops can carry on where it left off
+        cd = os.environ.get("CVDIR") or os.path.join(tempfile.gettempdir(), "refs_cv_up"); os.makedirs(cd, exist_ok=True)
+        f = lambda n: os.path.join(cd, n + ".json")
+        todo = [n for n in args if n in ix and n in R and not os.path.exists(f(n))]
+        with Pool(int(os.environ.get("JOBS", "4"))) as pool:
+            for num, refs, st in pool.imap_unordered(_up, [(n, R[n], boxes, ribs) for n in todo]):
+                if refs is not None: json.dump(refs, open(f(num), "w"))
+                print(num, st, flush=True)
+        for n in args:
+            if os.path.exists(f(n)):
+                refs = json.load(open(f(n)))
+                if len(refs) == len(R[n]): R[n] = refs   # every position kept (other drawings' ways back count them)
+        json.dump(R, open(out, "w"), separators=(",", ":")); return
     if not prev and len(args) > 1:   # several sheets: four at a time
         from multiprocessing import Pool
         # each sheet is kept as it finishes (in $CVDIR), so a run that stops can carry on where it left off
