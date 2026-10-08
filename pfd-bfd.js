@@ -52,6 +52,9 @@ window.PFDBlocks = (() => {
       ["conc", 0, 1, A("cs", "b"), [X(1), R.cfl.cy], A("cfl", "l")], ["conc", 0, 1, A("cfl", "r"), A("gid", "l")], ["carbon", "Carbon", 1, A("gid", "r"), [X(5), R.gid.cy], A("elu", "b")]] };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+  // an area's name from the PFD titles, "F12 - PRIMARY CRUSHING (F10 - EXISTING)" gives F12 and F10 their names
+  const NAMES = {}; (typeof FRAMES != "undefined" ? FRAMES : []).forEach(f => String(f.label).split(/[()]/).forEach(p => { const m = p.match(/(F\d+)\s*-\s*(.+)/); if (m && !NAMES[m[1]]) NAMES[m[1]] = m[2].trim(); }));
+  const areaName = c => (NAMES[c] || "").replace(/^CIL\d\s+/i, "").toLowerCase().replace(/(^|[\s/&,])([a-z])/g, (x, a, b) => a + b.toUpperCase()).replace(/\bEw\b/g, "EW").replace(/\bUfg\b/g, "UFG").replace(/\bCil(\d?)\b/g, "CIL$1");
   function mount(host, o){
     const el = document.createElement("div"); el.className = "bf"; el.hidden = true; el.lang = "en"; host.appendChild(el);
     let stage = 2;
@@ -60,8 +63,12 @@ window.PFDBlocks = (() => {
       const S = STAGES[stage], W = el.clientWidth, H = el.clientHeight; if (!W || !H) return;
       // (dark mode: the near black of carbon and of existing plant would vanish on the dark page)
       const dark = document.documentElement.dataset.theme === "dark", col = c => dark && (c === "#111827" || c === "#1f2937") ? "#d1d5db" : c;
-      const L0 = Math.max(92, Math.min(150, W * .12)), cw = (W - L0 - 10) / 8, rh = (H - 36) / 9, bw = Math.min(cw - 12, 132);
-      const X = c => L0 + c * cw + cw / 2, Y = r => 28 + r * rh + rh / 2;
+      // squarish blocks (the name wraps) on a close grid, the whole diagram centred
+      const bw = Math.max(64, Math.min(96, (W - 20) / 8 - 30)), cw = Math.min((W - 20) / 8, bw + 46), rh = Math.min((H - 36) / 9, 98);
+      const L0 = (W - 8 * cw) / 2, T0 = Math.max(28, (H - 9 * rh) / 2);
+      const X = c => L0 + c * cw + cw / 2, Y = r => T0 + r * rh + rh / 2;
+      // on a short screen the blocks get flatter and the area names keep to one line, so the bands never overlap
+      const two = rh >= 90, BH = Math.max(30, Math.min(50, rh - (two ? 44 : 32))); el.style.setProperty("--bh", BH + "px"); el.classList.toggle("bf-1l", !two);
       el.innerHTML = ""; const R = {};
       Object.entries(S.blocks).forEach(([k, [c, r, s, n, code, ids]]) => {
         const b = document.createElement("button"); b.type = "button"; b.className = "bf-b" + (s === "nu" ? " nu" : ""); b.style.cssText = `width:${bw}px;--sc:${col(ST[s][1])}`;
@@ -75,12 +82,9 @@ window.PFDBlocks = (() => {
         const grp = [k], q = [k]; seen.add(k);
         while (q.length){ const a = S.blocks[q.pop()]; Object.entries(S.blocks).forEach(([k2, v2]) => { if (!seen.has(k2) && v2[4] === v[4] && v2[2] !== "nu" && Math.abs(v2[0] - a[0]) + Math.abs(v2[1] - a[1]) === 1){ seen.add(k2); grp.push(k2); q.push(k2); } }); }
         bands.push([v[4], grp.map(x => R[x])]); });
-      bands.forEach(([code, rs]) => { const x1 = Math.min(...rs.map(r => r.x)) - 8, y1 = Math.min(...rs.map(r => r.y)) - 18, x2 = Math.max(...rs.map(r => r.x + r.w)) + 8, y2 = Math.max(...rs.map(r => r.y + r.h)) + 8;
-        el.insertAdjacentHTML("afterbegin", `<div class="bf-band" style="left:${x1}px;top:${y1}px;width:${x2 - x1}px;height:${y2 - y1}px"><i>${code}</i></div>`); });
+      bands.forEach(([code, rs]) => { const x1 = Math.min(...rs.map(r => r.x)) - 8, y1 = Math.min(...rs.map(r => r.y)) - (two ? 30 : 18), x2 = Math.max(...rs.map(r => r.x + r.w)) + 8, y2 = Math.max(...rs.map(r => r.y + r.h)) + 8;
+        el.insertAdjacentHTML("afterbegin", `<div class="bf-band" style="left:${x1}px;top:${y1}px;width:${x2 - x1}px;height:${y2 - y1}px"><i>${code}<em> ${esc(areaName(code))}</em></i></div>`); });
       // the plant taken out of service, faint down the left
-      const dh = Math.min(52, (H - 36) / S.dec.length);
-      el.insertAdjacentHTML("beforeend", `<div class="bf-dh" style="left:8px;top:10px;width:${L0 - 18}px">Decommissioned</div>` +
-        S.dec.map((n, i) => `<div class="bf-dec" style="left:8px;top:${28 + i * dh}px;width:${L0 - 22}px;height:${dh - 6}px"><span>${esc(n)}</span></div>`).join(""));
       // the lines, under the blocks
       const NS = "http://www.w3.org/2000/svg", svg = document.createElementNS(NS, "svg"); svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("class", "bf-ln");
       el.insertBefore(svg, el.querySelector(".bf-b"));
@@ -113,10 +117,10 @@ window.PFDBlocks = (() => {
 .bf-ln{position:absolute;left:0;top:0;pointer-events:none}.bf-ln path{fill:none;stroke-width:2.4;stroke-linejoin:round}
 .bf-b{position:absolute;box-sizing:border-box;background:var(--card,var(--panel));border:1.5px solid color-mix(in srgb,var(--ink) 30%,transparent);border-radius:9px;padding:6px;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-shadow:inset 4px 0 0 var(--sc);font:inherit;color:var(--ink)}
 .bf-b:hover,.bf-b:focus-visible{border-color:var(--th,var(--accent));box-shadow:inset 4px 0 0 var(--sc),0 0 0 3px var(--th-t,#eef1f5);outline:none}
-.bf-b span{font-size:10.5px;font-weight:700;line-height:1.2;hyphens:auto}
+.bf-b{min-height:var(--bh,50px)}.bf-1l .bf-band i{-webkit-line-clamp:1;max-height:12px}.bf-b span{font-size:10.5px;font-weight:700;line-height:1.2;hyphens:auto}
 .bf-b.nu{border-style:dashed;background:transparent}.bf-b.nu span{color:var(--mute)}
 .bf-band{position:absolute;border-radius:12px;background:color-mix(in srgb,var(--ink) 4%,transparent)}
-.bf-band i{position:absolute;left:7px;top:2px;font-style:normal;font-size:10px;font-weight:900;color:var(--mute)}
+.bf-band i{position:absolute;left:7px;right:7px;top:2px;font-style:normal;font-size:10px;font-weight:900;color:var(--mute);line-height:12px;max-height:24px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.bf-band em{font-style:normal;font-weight:700}
 .bf-dh{position:absolute;font-size:9px;font-weight:800;letter-spacing:-.01em;color:color-mix(in srgb,var(--mute) 70%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bf-dec{position:absolute;box-sizing:border-box;border:1.5px dotted color-mix(in srgb,var(--ink) 18%,transparent);border-radius:7px;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;overflow:hidden}
 .bf-dec span{font-size:9px;line-height:1.1;color:color-mix(in srgb,var(--mute) 75%,transparent)}

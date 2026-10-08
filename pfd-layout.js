@@ -361,7 +361,7 @@ window.PFDLayout = (() => {
     if (!map) return;
     const mv = $("mapView").classList;
     areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span"), ld = e.querySelector(".la-ld");
-      sp.style.removeProperty("--dx"); sp.style.removeProperty("--dy"); sp.classList.remove("col"); ld.style.display = ""; });
+      sp.style.removeProperty("--dx"); sp.style.removeProperty("--dy"); sp.classList.remove("col"); ld.style.display = ""; const sv = e.querySelector(".la-sv"); if (sv) sv.style.display = ""; });
     if (mv.contains("stack")) return stackAreas();
     if (!mv.contains("areas")) return;
     return colAreas();
@@ -374,19 +374,28 @@ window.PFDLayout = (() => {
   // Zoomed right out: every area's code and name in two tight columns in the top corners (as many in each, left aligned),
   // each joined by a leader to its area; an area in several zones labels once, on its biggest
   function colAreas(){
-    const box = $("mapView").getBoundingClientRect(), W = box.width, ph = document.documentElement.classList.contains("phone");
+    const box = $("mapView").getBoundingClientRect(), W = box.width, H = box.height, ph = document.documentElement.classList.contains("phone");
+    const GAP = 24;
     const big = {}; areas.forEach(a => { if (!big[a.code] || a.n > big[a.code].n) big[a.code] = a; });
     const its = []; areas.forEach(a => { const e = a.lab.getElement(); if (!e) return; const sp = e.querySelector("span");
       if (big[a.code] !== a){ sp.classList.add("off"); return; }
       sp.classList.remove("off"); sp.classList.add("col"); its.push({ a, e, sp, p: map.latLngToContainerPoint(a.lab.getLatLng()) }); });
+    // the plant's extent on screen (every zone), so the columns sit just outside it
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; areas.forEach(a => { const b = a.poly.getBounds(), p = map.latLngToContainerPoint(b.getNorthWest()), q = map.latLngToContainerPoint(b.getSouthEast());
+      x0 = Math.min(x0, p.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, q.y); });
     const byX = its.slice().sort((x, y) => x.p.x - y.p.x), h = Math.ceil(byX.length / 2), cols = [byX.slice(0, h), byX.slice(h)].map(c => c.sort((x, y) => x.p.y - y.p.y));
     const tl = $("loTL"), nb = document.querySelector("#mapView .lo-north"), bt = el => el ? el.getBoundingClientRect().bottom - box.top : 0;
-    cols.forEach((col, k) => { let y = Math.max(50, bt(tl && tl.querySelector(".lo-pans")), k ? bt(nb) : 0) + 6;
-      const w = Math.max(0, ...col.map(r => r.sp.offsetWidth)), x = k ? W - (ph ? 6 : 60) - w : (ph ? 6 : 10);
+    cols.forEach((col, k) => {
+      const w = Math.max(0, ...col.map(r => r.sp.offsetWidth)), ch = col.reduce((t, r) => t + r.sp.offsetHeight, 0);
+      const top = Math.max(50, bt(tl && tl.querySelector(".lo-pans")), k ? bt(nb) : 0) + 6;
+      const x = k ? Math.min(W - (ph ? 6 : 60) - w, x1 + GAP) : Math.max(ph ? 6 : 10, x0 - GAP - w);
+      let y = Math.max(top, Math.min(H - 8 - ch, (y0 + y1) / 2 - ch / 2));
       col.forEach(r => { const hh = r.sp.offsetHeight, dx = x - r.p.x, dy = y + hh / 2 - r.p.y; y += hh;
         r.sp.style.setProperty("--dx", dx + "px"); r.sp.style.setProperty("--dy", dy + "px");
-        const ex = (k ? x : x + r.sp.offsetWidth) - r.p.x, ld = r.e.querySelector(".la-ld");   // (the leader to the label's inner edge)
-        ld.style.display = "block"; ld.style.width = Math.hypot(ex, dy) + "px"; ld.style.transform = `rotate(${Math.atan2(dy, ex)}rad)`; }); });
+        // the leader: flat out of the label's inner edge, then 45 degrees into the area (straight in if there's no room for the bend)
+        const ex = (k ? x : x + r.sp.offsetWidth) - r.p.x, s = Math.sign(ex) || 1, run = Math.abs(ex) - Math.abs(dy), kx = run > 4 ? ex - s * Math.abs(dy) : ex - s * 4;
+        let sv = r.e.querySelector(".la-sv"); if (!sv){ sv = document.createElementNS("http://www.w3.org/2000/svg", "svg"); sv.setAttribute("class", "la-sv"); sv.innerHTML = "<polyline/><circle r='2.2'/>"; r.e.prepend(sv); }
+        sv.style.setProperty("--h", r.a.hue); sv.style.display = "block"; sv.firstChild.setAttribute("points", `${ex},${dy} ${kx},${dy} 0,0`); }); });
   }
   // Plant view (callout stacks): the zones show as outlines only (stackAreas)
   const ROWH = 30;
