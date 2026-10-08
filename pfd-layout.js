@@ -646,10 +646,10 @@ window.PFDLayout = (() => {
   async function show(v){
     on = v; document.body.classList.toggle("layout", v); $("mapView").hidden = !v;
     const mleg = $("mleg");
-    if (!v){ if (moving) moving.cancel(); if (PH) layers(false); document.body.classList.remove("lo-listing"); if (mleg && mleg.closest("#loFF")) { document.body.appendChild(mleg); dispatchEvent(new Event("resize")); } return true; }
+    if (!v){ if (moving) moving.cancel(); if (PH) layers(false); document.body.classList.remove("lo-listing"); if (mleg && mleg.closest("#loFF,#fxFlow")) { document.body.appendChild(mleg); dispatchEvent(new Event("resize")); } return true; }
     try { await load(); } catch (e) { api.toast("Couldn't load the map (" + e.message + "). Check the connection."); on = false; document.body.classList.remove("layout"); $("mapView").hidden = true; return false; }
     if (!map){ build(); drawStreams(); markers(); Object.values(S).forEach(o => { arrow(o.lay, o.s.ty); arrow(o.mid, o.s.ty); }); if (PH) phoneSetup(); }
-    if (mleg) { $("loFF").querySelector(".lo-fb").appendChild(mleg); dispatchEvent(new Event("resize")); }
+    if (mleg) { (!PH && $("fxFlow") ? $("fxFlow").querySelector(".fx-flb") : $("loFF").querySelector(".lo-fb")).appendChild(mleg); dispatchEvent(new Event("resize")); }
     if (PH && list && !list.hidden) document.body.classList.add("lo-listing");
     setTimeout(declutter, 50);
     map.invalidateSize(); sync(false); return true;

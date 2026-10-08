@@ -142,8 +142,11 @@ body.layout #tLoops,body.layout #tIlk,body.layout #tAnim,body.layout #case{opaci
 .lo-mo .lo-fb{display:flex;flex-direction:column;align-items:stretch;gap:6px;width:230px}.lo-mo.shut .lo-fb{display:none}
 .lo-mo .lo-seg{display:flex}.lo-mo .lo-seg button{flex:1}.lo-home{align-self:flex-start;padding:8px 11px !important}
 .lo-pan .lo-wh{white-space:nowrap}
-.lo-ff #mleg{position:static;display:flex !important;flex-direction:column;gap:5px;padding:0;border:0;background:none}
-.lo-ff .mrow{display:flex;flex-wrap:wrap;gap:5px}.lo-ff .mrow[hidden]{display:none}
+.lo-ff #mleg,#fxFlow #mleg{position:static;display:flex !important;flex-direction:column;gap:5px;padding:0;border:0;background:none}
+.lo-ff .mrow,#fxFlow .mrow{display:flex;flex-wrap:wrap;gap:5px}.lo-ff .mrow[hidden],#fxFlow .mrow[hidden]{display:none}
+#fxFlow #mshH{display:none}#fxFlow{margin-top:4px}body:not(.layout) #fxFlow,:root.phone #fxFlow{display:none}
+/* desktop Layout: the WBS and flow filters live in the side panel, not as menus on the map */
+:root:not(.phone) #loWbs,:root:not(.phone) #loFF{display:none!important}
 .lo-ff #mleg .fp{font-size:var(--fb,15px);padding:3px 9px 3px 6px;gap:5px}.lo-ff #mleg .fp svg{width:12px;height:12px}
 .lo-bar{position:relative;z-index:500;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .lo-seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:2px}
@@ -1096,7 +1099,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
     NARR.forEach(f => { const c = document.createElement("button"); c.type = "button"; c.className = "fp"; c.style.setProperty("--c", f.color); c.innerHTML = `<i></i>${esc(f.name)}`;
       c.onclick = () => { setFlow(focusFlow && focusFlow.id === f.id ? null : f); mSheet(null); }; f.chip = c; st.appendChild(c); });
     // the strip's height sets where the drawing / map stop
-    const fit = () => document.documentElement.style.setProperty("--mlh", (matchMedia("(max-width: 900px)").matches && !bar.closest("#loFF") ? bar.offsetHeight : 0) + "px");   // none while it sits in the Layout's Flow filters
+    const fit = () => document.documentElement.style.setProperty("--mlh", (matchMedia("(max-width: 900px)").matches && !bar.closest("#loFF,#fxFlow") ? bar.offsetHeight : 0) + "px");   // none while it sits in the Layout's Flow filters
     new ResizeObserver(fit).observe(bar); addEventListener("resize", fit); fit();
   }
   // Phone: Fluids, Layers and Story open the filter strip as a sheet (one part of it each); the loop and interlock lists
@@ -1723,7 +1726,8 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
       dv.addEventListener("dblclick", () => { setW(600); try { localStorage.removeItem("kcgm_pfdw"); } catch (e) {} dispatchEvent(new Event("resize")); }); }
     const fxF = $("fxF"), tail = document.createElement("div"); tail.className = "fx-old";
     [...side.children].filter(c => c !== fx).forEach(c => tail.appendChild(c));
-    const groups = document.createElement("div"); fxF.append(groups, tail);
+    const groups = document.createElement("div"), flowBox = document.createElement("div"); flowBox.id = "fxFlow";
+    flowBox.innerHTML = `<div class="fx-h">Flow</div><div class="fx-flb"></div>`; fxF.append(groups, flowBox, tail);   // (Layout, desktop: the flow filters, pfd-layout.js show())
     const codesOf = s => String(s || "").match(/F\d\d/g) || [];
     const WBS = new Set(FRAMES.flatMap(f => codesOf(f.label)));
     const mid = n => [n.x + (n.w || 0) / 2, n.y + (n.h || 0) / 2];
