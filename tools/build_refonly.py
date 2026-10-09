@@ -1,16 +1,19 @@
 """Ref Only: the document numbers the library's drawings, lists and inbox files mention that it doesn't hold
 (refonly.json, shown in Sources > Ref Only on desktop and in its Excel download).
 
-  python3 tools/build_refonly.py "<Project Document Register .xlsm/.xlsx>"
+  python3 tools/build_refonly.py ["<Project Document Register .xlsm/.xlsx>"]
+
+With no file named it uses the newest register in sources/register/ (drop a newer export there to refresh).
 
 Titles, revs, statuses and SharePoint links come from the project document register (the register wins over a title
-printed on a drawing). The register itself is not kept in the repo. 3D models (-MDL-) and anything already in the
+printed on a drawing). 3D models (-MDL-) and anything already in the
 library or waiting in inbox/ are left out. "x" counts the documents that mention a number, "xr" every mention.
 """
 import json, re, glob, os, collections, sys
 import pymupdf, openpyxl
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-wb0 = openpyxl.load_workbook(sys.argv[1], read_only=True, data_only=True)
+REGF = sys.argv[1] if len(sys.argv) > 1 else max(glob.glob(os.path.join(R, 'sources', 'register', '*.xls[xm]')), key=os.path.getmtime)
+wb0 = openpyxl.load_workbook(REGF, read_only=True, data_only=True)
 reg = [["" if c is None else str(c) for c in r] for r in list(wb0.worksheets[0].iter_rows(values_only=True))[1:]]
 norm = lambda n: re.sub(r'[\\/]', '-', n.strip().upper())
 REG = {}
