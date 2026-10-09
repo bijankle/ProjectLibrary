@@ -6,8 +6,10 @@
 // Browse.mount(el, lk) where lk is the search box from Lookup.mount (used to open an item).
 window.Browse = (() => {
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const TYPES = [["mel", "Equipment"], ["ins", "Instruments"], ["cv", "Control valves"], ["mv", "Manual valves"], ["line", "Lines"],
-    ["spi", "Pipe specials"], ["hose", "Hoses"], ["pid", "P&IDs"], ["pfdd", "PFDs"]];
+  const TYPES = [["mel", "Equipment (mech)"], ["elec", "Equipment (elec)"], ["cable", "Cables"], ["ins", "Instruments"], ["cv", "Control valves"], ["mv", "Manual valves"], ["line", "Lines"],
+    ["spi", "Pipe specials"], ["hose", "Hoses"], ["pid", "P&IDs"], ["pfdd", "PFDs"], ["sldd", "SLDs"]];
+  // a cable's kind, from the letter before its number (F16AG421-P1 power, -C1 control…)
+  const CBK = { P: "Power", C: "Control", I: "Instrument", D: "Data / comms", E: "Earth", FO: "Fibre optic", F: "Fibre optic", S: "Signal", B: "DB circuit", R: "DB circuit", W: "DB circuit", N: "Neutral" };
   const TN = Object.fromEntries(TYPES);
   const CV = { XV: "On / off valve", PRV: "Pressure relief valve", SV: "Safety / solenoid valve", FCV: "Flow control valve", HV: "Hand actuated valve",
     PCV: "Pressure control valve", LCV: "Level control valve", TCV: "Temperature control valve", DCV: "Density control valve", XCV: "Control valve", SVO: "Solenoid valve" };
@@ -40,8 +42,10 @@ window.Browse = (() => {
       case "mv": return [area(k), g("Valve type") || "?"];
       case "spi": return [area((/2000-F\d\d/.exec(g("P&IDs")) || [""])[0].slice(5)), g("Type") || "?"];
       case "hose": return [area(g("Location ref")), g("Service") || "?"];
+      case "elec": { const m = /^F(\d{2,3})/.exec(k); return [m ? "F" + m[1] : "", g("Type") || "?"]; }
+      case "cable": { const m = /^F(\d{2,3})/.exec(k), c = /-([A-Z]{1,2})\d{1,2}(?:-[A-Z]{1,2})?$/.exec(k); return [m ? "F" + m[1] : "", c ? (CBK[c[1]] ? c[1] : "?") : "?"]; }
       // drawings: a P&ID's area is in its number; PFD sheets are all F00, so theirs is the area of the equipment on them
-      case "pid": { const m = /^2000-F(\d\d)-(PID|PFD)-/.exec(k); return !m ? null : m[2] === "PID" ? ["F" + m[1], "PID"] : [Lookup.pfdArea(k) || titleArea(k) || "?", "PFD"]; }
+      case "pid": { const m = /^2000-([FT]\d{2,3})-(PID|PFD|SLD)-/.exec(k); return !m ? null : m[2] === "PFD" ? [Lookup.pfdArea(k) || titleArea(k) || "?", "PFD"] : [m[1], m[2]]; }
     }
     return null;
   }
@@ -54,21 +58,22 @@ window.Browse = (() => {
     line: [["k", "Service"], ["a", "Area"], ["sp", "Pipe spec"], ["sz", "Size (DN)"]],
     spi: [["k", "Type"], ["a", "Area"]],
     hose: [["k", "Service"], ["a", "Area"]],
-    pid: [["a", "Area"]], pfdd: [["a", "Area"]] };
+    elec: [["k", "Equipment type"], ["a", "Area"]], cable: [["k", "Cable kind"], ["a", "Area"]],
+    pid: [["a", "Area"]], pfdd: [["a", "Area"]], sldd: [["a", "Area"]] };
   const SIZE = { cv: "Valve size (mm)", mv: "Size (DN)", line: "Size (DN)" };
   function build(){
     rows = [];
     for (const it of Lookup.items()){
       if (!TN[it.t]) continue;
       const f = facet(it); if (!f) continue;
-      rows.push({ it, t: it.t === "pid" && f[1] === "PFD" ? "pfdd" : it.t, a: f[0] || "?", k: f[1] || "?", sp: it.t === "line" ? Lookup.get(it, "Pipe spec") || "?" : "", sz: SIZE[it.t] ? String(Lookup.get(it, SIZE[it.t]) || "?") : "" });
+      rows.push({ it, t: it.t === "pid" && f[1] === "PFD" ? "pfdd" : it.t === "pid" && f[1] === "SLD" ? "sldd" : it.t, a: f[0] || "?", k: f[1] || "?", sp: it.t === "line" ? Lookup.get(it, "Pipe spec") || "?" : "", sz: SIZE[it.t] ? String(Lookup.get(it, SIZE[it.t]) || "?") : "" });
     }
     const col = new Intl.Collator(undefined, { numeric: true });   // one collator: localeCompare with options rebuilds it on every call (about 1.5 s here)
     rows.sort((x, y) => col.compare(x.it.key, y.it.key));
     names = {
       a: v => B.areas[v] || "", sp: v => (B.spec || {})[v] || "", sz: () => "",
       k: { mel: v => B.equip[v] || "", ins: insName, cv: v => CV[v] || "", mv: () => "", line: v => B.svc[v] || "", hose: v => B.svc[v] || "",
-        pid: () => "", pfdd: () => "", spi: v => SPI[v] || "" } };
+        pid: () => "", pfdd: () => "", sldd: () => "", elec: () => "", cable: v => CBK[v] || "", spi: v => SPI[v] || "" } };
   }
   const nameOf = (f, t, v) => v === "?" ? (f === "a" ? "No area in the tag" : "Not given") : f === "k" ? names.k[t](v) : names[f](v);
   const t = () => path.length ? path[0].v : "";

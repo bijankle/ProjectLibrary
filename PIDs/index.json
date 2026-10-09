@@ -2348,6 +2348,1026 @@
    "size": 173455,
    "doc": true,
    "layout": true
+  },
+  "2000-F13-SLD-EL-10301": {
+   "file": "SLDs/2000-F13-SLD-EL-10301.pdf",
+   "title": "Milling & classification - SAG mill F13-SW-002 415V MCC single line diagram sheet 1",
+   "rev": "1",
+   "date": "2025-09-15",
+   "status": "",
+   "pages": 1,
+   "size": 671364,
+   "from": [
+    "2000-F13-SLD-EL-10301_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10302": {
+   "file": "SLDs/2000-F13-SLD-EL-10302.pdf",
+   "title": "Milling & classification - SAG mill F13-SW-002 415V MCC single line diagram sheet 2",
+   "rev": "1",
+   "date": "2025-09-15",
+   "status": "",
+   "pages": 1,
+   "size": 555970,
+   "from": [
+    "2000-F13-SLD-EL-10302_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10303": {
+   "file": "SLDs/2000-F13-SLD-EL-10303.pdf",
+   "title": "Milling & classification - SAG mill F13-SW-002 415V MCC single line diagram sheet 3",
+   "rev": "1",
+   "date": "2025-09-15",
+   "status": "",
+   "pages": 1,
+   "size": 555252,
+   "from": [
+    "2000-F13-SLD-EL-10303_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10304": {
+   "file": "SLDs/2000-F13-SLD-EL-10304.pdf",
+   "title": "Milling & classification - SAG mill F13-SW-002 415V MCC single line diagram sheet 4",
+   "rev": "1",
+   "date": "2025-09-15",
+   "status": "",
+   "pages": 1,
+   "size": 521174,
+   "from": [
+    "2000-F13-SLD-EL-10304_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10305": {
+   "file": "SLDs/2000-F13-SLD-EL-10305.pdf",
+   "title": "Milling & classification - SAG mill - F13-SW-002 415V MCC - single line diagram sheet 5",
+   "rev": "1",
+   "date": "2025-09-15",
+   "status": "",
+   "pages": 1,
+   "size": 508817,
+   "from": [
+    "2000-F13-SLD-EL-10305_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10311": {
+   "file": "SLDs/2000-F13-SLD-EL-10311.pdf",
+   "title": "Milling & classification - SAG mill - F13-SW-102 415V essential switchboard - single line diagram",
+   "rev": "1",
+   "date": "2025-09-15",
+   "status": "",
+   "pages": 1,
+   "size": 583649,
+   "from": [
+    "2000-F13-SLD-EL-10311_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10401": {
+   "file": "SLDs/2000-F13-SLD-EL-10401.pdf",
+   "title": "Milling & classification - recycle crushing F13-SW-014 415V MCC single line diagram sheet 1",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 570070,
+   "from": [
+    "2000-F13-SLD-EL-10401_2.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10402": {
+   "file": "SLDs/2000-F13-SLD-EL-10402.pdf",
+   "title": "Milling & classification - recycle crushing F13-SW-014 415V MCC single line diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 455010,
+   "from": [
+    "2000-F13-SLD-EL-10402_2.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10403": {
+   "file": "SLDs/2000-F13-SLD-EL-10403.pdf",
+   "title": "Milling & classification - recycle crushing F13-SW-014 415V MCC single line diagram sheet 3",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 453391,
+   "from": [
+    "2000-F13-SLD-EL-10403_2.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10404": {
+   "file": "SLDs/2000-F13-SLD-EL-10404.pdf",
+   "title": "Milling & classification - recycle crushing F13-SW-014 415V MCC single line diagram sheet 4",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 429972,
+   "from": [
+    "2000-F13-SLD-EL-10404_2.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10411": {
+   "file": "SLDs/2000-F13-SLD-EL-10411.pdf",
+   "title": "Milling & classification - recycle crushing - F13-SW-114 415V essential switchboard - single line diagram",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 466298,
+   "from": [
+    "2000-F13-SLD-EL-10411_2.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10701": {
+   "file": "SLDs/2000-F13-SLD-EL-10701.pdf",
+   "title": "Milling & classification F13-SW-020 415V MCC single line diagram sheet 1",
+   "rev": "1",
+   "date": "2025-06-24",
+   "status": "",
+   "pages": 1,
+   "size": 535987,
+   "from": [
+    "2000-F13-SLD-EL-10701_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10702": {
+   "file": "SLDs/2000-F13-SLD-EL-10702.pdf",
+   "title": "Milling & classification F13-SW-020 415V MCC single line diagram sheet 2",
+   "rev": "1",
+   "date": "2025-06-24",
+   "status": "",
+   "pages": 1,
+   "size": 427773,
+   "from": [
+    "2000-F13-SLD-EL-10702_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10703": {
+   "file": "SLDs/2000-F13-SLD-EL-10703.pdf",
+   "title": "Milling & classification F13-SW-020 415V MCC single line diagram sheet 3",
+   "rev": "1",
+   "date": "2025-06-24",
+   "status": "",
+   "pages": 1,
+   "size": 423785,
+   "from": [
+    "2000-F13-SLD-EL-10703_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10704": {
+   "file": "SLDs/2000-F13-SLD-EL-10704.pdf",
+   "title": "Milling & classification F13-SW-020 415V MCC single line diagram sheet 4",
+   "rev": "1",
+   "date": "2025-06-24",
+   "status": "",
+   "pages": 1,
+   "size": 432110,
+   "from": [
+    "2000-F13-SLD-EL-10704_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10711": {
+   "file": "SLDs/2000-F13-SLD-EL-10711.pdf",
+   "title": "Milling & classification - F13-SW-120 415V essential switchboard - single line diagram",
+   "rev": "1",
+   "date": "2025-06-24",
+   "status": "",
+   "pages": 1,
+   "size": 446217,
+   "from": [
+    "2000-F13-SLD-EL-10711_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10901": {
+   "file": "SLDs/2000-F13-SLD-EL-10901.pdf",
+   "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 1",
+   "rev": "1",
+   "date": "2025-10-09",
+   "status": "",
+   "pages": 1,
+   "size": 672636,
+   "from": [
+    "2000-F13-SLD-EL-10901_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10902": {
+   "file": "SLDs/2000-F13-SLD-EL-10902.pdf",
+   "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 2",
+   "rev": "1",
+   "date": "2025-10-09",
+   "status": "",
+   "pages": 1,
+   "size": 549214,
+   "from": [
+    "2000-F13-SLD-EL-10902_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10903": {
+   "file": "SLDs/2000-F13-SLD-EL-10903.pdf",
+   "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 3",
+   "rev": "1",
+   "date": "2025-10-09",
+   "status": "",
+   "pages": 1,
+   "size": 559221,
+   "from": [
+    "2000-F13-SLD-EL-10903_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10904": {
+   "file": "SLDs/2000-F13-SLD-EL-10904.pdf",
+   "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 4",
+   "rev": "1",
+   "date": "2025-10-09",
+   "status": "",
+   "pages": 1,
+   "size": 553660,
+   "from": [
+    "2000-F13-SLD-EL-10904_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10905": {
+   "file": "SLDs/2000-F13-SLD-EL-10905.pdf",
+   "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 5",
+   "rev": "1",
+   "date": "2025-10-09",
+   "status": "",
+   "pages": 1,
+   "size": 553592,
+   "from": [
+    "2000-F13-SLD-EL-10905_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10906": {
+   "file": "SLDs/2000-F13-SLD-EL-10906.pdf",
+   "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 6",
+   "rev": "1",
+   "date": "2025-10-09",
+   "status": "",
+   "pages": 1,
+   "size": 541463,
+   "from": [
+    "2000-F13-SLD-EL-10906_1_APP.pdf"
+   ]
+  },
+  "2000-F13-SLD-EL-10911": {
+   "file": "SLDs/2000-F13-SLD-EL-10911.pdf",
+   "title": "Milling & classification - ball mill - F13-SW-103 415V essential switchboard - single line diagram",
+   "rev": "1",
+   "date": "2025-10-09",
+   "status": "",
+   "pages": 1,
+   "size": 599359,
+   "from": [
+    "2000-F13-SLD-EL-10911_1_APP.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10001": {
+   "file": "SLDs/2000-F16-SLD-EL-10001.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-011 11kV switchboard - single line diagram sheet 1",
+   "rev": "1",
+   "date": "2025-09-23",
+   "status": "",
+   "pages": 1,
+   "size": 621633,
+   "from": [
+    "2000-F16-SLD-EL-10001_1_APP.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10002": {
+   "file": "SLDs/2000-F16-SLD-EL-10002.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-011 11kV switchboard - single line diagram sheet 2",
+   "rev": "2",
+   "date": "2025-10-15",
+   "status": "",
+   "pages": 1,
+   "size": 677390,
+   "from": [
+    "2000-F16-SLD-EL-10002_2_APP.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10201": {
+   "file": "SLDs/2000-F16-SLD-EL-10201.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-004 415V MCC single line diagram sheet 1",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 558889,
+   "from": [
+    "2000-F16-SLD-EL-10201_2.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10202": {
+   "file": "SLDs/2000-F16-SLD-EL-10202.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-004 415V MCC single line diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 429916,
+   "from": [
+    "2000-F16-SLD-EL-10202_2.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10203": {
+   "file": "SLDs/2000-F16-SLD-EL-10203.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-004 415V MCC single line diagram sheet 3",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 450445,
+   "from": [
+    "2000-F16-SLD-EL-10203_2.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10204": {
+   "file": "SLDs/2000-F16-SLD-EL-10204.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-004 415V MCC single line diagram sheet 4",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 452184,
+   "from": [
+    "2000-F16-SLD-EL-10204_2.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10205": {
+   "file": "SLDs/2000-F16-SLD-EL-10205.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-004 415V MCC single line diagram sheet 5",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 390787,
+   "from": [
+    "2000-F16-SLD-EL-10205_2.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10211": {
+   "file": "SLDs/2000-F16-SLD-EL-10211.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-005 415V MCC single line diagram sheet 1",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 562654,
+   "from": [
+    "2000-F16-SLD-EL-10211_2.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10212": {
+   "file": "SLDs/2000-F16-SLD-EL-10212.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-005 415V MCC single line diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 440871,
+   "from": [
+    "2000-F16-SLD-EL-10212_2.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10221": {
+   "file": "SLDs/2000-F16-SLD-EL-10221.pdf",
+   "title": "Rougher and scavenger flotation F16-SW-008 415V emergency MCC single line diagram sheet 1",
+   "rev": "3",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 579852,
+   "from": [
+    "2000-F16-SLD-EL-10221_3.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10222": {
+   "file": "SLDs/2000-F16-SLD-EL-10222.pdf",
+   "title": "Rougher and scavenger flotation - F16-SW-008 415V emergency MCC - single line diagram sheet 2",
+   "rev": "3",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 402410,
+   "from": [
+    "2000-F16-SLD-EL-10222_3.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10251": {
+   "file": "SLDs/2000-F16-SLD-EL-10251.pdf",
+   "title": "Rougher & scavenger flotation - F16-SW-104 415V essential switchboard - single line diagram",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 472379,
+   "from": [
+    "2000-F16-SLD-EL-10251_2.pdf"
+   ]
+  },
+  "2000-F175-SLD-EL-40001": {
+   "file": "SLDs/2000-F175-SLD-EL-40001.pdf",
+   "title": "Southlakes booster station F175-SW-701 LV motor control centre single line diagram",
+   "rev": "0",
+   "date": "2025-11-10",
+   "status": "",
+   "pages": 1,
+   "size": 432364,
+   "from": [
+    "2000-F175-SLD-EL-40001_0_APP.pdf"
+   ]
+  },
+  "2000-F19-SLD-EL-10103": {
+   "file": "SLDs/2000-F19-SLD-EL-10103.pdf",
+   "title": "Mt Charlotte CCT milling & classification substation no. 60 415V MCC 19-SW-61 single line diagram sheet 3",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 1658239,
+   "from": [
+    "2000-F19-SLD-EL-10103_0.pdf"
+   ]
+  },
+  "2000-F20-SLD-EL-10102": {
+   "file": "SLDs/2000-F20-SLD-EL-10102.pdf",
+   "title": "Fimiston plant - Fimiston recycle crushing substation no. 35 415V MCC 20-SW-62 single line diagram sheet 1",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 420985,
+   "from": [
+    "2000-F20-SLD-EL-10102_0_APP.pdf"
+   ]
+  },
+  "2000-F21-SLD-EL-10201": {
+   "file": "SLDs/2000-F21-SLD-EL-10201.pdf",
+   "title": "Flotation tailings CIL4 F21-SW-006 415V MCC single line diagram sheet 1",
+   "rev": "1",
+   "date": "2025-11-19",
+   "status": "",
+   "pages": 1,
+   "size": 554798,
+   "from": [
+    "2000-F21-SLD-EL-10201_1_APP.pdf"
+   ]
+  },
+  "2000-F21-SLD-EL-10202": {
+   "file": "SLDs/2000-F21-SLD-EL-10202.pdf",
+   "title": "Flotation tailings CIL4 F21-SW-006 415V MCC single line diagram sheet 2",
+   "rev": "1",
+   "date": "2025-11-19",
+   "status": "",
+   "pages": 1,
+   "size": 419769,
+   "from": [
+    "2000-F21-SLD-EL-10202_1_APP.pdf"
+   ]
+  },
+  "2000-F21-SLD-EL-10203": {
+   "file": "SLDs/2000-F21-SLD-EL-10203.pdf",
+   "title": "Flotation tailings CIL4 F21-SW-006 415V MCC single line diagram sheet 3",
+   "rev": "1",
+   "date": "2025-11-19",
+   "status": "",
+   "pages": 1,
+   "size": 384962,
+   "from": [
+    "2000-F21-SLD-EL-10203_1_APP.pdf"
+   ]
+  },
+  "2000-F21-SLD-EL-10204": {
+   "file": "SLDs/2000-F21-SLD-EL-10204.pdf",
+   "title": "Flotation tailings CIL4 F21-SW-006 415V MCC single line diagram sheet 4",
+   "rev": "1",
+   "date": "2025-11-19",
+   "status": "",
+   "pages": 1,
+   "size": 391766,
+   "from": [
+    "2000-F21-SLD-EL-10204_1_APP.pdf"
+   ]
+  },
+  "2000-F21-SLD-EL-10251": {
+   "file": "SLDs/2000-F21-SLD-EL-10251.pdf",
+   "title": "Flotation tailings CIL4 F21-SW-007 415V MCC single line diagram sheet 1",
+   "rev": "1",
+   "date": "2025-11-19",
+   "status": "",
+   "pages": 1,
+   "size": 548926,
+   "from": [
+    "2000-F21-SLD-EL-10251_1_APP.pdf"
+   ]
+  },
+  "2000-F21-SLD-EL-10252": {
+   "file": "SLDs/2000-F21-SLD-EL-10252.pdf",
+   "title": "Flotation tailings CIL4 F21-SW-007 415V MCC single line diagram sheet 2",
+   "rev": "1",
+   "date": "2025-11-19",
+   "status": "",
+   "pages": 1,
+   "size": 409809,
+   "from": [
+    "2000-F21-SLD-EL-10252_1_APP.pdf"
+   ]
+  },
+  "2000-F21-SLD-EL-10253": {
+   "file": "SLDs/2000-F21-SLD-EL-10253.pdf",
+   "title": "Flotation tailings CIL4 F21-SW-007 415V MCC single line diagram sheet 3",
+   "rev": "1",
+   "date": "2025-11-19",
+   "status": "",
+   "pages": 1,
+   "size": 363156,
+   "from": [
+    "2000-F21-SLD-EL-10253_1_APP.pdf"
+   ]
+  },
+  "2000-F22-SLD-EL-10201": {
+   "file": "SLDs/2000-F22-SLD-EL-10201.pdf",
+   "title": "CIL4 carbon treatment & elution F22-SW-030 415V MCC single line diagram sheet 1",
+   "rev": "1",
+   "date": "2026-01-06",
+   "status": "",
+   "pages": 1,
+   "size": 680030,
+   "from": [
+    "2000-F22-SLD-EL-10201_1_APP.pdf"
+   ]
+  },
+  "2000-F22-SLD-EL-10202": {
+   "file": "SLDs/2000-F22-SLD-EL-10202.pdf",
+   "title": "CIL4 carbon treatment & elution F22-SW-030 415V MCC single line diagram sheet 2",
+   "rev": "1",
+   "date": "2026-01-06",
+   "status": "",
+   "pages": 1,
+   "size": 515436,
+   "from": [
+    "2000-F22-SLD-EL-10202_1_APP.pdf"
+   ]
+  },
+  "2000-F22-SLD-EL-10251": {
+   "file": "SLDs/2000-F22-SLD-EL-10251.pdf",
+   "title": "CIL4 carbon treatment & elution F22-SW-031 415V MCC single line diagram sheet 1",
+   "rev": "1",
+   "date": "2026-01-06",
+   "status": "",
+   "pages": 1,
+   "size": 678980,
+   "from": [
+    "2000-F22-SLD-EL-10251_1_APP.pdf"
+   ]
+  },
+  "2000-F22-SLD-EL-10252": {
+   "file": "SLDs/2000-F22-SLD-EL-10252.pdf",
+   "title": "CIL4 carbon treatment & elution F22-SW-031 415V MCC single line diagram sheet 2",
+   "rev": "1",
+   "date": "2026-01-06",
+   "status": "",
+   "pages": 1,
+   "size": 507478,
+   "from": [
+    "2000-F22-SLD-EL-10252_1_APP.pdf"
+   ]
+  },
+  "2000-F22-SLD-EL-10261": {
+   "file": "SLDs/2000-F22-SLD-EL-10261.pdf",
+   "title": "CIL4 carbon treatment & elution F22-SW-131 415V emergency MCC single line diagram",
+   "rev": "1",
+   "date": "2026-01-06",
+   "status": "",
+   "pages": 1,
+   "size": 595229,
+   "from": [
+    "2000-F22-SLD-EL-10261_1_APP.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-10001": {
+   "file": "SLDs/2000-F23-SLD-EL-10001.pdf",
+   "title": "Final tailings handling & storage F23-SW-016 11kV switchboard - single line diagram sheet 1",
+   "rev": "1",
+   "date": "2025-10-15",
+   "status": "",
+   "pages": 1,
+   "size": 665141,
+   "from": [
+    "2000-F23-SLD-EL-10001_1_APP.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-10002": {
+   "file": "SLDs/2000-F23-SLD-EL-10002.pdf",
+   "title": "Final tailings handling & storage F23-SW-016 11kV switchboard - single line diagram sheet 2",
+   "rev": "1",
+   "date": "2025-10-15",
+   "status": "",
+   "pages": 1,
+   "size": 592482,
+   "from": [
+    "2000-F23-SLD-EL-10002_1_APP.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-10201": {
+   "file": "SLDs/2000-F23-SLD-EL-10201.pdf",
+   "title": "Final tailings handling & storage F23-SW-023 415V MCC single line diagram sheet 1",
+   "rev": "1",
+   "date": "2025-10-15",
+   "status": "",
+   "pages": 1,
+   "size": 654546,
+   "from": [
+    "2000-F23-SLD-EL-10201_1_APP.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-10202": {
+   "file": "SLDs/2000-F23-SLD-EL-10202.pdf",
+   "title": "Final tailings handling & storage F23-SW-023 415V MCC single line diagram sheet 2",
+   "rev": "1A",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 514765,
+   "from": [
+    "2000-F23-SLD-EL-10202_1A.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-10211": {
+   "file": "SLDs/2000-F23-SLD-EL-10211.pdf",
+   "title": "Final tailings handling & storage - F23-SW-123 415V emergency MCC - single line diagram sheet 1",
+   "rev": "1",
+   "date": "2025-10-15",
+   "status": "",
+   "pages": 1,
+   "size": 610623,
+   "from": [
+    "2000-F23-SLD-EL-10211_1_APP.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-10212": {
+   "file": "SLDs/2000-F23-SLD-EL-10212.pdf",
+   "title": "Final tailings handling & storage - F23-SW-123 415V emergency MCC - single line diagram sheet 2",
+   "rev": "1",
+   "date": "2025-10-15",
+   "status": "",
+   "pages": 1,
+   "size": 500535,
+   "from": [
+    "2000-F23-SLD-EL-10212_1_APP.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-40001": {
+   "file": "SLDs/2000-F23-SLD-EL-40001.pdf",
+   "title": "Fim III booster station F23-SW-601 HV switchboard single line diagram",
+   "rev": "3",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 425374,
+   "from": [
+    "2000-F23-SLD-EL-40001_3.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-40011": {
+   "file": "SLDs/2000-F23-SLD-EL-40011.pdf",
+   "title": "Fim III booster station F23-SW-602 LV motor control centre single line diagram sheet 1 of 2",
+   "rev": "3",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 443959,
+   "from": [
+    "2000-F23-SLD-EL-40011_3.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-40012": {
+   "file": "SLDs/2000-F23-SLD-EL-40012.pdf",
+   "title": "Fim III booster station F23-SW-602 LV motor control centre single line diagram sheet 2 of 2",
+   "rev": "4",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 356061,
+   "from": [
+    "2000-F23-SLD-EL-40012_4.pdf"
+   ]
+  },
+  "2000-F24-SLD-EL-10501": {
+   "file": "SLDs/2000-F24-SLD-EL-10501.pdf",
+   "title": "Air & water services - saline water F24-SW-024 415V MCC single line diagram",
+   "rev": "2",
+   "date": "2025-09-30",
+   "status": "",
+   "pages": 1,
+   "size": 617547,
+   "from": [
+    "2000-F24-SLD-EL-10501_2_APP.pdf"
+   ]
+  },
+  "2000-F25-SLD-EL-10010": {
+   "file": "SLDs/2000-F25-SLD-EL-10010.pdf",
+   "title": "Concentrate thickener - 25-SW-31 sub no. 6 415V MCC 25-SW-31 single line diagram",
+   "rev": "0",
+   "date": "2025-11-20",
+   "status": "",
+   "pages": 1,
+   "size": 453270,
+   "from": [
+    "2000-F25-SLD-EL-10010_0_APP.pdf"
+   ]
+  },
+  "2000-F25-SLD-EL-10011": {
+   "file": "SLDs/2000-F25-SLD-EL-10011.pdf",
+   "title": "Concentrate thickener - 25-SW-31 sub no. 6 415V MCC 25-SW-31 single line diagram",
+   "rev": "0",
+   "date": "2025-11-20",
+   "status": "",
+   "pages": 1,
+   "size": 450953,
+   "from": [
+    "2000-F25-SLD-EL-10011_0_APP.pdf"
+   ]
+  },
+  "2000-F28-SLD-EL-10001": {
+   "file": "SLDs/2000-F28-SLD-EL-10001.pdf",
+   "title": "Ultra fine grinding 2/3 F28-SW-013 11kV switchboard - single line diagram",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 574807,
+   "from": [
+    "2000-F28-SLD-EL-10001_2.pdf"
+   ]
+  },
+  "2000-F28-SLD-EL-10201": {
+   "file": "SLDs/2000-F28-SLD-EL-10201.pdf",
+   "title": "Ultra fine grinding 2 / 3 F28-SW-009 415V MCC single line diagram sheet 1",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 564546,
+   "from": [
+    "2000-F28-SLD-EL-10201_2.pdf"
+   ]
+  },
+  "2000-F28-SLD-EL-10202": {
+   "file": "SLDs/2000-F28-SLD-EL-10202.pdf",
+   "title": "Ultra fine grinding 2 / 3 F28-SW-009 415V MCC single line diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 440525,
+   "from": [
+    "2000-F28-SLD-EL-10202_2.pdf"
+   ]
+  },
+  "2000-F28-SLD-EL-10203": {
+   "file": "SLDs/2000-F28-SLD-EL-10203.pdf",
+   "title": "Ultra fine grinding 2 / 3 F28-SW-009 415V MCC single line diagram sheet 3",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 451426,
+   "from": [
+    "2000-F28-SLD-EL-10203_2.pdf"
+   ]
+  },
+  "2000-F28-SLD-EL-10204": {
+   "file": "SLDs/2000-F28-SLD-EL-10204.pdf",
+   "title": "Ultra fine grinding 2 / 3 F28-SW-009 415V MCC single line diagram sheet 4",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 421347,
+   "from": [
+    "2000-F28-SLD-EL-10204_2.pdf"
+   ]
+  },
+  "2000-F28-SLD-EL-10211": {
+   "file": "SLDs/2000-F28-SLD-EL-10211.pdf",
+   "title": "Ultra fine grinding 2 / 3 - F28-SW-109 415V essential switchboard - single line diagram",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 490713,
+   "from": [
+    "2000-F28-SLD-EL-10211_2.pdf"
+   ]
+  },
+  "2000-F30-SLD-EL-10101": {
+   "file": "SLDs/2000-F30-SLD-EL-10101.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) substation no. 68 MCC 30-SW-62 single line diagram",
+   "rev": "0",
+   "date": "2025-07-21",
+   "status": "",
+   "pages": 1,
+   "size": 422685,
+   "from": [
+    "2000-F30-SLD-EL-10101_0_APP.pdf"
+   ]
+  },
+  "2000-F30-SLD-EL-10102": {
+   "file": "SLDs/2000-F30-SLD-EL-10102.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) substation no. 68 MCC 30-SW-62 single line diagram sheet 3",
+   "rev": "0",
+   "date": "2025-07-21",
+   "status": "",
+   "pages": 1,
+   "size": 430725,
+   "from": [
+    "2000-F30-SLD-EL-10102_0_APP.pdf"
+   ]
+  },
+  "2000-F30-SLD-EL-10103": {
+   "file": "SLDs/2000-F30-SLD-EL-10103.pdf",
+   "title": "FIMISTON PLANT - CARBON IN LEACH (CIL3) - SUBSTATION No.68 MCC 30-SW-63 - SINGLE LINE DIAGRAM",
+   "rev": "0",
+   "date": "2025-11-20",
+   "status": "",
+   "pages": 1,
+   "size": 681143,
+   "from": [
+    "2000-F30-SLD-EL-10103_0_APP.pdf"
+   ]
+  },
+  "2000-F30-SLD-EL-10105": {
+   "file": "SLDs/2000-F30-SLD-EL-10105.pdf",
+   "title": "FIMISTON PLANT - CARBON IN LEACH (CIL3) - SUBSTATION No.68 MCC 30-SW-64 - SINGLE LINE DIAGRAM SHEET 1",
+   "rev": "0",
+   "date": "2025-11-20",
+   "status": "",
+   "pages": 1,
+   "size": 257402,
+   "from": [
+    "2000-F30-SLD-EL-10105_0_APP.pdf"
+   ]
+  },
+  "2000-F30-SLD-EL-10201": {
+   "file": "SLDs/2000-F30-SLD-EL-10201.pdf",
+   "title": "Fimiston plant - leach adsorption & thickening substation no. 38 MCC 30-SW-31 single line diagram",
+   "rev": "0",
+   "date": "2025-11-20",
+   "status": "",
+   "pages": 1,
+   "size": 466087,
+   "from": [
+    "2000-F30-SLD-EL-10201_0_APP.pdf"
+   ]
+  },
+  "2000-F30-SLD-EL-10202": {
+   "file": "SLDs/2000-F30-SLD-EL-10202.pdf",
+   "title": "Fimiston plant - leach adsorption & thickening substation no. 38 MCC 30-SW-31 single line diagram",
+   "rev": "0",
+   "date": "2025-11-20",
+   "status": "",
+   "pages": 1,
+   "size": 320230,
+   "from": [
+    "2000-F30-SLD-EL-10202_0_APP.pdf"
+   ]
+  },
+  "2000-F30-SLD-EL-10301": {
+   "file": "SLDs/2000-F30-SLD-EL-10301.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) substation no. 68 MCC F30-SW-401 single line diagram sheet 1",
+   "rev": "1",
+   "date": "2025-12-05",
+   "status": "",
+   "pages": 1,
+   "size": 601517,
+   "from": [
+    "2000-F30-SLD-EL-10301_1_APP.pdf"
+   ]
+  },
+  "2000-F30-SLD-EL-10302": {
+   "file": "SLDs/2000-F30-SLD-EL-10302.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) substation no. 68 MCC F30-SW-401 single line diagram sheet 2",
+   "rev": "1",
+   "date": "2025-12-05",
+   "status": "",
+   "pages": 1,
+   "size": 494741,
+   "from": [
+    "2000-F30-SLD-EL-10302_1_APP.pdf"
+   ]
+  },
+  "2000-F34-SLD-EL-10102": {
+   "file": "SLDs/2000-F34-SLD-EL-10102.pdf",
+   "title": "Fimiston plant - ultra fine grinding - substation no 10 415V MCC 34-SW-02 - single line diagram",
+   "rev": "2",
+   "date": "2026-08-07",
+   "status": "",
+   "pages": 1,
+   "size": 749780,
+   "from": [
+    "2000-F34-SLD-EL-10102_2_APP.pdf"
+   ]
+  },
+  "2000-F35-SLD-EL-10101": {
+   "file": "SLDs/2000-F35-SLD-EL-10101.pdf",
+   "title": "Fimiston plant - Fimiston recycle crushing substation no. 35 415V MCC 20-SW-62 single line diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 789096,
+   "from": [
+    "2000-F35-SLD-EL-10101_2.pdf"
+   ]
+  },
+  "2000-F66-SLD-EL-10101": {
+   "file": "SLDs/2000-F66-SLD-EL-10101.pdf",
+   "title": "Fimiston plant - milling CCT 2 filtration/goldroom substation no. 35 MCC F66-SW-402 single line diagram",
+   "rev": "1",
+   "date": "2025-11-21",
+   "status": "",
+   "pages": 1,
+   "size": 547550,
+   "from": [
+    "2000-F66-SLD-EL-10101_1_APP.pdf"
+   ]
+  },
+  "2000-F72-SLD-EL-10201": {
+   "file": "SLDs/2000-F72-SLD-EL-10201.pdf",
+   "title": "Reagents mixing & storage - F72-SW-072 415V MCC - single line diagram sheet 1",
+   "rev": "2",
+   "date": "2025-12-10",
+   "status": "",
+   "pages": 1,
+   "size": 683622,
+   "from": [
+    "2000-F72-SLD-EL-10201_2_APP.pdf"
+   ]
+  },
+  "2000-F72-SLD-EL-10202": {
+   "file": "SLDs/2000-F72-SLD-EL-10202.pdf",
+   "title": "Reagents mixing & storage - F72-SW-072 415V MCC - single line diagram sheet 2",
+   "rev": "1",
+   "date": "2025-12-10",
+   "status": "",
+   "pages": 1,
+   "size": 616208,
+   "from": [
+    "2000-F72-SLD-EL-10202_1_APP.pdf"
+   ]
+  },
+  "2000-F72-SLD-EL-10203": {
+   "file": "SLDs/2000-F72-SLD-EL-10203.pdf",
+   "title": "Reagents mixing & storage - F72-SW-072 415V MCC - single line diagram sheet 3",
+   "rev": "1",
+   "date": "2025-12-10",
+   "status": "",
+   "pages": 1,
+   "size": 620208,
+   "from": [
+    "2000-F72-SLD-EL-10203_1_APP.pdf"
+   ]
+  },
+  "2000-F72-SLD-EL-10204": {
+   "file": "SLDs/2000-F72-SLD-EL-10204.pdf",
+   "title": "Reagents mixing & storage - F72-SW-072 415V MCC - single line diagram sheet 4",
+   "rev": "1",
+   "date": "2025-12-10",
+   "status": "",
+   "pages": 1,
+   "size": 588744,
+   "from": [
+    "2000-F72-SLD-EL-10204_1_APP.pdf"
+   ]
+  },
+  "2000-F72-SLD-EL-10211": {
+   "file": "SLDs/2000-F72-SLD-EL-10211.pdf",
+   "title": "Reagents mixing & storage - F72-SW-172 415V emergency MCC - single line diagram",
+   "rev": "1",
+   "date": "2025-12-10",
+   "status": "",
+   "pages": 1,
+   "size": 575217,
+   "from": [
+    "2000-F72-SLD-EL-10211_1_APP.pdf"
+   ]
+  },
+  "2000-T03-SLD-EL-41001": {
+   "file": "SLDs/2000-T03-SLD-EL-41001.pdf",
+   "title": "Sitewide power & communications - high voltage distribution - FIM III TSF - single line diagram",
+   "rev": "1",
+   "date": "2025-08-04",
+   "status": "",
+   "pages": 1,
+   "size": 455966,
+   "from": [
+    "2000-T03-SLD-EL-41001_1_AAN.pdf"
+   ]
   }
  }
 }

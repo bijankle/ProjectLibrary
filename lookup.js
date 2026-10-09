@@ -9,8 +9,8 @@
   L.norm = norm;
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // Things that look like a plant code inside any text
-  const TAG_RE = /\b(2000-[A-Z0-9]{3,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}|\d{2}-\d{4}-[A-Z0-9]{1,6}-[A-Z0-9]{2,6}-\d{2,4}(?:-[A-Z]{1,3})?|F\d{2}-[A-Z]{1,4}-\d{2,4}[A-Z]?|F\d{2}-\d{5}|SP-[A-Z]{2}-\d{3}|[A-Z]{1,5} ?\d{5}[A-Z]?)\b/g;
-  const TYPE_ORDER = ["pfd", "mel", "ins", "cv", "mv", "line", "spec", "spi", "hose", "gloss", "pid"];
+  const TAG_RE = /\b(2000-[A-Z0-9]{3,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}|\d{2}-\d{4}-[A-Z0-9]{1,6}-[A-Z0-9]{2,6}-\d{2,4}(?:-[A-Z]{1,3})?|F\d{2,3}[A-Z]{2,4}\d{2,4}[A-Z]{0,4}(?:-[A-Z]{1,4}\d{0,2})?-[A-Z]{1,3}\d{1,2}(?:-[A-Z]{1,2})?|F\d{2,3}[A-Z]{2,4}\d{3,4}[A-Z]?-[A-Z]{2,4}\d{0,2}|F\d{2,3}-[A-Z]{1,4}-\d{2,4}[A-Z]?|F\d{2}-\d{5}|SP-[A-Z]{2}-\d{3}|[A-Z]{1,5} ?\d{5}[A-Z]?)\b/g;
+  const TYPE_ORDER = ["pfd", "mel", "elec", "cable", "ins", "cv", "mv", "line", "spec", "spi", "hose", "gloss", "pid"];
   const ICON = {};   // no pictures: each list is named in words (the type line, the pills)
 
   L.addExtra = list => { extras = extras.concat(list); if (DB) indexExtras(list); };
@@ -42,7 +42,8 @@
   function build(){
     TSFD = new Set((DB.tsf_dwg || []).map(norm));
     Object.entries(DB.data).forEach(([t, rows]) => { const pj = DB.types[t].f.indexOf("Project");
-      rows.forEach(r => { const it = { t, r, key: r[0], k: norm(r[0]), name: nameOf(t, r), p: r[pj] === "TSF" ? "tsf" : "main" }; items.push(it); addKey(it.k, it); }); });
+      const hid = DB.types[t].hidden;
+      rows.forEach(r => { const it = { t, r, key: r[0], k: norm(r[0]), name: nameOf(t, r), p: r[pj] === "TSF" ? "tsf" : "main" }; if (!hid) items.push(it); addKey(it.k, it); }); });
     // cross references: any field that mentions a known code (or a P&ID) links back to this item
     const pids = new Map();
     items.forEach(it => { if (!it.r) return;
@@ -62,6 +63,8 @@
     if (t === "line") return [g("Service description") || g("Service"), "DN" + g("Size (DN)"), g("From") && "from " + g("From"), g("To") && "to " + g("To")].filter(Boolean).join(" ");
     if (t === "mv") return [g("Size (DN)") && "DN" + g("Size (DN)"), g("Valve type"), "valve", /^\d{2,3}-[A-Z]?\d{3,4}-/.test(g("Line number")) && "on " + g("Line number")].filter(Boolean).join(" ");
     if (t === "spi" || t === "hose") return g("Description");
+    if (t === "elec" || t === "elx") return g("Equipment name") || g("Type") || g("Description");
+    if (t === "cable") return [g("From") && "from " + g("From"), g("To") && "to " + g("To")].filter(Boolean).join(" ");
     return r[1] || "";
   }
   const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "Drawing (P&ID / PFD)" : t === "spec" ? "Pipe & valve spec" : DB.types[t].n;
@@ -87,7 +90,7 @@
   // ---------- rendering ----------
   // a drawing in the app: its number links straight to the drawing; any other known code links to its page
   const linkify = v => esc(v).replace(TAG_RE, m => { const k = norm(m);
-    if (/-(PID|PFD)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>`;
+    if (/-(PID|PFD|SLD)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>`;
     return byKey.has(k) ? `<a class="lk-a" data-k="${k}">${m}</a>` : m; });
   L.resultsHTML = (hits, q) => {
     if (!hits.length) return `<div class="lk-empty">No match for “${esc(q)}”. Try fewer characters, e.g. the number only.</div>`;
@@ -95,7 +98,7 @@
     const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
     return hits.map((it, i) => `<button class="lk-row1 lk-1l${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}">${L.row1(it.key, L.listName(it), L.tsfTag(it))}</button>`).join("");
   };
-  const PILLN = { mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
+  const PILLN = { mel: "Equipment", elec: "Electrical equipment", cable: "Cables", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
   const KEYF = {
     mel: ["Equipment name", "Size / description", "Installed power (kW)", "Status", "Stage", "P&ID"],
     ins: ["Description", "Instrument type", "Equipment number", "Range / units", "Loop number", "P&ID"],
@@ -103,7 +106,9 @@
     line: ["Service description", "Size (DN)", "Pipe spec", "From", "To", "P&ID"],
     mv: ["Valve type", "Spec", "Size (DN)", "Line number", "Model", "P&ID"],
     spi: ["Description", "Size (DN)", "Pipe spec", "Make / model", "P&IDs"],
-    hose: ["Description", "Size (DN)", "Length (m)", "Service", "Stage"] };
+    hose: ["Description", "Size (DN)", "Length (m)", "Service", "Stage"],
+    elec: ["Equipment name", "Type", "Belongs to", "Fed from", "Rating (kW)", "Voltage", "Description"],
+    cable: ["From", "From name", "To", "To name", "Cable", "Length (m)", "Equipment"] };
   // Pill filters over a panel's sections: one pill per heading (with its count), one section shown at a time.
   // secs: [{ id, label, n, html }]; sections without html are left out. The last pill picked in a group is kept
   // for the next item, when it has one. Clicks are handled once for the whole page (below).
@@ -198,14 +203,14 @@
   // open clashes (Checks, checks-state.js) turn the value they are about red until resolved; resolved ones go on record
   const flagRows = (rows, keys) => { if (!window.CK) return; const seen = new Set();
     keys.forEach(k => CK.open(k).forEach(f => { if (seen.has(f.id)) return; seen.add(f.id);
-      const R0 = f.row, nw = R0.date1 && R0.date2 ? (R0.date2 > R0.date1 ? 2 : 1) : 1, keep = String(nw === 2 ? R0.v2 : R0.v1), drop = String(nw === 2 ? R0.v1 : R0.v2);
+      const R0 = f.row, nw = R0.win || (R0.date1 && R0.date2 ? (R0.date2 > R0.date1 ? 2 : 1) : 1), keep = String(nw === 2 ? R0.v2 : R0.v1), drop = String(nw === 2 ? R0.v1 : R0.v2);
       const DW = /2000-[A-Z0-9]+-P[IF]D-[A-Z]+-\d+/, kd = (keep.match(DW) || [])[0], dd = (drop.match(DW) || [])[0];
       const isF = x => x.l === f.field || (f.field === "P&ID" && /^P&IDs?$/.test(x.l));
       // a drawing clash: the row of the drawing taken as true stays, the other's row goes (the check has both)
       if (kd && dd) for (let i = rows.length - 1; i >= 0; i--) if (isF(rows[i]) && String(rows[i].v).includes(dd) && !String(rows[i].v).includes(kd)) rows.splice(i, 1);
       const r = f.field && (rows.find(x => isF(x) && (!kd || String(x.v).includes(kd))) || rows.find(isF));
       const tag = `<div class="lk-clash">**data clash to be resolved <a href="issues.html#c=${f.id}">see Checks</a></div>`;
-      if (r && !r.clash){ r.clash = 1; r.h = `<span class="lk-red">${r.h != null ? r.h : esc(r.v)}</span>${tag}`; }
+      if (r && !r.clash){ r.clash = 1; r.h = `<span class="lk-red">${R0.win ? esc(keep) : r.h != null ? r.h : esc(r.v)}</span>${tag}`; }
       else if (!r) rows.push({ l: f.field || R0.cat, h: `<span class="lk-red">${esc(keep)}</span>${tag}` }); }));
     keys.forEach(k => CK.done(k).forEach(d => { if (seen.has(d.id) || !d.res) return; seen.add(d.id);
       // settled by the drawings: only the drawing(s) that show it stay
@@ -251,10 +256,10 @@
       const top = key.map(n => f.indexOf(n)).filter(i => i > 0 && it.r[i]);
       const rest = f.map((n, i) => i).filter(i => i > 0 && it.r[i] && !top.includes(i));
       // this list first, then the same tag in other lists; each property once (L.dedupe)
-      const rows = [...top, ...rest].map(i => ({ l: f[i], v: it.r[i], h: linkify(it.r[i]) }));
+      const rows = [...top, ...rest].map(i => ({ l: f[i], v: it.r[i], h: linkify(it.r[i]), s: it.t }));
       // the manual valve list puts words like "Commissioning" in its line number column: that is a note, not a line
       rows.forEach(r => { if (/^line number$/i.test(r.l) && !/\d{2,3}-[A-Z]?\d{3,4}-/.test(r.v)) r.l = "Note"; });
-      twins.forEach(x => { const g = DB.types[x.t].f; g.forEach((n, i) => { if (i > 0 && x.r[i]) rows.push({ l: n, v: x.r[i], h: linkify(x.r[i]) }); }); });
+      twins.forEach(x => { const g = DB.types[x.t].f; g.forEach((n, i) => { if (i > 0 && x.r[i]) rows.push({ l: n, v: x.r[i], h: linkify(x.r[i]), s: x.t }); }); });
       const NAMEF = { mel: "Equipment name", ins: "Description", cv: "Location", spi: "Description", hose: "Description" };   // the phone's header card names it
       const kept = L.dedupe(rows.filter(r => !inTag(it, r.l) && !(PHONE() && r.l === NAMEF[it.t])), { heads: [it.key, ...twins.map(x => x.key)] });
       docRows(it, kept);
@@ -264,7 +269,13 @@
         kept.unshift(...dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
           return ns.length ? { l: r.l, v: ns.join(", "), h: ns.map(n => dwgA(n)).join("<br>") } : r; })); }
       flagRows(kept, [it.key, ...twins.map(x => x.key)]);
-      secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` });
+      // MEL equipment with electrical data: two bands, Mechanical (the MEL and the other lists) and Electrical
+      const el = kept.filter(r => r.s === "elx");
+      if (el.length && it.t === "mel"){ const me = kept.filter(r => r.s !== "elx"), ex = twins.find(x => x.t === "elx"), sv = ex ? L.get(ex, "Source") : "";
+        const docs = [...new Set((sv.match(/2000-[A-Z0-9]+-LST-EL-\d+ Rev \w+/g) || []))].join(" · ");
+        const band = (t, d) => `<tr class="lk-bandr"><td colspan="2"><div class="lk-band"><span>${t}</span><small>${esc(d)}</small></div></td></tr>`;
+        secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${band("Mechanical", "MEL " + (DB.types.mel.doc || ""))}${L.rowsHTML(me)}${band("Electrical", docs)}${L.rowsHTML(el.filter(r => r.l !== "Source"))}</table>` }); }
+      else secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` });
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
       if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
     }
@@ -349,6 +360,11 @@
     const pids = [...new Set((it.r || []).join(" ").match(DRE) || [])].filter(n => /-PID-/.test(n) && has(n));
     if (pids.length) return pids;
     const pr = window.Pid && Pid.printedOn ? Pid.printedOn(it.key) : []; if (pr.length) return pr;   // (the P&IDs its label is printed on)
+    // electrical items: the SLDs named in their row, else the SLDs their tag (or a cable's ends) is printed on
+    const SRE = /2000-[A-Z0-9]{3,6}-SLD-EL-\d{4,5}/g, sl = [...new Set((it.r || []).join(" ").match(SRE) || [])].filter(has);
+    if (sl.length) return sl;
+    if (/^(elec|cable|mel)$/.test(it.t) && window.Pid && Pid.printedOn){ const ks = it.t === "cable" ? [L.get(it, "To"), L.get(it, "From")] : [it.key];
+      for (const k of ks){ const p = k ? Pid.printedOn(k, /-SLD-/) : []; if (p.length) return p.slice(0, 3); } }
     if (it.t !== "mel") return [];
     const seen = (DT && DT[it.key]) || [];
     return [...new Set([...(String(L.get(it, "PFD")).match(DRE) || []), ...seen.map(x => x[0])])].filter(n => /-PFD-/.test(n) && has(n)); };
@@ -585,6 +601,7 @@
 .lk-spec .lk-btn{font-size:var(--fb,15px);padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:var(--fb,15px);line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:var(--fb,15px);margin-left:4px}
 .lk-t td:last-child{overflow-wrap:anywhere}
+.lk-bandr td{padding:0!important;border:0!important}.lk-band{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2);margin:10px 0 2px}.lk-band small{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute);text-align:right}.lk-band span{white-space:nowrap}:root.phone .lk-band small{display:none}
 .lk-red,.lk-red a{color:#d11!important}.lk-clash{color:#d11;font-size:12px;font-weight:800;margin-top:2px}.lk-clash a{color:#d11;text-decoration:underline;font-weight:600;margin-left:4px}.lk-rsw{font-size:12px;color:var(--mute)}
 .lk-t td.lk-sub{color:var(--lk-a);font-size:var(--fl,13px);font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}
 .sp-self .sp-head{display:none}

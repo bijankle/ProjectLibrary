@@ -80,7 +80,7 @@ def main():
                 e.update({"file": dest, "rev": rev, "date": date, "pages": n, "size": size})
                 done.append(f"{num} Rev {rev}: " + (f"replaces Rev {cur or '-'}" if rev != cur else "replaces the file of the same revision"))
         else:
-            dest = f"{'PFDs' if '-PFD-' in num else 'PIDs'}/{num}.pdf"; drop_pics(dest); shutil.move(pdf, A(dest))
+            dest = f"{'PFDs' if '-PFD-' in num else 'SLDs' if '-SLD-' in num else 'PIDs'}/{num}.pdf"; drop_pics(dest); shutil.move(pdf, A(dest))
             P[num] = {"file": dest, "title": str(note.get("title") or "").strip() or num, "rev": rev, "date": date, "pages": n, "size": size}
             done.append(f"{num} Rev {rev}: new document")
         os.remove(jp)

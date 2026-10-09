@@ -10,7 +10,7 @@ from PIL import Image
 ROOT = os.path.join(os.path.dirname(__file__), ".."); LONG = 2400
 force = "--force" in sys.argv
 out = {}
-for f in sorted(glob.glob(os.path.join(ROOT, "PIDs", "*.pdf")) + glob.glob(os.path.join(ROOT, "PFDs", "*.pdf"))):
+for f in sorted(glob.glob(os.path.join(ROOT, "PIDs", "*.pdf")) + glob.glob(os.path.join(ROOT, "PFDs", "*.pdf")) + glob.glob(os.path.join(ROOT, "SLDs", "*.pdf"))):
     rel = os.path.relpath(f, ROOT).replace(os.sep, "/")
     d = fitz.open(f); n = d.page_count; out[rel] = n
     for i in range(n):

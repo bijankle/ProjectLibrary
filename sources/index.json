@@ -901,5 +901,722 @@
    }
   ],
   "size": 21059
+ },
+ "elf1311087": {
+  "chunk": 5000,
+  "xlsx": "sources/elf1311087.xlsx",
+  "fname": "2000-F13-LST-EL-11087 F13-SR-004 Recycle Crushing 415V Switchroom Equipment List and Cable Schedule Rev 5 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 58,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 196,
+    "c": 20,
+    "chunks": 1
+   }
+  ],
+  "size": 32354
+ },
+ "elf1611008": {
+  "chunk": 5000,
+  "xlsx": "sources/elf1611008.xlsx",
+  "fname": "2000-F16-LST-EL-11008 HV Cable Schedule - F16-SR-001 Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 26,
+    "c": 21,
+    "chunks": 1
+   }
+  ],
+  "size": 8196
+ },
+ "elf1611015": {
+  "chunk": 5000,
+  "xlsx": "sources/elf1611015.xlsx",
+  "fname": "2000-F16-LST-EL-11015 LV Cable Schedule - F16-SR-001 Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 54,
+    "c": 21,
+    "chunks": 1
+   }
+  ],
+  "size": 11087
+ },
+ "elf1611016": {
+  "chunk": 5000,
+  "xlsx": "sources/elf1611016.xlsx",
+  "fname": "2000-F16-LST-EL-11016 LV Cable Schedule - F16-SR-002 Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 210,
+    "c": 21,
+    "chunks": 1
+   }
+  ],
+  "size": 26003
+ },
+ "elf1611035": {
+  "chunk": 5000,
+  "xlsx": "sources/elf1611035.xlsx",
+  "fname": "2000-F16-LST-EL-11035 F16-SR-001 Flotation 11kV Switchroom Equipment List and Cable Schedule Rev 4 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 49,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 251,
+    "c": 19,
+    "chunks": 1
+   }
+  ],
+  "size": 33957
+ },
+ "elf1611090": {
+  "chunk": 5000,
+  "xlsx": "sources/elf1611090.xlsx",
+  "fname": "2000-F16-LST-EL-11090 F16-SR-002 Flotation 415V Switchroom Equipment List and Cable Schedule Rev 4 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 88,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 319,
+    "c": 19,
+    "chunks": 1
+   }
+  ],
+  "size": 42314
+ },
+ "elf17540001": {
+  "chunk": 5000,
+  "xlsx": "sources/elf17540001.xlsx",
+  "fname": "2000-F175-LST-EL-40001 Electrical load list Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 8,
+    "c": 9,
+    "chunks": 1
+   },
+   {
+    "name": "Load list",
+    "hdr": 0,
+    "n": 5,
+    "c": 20,
+    "chunks": 1
+   }
+  ],
+  "size": 7304
+ },
+ "elf17540002": {
+  "chunk": 5000,
+  "xlsx": "sources/elf17540002.xlsx",
+  "fname": "2000-F175-LST-EL-40002 Electrical equipment list Rev 1 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 34,
+    "c": 16,
+    "chunks": 1
+   }
+  ],
+  "size": 10326
+ },
+ "elf17540003": {
+  "chunk": 5000,
+  "xlsx": "sources/elf17540003.xlsx",
+  "fname": "2000-F175-LST-EL-40003 Cable schedule Rev 2 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 96,
+    "c": 21,
+    "chunks": 1
+   },
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 2,
+    "c": 4,
+    "chunks": 1
+   }
+  ],
+  "size": 15423
+ },
+ "elf17540004": {
+  "chunk": 5000,
+  "xlsx": "sources/elf17540004.xlsx",
+  "fname": "2000-F175-LST-EL-40004 Electrical list Rev 1 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "MCC schedule",
+    "hdr": 0,
+    "n": 122,
+    "c": 29,
+    "chunks": 1
+   },
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 34,
+    "c": 5,
+    "chunks": 1
+   }
+  ],
+  "size": 20462
+ },
+ "elf17540006": {
+  "chunk": 5000,
+  "xlsx": "sources/elf17540006.xlsx",
+  "fname": "2000-F175-LST-EL-40006 Lv switchgear components list Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 21,
+    "c": 3,
+    "chunks": 1
+   }
+  ],
+  "size": 6147
+ },
+ "elf1910022": {
+  "chunk": 5000,
+  "xlsx": "sources/elf1910022.xlsx",
+  "fname": "2000-F19-LST-EL-10022 Electrical equipment list - ball charger Rev 1 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 56,
+    "c": 11,
+    "chunks": 1
+   }
+  ],
+  "size": 9891
+ },
+ "elf1911001": {
+  "chunk": 5000,
+  "xlsx": "sources/elf1911001.xlsx",
+  "fname": "2000-F19-LST-EL-11001 Cable schedule - ball charger Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 41,
+    "c": 20,
+    "chunks": 1
+   }
+  ],
+  "size": 10138
+ },
+ "elf2112001": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2112001.xlsx",
+  "fname": "2000-F21-LST-EL-12001 F21-SR-001 CIL4 LV Switchroom Equipment List and Cable Schedule Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 106,
+    "c": 31,
+    "chunks": 1
+   },
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 171,
+    "c": 19,
+    "chunks": 1
+   }
+  ],
+  "size": 37615
+ },
+ "elf2212001": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2212001.xlsx",
+  "fname": "2000-F22-LST-EL-12001 F22-SR-001 Carbon Regen & Elution 415V Switchroom Equipment List and Cable Rev 1 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 105,
+    "c": 30,
+    "chunks": 1
+   },
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 196,
+    "c": 19,
+    "chunks": 1
+   }
+  ],
+  "size": 39532
+ },
+ "elf2212002": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2212002.xlsx",
+  "fname": "2000-F22-LST-EL-12002 LV Cable Schedule - Carbon Treatment & Elution Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 137,
+    "c": 22,
+    "chunks": 1
+   }
+  ],
+  "size": 20256
+ },
+ "elf2311021": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2311021.xlsx",
+  "fname": "2000-F23-LST-EL-11021 LV Cable Schedule - F23-SR-001 & F23-SR-002 Final Tails Switchrooms (Field Cables) Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 90,
+    "c": 31,
+    "chunks": 1
+   }
+  ],
+  "size": 16830
+ },
+ "elf2311037": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2311037.xlsx",
+  "fname": "2000-F23-LST-EL-11037 F23-SR-001 Final Tails Pumps 11kV Switchroom Equipment List and Cable Schedule Rev 4 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 26,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 76,
+    "c": 21,
+    "chunks": 1
+   }
+  ],
+  "size": 15910
+ },
+ "elf2311038": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2311038.xlsx",
+  "fname": "2000-F23-LST-EL-11038 F23-SR-002 Final Tails Pumps 415V Switchroom Equipment List and Cable Schedule Rev 4 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 49,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 132,
+    "c": 19,
+    "chunks": 1
+   }
+  ],
+  "size": 24704
+ },
+ "elf2340001": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2340001.xlsx",
+  "fname": "2000-F23-LST-EL-40001 Electrical load list Rev 2 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 11,
+    "c": 10,
+    "chunks": 1
+   },
+   {
+    "name": "Load list",
+    "hdr": 0,
+    "n": 29,
+    "c": 23,
+    "chunks": 1
+   }
+  ],
+  "size": 10514
+ },
+ "elf2340002": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2340002.xlsx",
+  "fname": "2000-F23-LST-EL-40002 Electrical equipment list Rev 1 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 90,
+    "c": 16,
+    "chunks": 1
+   }
+  ],
+  "size": 15198
+ },
+ "elf2340003": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2340003.xlsx",
+  "fname": "2000-F23-LST-EL-40003 Cable schedule Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 408,
+    "c": 31,
+    "chunks": 1
+   }
+  ],
+  "size": 51841
+ },
+ "elf2340007": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2340007.xlsx",
+  "fname": "2000-F23-LST-EL-40007 Electrical list Rev 1 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "MCC schedule",
+    "hdr": 0,
+    "n": 311,
+    "c": 41,
+    "chunks": 1
+   },
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 39,
+    "c": 9,
+    "chunks": 1
+   }
+  ],
+  "size": 53090
+ },
+ "elf2811020": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2811020.xlsx",
+  "fname": "2000-F28-LST-EL-11020 LV Cable Schedule - F28-SR-001 UFG Switchroom (Field Cables) Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 142,
+    "c": 31,
+    "chunks": 1
+   }
+  ],
+  "size": 24604
+ },
+ "elf2811034": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2811034.xlsx",
+  "fname": "2000-F28-LST-EL-11034 F28-SR-002 Ultra Fine Grinding 415V Switchroom Equipment List and Cable Schedule Rev 4 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 65,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 161,
+    "c": 19,
+    "chunks": 1
+   }
+  ],
+  "size": 28333
+ },
+ "elf2811045": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2811045.xlsx",
+  "fname": "2000-F28-LST-EL-11045 HV Cable Schedule - F28-SR-001 & F28-SR-002 Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 34,
+    "c": 20,
+    "chunks": 1
+   }
+  ],
+  "size": 8438
+ },
+ "elf2811088": {
+  "chunk": 5000,
+  "xlsx": "sources/elf2811088.xlsx",
+  "fname": "2000-F28-LST-EL-11088 F28-SR-001 - Ultra Fine Grinding 11kV Switchroom Equipment List and Cable Schedule Rev 4 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 25,
+    "c": 25,
+    "chunks": 1
+   },
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 34,
+    "c": 19,
+    "chunks": 1
+   }
+  ],
+  "size": 14688
+ },
+ "elf3013011": {
+  "chunk": 5000,
+  "xlsx": "sources/elf3013011.xlsx",
+  "fname": "2000-F30-LST-EL-13011 LV Cable Schedule - CIL 2/3, Thickening, Elution Tie-ins Stage 1 Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 27,
+    "c": 22,
+    "chunks": 1
+   }
+  ],
+  "size": 8997
+ },
+ "elf3013014": {
+  "chunk": 5000,
+  "xlsx": "sources/elf3013014.xlsx",
+  "fname": "2000-F30-LST-EL-13014 LV Cable Schedule - CIL 2/3, Thickening, Elution Tie-ins Stage 2 Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 99,
+    "c": 22,
+    "chunks": 1
+   }
+  ],
+  "size": 16485
+ },
+ "elf3413012": {
+  "chunk": 5000,
+  "xlsx": "sources/elf3413012.xlsx",
+  "fname": "2000-F34-LST-EL-13012 LV Cable Schedule - Ultra Fine Grinding Tie-ins Stage 1 & 2 Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 30,
+    "c": 22,
+    "chunks": 1
+   }
+  ],
+  "size": 9033
+ },
+ "elf6613013": {
+  "chunk": 5000,
+  "xlsx": "sources/elf6613013.xlsx",
+  "fname": "2000-F66-LST-EL-13013 LV Cable Schedule - Goldroom Tie-ins Stage 1 & 2 Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 62,
+    "c": 22,
+    "chunks": 1
+   }
+  ],
+  "size": 12524
+ },
+ "elf7211019": {
+  "chunk": 5000,
+  "xlsx": "sources/elf7211019.xlsx",
+  "fname": "2000-F72-LST-EL-11019 LV Cable Schedule - Reagents SP2 Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 137,
+    "c": 20,
+    "chunks": 1
+   }
+  ],
+  "size": 18273
+ },
+ "elf7211020": {
+  "chunk": 5000,
+  "xlsx": "sources/elf7211020.xlsx",
+  "fname": "2000-F72-LST-EL-11020 F72-SR-001 - Reagents 415V Switchroom Equipment List and Cable Schedule Rev 1 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 102,
+    "c": 31,
+    "chunks": 1
+   },
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 158,
+    "c": 19,
+    "chunks": 1
+   }
+  ],
+  "size": 35821
+ },
+ "elf7540001": {
+  "chunk": 5000,
+  "xlsx": "sources/elf7540001.xlsx",
+  "fname": "2000-F75-LST-EL-40001 Electrical load list Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Load list",
+    "hdr": 0,
+    "n": 15,
+    "c": 21,
+    "chunks": 1
+   }
+  ],
+  "size": 7133
+ },
+ "elf7540002": {
+  "chunk": 5000,
+  "xlsx": "sources/elf7540002.xlsx",
+  "fname": "2000-F75-LST-EL-40002 Electrical equipment list Rev 2 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Equipment list",
+    "hdr": 0,
+    "n": 59,
+    "c": 16,
+    "chunks": 1
+   }
+  ],
+  "size": 12080
+ },
+ "elf7540003": {
+  "chunk": 5000,
+  "xlsx": "sources/elf7540003.xlsx",
+  "fname": "2000-F75-LST-EL-40003 Cable schedule Rev 0 (tables).xlsx",
+  "how": "The tables of the PDF list, read row by row (tools/build_elec.py)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Cable schedule",
+    "hdr": 0,
+    "n": 337,
+    "c": 15,
+    "chunks": 1
+   }
+  ],
+  "size": 29378
  }
 }

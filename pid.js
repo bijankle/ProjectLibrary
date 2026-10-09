@@ -26,7 +26,7 @@ window.Pid = (() => {
   let BYTAG = null;
   const index = R => { BYTAG = new Map(); Object.entries(R).forEach(([n, a]) => a.forEach(r => { if (r[6] === "d" || r[6] === "x" || r[6] === "q") return;
     String(r[5]).split("|").forEach(t => { const k = norm(t), m = BYTAG.get(k) || new Map(); m.set(n, (m.get(n) || 0) + 1); BYTAG.set(k, m); }); })); return R; };
-  const printedOn = t => { const m = BYTAG && BYTAG.get(norm(t)); return m ? [...m.entries()].filter(([n]) => /-PID-/.test(n) && key(n)).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(x => x[0]) : []; };
+  const printedOn = (t, rx = /-PID-/) => { const m = BYTAG && BYTAG.get(norm(t)); return m ? [...m.entries()].filter(([n]) => rx.test(n) && key(n)).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(x => x[0]) : []; };
   function open(n, find, o = {}){
     const d = info(n); if (!d) return false;
     const r = o.restore;
@@ -47,6 +47,6 @@ window.Pid = (() => {
       const go = () => seen.forEach(f => fetch(f).catch(() => {})); window.requestIdleCallback ? requestIdleCallback(go, { timeout: 4000 }) : setTimeout(go, 1500); });
     return true;
   }
-  const kind = n => /-PFD-/.test(n) ? "PFD" : "P&ID";
+  const kind = n => /-PFD-/.test(n) ? "PFD" : /-SLD-/.test(n) ? "SLD" : "P&ID";
   return { load, printedOn, ready: () => !!IX, has: n => !!(IX && key(n)), info, label, open, kind, refs, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
 })();

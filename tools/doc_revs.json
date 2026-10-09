@@ -437,5 +437,725 @@
   "used": "Area and facility codes (WBS), glossary",
   "history": [],
   "note": "A reference chart with no revision block."
+ },
+ "elf1311087": {
+  "title": "F13-SR-004 Recycle Crushing 415V Switchroom Equipment List and Cable Schedule",
+  "full": "F13-SR-004 Recycle Crushing 415V Switchroom Equipment List and Cable Schedule",
+  "number": "2000-F13-LST-EL-11087",
+  "kind": "List",
+  "rev": "5",
+  "date": "2026-09-08",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "5",
+    "date": "2026-09-08",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf1611008": {
+  "title": "HV Cable Schedule - F16-SR-001",
+  "full": "HV Cable Schedule - F16-SR-001",
+  "number": "2000-F16-LST-EL-11008",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-03-10",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-03-10",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf1611015": {
+  "title": "LV Cable Schedule - F16-SR-001",
+  "full": "LV Cable Schedule - F16-SR-001",
+  "number": "2000-F16-LST-EL-11015",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-03-10",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-03-10",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf1611016": {
+  "title": "LV Cable Schedule - F16-SR-002",
+  "full": "LV Cable Schedule - F16-SR-002",
+  "number": "2000-F16-LST-EL-11016",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-04-07",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-04-07",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf1611035": {
+  "title": "F16-SR-001 Flotation 11kV Switchroom Equipment List and Cable Schedule",
+  "full": "F16-SR-001 Flotation 11kV Switchroom Equipment List and Cable Schedule",
+  "number": "2000-F16-LST-EL-11035",
+  "kind": "List",
+  "rev": "4",
+  "date": "2026-09-07",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "4",
+    "date": "2026-09-07",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf1611090": {
+  "title": "F16-SR-002 Flotation 415V Switchroom Equipment List and Cable Schedule",
+  "full": "F16-SR-002 Flotation 415V Switchroom Equipment List and Cable Schedule",
+  "number": "2000-F16-LST-EL-11090",
+  "kind": "List",
+  "rev": "4",
+  "date": "2026-09-08",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "4",
+    "date": "2026-09-08",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf17540001": {
+  "title": "Electrical load list",
+  "full": "Electrical load list",
+  "number": "2000-F175-LST-EL-40001",
+  "kind": "List",
+  "rev": "0",
+  "date": "",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf17540002": {
+  "title": "Electrical equipment list",
+  "full": "Electrical equipment list",
+  "number": "2000-F175-LST-EL-40002",
+  "kind": "List",
+  "rev": "1",
+  "date": "2025-11-26",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "1",
+    "date": "2025-11-26",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf17540003": {
+  "title": "Cable schedule",
+  "full": "Cable schedule",
+  "number": "2000-F175-LST-EL-40003",
+  "kind": "List",
+  "rev": "2",
+  "date": "2026-02-02",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "2",
+    "date": "2026-02-02",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf17540004": {
+  "title": "Electrical list",
+  "full": "Electrical list",
+  "number": "2000-F175-LST-EL-40004",
+  "kind": "List",
+  "rev": "1",
+  "date": "2026-05-01",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "1",
+    "date": "2026-05-01",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf17540006": {
+  "title": "Lv switchgear components list",
+  "full": "Lv switchgear components list",
+  "number": "2000-F175-LST-EL-40006",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-05-15",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-05-15",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf1910022": {
+  "title": "Electrical equipment list - ball charger",
+  "full": "Electrical equipment list - ball charger",
+  "number": "2000-F19-LST-EL-10022",
+  "kind": "List",
+  "rev": "1",
+  "date": "2026-09-10",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "1",
+    "date": "2026-09-10",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf1911001": {
+  "title": "Cable schedule - ball charger",
+  "full": "Cable schedule - ball charger",
+  "number": "2000-F19-LST-EL-11001",
+  "kind": "List",
+  "rev": "0",
+  "date": "2023-11-08",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2023-11-08",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf2112001": {
+  "title": "F21-SR-001 CIL4 LV Switchroom Equipment List and Cable Schedule",
+  "full": "F21-SR-001 CIL4 LV Switchroom Equipment List and Cable Schedule",
+  "number": "2000-F21-LST-EL-12001",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-01-16",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-01-16",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf2212001": {
+  "title": "F22-SR-001 Carbon Regen & Elution 415V Switchroom Equipment List and Cable",
+  "full": "F22-SR-001 Carbon Regen & Elution 415V Switchroom Equipment List and Cable",
+  "number": "2000-F22-LST-EL-12001",
+  "kind": "List",
+  "rev": "1",
+  "date": "2025-04-29",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "1",
+    "date": "2025-04-29",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf2212002": {
+  "title": "LV Cable Schedule - Carbon Treatment & Elution",
+  "full": "LV Cable Schedule - Carbon Treatment & Elution",
+  "number": "2000-F22-LST-EL-12002",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-05-29",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-05-29",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf2311021": {
+  "title": "LV Cable Schedule - F23-SR-001 & F23-SR-002 Final Tails Switchrooms (Field Cables)",
+  "full": "LV Cable Schedule - F23-SR-001 & F23-SR-002 Final Tails Switchrooms (Field Cables)",
+  "number": "2000-F23-LST-EL-11021",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-01-14",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-01-14",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf2311037": {
+  "title": "F23-SR-001 Final Tails Pumps 11kV Switchroom Equipment List and Cable Schedule",
+  "full": "F23-SR-001 Final Tails Pumps 11kV Switchroom Equipment List and Cable Schedule",
+  "number": "2000-F23-LST-EL-11037",
+  "kind": "List",
+  "rev": "4",
+  "date": "2026-09-08",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "4",
+    "date": "2026-09-08",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf2311038": {
+  "title": "F23-SR-002 Final Tails Pumps 415V Switchroom Equipment List and Cable Schedule",
+  "full": "F23-SR-002 Final Tails Pumps 415V Switchroom Equipment List and Cable Schedule",
+  "number": "2000-F23-LST-EL-11038",
+  "kind": "List",
+  "rev": "4",
+  "date": "2026-09-08",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "4",
+    "date": "2026-09-08",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf2340001": {
+  "title": "Electrical load list",
+  "full": "Electrical load list",
+  "number": "2000-F23-LST-EL-40001",
+  "kind": "List",
+  "rev": "2",
+  "date": "2025-11-28",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "2",
+    "date": "2025-11-28",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf2340002": {
+  "title": "Electrical equipment list",
+  "full": "Electrical equipment list",
+  "number": "2000-F23-LST-EL-40002",
+  "kind": "List",
+  "rev": "1",
+  "date": "2025-05-16",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "1",
+    "date": "2025-05-16",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf2340003": {
+  "title": "Cable schedule",
+  "full": "Cable schedule",
+  "number": "2000-F23-LST-EL-40003",
+  "kind": "List",
+  "rev": "0",
+  "date": "2026-01-13",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2026-01-13",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf2340007": {
+  "title": "Electrical list",
+  "full": "Electrical list",
+  "number": "2000-F23-LST-EL-40007",
+  "kind": "List",
+  "rev": "1",
+  "date": "2026-03-03",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "1",
+    "date": "2026-03-03",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf2811020": {
+  "title": "LV Cable Schedule - F28-SR-001 UFG Switchroom (Field Cables)",
+  "full": "LV Cable Schedule - F28-SR-001 UFG Switchroom (Field Cables)",
+  "number": "2000-F28-LST-EL-11020",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-03-04",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-03-04",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf2811034": {
+  "title": "F28-SR-002 Ultra Fine Grinding 415V Switchroom Equipment List and Cable Schedule",
+  "full": "F28-SR-002 Ultra Fine Grinding 415V Switchroom Equipment List and Cable Schedule",
+  "number": "2000-F28-LST-EL-11034",
+  "kind": "List",
+  "rev": "4",
+  "date": "2026-09-08",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "4",
+    "date": "2026-09-08",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf2811045": {
+  "title": "HV Cable Schedule - F28-SR-001 & F28-SR-002",
+  "full": "HV Cable Schedule - F28-SR-001 & F28-SR-002",
+  "number": "2000-F28-LST-EL-11045",
+  "kind": "List",
+  "rev": "0",
+  "date": "2024-11-01",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2024-11-01",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf2811088": {
+  "title": "F28-SR-001 - Ultra Fine Grinding 11kV Switchroom Equipment List and Cable Schedule",
+  "full": "F28-SR-001 - Ultra Fine Grinding 11kV Switchroom Equipment List and Cable Schedule",
+  "number": "2000-F28-LST-EL-11088",
+  "kind": "List",
+  "rev": "4",
+  "date": "2026-09-08",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "4",
+    "date": "2026-09-08",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf3013011": {
+  "title": "LV Cable Schedule - CIL 2/3, Thickening, Elution Tie-ins Stage 1",
+  "full": "LV Cable Schedule - CIL 2/3, Thickening, Elution Tie-ins Stage 1",
+  "number": "2000-F30-LST-EL-13011",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-05-13",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-05-13",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf3013014": {
+  "title": "LV Cable Schedule - CIL 2/3, Thickening, Elution Tie-ins Stage 2",
+  "full": "LV Cable Schedule - CIL 2/3, Thickening, Elution Tie-ins Stage 2",
+  "number": "2000-F30-LST-EL-13014",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-09-09",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-09-09",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf3413012": {
+  "title": "LV Cable Schedule - Ultra Fine Grinding Tie-ins Stage 1 & 2",
+  "full": "LV Cable Schedule - Ultra Fine Grinding Tie-ins Stage 1 & 2",
+  "number": "2000-F34-LST-EL-13012",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-05-13",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-05-13",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf6613013": {
+  "title": "LV Cable Schedule - Goldroom Tie-ins Stage 1 & 2",
+  "full": "LV Cable Schedule - Goldroom Tie-ins Stage 1 & 2",
+  "number": "2000-F66-LST-EL-13013",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-05-13",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-05-13",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf7211019": {
+  "title": "LV Cable Schedule - Reagents SP2",
+  "full": "LV Cable Schedule - Reagents SP2",
+  "number": "2000-F72-LST-EL-11019",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-05-30",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-05-30",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf7211020": {
+  "title": "F72-SR-001 - Reagents 415V Switchroom Equipment List and Cable Schedule",
+  "full": "F72-SR-001 - Reagents 415V Switchroom Equipment List and Cable Schedule",
+  "number": "2000-F72-LST-EL-11020",
+  "kind": "List",
+  "rev": "1",
+  "date": "2025-04-08",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "1",
+    "date": "2025-04-08",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": ""
+ },
+ "elf7540001": {
+  "title": "Electrical load list",
+  "full": "Electrical load list",
+  "number": "2000-F75-LST-EL-40001",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-11-20",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-11-20",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf7540002": {
+  "title": "Electrical equipment list",
+  "full": "Electrical equipment list",
+  "number": "2000-F75-LST-EL-40002",
+  "kind": "List",
+  "rev": "2",
+  "date": "2026-07-24",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "2",
+    "date": "2026-07-24",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
+ },
+ "elf7540003": {
+  "title": "Cable schedule",
+  "full": "Cable schedule",
+  "number": "2000-F75-LST-EL-40003",
+  "kind": "List",
+  "rev": "0",
+  "date": "2026-01-13",
+  "status": "",
+  "elec": 1,
+  "used": "Electrical equipment, cables and the electrical data of MEL equipment",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2026-01-13",
+    "status": ""
+   }
+  ],
+  "note": "PDF list; tables read from the PDF.",
+  "project": "TSF"
  }
 }

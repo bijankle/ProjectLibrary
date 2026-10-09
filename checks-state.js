@@ -8,7 +8,7 @@ window.CK = (() => {
   const norm = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   const id = r => { let h = 0x811c9dc5; const s = `${r.cat}|${r.item}|${r.d1 || ""}|${r.d2 || ""}`;
     for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, "0"); };
-  const tagOf = r => { const m = String(r.item).match(/^\s*([A-Z]+\s*\d+[A-Z]?|[A-Z]\d{2,3}-[A-Z]{2,4}-\d{2,4}[A-Z]?)/); return m ? norm(m[1]) : ""; };
+  const tagOf = r => { const m = String(r.item).match(/^\s*([A-Z]\d{2,3}[A-Z]{2,4}\d{3,4}[A-Z]?-[A-Z]{2,4}\d{0,2}|[A-Z]\d{2,3}-[A-Z]{2,4}-\d{2,4}[A-Z]?|[A-Z]+\s*\d+[A-Z]?)/); return m ? norm(m[1]) : ""; };
   let rows = [], RES = {}, ready = null, byTag = new Map();
   const LOCAL = "kcgm_resolved_local";   // ticks made here that Pages may not serve yet: { id: entry | null }
   const local = () => { try { return JSON.parse(localStorage.getItem(LOCAL) || "{}"); } catch (e) { return {}; } };
@@ -24,7 +24,7 @@ window.CK = (() => {
   const isRes = k => !!merged()[k];
   const info = k => merged()[k] || null;
   // an item's open clashes: [{ field, row, id }]; and its resolved ones, for the record
-  const open = key => (byTag.get(norm(key)) || []).filter(r => RED.has(r.sev) && !isRes(id(r))).map(r => ({ field: FIELD[r.cat] || null, row: r, id: id(r) }));
+  const open = key => (byTag.get(norm(key)) || []).filter(r => RED.has(r.sev) && !isRes(id(r))).map(r => ({ field: r.field || FIELD[r.cat] || null, row: r, id: id(r) }));
   const done = key => (byTag.get(norm(key)) || []).filter(r => isRes(id(r))).map(r => ({ row: r, id: id(r), res: info(id(r)) }));
   const ghKey = () => { try { return localStorage.getItem("kcgm_ghkey") || ""; } catch (e) { return ""; } };
   let who = null;

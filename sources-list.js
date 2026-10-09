@@ -15,7 +15,7 @@ window.SourcesList = (() => {
   const REPO = "bijankle/ProjectLibrary";   // the GitHub repository the app is served from and uploads to (one home: Help → API keys shows it)
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const mb = b => { const v = (b || 0) / 1e6; return v === 0 ? "0" : v < 1 ? String(+v.toFixed(2)) : v < 10 ? String(+v.toFixed(1)) : String(Math.round(v)); };
-  const TYPES = [["pid", "P&IDs"], ["pfd", "PFDs"], ["bfd", "BFDs"], ["list", "Lists"], ["report", "Reports"], ["spec", "Specs"], ["dwg", "Drawings"], ["other", "Other"]];
+  const TYPES = [["pid", "P&IDs"], ["pfd", "PFDs"], ["bfd", "BFDs"], ["sld", "SLDs"], ["list", "Lists"], ["report", "Reports"], ["spec", "Specs"], ["dwg", "Drawings"], ["other", "Other"]];
   const TN = Object.fromEntries(TYPES);
   // area names for the area pills: the glossary's F codes, first part only ("F13 Milling & Classification")
   const AREA = { F00: "General site", F10: "Primary crushing 1", F12: "Primary crushing", F13: "Milling", F14: "Gravity & ILR", F15: "Mt Charlotte reclaim", F16: "Rougher flotation",
@@ -52,7 +52,7 @@ window.SourcesList = (() => {
     // a drawing that is also a source document (the PDC, the plant layout) joins that document's row
     const JOIN = { "2000-F00-DCR-PR-10002": "pdc", "2000-F00-DRG-GE-20001": "layout" };
     Object.entries(P.pids || {}).forEach(([k, d]) => { if (JOIN[k]) return;
-      const t = /-PID-/.test(k) ? "pid" : /-PFD-/.test(k) ? "pfd" : /-BLK-/.test(k) ? "bfd" : "dwg", area = k.split("-")[1];
+      const t = /-PID-/.test(k) ? "pid" : /-SLD-/.test(k) ? "sld" : /-PFD-/.test(k) ? "pfd" : /-BLK-/.test(k) ? "bfd" : "dwg", area = k.split("-")[1];
       out.push({ k, t, number: k, title: d.title || "", rev: d.rev || "", date: d.date || "", area, pdf: d.file, size: d.size, keep: [d.file].concat(Object.keys(off.sz || {}).filter(f => f.startsWith(d.file + ".p"))), tsf: !!d.proj_src, ik: k, revs: d.revs || [] }); });   // (with its sheet pictures)
     const KIND = { List: "list", Report: "report", Specification: "spec", Drawing: "dwg", Reference: "other" };
     Object.entries(meta).forEach(([k, v]) => {
@@ -107,7 +107,7 @@ window.SourcesList = (() => {
       if (!MEM.open.size && type) open.add("r:" + type); }
     const words = () => q.split(/\s+/).filter(Boolean);
     const match = d => { const w = words(); return w.every(x => d.hay.includes(x)); };
-    const subOf = t => t === "pid" || t === "pfd";
+    const subOf = t => t === "pid" || t === "pfd" || t === "sld";
     function shown(){ return DOCS.filter(d => match(d) && (!type || d.t === type) && (!area || d.area === area)); }
     const stOf = d => { const s = d.keep.map(f => st[f]); return !s.length ? "none" : s.every(x => x === "ok") ? "ok" : s.some(x => x === "old") ? "old" : s.some(x => x === "ok") ? "part" : "no"; };
     const fname = d => (d.number + (d.rev ? " Rev " + d.rev : "") + (d.title && d.t !== "list" ? " " + d.title : "")).replace(/[\\/:*?"<>|]+/g, " ").trim();
@@ -405,7 +405,7 @@ window.SourcesList = (() => {
     // starts a new document's number with its area
     const [w, t, a] = at.split(":"), atDoc = w === "d" ? (DOCS.find(d => d.k === at.slice(2)) || {}).ik || "" : "";
     const scope = w === "a" || w === "r" ? DOCS.filter(d => d.ik && d.t === t && (w === "r" || (d.area || "–") === a)).map(d => d.ik) : [];
-    const pre = w === "n" ? at.slice(2) : w === "a" && a !== "–" ? `2000-${a}-${{ pid: "PID", pfd: "PFD", bfd: "BLK" }[t] || "DRG"}-PR-` : "";
+    const pre = w === "n" ? at.slice(2) : w === "a" && a !== "–" ? `2000-${a}-${{ pid: "PID-PR", pfd: "PFD-PR", bfd: "BLK-PR", sld: "SLD-EL" }[t] || "DRG-PR"}-` : "";
     const scName = w === "a" ? `${a} ${AREA[a] || ""}`.trim() : w === "r" ? (TN[t] || "").replace("&amp;", "&") : "";
     const rows = files.map(f => { const g = guess(f.name), num = g.num || (!g.fresh && atDoc) || "";
       const x = { f, num, mode: num ? "doc" : g.fresh || w === "n" ? "new" : "", fresh: g.fresh || pre, title: "", rev: g.rev, guessed: false, st: "", msg: "", alts: g.alts };
