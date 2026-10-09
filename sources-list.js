@@ -93,8 +93,8 @@ window.SourcesList = (() => {
       : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off">
            <div class="sl-h">Everything</div><div class="sl-ev"></div><div class="sl-h">Sections</div><div class="sl-secs"></div></aside>
          <div class="sl-dv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
-         <div class="sl-main"><div class="sl-tbar"><b>Selection tree</b><span class="sl-tabs" role="tablist"><button type="button" class="on" data-tab="att">Attached</button><button type="button" data-tab="ref">Ref Only</button></span><span class="sl-sp"></span><button type="button" class="sl-tbb sl-roc" hidden title="Download every document, in the app and Ref Only, as one Excel table" aria-label="Download Excel">${ICO.xdl}</button><button type="button" class="sl-tbb sl-upb" data-up="">${ICO.up}Upload</button><input type="file" class="sl-file" accept="application/pdf,.pdf" multiple hidden><button type="button" class="sl-tbb" data-x="1">Expand all</button><button type="button" class="sl-tbb" data-x="0">Collapse all</button></div>
-           <div class="sl-tree"><div class="sl-gh"><span>Name</span><span>Title</span><span>Rev</span><span>Size</span><span>Cached</span><span></span></div><div class="sl-rows"></div></div><div class="sl-ro" hidden><div class="sl-rop"></div><div class="sl-rot"></div></div></div>`;
+         <div class="sl-main"><div class="sl-tbar"><b>Selection tree</b><span class="sl-tabs" role="tablist"><button type="button" class="on" data-tab="att">Attached</button><button type="button" data-tab="ref">Ref Only</button></span><span class="sl-sp"></span><button type="button" class="sl-tbb sl-roc" hidden title="Download every document, in the app and Ref Only, as one Excel table" aria-label="Download Excel">${ICO.xdl}</button><button type="button" class="sl-tbb sl-upb" data-up="">${ICO.up}Upload</button><input type="file" class="sl-file" accept="application/pdf,.pdf" multiple hidden></div>
+           <div class="sl-tree"><div class="sl-gh"><span><button type="button" class="sl-xa" data-x="1" title="Expand all" aria-label="Expand all"></button>Name</span><span>Title</span><span>Rev</span><span>Size</span><span>Cached</span><span></span></div><div class="sl-rows"></div></div><div class="sl-ro" hidden><div class="sl-rop"></div><div class="sl-rot"></div></div></div>`;
     const $ = s => el.querySelector(s);
     const input = o.input || $(".sl-q");
     if (input){ input.addEventListener("input", () => { q = input.value.trim().toLowerCase(); shut.clear(); draw(); }); }
@@ -176,7 +176,7 @@ window.SourcesList = (() => {
     const isOpen = id => q && id[0] !== "d" ? !shut.has(id) : open.has(id);
     function toggle(id){ const s = q && id[0] !== "d" ? shut : open; s.has(id) ? s.delete(id) : s.add(id); draw(); }
     // the groups the tree shows now (for Expand all / Collapse all)
-    const groups = () => { const hit = DOCS.filter(match); return (type ? [type] : TYPES.map(x => x[0])).flatMap(t => { const ds = ofT(hit, t); if (!ds.length) return [];
+    const groups = () => { const hit = DOCS.filter(match); return TYPES.map(x => x[0]).flatMap(t => { const ds = ofT(hit, t); if (!ds.length) return [];
       return ["r:" + t].concat(subOf(t) ? byArea(ds).map(([a]) => `a:${t}:${a}`) : []); }); };
     // Cache all for a group: the section's square button, or the tree's small one; green once all of it is cached
     const caBtn = (id, ds, big) => { if (!ds.some(d => d.keep.length)) return big ? `<span class="sl-b sl-b0"></span>` : "";
@@ -224,6 +224,9 @@ window.SourcesList = (() => {
           : ds.forEach((d, j) => doc(d, 1, pre, j === ds.length - 1))); });
       $(".sl-rows").innerHTML = H.join("") || `<div class="sl-none">${q ? `Nothing matches${type && hit.length ? ` in ${esc(TN[type])}; ${hit.length} in All sources` : ""}.` : "Nothing here."}</div>`;
       paintBusy(); paintQ();
+      const xa = $(".sl-xa"), any = groups().some(isOpen), tt = any ? "Collapse all" : "Expand all";
+      xa.dataset.x = any ? "0" : "1"; xa.title = tt; xa.setAttribute("aria-label", tt);
+      xa.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3.5" width="12" height="12" rx="1.5"/><path d="M5 7.5v12h12"/><path d="${any ? "M11 9.5h6" : "M11 9.5h6M14 6.5v6"}"/></svg>`;
     }
     function paintBusy(){ const r = busy && el.querySelector(`[data-id="${CSS.escape(busy.id)}"]`); if (!r) return;
       const v = busy.have + busy.f * (busy.total - busy.have), kb = r.querySelector(".sl-kp"), l = r.querySelector(".sl-pt"), bar = r.querySelector(".sl-rb i,.sl-pb i");
@@ -234,7 +237,7 @@ window.SourcesList = (() => {
       el.addEventListener("click", e => { const t = e.target; if (!DOCS || t.closest(".sl-sv")) return;   // (a Save link downloads by itself)
         const x = t.closest("[data-x]");
         if (x){ const g = groups(); if (x.dataset.x === "1"){ g.forEach(id => open.add(id)); shut.clear(); }
-          else { [...open].forEach(id => id[0] !== "r" && open.delete(id)); if (q) g.forEach(id => id[0] === "a" && shut.add(id)); } return draw(); }
+          else { open.clear(); if (q) g.forEach(id => id[0] === "a" && shut.add(id)); } return draw(); }
         const tb = t.closest("[data-tab]"); if (tb) return setTab(tb.dataset.tab);
         const rp = t.closest("[data-rg]"); if (rp){ roG = rp.dataset.rg; return roDraw(); }
         if (t.closest(".sl-roc")) return roXlsx();
@@ -282,7 +285,7 @@ window.SourcesList = (() => {
     const ROG = [["", "All"], ["project", "Project 2000"], ["vendor", "Vendor"], ["legacy", "Legacy KCGM"], ["other", "Other"]];
     async function setTab(v){ tab = v; el.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
       $(".sl-tree").hidden = v === "ref"; $(".sl-ro").hidden = v !== "ref"; $(".sl-roc").hidden = v !== "ref";
-      el.querySelectorAll(".sl-tbar .sl-upb,.sl-tbar [data-x]").forEach(b => b.hidden = v === "ref");
+      el.querySelectorAll(".sl-tbar .sl-upb").forEach(b => b.hidden = v === "ref");
       if (v === "ref" && !RO){ $(".sl-rot").innerHTML = `<div class="sl-none">Loading…</div>`; const j = await fetch("refonly.json").then(r => r.ok ? r.json() : {}).catch(() => ({})); RO = j.ref || []; HELD = j.held || {}; }
       if (v === "ref") roDraw(); }
     const roList = () => RO.filter(o => (!roG || o.g === roG) && (!q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in).join(" ")).toLowerCase().includes(q)));
@@ -531,6 +534,7 @@ window.SourcesList = (() => {
 .sl-rtb td{padding:3px 8px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);vertical-align:top}.sl-rtb tr:hover td{background:var(--rh,#eef0f3)}.sl-rk{white-space:nowrap;font-weight:700}.sl-rn{text-align:right;font-variant-numeric:tabular-nums;width:1%;white-space:nowrap}.sl-rtb a{color:var(--th);text-decoration:none;white-space:nowrap}.sl-rtb a:hover{text-decoration:underline}.sl-mu{color:var(--mute);font-size:12px}.sl-ra{white-space:nowrap;text-align:right;min-width:62px}.sl-mu{white-space:nowrap}.sl-ra .sl-ib{display:inline-flex;vertical-align:middle}.sl-ra .sl-ib+.sl-ib{margin-left:4px}.sl-rtb a.sl-spn{color:var(--ink);text-decoration:underline dotted color-mix(in srgb,var(--th) 60%,transparent);text-underline-offset:3px}.sl-rtb a.sl-spn:hover{color:var(--th)}
 .sl-rtb th:last-child{width:auto}
 .sl-tree{flex:1;overflow:auto;font-size:13px;--cols:minmax(250px,2.4fr) minmax(110px,2fr) 58px 78px 92px 84px}
+.sl-xa{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;padding:0;margin:0 6px 0 2px;border:1px solid var(--line);border-radius:4px;background:var(--card,var(--panel));color:#4a525c;cursor:pointer;vertical-align:middle;flex:none}.sl-xa:hover{border-color:var(--th);color:var(--ink)}.sl-xa svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.sl-gh>span:first-child{display:flex;align-items:center}
 .sl-gh,.sl-tr{display:grid;grid-template-columns:var(--cols);min-width:706px}
 .sl-gh{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute)}.sl-gh span{padding:4px 8px;border-right:1px solid var(--line)}.sl-gh span:last-child{border-right:0}
 .sl-tr{position:relative;height:22px;line-height:22px;white-space:nowrap;cursor:default}.sl-tr>span{padding:0 8px;min-width:0;overflow:hidden;text-overflow:ellipsis;border-right:1px solid color-mix(in srgb,var(--line) 55%,transparent)}.sl-tr>span:nth-child(6){border-right:0}
