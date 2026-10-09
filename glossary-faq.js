@@ -675,11 +675,11 @@ const GLOSSARY_FAQ = {
 "MU / MUF": [
 [
 "What do MU and MUF mean?",
-"They are equipment codes for ultra fine grinding (UFG) mills. Per the glossary, MU is used for existing and MUF for new mills."
+"They are equipment codes for ultra fine grinding (UFG) mills. MU was meant for existing mills and MUF for new ones, but in the project data both the existing and new UFG mills are tagged MUF."
 ],
 [
 "Which tags use these codes?",
-"The new UFG mills in F28 are tagged F28-MUF-401 and up. The existing UFG 1 mill in F34 appears in the data as F34-MUF-01, so search both codes."
+"The new UFG mills in F28 are tagged F28-MUF-401 and up. The existing UFG 1 mill in F34 is tagged F34-MUF-01. No tags use MU on its own."
 ],
 [
 "How does a UFG mill differ from a ball mill?",
@@ -1487,7 +1487,7 @@ const GLOSSARY_FAQ = {
 "Regen": [
 [
 "What does the regen kiln do?",
-"It heats barren carbon, typically to around 650 to 750 C in a low oxygen atmosphere, to burn off organic foulants and restore adsorption activity. The carbon is then quenched and returned to the adsorption tanks."
+"It heats barren carbon, in a low oxygen atmosphere, to burn off organic foulants and restore adsorption activity. The carbon is then quenched and returned to the adsorption tanks."
 ],
 [
 "Why does carbon need regeneration?",
@@ -2005,7 +2005,7 @@ const GLOSSARY_FAQ = {
 "HV / LV": [
 [
 "What do HV and LV mean here?",
-"HV is above 1 kV; on this plant 11 kV and 3.3 kV. LV is 415 V and 240 V."
+"HV is above 1 kV. On this plant that is 33 kV at the incomers, then 11 kV and 3.3 kV distribution. LV is 415 V and 240 V."
 ],
 [
 "Which motors are HV?",
