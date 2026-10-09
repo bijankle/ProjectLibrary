@@ -218,7 +218,7 @@ window.SourcesList = (() => {
         old.forEach((r, i) => { const id = `o:${d.k}:${r.rev}`, nm = (d.number + " Rev " + r.rev + (d.title ? " " + d.title : "")).replace(/[\\/:*?"<>|]+/g, " ").trim() + ".pdf";
           H.push(`<div class="sl-tr sl-rv sl-old${sel(id)}" data-id="${esc(id)}" data-r="${esc(d.k)}" data-pdf="${esc(r.file)}"><span class="sl-nm">${gd(p2, lv + 1, i === old.length - 1)}<span class="sl-tg0"></span>${ICO.rev}<span class="sl-l">Rev ${esc(r.rev || "–")}${r.date ? " · " + esc(r.date) : ""}<u class="sl-sup">superseded</u></span></span>` +
             `<span></span><span></span><span class="sl-c">${r.size ? mb(r.size) + " MB" : ""}</span><span></span><span class="sl-acts"><button type="button" class="sl-ib sl-vw" title="View Rev ${esc(r.rev)}">${ICO.eye}</button><a class="sl-ib sl-sv" href="${esc(r.file)}" download="${esc(nm)}" title="Save Rev ${esc(r.rev)} to Downloads">${ICO.save}</a></span>${tail}</div>`); }); };
-      (type ? [type] : TYPES.map(x => x[0])).forEach(t => { const ds = ofT(hit, t); if (!ds.length) return;
+      TYPES.map(x => x[0]).forEach(t => { const ds = ofT(hit, t); if (!ds.length) return;
         grp("r:" + t, 0, [], true, TN[t], ds, pre => subOf(t)
           ? byArea(ds).forEach(([a, as], i, A) => grp(`a:${t}:${a}`, 1, pre, i === A.length - 1, a === "–" ? "Other" : `${a} ${AREA[a] || ""}`.trim(), as, p2 => as.forEach((d, j) => doc(d, 2, p2, j === as.length - 1))))
           : ds.forEach((d, j) => doc(d, 1, pre, j === ds.length - 1))); });
@@ -249,7 +249,8 @@ window.SourcesList = (() => {
           const d = DOCS.find(x => x.k === r.dataset.r); if (!d) return;
           if (stOf(d) === "ok"){ if (!busy && confirm(`Remove ${d.number} from this device?`)) Offline.drop(d.keep).then(refresh); return; }
           return run([d], r, r.dataset.id); }
-        if (r.classList.contains("sl-sec")){ type = r.dataset.id.slice(2); if (type) open.add("r:" + type);
+        if (r.classList.contains("sl-sec")){ type = r.dataset.id.slice(2);   // (every section stays in the tree, folded but for the one picked)
+          [...open].forEach(id => id.startsWith("r:") && open.delete(id)); if (type) open.add("r:" + type);
           $(".sl-tree").scrollTop = 0; return draw(); }
         if (t.closest(".sl-op")) return openDoc(DOCS.find(x => x.k === r.dataset.r));
         if (t.closest(".sl-tg") || r.classList.contains("sl-grp")) return toggle(r.dataset.id);
@@ -511,10 +512,10 @@ window.SourcesList = (() => {
 .sl-side{flex:0 0 var(--slw,330px);min-width:260px;max-width:50%;background:var(--card,var(--panel));border:1px solid var(--line);border-radius:12px;padding:12px;overflow-y:auto;box-sizing:border-box}
 .sl-dt .sl-b{flex-direction:column;gap:1px;width:46px;height:34px;padding:0;border-radius:9px;font-size:10.5px;line-height:1}.sl-dt .sl-b svg{width:14px;height:14px}
 .sl-hb{display:flex;align-items:center;gap:8px;margin:10px 0 0}.sl-hb .sl-b{width:auto;min-width:54px;padding:0 8px}.sl-svn{font-size:12px;color:var(--mute);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sl-sec{display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:2px;border-radius:9px;cursor:pointer;border:1.5px solid transparent;outline:0}.sl-sec.on{background:var(--th-t);border-color:var(--th)}.sl-sec:hover:not(.on),.sl-sec:focus-visible:not(.on){background:var(--card2,var(--panel2))}
-.sl-st{flex:1;min-width:0}.sl-st b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sl-st small{display:block;color:var(--mute);font-size:12px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.sl-sec{display:flex;align-items:center;gap:8px;padding:4px 8px;margin-bottom:2px;border-radius:9px;cursor:pointer;border:1.5px solid transparent;outline:0}.sl-sec.on{background:var(--th-t);border-color:var(--th)}.sl-sec:hover:not(.on),.sl-sec:focus-visible:not(.on){background:var(--card2,var(--panel2))}
+.sl-st{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px}.sl-st b{display:block;flex:none;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sl-st small{display:block;flex:1;min-width:0;text-align:right;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .sl-pb{display:block;height:3px;border-radius:2px;background:var(--line);margin-top:5px;overflow:hidden}.sl-pb i{display:block;height:100%;background:#2aa765;transition:width .2s}
-.sl-sec.sl-z .sl-st{opacity:.5}.sl-sec .sl-b{flex:none;width:auto;min-width:54px;height:36px;padding:0 6px}
+.sl-sec.sl-z .sl-st{opacity:.5}.sl-sec .sl-pb{display:none}.sl-sec .sl-b{flex:none;width:28px;min-width:0;height:26px;padding:0}.sl-sec .sl-b span{display:none}
 /* the divider, as the app's others: a 2px line with a dotted grip, gold while dragged */
 .sl-dv{flex:0 0 24px;position:relative;cursor:col-resize;touch-action:none}.sl-dv::before{content:"";position:absolute;left:11px;top:14px;bottom:14px;width:2px;border-radius:1px;background:var(--line)}
 .sl-dv i{position:absolute;left:7px;top:50%;margin-top:-22px;width:10px;height:44px;box-sizing:border-box;border-radius:5px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px}.sl-dv i b{width:3px;height:3px;border-radius:50%;background:var(--mute)}
