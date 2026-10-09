@@ -265,6 +265,7 @@ window.Tabs = (() => {
     if (k === "help"){ body.innerHTML = `<div class="st-l">${TOPICS.map((x, i) => `<details class="st-h" data-t="${esc(x.t)}"><summary>${esc(x.t)}</summary><p>${esc(x.h)}</p></details>`).join("")}<details class="st-h"><summary>About this app</summary><p>Project Library: the plant lists, P&amp;IDs, PFD sheets, spec and Stage 2 PDC as a reference with a smart PFD, the layout on the real plant and a quiz. Design values from the project documents, not live plant data.</p></details></div>`;
       const at = topic && body.querySelector(`[data-t="${CSS.escape(topic)}"]`); if (at){ at.open = true; setTimeout(() => at.scrollIntoView({ block: "start" }), 0); } }
     if (k === "gloss") need("glossary.js", () => typeof GLOSSARY !== "undefined").then(() => { if (typeof GLOSSARY === "undefined") return;
+      if (window.kcgmRenderGloss){ body.innerHTML = `<div class="gl"></div>`; kcgmRenderGloss("", body.querySelector(".gl"), null); return; }   // (index.html: pills, names only, a tap shows the meaning)
       body.innerHTML = `<div class="st-l">${GLOSSARY.map(([t, m]) => `<div class="st-gl"><b>${esc(t)}</b><span>${esc(m)}</span></div>`).join("")}</div>`; });
     mo.scrollTop = 0;
   }

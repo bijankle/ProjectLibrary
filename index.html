@@ -313,8 +313,37 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 .gl-h,.gl-az{display:none}
 :root.phone .gl{display:block;background:none;border-radius:0;overflow:visible}
 :root.phone .gl-h{display:block;position:sticky;top:var(--tb);z-index:2;background:var(--bg);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;color:var(--gold);padding:10px 4px 4px}
-:root.phone .gl-e{background:var(--card);border-bottom:1px solid var(--line);padding:9px 12px;margin-right:22px}
-:root.phone .gl-e b{display:block;color:var(--ink)}:root.phone .gl-e span{display:block;color:var(--mute)}
+/* glossary discipline pills (desktop and phone) */
+.gl-pills{display:flex;flex:none;gap:6px;flex-wrap:wrap;margin:0 0 10px}:root.phone .gl-pills{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -12px 8px;padding:0 12px}:root.phone .gl-pills::-webkit-scrollbar{display:none}
+.gl-p{flex:none;border:1.5px solid color-mix(in srgb,var(--ink) 16%,var(--line));background:var(--card);color:var(--ink);border-radius:16px;padding:4px 11px;font:inherit;font-size:var(--fl,13px);font-weight:800;cursor:pointer;white-space:nowrap}
+.gl-p i{font-style:normal;color:var(--mute);font-weight:600;margin-left:5px}.gl-p.on{border-color:var(--th);box-shadow:inset 0 0 0 1px var(--th)}
+.gl small.gl-dd{display:block;color:var(--mute);font-size:11.5px;margin-top:1px}.gl-none{padding:14px;color:var(--mute)}
+/* phone: names only; a tap shows the meaning */
+:root.phone .gl-e{display:block;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:0;border-bottom:1px solid var(--line);padding:11px 12px;cursor:pointer}
+:root.phone .gl-e b{display:block;color:var(--ink)}:root.phone .gl-e span{display:none;color:var(--mute);margin-top:4px}:root.phone .gl-e.open span{display:block}
+:root.phone .gl-a{margin-right:22px}:root.phone .gl-a .gl-e b::after{content:"";float:right;width:8px;height:8px;margin-top:5px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:rotate(45deg);transition:transform .15s}:root.phone .gl-a .gl-e.open b::after{transform:rotate(-135deg);margin-top:9px}
+:root.phone .gl-b{display:flex;flex-wrap:wrap;gap:6px;padding:4px 26px 8px 2px}:root.phone .gl-b .gl-e{width:auto;border:1.5px solid var(--line);border-radius:16px;padding:6px 12px}
+:root.phone .gl-c{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px 26px 8px 2px}:root.phone .gl-c .gl-e{border:1.5px solid var(--line);border-radius:10px;min-height:44px}:root.phone .gl-c .gl-e.open{grid-column:1/-1;border-color:var(--th)}
+.gl-sheet{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:flex;align-items:flex-end}.gl-sheet[hidden]{display:none}
+.gl-card{position:relative;width:100%;background:var(--card);border-radius:16px 16px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(0,0,0,.2)}
+.gl-card b{display:block;font-size:20px}.gl-card small{display:block;color:var(--mute);font-weight:700;margin:2px 0 10px}.gl-card p{margin:0;font-size:16px;line-height:1.45}
+.gl-mi{margin:16px 0 4px;padding:5px 8px;background:var(--th-t);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2)}
+.gl-fq,.gld-fq{border-bottom:1px solid var(--line)}.gl-fq summary,.gld-fq summary{cursor:pointer;font-weight:700;padding:10px 2px;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.gl-fq summary::-webkit-details-marker,.gld-fq summary::-webkit-details-marker{display:none}.gl-fq summary::after,.gld-fq summary::after{content:"+";color:var(--mute);font-weight:800}.gl-fq[open] summary::after,.gld-fq[open] summary::after{content:"\2212"}
+.gl-fq div,.gld-fq div{padding:0 2px 12px;color:var(--mute);line-height:1.5}.gl-card{max-height:80vh;overflow:auto}
+/* desktop glossary */
+:root:not(.phone) #deck.glos .gl-pills{position:absolute;left:22px;top:112px;width:calc(var(--lsw) - 44px);margin:0}
+:root:not(.phone) #deck.glos #lgList{position:absolute;left:22px;width:calc(var(--lsw) - 44px);bottom:16px;display:block;background:none;border-radius:0;overflow:visible;padding:0;margin:0}
+.gld-list{position:absolute;inset:0 28px 0 0;overflow:auto;background:var(--card);border-radius:12px;overscroll-behavior:contain}
+.gld-h{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--th2);padding:5px 12px}
+.gld-n{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;font:inherit;font-weight:700;color:var(--ink);padding:8px 12px;cursor:pointer}
+.gld-n:hover{background:var(--rh,#eef0f3)}.gld-n.on{background:var(--rs,#e1e4e8);box-shadow:inset 3px 0 0 var(--rsb,#8b939d)}
+.gld-az{position:absolute;right:0;top:0;bottom:0;width:22px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:4px 0;font-size:11px;font-weight:800;color:var(--th2);user-select:none;cursor:pointer;touch-action:none}
+.gld-az i{font-style:normal}.gld-az i.off{opacity:.3}
+#lgDet{background:var(--card);border-radius:14px;padding:20px 24px;flex:none}#lgDet:empty{display:none}
+.gld-t{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.gld-t b{font-size:28px}.gld-t span{border:1.5px solid var(--line);border-radius:12px;padding:2px 9px;font-size:12px;font-weight:800;color:var(--mute)}
+.gld-m{font-size:17px;line-height:1.5;margin:8px 0 0}.gld-band{margin:18px 0 4px;padding:5px 8px;background:var(--th-t);font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2)}
+.gl-x{position:absolute;right:10px;top:8px;border:0;background:none;font-size:28px;line-height:1;color:var(--mute);cursor:pointer}
 :root.phone .gl-az{display:flex;flex-direction:column;justify-content:space-between;position:fixed;right:2px;top:calc(var(--tb) + 70px);bottom:calc(var(--bn) + 16px);z-index:3;touch-action:none}
 .gl-bub{position:fixed;transform:translateY(-50%);width:64px;height:64px;border-radius:16px;background:var(--th,#475569);color:#fff;font-size:34px;font-weight:900;display:grid;place-items:center;z-index:50;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.25)}.gl-bub[hidden]{display:none}
 :root.phone .gl-az i{font-style:normal;font-size:var(--fl,13px);font-weight:800;color:var(--gold);padding:0 5px;line-height:1}
@@ -481,6 +510,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 <script src="facts.js"></script>
 <script src="ai.js"></script>
 <script src="glossary.js"></script>
+<script src="glossary-faq.js"></script>
 <script src="pdfview.js"></script>
 <script src="spec.js"></script>
 <script src="pid.js"></script>
@@ -876,15 +906,59 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
   $("homeBtn").onclick = () => start(pick());
 
   // ---------- GLOSSARY ----------
+  // discipline pills over the glossary (desktop and phone): one at a time, All shows everything; the choice is kept
+  const GDIS = [["", "All"], ["General", "General"], ["Process", "Process"], ["Mechanical", "Mech"], ["Piping", "Piping"], ["Electrical", "Elec"], ["Instrumentation & control", "C&I"], ["Civil", "Civil"], ["Structural", "Struct"]];
+  let gDis = (() => { try { return localStorage.getItem("kcgm_gdis") || ""; } catch (e) { return ""; } })();
+  // phone: names only, a tap shows the meaning (a: opens under the name, b: chips and a card from below, c: tiles that open in place)
+  const GLV = (/[?&]glv=([abc])/.exec(location.search) || [])[1] || (() => { try { return localStorage.getItem("kcgm_glv") || "b"; } catch (e) { return "a"; } })();
+  window.kcgmRenderGloss = (f, out, box) => renderGloss(f, out, box);
+  // desktop (Learn > Glossary): pills and the names under the search, an A to Z strip down the list's side; the term
+  // picked shows on the right, its meaning on top and "More info" (3 FAQs, glossary-faq.js) below
+  let gSel = "";
+  const GL1 = k => { const c = String(k).trim().charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
+  function glDesk(list, out, pl){
+    const sorted = list.slice().sort((a, b) => (GL1(b[0]) === "#") - (GL1(a[0]) === "#") || a[0].localeCompare(b[0], undefined, { sensitivity: "base", numeric: true }));
+    let h = "", last = ""; sorted.forEach(([k]) => { const c = GL1(k); if (c !== last){ h += `<div class="gld-h" data-l="${c}">${c}</div>`; last = c; } h += `<button type="button" class="gld-n${k === gSel ? " on" : ""}" data-k="${esc(k)}">${esc(k)}</button>`; });
+    const has = new Set(sorted.map(x => GL1(x[0])));
+    out.innerHTML = `<div class="gld-list">${h || `<div class="gl-none">No match</div>`}</div><div class="gld-az">${"#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(c => `<i data-l="${c}"${has.has(c) ? "" : ` class="off"`}>${c}</i>`).join("")}</div>`;
+    out.style.top = (pl.offsetTop + pl.offsetHeight + 10) + "px";
+    const box = out.querySelector(".gld-list"), az = out.querySelector(".gld-az");
+    box.onclick = e => { const b = e.target.closest(".gld-n"); if (!b) return; gSel = b.dataset.k; box.querySelectorAll(".gld-n.on").forEach(x => x.classList.remove("on")); b.classList.add("on"); glDef(gSel); };
+    // the strip: press or drag down it to jump to a letter (the nearest one that has terms)
+    const go = e => { let t = null, dmin = 1e9; az.querySelectorAll("i:not(.off)").forEach(i => { const q = i.getBoundingClientRect(), d = Math.abs(q.top + q.height / 2 - e.clientY); if (d < dmin){ dmin = d; t = i; } });
+      const g = t && box.querySelector(`.gld-h[data-l="${CSS.escape(t.dataset.l)}"]`); if (g) box.scrollTop = g.offsetTop; };
+    az.onpointerdown = e => { az.setPointerCapture(e.pointerId); go(e); }; az.onpointermove = e => { if (e.buttons) go(e); };
+    if (!sorted.some(x => x[0] === gSel)) gSel = sorted.length ? sorted[0][0] : "";
+    const on = box.querySelector(`.gld-n[data-k="${CSS.escape(gSel)}"]`); if (on) on.classList.add("on");
+    glDef(gSel);
+  }
+  function glDef(k){
+    const pane = $("lgPane"); let d = $("lgDet"); if (!d){ d = document.createElement("div"); d.id = "lgDet"; pane.appendChild(d); }
+    const e = GLOSSARY.find(x => x[0] === k); if (!e){ d.innerHTML = `<div class="gl-none">Pick a term on the left.</div>`; return; }
+    const fq = (typeof GLOSSARY_FAQ !== "undefined" ? GLOSSARY_FAQ : {})[k] || [];
+    d.innerHTML = `<div class="gld-t"><b>${esc(k)}</b>${e[2] ? `<span>${esc(e[2])}</span>` : ""}</div><p class="gld-m">${esc(e[1])}</p>` +
+      (fq.length ? `<div class="gld-band">More info</div>` + fq.map(([q, a], i) => `<details class="gld-fq"${i ? "" : " open"}><summary>${esc(q)}</summary><div>${esc(a)}</div></details>`).join("") : "");
+  }
   function renderGloss(f, out = $("gList"), box = null){
     f = (f || "").toLowerCase();
-    const list = GLOSSARY.filter(([k, v]) => !f || k.toLowerCase().includes(f) || v.toLowerCase().includes(f));
+    let pl = out.previousElementSibling; if (!pl || !pl.classList.contains("gl-pills")){ pl = document.createElement("div"); pl.className = "gl-pills"; out.before(pl); }
+    const base = GLOSSARY.filter(([k, v]) => !f || k.toLowerCase().includes(f) || v.toLowerCase().includes(f));
+    pl.innerHTML = GDIS.map(([d, n]) => { const c = d ? base.filter(x => x[2] === d).length : base.length; return c || !d || d === gDis ? `<button type="button" class="gl-p${d === gDis ? " on" : ""}" data-d="${d}">${n}<i>${c}</i></button>` : ""; }).join("");
+    pl.onclick = e => { const b = e.target.closest("[data-d]"); if (!b) return; gDis = b.dataset.d; try { localStorage.setItem("kcgm_gdis", gDis); } catch (x) {} renderGloss(f, out, box); };
+    const list = base.filter(x => !gDis || x[2] === gDis);
     if (Tabs.phone){   // phone: A to Z, a sticky letter over each group and a strip down the side to jump
       const L = k => { const c = String(k).trim().charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
       const sorted = list.slice().sort((a, b) => (L(b[0]) === "#") - (L(a[0]) === "#") || a[0].localeCompare(b[0], undefined, { sensitivity: "base", numeric: true }));   // (# first)
-      let h = "", last = ""; sorted.forEach(([k, v]) => { const c = L(k); if (c !== last){ h += `<div class="gl-h" id="gl-${c}">${c}</div>`; last = c; } h += `<div class="gl-e"><b>${k}</b><span>${v}</span></div>`; });
+      let h = "", last = "", grp = ""; const close = () => { if (grp){ h += grp + "</div>"; grp = ""; } };
+      sorted.forEach(([k, v, d]) => { const c = L(k); if (c !== last){ close(); h += `<div class="gl-h" id="gl-${c}">${c}</div>`; last = c; grp = `<div class="gl-g gl-${GLV}">`; }
+        grp += `<button type="button" class="gl-e" data-m="${esc(v)}" data-d="${esc(d || "")}"><b>${k}</b><span>${v}</span></button>`; }); close();
       const letters = [...new Set(sorted.map(x => L(x[0])))];
-      out.innerHTML = (h || `<div class="gl-e"><b>No match</b></div>`) ;
+      out.innerHTML = (h || `<div class="gl-none">No match</div>`) ;
+      out.onclick = e => { const b = e.target.closest(".gl-e"); if (!b) return;
+        if (GLV === "b"){ let sh = document.querySelector(".gl-sheet"); if (!sh){ sh = document.createElement("div"); sh.className = "gl-sheet"; document.body.appendChild(sh); sh.onclick = x => { if (x.target === sh || x.target.closest(".gl-x")) sh.hidden = true; }; }
+          const fq = (typeof GLOSSARY_FAQ !== "undefined" ? GLOSSARY_FAQ : {})[b.querySelector("b").textContent] || [];
+          sh.innerHTML = `<div class="gl-card"><button type="button" class="gl-x" aria-label="Close">×</button><b>${b.querySelector("b").innerHTML}</b><small>${esc(b.dataset.d)}</small><p>${esc(b.dataset.m)}</p>${fq.length ? `<div class="gl-mi">More info</div>${fq.map(([q, a]) => `<details class="gl-fq"><summary>${esc(q)}</summary><div>${esc(a)}</div></details>`).join("")}` : ""}</div>`; sh.hidden = false; return; }
+        const was = b.classList.contains("open"); out.querySelectorAll(".gl-e.open").forEach(x => x.classList.remove("open")); if (!was) b.classList.add("open"); };
       // sliding along the strip: a big letter beside the finger and a tick of vibration at each new letter (Android)
       const az = out.querySelector(".gl-az"); if (az){ let cur = "", bub = document.querySelector(".gl-bub"), ht;
         if (!bub){ bub = document.createElement("div"); bub.className = "gl-bub"; bub.hidden = true; document.body.appendChild(bub); }
@@ -895,7 +969,8 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
         az.addEventListener("pointerdown", e => { az.setPointerCapture(e.pointerId); cur = ""; go(e); }); az.addEventListener("pointermove", e => { if (e.buttons || e.pointerType === "touch") go(e); });
         const off = () => { ht = setTimeout(() => bub.hidden = true, 350); }; az.addEventListener("pointerup", off); az.addEventListener("pointercancel", off); }
       return; }
-    out.innerHTML = list.map(([k, v]) => `<div class="k">${k}</div><div>${v}</div>`).join("") || `<div class="k">–</div><div>No match</div>`;
+    if (out.id === "lgList") return glDesk(list, out, pl);
+    out.innerHTML = list.map(([k, v, d]) => `<div class="k">${k}</div><div>${v}<small class="gl-dd">${esc(d || "")}</small></div>`).join("") || `<div class="k">–</div><div>No match</div>`;
   }
   // ---------- LOOKUP ----------
   let lk = null;
