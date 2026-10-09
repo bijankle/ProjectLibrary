@@ -148,10 +148,12 @@ window.SourcesList = (() => {
     let OFF = null;
     function wire(){   // (phone; the desktop listens once on el, below)
       el.querySelectorAll(".sl-kp").forEach(b => b.onclick = e => { e.stopPropagation(); const d = DOCS.find(x => x.k === b.dataset.k); if (!d) return;
-        if (busyRow){ stop.x = true; return; }
-        if (stOf(d) === "ok"){ if (confirm(`Remove ${d.number} from this device?`)) Offline.drop(d.keep).then(refresh); return; }
-        run([d], b.closest("[data-r]")); });
-      const all = $(".sl-all"); if (all) all.onclick = () => { if (busyRow){ stop.x = true; return; } run(list.filter(d => stOf(d) !== "ok"), null); };
+        if (busyRow && busyRow === b.closest("[data-r]")){ stop.x = true; return; }
+        if (!busyRow && stOf(d) === "ok"){ if (confirm(`Remove ${d.number} from this device?`)) Offline.drop(d.keep).then(refresh); return; }
+        if (busyRow && stOf(d) === "ok") return;
+        run([d], b.closest("[data-r]"), d.k); });
+      const all = $(".sl-all"); if (all) all.onclick = () => { if (busyRow === el){ stop.x = true; return; } run(list.filter(d => stOf(d) !== "ok"), null, "all"); };
+      paintQ();
       el.querySelectorAll(".sl-sv").forEach(a => a.addEventListener("click", e => e.stopPropagation()));
       el.querySelectorAll(".sl-r").forEach(x => x.onclick = () => openDoc(DOCS.find(d => d.k === x.dataset.r)));
     }
@@ -220,7 +222,7 @@ window.SourcesList = (() => {
           ? byArea(ds).forEach(([a, as], i, A) => grp(`a:${t}:${a}`, 1, pre, i === A.length - 1, a === "–" ? "Other" : `${a} ${AREA[a] || ""}`.trim(), as, p2 => as.forEach((d, j) => doc(d, 2, p2, j === as.length - 1))))
           : ds.forEach((d, j) => doc(d, 1, pre, j === ds.length - 1))); });
       $(".sl-rows").innerHTML = H.join("") || `<div class="sl-none">${q ? `Nothing matches${type && hit.length ? ` in ${esc(TN[type])}; ${hit.length} in All sources` : ""}.` : "Nothing here."}</div>`;
-      paintBusy();
+      paintBusy(); paintQ();
     }
     function paintBusy(){ const r = busy && el.querySelector(`[data-id="${CSS.escape(busy.id)}"]`); if (!r) return;
       const v = busy.have + busy.f * (busy.total - busy.have), kb = r.querySelector(".sl-kp"), l = r.querySelector(".sl-pt"), bar = r.querySelector(".sl-rb i,.sl-pb i");
@@ -237,11 +239,11 @@ window.SourcesList = (() => {
         const r = t.closest("[data-id]"); if (!r) return;
         if (t.closest(".sl-vw")) return window.open(r.dataset.pdf, "_blank", "noopener");
         const kb = t.closest(".sl-kp");
-        if (kb){ if (busy){ stop.x = true; return; }
-          if (kb.dataset.ca){ const ds = grpDocs(kb.dataset.ca); if (!allOk(ds)) run(ds, r); return; }   // (all of it: the ones cached are skipped, the MB count on from them)
+        if (kb){ if (busy && busy.id === r.dataset.id){ stop.x = true; return; }
+          if (kb.dataset.ca){ const ds = grpDocs(kb.dataset.ca); if (!allOk(ds)) run(ds, r, r.dataset.id); return; }   // (all of it: the ones cached are skipped, the MB count on from them)
           const d = DOCS.find(x => x.k === r.dataset.r); if (!d) return;
-          if (stOf(d) === "ok"){ if (confirm(`Remove ${d.number} from this device?`)) Offline.drop(d.keep).then(refresh); return; }
-          return run([d], r); }
+          if (stOf(d) === "ok"){ if (!busy && confirm(`Remove ${d.number} from this device?`)) Offline.drop(d.keep).then(refresh); return; }
+          return run([d], r, r.dataset.id); }
         if (r.classList.contains("sl-sec")){ type = r.dataset.id.slice(2); if (type) open.add("r:" + type);
           try { localStorage.setItem("kcgm_srcsec", type || "all"); } catch (e) {} $(".sl-tree").scrollTop = 0; return draw(); }
         if (t.closest(".sl-op")) return openDoc(DOCS.find(x => x.k === r.dataset.r));
@@ -285,20 +287,31 @@ window.SourcesList = (() => {
       b.disabled = false; b.classList.remove("sl-on"); b.title = was; }
     // keep on the device: one row, or every row the filters show (phone), a section or tree group (desktop); the row's (or
     // the bar's) text counts up the MB
-    async function run(ds, row){
-      const files = [...new Set(ds.flatMap(d => d.keep))]; if (!files.length) return;
+    // a queue: while one download runs, a tap on another Cache button lines it up (tap it again to take it off); each
+    // starts when the one before ends
+    const Q = [];
+    const rowOf = id => phone ? (id === "all" ? null : el.querySelector(`.sl-r[data-r="${CSS.escape(id)}"]`)) : el.querySelector(`[data-id="${CSS.escape(id)}"]`);
+    function paintQ(){ el.querySelectorAll(".sl-q").forEach(b => { b.classList.remove("sl-q"); if (b.dataset.lab != null){ const sp = b.querySelector("span"); if (sp) sp.textContent = b.dataset.lab; else b.textContent = b.dataset.lab; delete b.dataset.lab; } });
+      Q.forEach(j => { const r = rowOf(j.id), b = j.id === "all" ? $(".sl-all") : r && r.querySelector(".sl-kp"); if (!b) return;
+        b.classList.add("sl-q"); b.title = "Queued: tap to take it off the queue"; const sp = b.querySelector("span") || (j.id === "all" ? b : null);
+        if (sp){ b.dataset.lab = sp.textContent; sp.textContent = "Queued"; } }); }
+    async function run(ds, row, id){
+      if (busy || busyRow){ const i = Q.findIndex(j => j.id === id); if (i >= 0) Q.splice(i, 1); else Q.push({ ds, id }); paintQ(); return; }
+      const files = [...new Set(ds.flatMap(d => d.keep))]; if (!files.length) return next();
       const total = files.reduce((t, f) => t + (OFF.sz[f] || 0), 0), have = files.filter(f => st[f] === "ok").reduce((t, f) => t + (OFF.sz[f] || 0), 0);
       stop.x = false; el.classList.add("sl-busy"); let say;
       if (phone){ busyRow = row || el; busyRow.classList.add("sl-on");
         const bar = row ? row.querySelector(".sl-rb i") : $(".sl-pg i");
         const kb = row && row.querySelector(".sl-kp"); if (kb) kb.innerHTML = ICO.stop + `<span></span>`;
         say = f => { const t = `${mb(have + f * (total - have))} / ${mb(total)} MB`; const l = row ? row.querySelector(".sl-kp span") : $(".sl-all"); if (l) l.textContent = t; if (bar) bar.style.width = ((have + f * (total - have)) / total * 100).toFixed(1) + "%"; }; }
-      else { busy = { id: row.dataset.id, have, total, f: 0 }; say = f => { busy.f = f; paintBusy(); }; }
+      else { busy = { id, have, total, f: 0 }; say = f => { busy.f = f; paintBusy(); }; }
       say(0);
       if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
       try { await Offline.get(files, say, stop); } catch (e){ if (e.message !== "stopped") alert("Stopped: " + e.message + ". What was saved is kept; tap Cache again to finish."); }
-      if (busyRow){ busyRow.classList.remove("sl-on"); busyRow = null; } busy = null; el.classList.remove("sl-busy"); refresh();   // (refresh redraws, so a waiting redraw is done too)
+      if (busyRow){ busyRow.classList.remove("sl-on"); busyRow = null; } busy = null; el.classList.remove("sl-busy"); await refresh();   // (refresh redraws, so a waiting redraw is done too)
+      next();
     }
+    function next(){ const nx = Q.shift(); if (nx){ paintQ(); run(nx.ds.filter(d => stOf(d) !== "ok"), rowOf(nx.id), nx.id); } }
     async function refresh(){ if (!DOCS || !window.Offline) return draw(); st = await Offline.check([...new Set(DOCS.flatMap(d => d.keep))]).catch(() => ({})); draw(); }
     load().then(async () => { OFF = await Offline.load().catch(() => ({ sz: {} })); draw(); refresh(); });
     return { refresh, filter: v => { q = String(v || "").trim().toLowerCase(); draw(); } };
@@ -448,7 +461,7 @@ window.SourcesList = (() => {
 .sl-b{display:inline-flex;align-items:center;justify-content:center;gap:5px;box-sizing:border-box;height:30px;border:1.5px solid var(--gold);background:var(--card,var(--panel));color:color-mix(in srgb,var(--gold) 72%,var(--ink));border-radius:9px;padding:0 10px;font:inherit;font-size:var(--fl,13px);font-weight:800;text-decoration:none;white-space:nowrap;cursor:pointer;font-variant-numeric:tabular-nums}
 .sl-b0{border:0!important;background:none!important}.sl-b:disabled{opacity:.6;cursor:progress}
 .sl-kp.ok{border-color:#2aa765;color:#1f9a55}.sl-b,.sl-p,.sl-all,.sl-r{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.sl-b:active,.sl-p:active,.sl-all:active{transform:scale(.93);background:var(--th-t,#eef1f5)!important;transition:transform .05s}.sl-r:active{background:var(--th-t,#eef1f5)}.sl-kp.old,.sl-kp.part{border-style:dashed}
-.sl-busy .sl-kp:not(.sl-on .sl-kp),.sl-busy .sl-all:not(.sl-ph.sl-on .sl-all){opacity:.4;pointer-events:none}
+.sl-q{border-style:dashed!important;opacity:.75}
 .sl-rb{display:none;position:absolute;left:3px;right:10px;bottom:3px;height:2px}
 .sl-none{color:var(--mute);padding:14px 10px;font-size:var(--fb,15px)}
 /* desktop: the side panel, the divider and the tree's card fill the window below the bar; each scrolls on its own */
