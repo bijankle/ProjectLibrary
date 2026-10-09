@@ -166,7 +166,13 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
 .ck-r #q{flex:0 0 34px;height:34px;width:100%;border:1.5px solid var(--line);border-radius:17px;padding:0 12px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink)}
 .ck-r #count{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2);margin:10px 0 6px;white-space:nowrap;overflow:hidden}#count b{color:var(--ink);letter-spacing:.02em;font-variant-numeric:tabular-nums}.ck-r #count b{color:var(--ink)}
 /* one grid for the header and the rows; minmax(0, …) so a long cell is cut, never pushed over the next */
-.ck-gh,.ck-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:8px;align-items:center}
+.ck-gh,.ck-row{display:grid;grid-template-columns:22px minmax(0,1fr) minmax(0,1.6fr);gap:8px;align-items:center}
+.ck-tk{width:17px;height:17px;padding:0;border:1.5px solid color-mix(in srgb,var(--ink) 45%,transparent);border-radius:4px;background:var(--card);cursor:pointer;display:inline-grid;place-items:center;vertical-align:middle}
+.ck-tk.on{background:#1a8a3a;border-color:#1a8a3a}.ck-tk.on::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:translate(0,-1px) rotate(45deg)}.ck-tk.busy{opacity:.4}
+.ck-rs{margin:12px 0;padding:12px;border:1.5px solid var(--line);border-radius:10px;background:var(--card)}.ck-rs.on{border-color:#1a8a3a}
+.ck-rs label{display:flex;gap:10px;align-items:center;font-weight:800;font-size:15px;cursor:pointer}.ck-rs label .ck-tk{width:20px;height:20px}
+.ck-note{margin-top:8px;width:100%;box-sizing:border-box;height:56px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink);resize:vertical}
+.ck-rh,.ck-rw{font-size:12px;color:var(--mute);margin-top:4px}.ck-rn{color:var(--ink);font-size:14px;margin-top:4px;white-space:pre-wrap}.ck-rm{font-size:13px;margin-top:4px;color:var(--mute)}.ck-rm.bad{color:var(--s-clash,#d11)}
 .ck-gh{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:0 8px 4px}.ck-gh span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ck-list{flex:1;min-height:0;overflow:auto;border-top:1px solid var(--line);outline:0}
 .ck-row{height:32px;padding:0 8px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:14px;cursor:pointer}
@@ -244,7 +250,7 @@ body.splitting{cursor:col-resize;user-select:none}
   <div class="more" id="more"></div>
   <div id="ck">
     <div class="ck-l"><div class="ck-f" id="ckF"><div id="ckP" style="display:contents"></div></div>
-      <div class="ck-r" id="ckR"><div class="ck-gh"><span>Item</span><span>Comment</span></div><div class="ck-list" id="ckList"></div></div></div>
+      <div class="ck-r" id="ckR"><div class="ck-gh"><span></span><span>Item</span><span>Comment</span></div><div class="ck-list" id="ckList"></div></div></div>
     <div class="ck-dv" id="ckDv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
     <div class="ck-x" id="ckX"></div>
   </div>
@@ -256,6 +262,7 @@ body.splitting{cursor:col-resize;user-select:none}
 <script src="sources-view.js"></script>
 <script src="offline.js"></script>
 <script src="sources-list.js"></script>
+<script src="checks-state.js"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
@@ -382,18 +389,24 @@ body.splitting{cursor:col-resize;user-select:none}
   const newer = r => r.date1 && r.date2 ? (r.date1 > r.date2 ? 1 : r.date2 > r.date1 ? 2 : 0) : 0;
   let F = [], cur = null;   // the list as drawn, the picked check (kept while it stays in the list)
   if (!PHONE){ $("ckR").prepend($("q"), $("count")); $("ckF").append($("xls")); $("xls").textContent = "Export to Excel"; }
+  // desktop: one pill at a time (sel). A check carries tags (its type, its category, Resolved once ticked) and shows when
+  // the pill picked is one of them; with no pill, every open check. Resolved checks show only under Resolved.
+  let sel = null;   // { g: "r" | "s" | "c", v }
+  const resd = r => window.CK && CK.isRes(CK.id(r)), redOf = r => window.CK && CK.RED.has(r.sev) && !resd(r);
+  const tagHit = (r, t) => !t ? !resd(r) : t.g === "r" ? resd(r) : !resd(r) && (t.g === "s" ? r.sev === t.v : r.cat === t.v);
   function desk(reset){
-    F = filtered(); const n = F.length, nT = filtered("sev"), nC = filtered("cat"), cnt = (a, k, v) => a.reduce((t, r) => t + (r[k] === v), 0);
+    const base = filtered("sev").filter(r => !$("cat").value || r.cat === $("cat").value);
+    F = base.filter(r => tagHit(r, sel)); const n = F.length, open = base.filter(r => !resd(r)), cnt = (a, k, v) => a.reduce((t, r) => t + (r[k] === v), 0);
     $("nChecks").textContent = `(${all.length})`;
-    const one = off.size === SEV.length - 1 ? SEV.find(s => !off.has(s)) : "";
-    $("count").innerHTML = `<span>${one ? PL[one] : "Results"}</span><b>${n === all.length ? n : n + " of " + all.length}</b>`;
+    $("count").innerHTML = `<span>${sel ? (sel.g === "s" ? PL[sel.v] : sel.g === "r" ? "Resolved" : sel.v) : "Open checks"}</span><b>${n}</b>`;
     // categories in a fixed order (most checks first), so the pills don't jump about as the counts change
     const byCat = {}; all.forEach(r => byCat[r.cat] = (byCat[r.cat] || 0) + 1);
-    const pill = (k, on, c, dot) => `<button class="ck-p${on ? " on" : ""}${c ? "" : " z"}" data-${dot ? "s" : "c"}="${esc(k)}"${dot ? ` title="${SEVTIP[k]}"` : ` title="${esc(k)}"`}>${dot ? `<i style="background:${SEVC[k]}"></i>` : ""}<s>${esc(k)}</s><em>${c}</em></button>`;
-    $("ckP").innerHTML = `<div class="ck-h">Type</div>${SEV.map(s => pill(s, off.size && !off.has(s), cnt(nT, "sev", s), 1)).join("")}
-      <div class="ck-h">Category</div>${Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a] || a.localeCompare(b)).map(c => pill(c, cats.has(c), cnt(nC, "cat", c))).join("")}`;
+    const pill = (k, on, c, dot) => `<button class="ck-p${on ? " on" : ""}${c ? "" : " z"}" data-${dot === 2 ? "r" : dot ? "s" : "c"}="${esc(k)}"${dot === 2 ? ' title="Checks marked resolved"' : dot ? ` title="${SEVTIP[k]}"` : ` title="${esc(k)}"`}>${dot ? `<i style="background:${dot === 2 ? "var(--s-resolved,#1a8a3a)" : SEVC[k]}"></i>` : ""}<s>${esc(k)}</s><em>${c}</em></button>`;
+    const nRes = base.filter(resd).length, is = (g, v) => !!sel && sel.g === g && sel.v === v;
+    $("ckP").innerHTML = `<div class="ck-h">Type</div>${pill("Resolved", is("r", "Resolved"), nRes, 2)}${SEV.map(s => pill(s, is("s", s), cnt(open, "sev", s), 1)).join("")}
+      <div class="ck-h">Category</div>${Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a] || a.localeCompare(b)).map(c => pill(c, is("c", c), cnt(open, "cat", c))).join("")}`;
     const L = $("ckList"), top = L.scrollTop;
-    L.innerHTML = n ? F.map((r, i) => `<div class="ck-row" data-i="${i}"><b title="${esc(r.item)}">${esc(r.item)}</b><span class="ck-c" title="${esc(r.note)}">${esc(r.note)}</span></div>`).join("")
+    L.innerHTML = n ? F.map((r, i) => `<div class="ck-row${redOf(r) ? " red" : ""}" data-i="${i}"><span><button class="ck-tk${resd(r) ? " on" : ""}" title="${resd(r) ? "Resolved: untick to reopen" : "Mark as resolved"}" aria-label="Resolved"></button></span><b title="${esc(r.item)}">${esc(r.item)}</b><span class="ck-c" title="${esc(r.note)}">${esc(r.note)}</span></div>`).join("")
       : `<div class="ck-none">No checks match.</div>`;
     L.scrollTop = reset ? 0 : top;
     pick(F.includes(cur) ? cur : F[0], false);
@@ -406,7 +419,11 @@ body.splitting{cursor:col-resize;user-select:none}
     if (!r){ $("ckX").innerHTML = `<div class="ck-none">${all.length ? "Nothing picked: no checks match the filters." : ""}</div>`; return; }
     const w = newer(r), doc = (k, d, dt) => d ? `<tr><td>Document ${k}</td><td>${esc(d)}${dt ? `<small>${fmt(dt)}${w === k ? " · newer" : ""}</small>` : ""}</td></tr>` : "";
     const says = (k, v) => v ? `<div class="ck-st${w === k ? " nw" : ""}"><div class="ck-dh"><span>What document ${k} says</span>${w === k ? "<u>taken as true</u>" : ""}</div>${esc(v)}</div>` : "";
-    $("ckX").innerHTML = `<span class="ck-b" style="--c:${SEVC[r.sev]}"><i></i>${esc(r.sev)}</span><h2>${esc(r.item)}</h2>
+    const ri = window.CK ? CK.info(CK.id(r)) : null;
+    const rbox = `<div class="ck-rs${ri ? " on" : ""}"><label><button class="ck-tk${ri ? " on" : ""}" aria-label="Resolved"></button><span>${ri ? "Resolved" : "Mark as resolved"}</span></label>
+      ${ri ? `<div class="ck-rw">${esc(ri.by || "")}${ri.at ? " · " + fmt(String(ri.at).slice(0, 10)) : ""}${ri.note ? `<div class="ck-rn">${esc(ri.note)}</div>` : ""}</div>`
+        : `<textarea class="ck-note" placeholder="Note (optional, kept on record), e.g. MEL to be revised, confirmed with Primero"></textarea><div class="ck-rh">Saved to GitHub for everyone, with your name and the date. Untick later to put it back in its type.</div>`}<div class="ck-rm"></div></div>`;
+    $("ckX").innerHTML = `<span class="ck-b" style="--c:${SEVC[r.sev]}"><i></i>${esc(r.sev)}</span><h2>${esc(r.item)}</h2>${rbox}
       <table class="ck-kv"><tr><td>Category</td><td>${esc(r.cat)}</td></tr>${doc(1, r.d1, r.date1)}${doc(2, r.d2, r.date2)}</table>
       ${says(1, r.v1)}${says(2, r.v2)}${r.note ? `<div class="ck-nt"><div class="ck-dh"><span>Comment</span></div>${esc(r.note)}</div>` : ""}`;
     $("ckX").scrollTop = 0;
@@ -414,9 +431,20 @@ body.splitting{cursor:col-resize;user-select:none}
   if (!PHONE){
     // type pills: the first click shows only that type, later clicks add or drop types; none left is all of them
     $("ckF").addEventListener("click", e => { const b = e.target.closest(".ck-p"); if (!b) return;
-      if (b.dataset.s){ const s = b.dataset.s; if (!off.size) off = new Set(SEV.filter(x => x !== s)); else if (off.has(s)) off.delete(s); else { off.add(s); if (off.size === SEV.length) off = new Set(); } }
-      else { const c = b.dataset.c; cats.has(c) ? cats.delete(c) : cats.add(c); }
+      const t = b.dataset.r ? { g: "r", v: "Resolved" } : b.dataset.s ? { g: "s", v: b.dataset.s } : { g: "c", v: b.dataset.c };
+      sel = sel && sel.g === t.g && sel.v === t.v ? null : t;   // (the same pill again: back to every open check)
       draw(true); });
+    // ticking: resolves (with the note, in the detail) or reopens; the list redraws with the check moved
+    const tick = async (r, el) => { if (!window.CK) return; const on = !CK.isRes(CK.id(r)), m = $("ckX").querySelector(".ck-rm"), note = (($("ckX").querySelector(".ck-note") || {}).value || "");
+      if (!on && !confirm(`Reopen "${r.item}"? It goes back to ${r.sev}.`)) return;
+      el.classList.add("busy"); if (m) m.textContent = "Saving…";
+      try { await CK.set(CK.id(r), on, note); cur = r; draw(); }
+      catch (e){ el.classList.remove("busy"); if (m){ m.textContent = e.message; m.classList.add("bad"); } else alert(e.message); if (e.key && window.Tabs && Tabs.keys) Tabs.keys(); } };
+    $("ckList").addEventListener("click", e => { const t = e.target.closest(".ck-tk"); if (!t) return; e.stopPropagation(); const el = e.target.closest(".ck-row"); pick(F[+el.dataset.i]); tick(F[+el.dataset.i], t); }, true);
+    $("ckX").addEventListener("click", e => { const t = e.target.closest(".ck-rs .ck-tk, .ck-rs label"); if (t && cur){ e.preventDefault(); tick(cur, $("ckX").querySelector(".ck-rs .ck-tk")); } });
+    addEventListener("kcgm-checks", () => { const m = location.hash.match(/^#c=([0-9a-f]{8})$/); if (m && window.CK){ const r = all.find(x => CK.id(x) === m[1]);
+        if (r){ sel = CK.isRes(m[1]) ? { g: "r", v: "Resolved" } : null; history.replaceState(history.state, "", location.pathname); draw(true); pick(r, true); return; } } draw(); });
+    window.CK && CK.load();
     $("ckList").addEventListener("click", e => { const el = e.target.closest(".ck-row"); if (el) pick(F[+el.dataset.i]); });
     // up and down move the pick (also while typing in the search box), unless the Sources view is open
     addEventListener("keydown", e => { if ((e.key !== "ArrowDown" && e.key !== "ArrowUp") || $("checksPane").hidden || !F.length || e.altKey || e.ctrlKey || e.metaKey) return;

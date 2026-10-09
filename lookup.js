@@ -195,6 +195,24 @@
     const heads = (ctx.heads || []).filter(Boolean);
     return out.filter(r => !heads.some(t => same(r.v, t) || said(r, t)) && !out.some(o => o !== r && said(r, o.v)));
   };
+  // open clashes (Checks, checks-state.js) turn the value they are about red until resolved; resolved ones go on record
+  const flagRows = (rows, keys) => { if (!window.CK) return; const seen = new Set();
+    keys.forEach(k => CK.open(k).forEach(f => { if (seen.has(f.id)) return; seen.add(f.id);
+      const R0 = f.row, nw = R0.date1 && R0.date2 ? (R0.date2 > R0.date1 ? 2 : 1) : 1, keep = String(nw === 2 ? R0.v2 : R0.v1), drop = String(nw === 2 ? R0.v1 : R0.v2);
+      const DW = /2000-[A-Z0-9]+-P[IF]D-[A-Z]+-\d+/, kd = (keep.match(DW) || [])[0], dd = (drop.match(DW) || [])[0];
+      const isF = x => x.l === f.field || (f.field === "P&ID" && /^P&IDs?$/.test(x.l));
+      // a drawing clash: the row of the drawing taken as true stays, the other's row goes (the check has both)
+      if (kd && dd) for (let i = rows.length - 1; i >= 0; i--) if (isF(rows[i]) && String(rows[i].v).includes(dd) && !String(rows[i].v).includes(kd)) rows.splice(i, 1);
+      const r = f.field && (rows.find(x => isF(x) && (!kd || String(x.v).includes(kd))) || rows.find(isF));
+      const tag = `<div class="lk-clash">**data clash to be resolved <a href="issues.html#c=${f.id}">see Checks</a></div>`;
+      if (r && !r.clash){ r.clash = 1; r.h = `<span class="lk-red">${r.h != null ? r.h : esc(r.v)}</span>${tag}`; }
+      else if (!r) rows.push({ l: f.field || R0.cat, h: `<span class="lk-red">${esc(keep)}</span>${tag}` }); }));
+    keys.forEach(k => CK.done(k).forEach(d => { if (seen.has(d.id) || !d.res) return; seen.add(d.id);
+      // settled by the drawings: only the drawing(s) that show it stay
+      if (d.res.keep && CK.FIELD[d.row.cat] === "P&ID"){ const ks = String(d.res.keep).split(/,\s*/);
+        for (let i = rows.length - 1; i >= 0; i--) if (/^P&IDs?$/.test(rows[i].l) && /PID-/.test(rows[i].v) && !ks.some(x => String(rows[i].v).includes(x))) rows.splice(i, 1); }
+      const w = [d.res.by, d.res.at && String(d.res.at).slice(0, 10)].filter(Boolean).join(", ");
+      rows.push({ l: "Resolved check", h: `${esc(d.row.cat)}: ${esc(d.res.note || "resolved")}${w ? `<div class="lk-rsw">${esc(w)}</div>` : ""}` }); })); };
   L.rowsHTML = rows => rows.map(r => `<tr><td>${esc(r.l)}</td><td>${r.h != null ? r.h : esc(r.v)}</td></tr>`).join("");
   L.fields = t => DB && DB.types[t] ? DB.types[t].f : null;
   // a line in a list: "from <equipment description> (<tag>) to …", equipment named from the MEL; another line stays a number
@@ -245,6 +263,7 @@
       if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
         kept.unshift(...dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
           return ns.length ? { l: r.l, v: ns.join(", "), h: ns.map(n => dwgA(n)).join("<br>") } : r; })); }
+      flagRows(kept, [it.key, ...twins.map(x => x.key)]);
       secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` });
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
       if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
@@ -472,6 +491,7 @@
       `<h4 class="lk-h">Text read</h4><textarea class="lk-ocr" rows="4">${esc(res.text)}</textarea><button class="lk-btn lk-ocrgo">Search this text</button>`;
     inp.value = opts.initial || ""; if (opts.initial) ensure().then(() => showList(inp.value)); else body.innerHTML = opts.intro || "";
     return { input: inp, search: q => { inp.value = q; ensure().then(() => showList(q)); }, openKey: k => ensure().then(() => open(L.find(norm(k)), true)),
+      redraw: () => { if (cur) open(cur, false, "step"); },
       openItem: (it, list, how) => { stack.length = 0; cur = null; ctx = list || null; open(it, true, how); },
       close: () => { stack.length = 0; cur = null; showList(inp.value); }, current: () => cur };
   };
@@ -565,6 +585,7 @@
 .lk-spec .lk-btn{font-size:var(--fb,15px);padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:var(--fb,15px);line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:var(--fb,15px);margin-left:4px}
 .lk-t td:last-child{overflow-wrap:anywhere}
+.lk-red,.lk-red a{color:#d11!important}.lk-clash{color:#d11;font-size:12px;font-weight:800;margin-top:2px}.lk-clash a{color:#d11;text-decoration:underline;font-weight:600;margin-left:4px}.lk-rsw{font-size:12px;color:var(--mute)}
 .lk-t td.lk-sub{color:var(--lk-a);font-size:var(--fl,13px);font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}
 .sp-self .sp-head{display:none}
 .sp-cl{display:flex;flex-direction:column}.sp-p{padding:6px 2px;border-bottom:1px solid var(--lk-l);font-size:var(--fb,15px);line-height:1.4;color:var(--mute)}.sp-p b{color:var(--ink);font-weight:600}

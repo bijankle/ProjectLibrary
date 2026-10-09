@@ -485,6 +485,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 <script src="spec.js"></script>
 <script src="pid.js"></script>
 <script src="offline.js"></script>
+<script src="checks-state.js"></script>
 <script src="lookup.js"></script>
 <script src="viz.js"></script>
 <script src="browse.js"></script>
@@ -919,6 +920,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
   // existing plant areas the PFD and layout don't draw on their own, shown as the area that does the same job
   const AREA_AS = { F20: "F19", F25: "F18", F26: "F18", F70: "F72", F71: "F72", F78: "F22", F15: "F10" };
   let PT = null; fetch("pfd-tags.json").then(r => r.ok ? r.json() : null).then(d => { if (d){ d.noneSet = new Set(d.none || []); d.pfdAreas = d.pfdAreas || []; d.layoutAreas = d.layoutAreas || []; } PT = d; }).catch(() => {});
+  if (window.CK){ CK.load(); addEventListener("kcgm-checks", () => { if (lk && lk.redraw) lk.redraw(); }); }
   window.kcgmOpenTag = k => { show("home"); Tabs.set("assets"); lk.openKey(k); };   // a tag tapped on a drawing
   { const st = $("lkRoot").querySelector(".lk-status"), bd = $("lkRoot").querySelector(".lk-body");
     $("lkResults").append(st, bd);
