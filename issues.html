@@ -262,6 +262,7 @@ body.splitting{cursor:col-resize;user-select:none}
 <script src="xlsx-lite.js"></script>
 <script src="sources-view.js"></script>
 <script src="offline.js"></script>
+<script src="sp.js"></script>
 <script src="sources-list.js"></script>
 <script src="checks-state.js"></script>
 <script>
@@ -387,7 +388,7 @@ body.splitting{cursor:col-resize;user-select:none}
 
   // ---------- desktop: pills | search and one line per check | the picked check in full ----------
   const PL = { Decision: "decisions", Clash: "clashes", Missing: "missing", Placeholder: "placeholders", Check: "checks", Diagram: "diagram checks" };
-  const newer = r => r.date1 && r.date2 ? (r.date1 > r.date2 ? 1 : r.date2 > r.date1 ? 2 : 0) : 0;
+  const newer = r => r.win ? r.win : r.date1 && r.date2 ? (r.date1 > r.date2 ? 1 : r.date2 > r.date1 ? 2 : 0) : 0;
   let F = [], cur = null;   // the list as drawn, the picked check (kept while it stays in the list)
   if (!PHONE){ document.querySelector(".ck-l").prepend($("q")); $("ckR").prepend($("count")); $("ckF").append($("xls")); $("xls").textContent = "Export to Excel"; }
   // desktop: one pill at a time (sel). A check carries tags (its type, its category, Resolved once ticked) and shows when
@@ -413,20 +414,22 @@ body.splitting{cursor:col-resize;user-select:none}
     pick(F.includes(cur) ? cur : F[0], false);
   }
   // the right panel: the check in full; the newer document is taken as true, so its statement is marked
+  addEventListener("kcgm-sp", () => { if (typeof cur !== "undefined" && cur) pick(cur); });
   function pick(r, scroll){
     cur = r || null; const L = $("ckList"), i = F.indexOf(cur);
     L.querySelectorAll(".ck-row.sel").forEach(e => e.classList.remove("sel"));
     const el = L.querySelector(`.ck-row[data-i="${i}"]`); if (el){ el.classList.add("sel"); if (scroll) el.scrollIntoView({ block: "nearest" }); }
     if (!r){ $("ckX").innerHTML = `<div class="ck-none">${all.length ? "Nothing picked: no checks match the filters." : ""}</div>`; return; }
-    const w = newer(r), doc = (k, d, dt) => d ? `<tr><td>Document ${k}</td><td>${esc(d)}${dt ? `<small>${fmt(dt)}${w === k ? " · newer" : ""}</small>` : ""}</td></tr>` : "";
-    const says = (k, v) => v ? `<div class="ck-st${w === k ? " nw" : ""}"><div class="ck-dh"><span>What document ${k} says</span>${w === k ? "<u>taken as true</u>" : ""}</div>${esc(v)}</div>` : "";
+    const lt = t => window.SP ? SP.linkText(t) : esc(t);   // documents the app doesn't hold link to SharePoint
+    const w = newer(r), doc = (k, d, dt) => d ? `<tr><td>Document ${k}</td><td>${lt(d)}${dt ? `<small>${fmt(dt)}${w === k ? " · newer" : ""}</small>` : ""}</td></tr>` : "";
+    const says = (k, v) => v ? `<div class="ck-st${w === k ? " nw" : ""}"><div class="ck-dh"><span>What document ${k} says</span>${w === k ? "<u>taken as true</u>" : ""}</div>${lt(v)}</div>` : "";
     const ri = window.CK ? CK.info(CK.id(r)) : null;
     const rbox = `<div class="ck-rs${ri ? " on" : ""}"><label><button class="ck-tk${ri ? " on" : ""}" aria-label="Resolved"></button><span>${ri ? "Resolved" : "Mark as resolved"}</span></label>
       ${ri ? `<div class="ck-rw">${esc(ri.by || "")}${ri.at ? " · " + fmt(String(ri.at).slice(0, 10)) : ""}${ri.note ? `<div class="ck-rn">${esc(ri.note)}</div>` : ""}</div>`
         : `<textarea class="ck-note" placeholder="Note (optional, kept on record), e.g. MEL to be revised, confirmed with Primero"></textarea><div class="ck-rh">Saved to GitHub for everyone, with your name and the date. Untick later to put it back in its type.</div>`}<div class="ck-rm"></div></div>`;
     $("ckX").innerHTML = `<span class="ck-b" style="--c:${SEVC[r.sev]}"><i></i>${esc(r.sev)}</span><h2>${esc(r.item)}</h2>${rbox}
       <table class="ck-kv"><tr><td>Category</td><td>${esc(r.cat)}</td></tr>${doc(1, r.d1, r.date1)}${doc(2, r.d2, r.date2)}</table>
-      ${says(1, r.v1)}${says(2, r.v2)}${r.note ? `<div class="ck-nt"><div class="ck-dh"><span>Comment</span></div>${esc(r.note)}</div>` : ""}`;
+      ${says(1, r.v1)}${says(2, r.v2)}${r.note ? `<div class="ck-nt"><div class="ck-dh"><span>Comment</span></div>${lt(r.note)}</div>` : ""}`;
     $("ckX").scrollTop = 0;
   }
   if (!PHONE){

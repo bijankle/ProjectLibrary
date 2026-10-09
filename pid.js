@@ -37,6 +37,7 @@ window.Pid = (() => {
       onRef: (t, k, back, box) => {
         // another drawing: opened with the ribbon back to this one marked (the way back from pid-refs.json), or, when
         // the refs don't know it, this drawing's number found on the sheet
+        if (k === "sp"){ const u = window.SP && SP.url(t); if (u) window.open(u, "_blank", "noopener"); return; }
         if (k === "dwg"){ if (!key(t)) return; open(t, back == null ? d.number : null, { keep: true, back }); return; }
         // a tag: its item opens, with this sheet kept beside it and the arrow on the tag tapped (not the item's first drawing)
         if (window.AssetViz && AssetViz.keep && box) AssetViz.keep({ n: d.number, tap: box, key: String(t).split("|")[0] });

@@ -17,13 +17,14 @@
   function indexExtras(list){ list.forEach(x => { x.k = norm(x.key); x.txt = (x.key + " " + x.name + " " + (x.words || "")).toLowerCase(); items.push(x); addKey(x.k, x); }); }
   function addKey(k, it){ if (!k) return; const a = byKey.get(k); if (a) a.push(it); else byKey.set(k, [it]); }
 
-  let dtLoad = null;
+  let dtLoad = null, DOCN = new Set();   // the lists held in the app (Sources), by number
+  fetch("issues.json").then(r => r.ok ? r.json() : {}).then(d => { Object.values((d.meta && d.meta.docs) || {}).forEach(x => x.number && DOCN.add(norm(x.number))); }).catch(() => {});
   L.load = () => loading || (dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => { DB = d; build();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
     // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
     return (window.Pid ? Pid.load().then(() => Pid.all().forEach(d => { const k = norm(d.number); if (byKey.has(k)) return;
-      const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null, p: dwgProj(k) }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => dtLoad).then(() => { done = true; return L; }); }));
+      const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null, p: dwgProj(k) }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => dtLoad).then(() => window.SP ? SP.load() : null).then(() => { done = true; return L; }); }));
   L.ready = () => !!DB;
   // Projects: Main plant and the tailings storage facility (TSF). Each list item and P&ID belongs to one (search-data.json:
   // the "Project" field, and tsf_dwg for the drawings; tools/build_tsf.py); the picker shows either or both (kept between
@@ -89,9 +90,14 @@
 
   // ---------- rendering ----------
   // a drawing in the app: its number links straight to the drawing; any other known code links to its page
-  const linkify = v => esc(v).replace(TAG_RE, m => { const k = norm(m);
-    if (/-(PID|PFD|SLD)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>`;
-    return byKey.has(k) ? `<a class="lk-a" data-k="${k}">${m}</a>` : m; });
+  // a document the app doesn't hold opens SharePoint (sp.js); a list held in the app opens in Sources
+  let LINKRE = null;
+  const linkify = v => esc(v).replace(LINKRE || (LINKRE = new RegExp(TAG_RE.source + (window.SP ? "|" + SP.DOC.source : ""), "g")), m => { const k = norm(m);
+    if (/-(PID|PFD|SLD|BLK)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>`;
+    if (byKey.has(k)) return `<a class="lk-a" data-k="${k}">${m}</a>`;
+    if (window.SP && SP.url(m)) return SP.a(m);
+    if (/^2000-/.test(m) && DOCN.has(k)) return `<a class="lk-a lk-doc" href="issues.html#sources" title="Open in Sources">${m}</a>`;
+    return m; });
   L.resultsHTML = (hits, q) => {
     if (!hits.length) return `<div class="lk-empty">No match for “${esc(q)}”. Try fewer characters, e.g. the number only.</div>`;
     // one line per result: icon, code, description (the pill shows the list it comes from)
@@ -273,7 +279,7 @@
       const el = kept.filter(r => r.s === "elx");
       if (el.length && it.t === "mel"){ const me = kept.filter(r => r.s !== "elx"), ex = twins.find(x => x.t === "elx"), sv = ex ? L.get(ex, "Source") : "";
         const docs = [...new Set((sv.match(/2000-[A-Z0-9]+-LST-EL-\d+ Rev \w+/g) || []))].join(" · ");
-        const band = (t, d) => `<tr class="lk-bandr"><td colspan="2"><div class="lk-band"><span>${t}</span><small>${esc(d)}</small></div></td></tr>`;
+        const band = (t, d) => `<tr class="lk-bandr"><td colspan="2"><div class="lk-band"><span>${t}</span><small>${linkify(d)}</small></div></td></tr>`;
         secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${band("Mechanical", "MEL " + (DB.types.mel.doc || ""))}${L.rowsHTML(me)}${band("Electrical", docs)}${L.rowsHTML(el.filter(r => r.l !== "Source"))}</table>` }); }
       else secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` });
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
