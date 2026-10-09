@@ -1,0 +1,68 @@
+"""Ref Only: the document numbers the library's drawings, lists and inbox files mention that it doesn't hold
+(refonly.json, shown in Sources > Ref Only on desktop and in its Excel download).
+
+  python3 tools/build_refonly.py "<Project Document Register .xlsm/.xlsx>"
+
+Titles, revs, statuses and SharePoint links come from the project document register (the register wins over a title
+printed on a drawing). The register itself is not kept in the repo. 3D models (-MDL-) and anything already in the
+library or waiting in inbox/ are left out. "x" counts the documents that mention a number, "xr" every mention.
+"""
+import json, re, glob, os, collections, sys
+import pymupdf, openpyxl
+R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+wb0 = openpyxl.load_workbook(sys.argv[1], read_only=True, data_only=True)
+reg = [["" if c is None else str(c) for c in r] for r in list(wb0.worksheets[0].iter_rows(values_only=True))[1:]]
+norm = lambda n: re.sub(r'[\\/]', '-', n.strip().upper())
+REG = {}
+for r in reg:
+    n = norm(r[3]);
+    if n: REG.setdefault(n, r)
+P2000 = re.compile(r'\b2000-[A-Z]\d{2,3}-[A-Z]{3}-[A-Z]{2}-\d{5}\b')
+TOK = re.compile(r'[A-Z0-9][A-Z0-9.\\/_-]{6,}[A-Z0-9]')
+# what is held
+P = json.load(open(R + '/PIDs/index.json'))['pids']; meta = json.load(open(R + '/issues.json'))['meta']['docs']
+held = set(P) | {v['number'] for v in meta.values()} | {'2000-F00-STS-PP-10001'}
+base = lambda f: re.match(r'(.*?)(_[^_]*)*$', os.path.basename(f)[:-4]).group(1)
+inbox = {re.split(r'_', os.path.basename(f))[0] for f in glob.glob(R + '/inbox/**/*.pdf', recursive=True) + glob.glob(R + '/*.pdf')}
+ment = collections.defaultdict(collections.Counter); printed = {}
+def scan(src, text, pdf=True):
+    LS = text.split('\n')
+    for i, line in enumerate(LS):
+        L = line.upper()
+        found = set(P2000.findall(L)) | {norm(t) for t in TOK.findall(L) if norm(t) in REG}
+        for n in found:
+            if n == src: continue
+            ment[n][src] += 1
+            rest = L.split(n.split('-')[-1], 1)[-1].strip(' -:')
+            if pdf and len(rest) < 4 and i + 1 < len(LS) and not TOK.search(LS[i + 1].upper()): rest = LS[i + 1].upper().strip()
+            if pdf and len(re.sub(r'[^A-Z]', '', rest)) >= 8 and n not in printed: printed[n] = rest[:120]
+pdfs = [(k, R + '/' + v['file']) for k, v in P.items()] + [(base(f), f) for f in glob.glob(R + '/inbox/**/*.pdf', recursive=True) + glob.glob(R + '/*.pdf')] + [('2000-F00-STS-PP-10001', R + '/spec/pvs.pdf')]
+for k, f in pdfs:
+    try:
+        d = pymupdf.open(f); scan(re.split('_', k)[0], '\n'.join(p.get_text() for p in d))
+    except Exception as e: print('skip', f, e)
+for k, v in meta.items():
+    x = R + f'/sources/{k}.xlsx'
+    if not os.path.exists(x): continue
+    wb = openpyxl.load_workbook(x, read_only=True, data_only=True)
+    for ws in wb.worksheets:
+        for row in ws.iter_rows(values_only=True):
+            scan(v['number'], '\n'.join(str(c) for c in row if c is not None), False)
+def grp(n):
+    if P2000.fullmatch(n): return 'project'
+    if n.startswith('2000-'): return 'vendor'
+    if n.startswith('23517-'): return 'contractor'
+    if re.match(r'\d{2,3}-[A-Z]{1,2}-\d{3,4}', n): return 'legacy'
+    return 'other'
+out = []
+for n, c in ment.items():
+    if n in held or n in inbox or '-MDL-' in n: continue
+    r = REG.get(n)
+    out.append({'n': n, 'g': grp(n), 't': (r[6] if r else '') or printed.get(n, ''), 'ts': 'reg' if r and r[6] else 'drw' if n in printed else '', 'rev': r[4] if r else '', 'st': r[5] if r else '', 'url': r[1] if r else '', 'in': dict(c), 'x': len(c), 'xr': sum(c.values()), 'inbox': n in inbox})
+out.sort(key=lambda o: (-o['x'], -o['xr']))
+hd = {}
+for n in sorted(held):
+    r = REG.get(n); c = ment.get(n, {})
+    hd[n] = {'g': grp(n), 'rev': r[4] if r else '', 'st': r[5] if r else '', 'url': r[1] if r else '', 'rt': r[6] if r else '', 'in': dict(c), 'x': len(c), 'xr': sum(c.values())}
+json.dump({'ref': out, 'held': hd}, open(R + '/refonly.json', 'w'), separators=(',', ':'))
+c = collections.Counter(o['g'] for o in out); print('Ref Only', len(out), c, sum(o['inbox'] for o in out), sum(1 for o in out if o['ts']=='reg'), sum(1 for o in out if o['ts']=='drw'), sum(1 for o in out if not o['t']))

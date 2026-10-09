@@ -21,12 +21,15 @@ window.SourceView = (() => {
       <div class="sv-bar"><select id="svSheet" aria-label="Table"></select>
         <input id="svQ" type="search" placeholder="Filter rows (all words must match)" autocomplete="off" data-lpignore="true" data-1p-ignore="true">
         <span class="count" id="svN"></span></div>
-      <div class="sv-wrap" id="svWrap"><table class="sv-tb"><thead id="svHead"></thead><tbody id="svBody"></tbody></table><div class="more" id="svMore"></div></div>`;
+      <div class="sv-wrap" id="svWrap"><table class="sv-tb" data-ts-own="1"><thead id="svHead"></thead><tbody id="svBody"></tbody></table><div class="more" id="svMore"></div></div>`;
     document.body.appendChild(box);
     const g = id => box.querySelector("#" + id);
     g("svX").onclick = () => history.state && history.state.sv ? history.back() : close();
     g("svSheet").onchange = () => sheet(+g("svSheet").value);
     let t; g("svQ").oninput = () => { clearTimeout(t); t = setTimeout(() => { cur.q = g("svQ").value; cur.shown = 300; render(); }, 250); };
+    // a column letter sorts the whole sheet under its header rows (TSort's three clicks: A to Z, Z to A, as it came)
+    g("svHead").onclick = e => { const th = e.target.closest("th"); if (!th || th.classList.contains("rn")) return; const c = th.cellIndex - 1, d = cur.rs && cur.rs[0] === c ? cur.rs[1] : 0;
+      cur.rs = d === 0 ? [c, 1] : d > 0 ? [c, -1] : null; render(); };
     g("svBody").onclick = e => { const td = e.target.closest("td"); if (td && !td.classList.contains("rn")) td.classList.toggle("open"); };
     addEventListener("keydown", e => { if (e.key === "Escape" && !box.hidden) g("svX").click(); });
     addEventListener("popstate", () => { if (!box.hidden) close(); });
@@ -50,7 +53,7 @@ window.SourceView = (() => {
   function close(){ box.hidden = true; document.body.style.overflow = ""; }
 
   async function sheet(si){
-    cur.si = si; cur.rows = []; cur.shown = 300; $("svSheet").value = si; $("svWrap").scrollTo(0, 0);
+    cur.si = si; cur.rs = null; cur.rows = []; cur.shown = 300; $("svSheet").value = si; $("svWrap").scrollTo(0, 0);
     await need(1); render();
   }
   // make sure the first n chunks of the current sheet are loaded
@@ -65,15 +68,19 @@ window.SourceView = (() => {
   }
   async function render(){
     const s = cur.d.sheets[cur.si], words = cur.q.toLowerCase().split(/\s+/).filter(Boolean), hdr = s.hdr || 0;
-    if (words.length) await need(s.chunks);   // filtering searches the whole sheet
+    if (words.length || cur.rs) await need(s.chunks);   // filtering searches the whole sheet
     else await need(Math.ceil(cur.shown / cur.d.chunk));
     const all = cur.rows.flat(), head = all.slice(0, hdr + 1);
     let idx = [];
     if (words.length){ for (let i = hdr + 1; i < all.length; i++){ const t = all[i].join(" ").toLowerCase(); if (words.every(w => t.includes(w))) idx.push(i); } }
     else idx = Array.from({ length: Math.max(0, Math.min(all.length, cur.shown) - hdr - 1) }, (_, i) => i + hdr + 1);
-    const total = words.length ? idx.length : s.n - hdr - 1, show = idx.slice(0, words.length ? cur.shown : idx.length);
+    if (cur.rs){ if (!words.length) idx = Array.from({ length: all.length - hdr - 1 }, (_, i) => i + hdr + 1);
+      const [c, d] = cur.rs, O = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" }), E = v => v === "" || v == null;
+      idx.sort((a, b) => { const x = all[a][c], y = all[b][c]; if (E(x) || E(y)) return E(x) - E(y) || a - b;
+        const r = typeof x === "number" && typeof y === "number" ? x - y : O.compare(String(x), String(y)); return (d > 0 ? r : -r) || a - b; }); }
+    const lim = words.length || cur.rs, total = lim ? idx.length : s.n - hdr - 1, show = idx.slice(0, lim ? cur.shown : idx.length);
     $("svN").textContent = words.length ? `${idx.length.toLocaleString()} matching rows of ${(s.n - hdr - 1).toLocaleString()}` : `${s.n.toLocaleString()} rows × ${s.c} columns`;
-    $("svHead").innerHTML = `<tr><th class="rn"></th>${Array.from({ length: s.c }, (_, i) => `<th>${letter(i)}</th>`).join("")}</tr>`;
+    $("svHead").innerHTML = `<tr><th class="rn"></th>${Array.from({ length: s.c }, (_, i) => `<th${cur.rs && cur.rs[0] === i ? ` class="ts-${cur.rs[1] > 0 ? "up" : "dn"}"` : ""}>${letter(i)}</th>`).join("")}</tr>`;
     const row = (r, i, cls) => `<tr${cls ? ` class="${cls}"` : ""}><td class="rn">${i + 1}</td>${Array.from({ length: s.c }, (_, c) => { const v = r[c]; return v === "" || v == null ? "<td></td>" : `<td${typeof v === "number" ? ' class="n"' : ""} title="${esc(v)}">${esc(v)}</td>`; }).join("")}</tr>`;
     $("svBody").innerHTML = head.map((r, i) => row(r, i, i === hdr ? "hd" : "pre")).join("") + show.map(i => row(all[i], i)).join("");
     const left = total - show.length;

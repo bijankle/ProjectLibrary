@@ -23,6 +23,7 @@ window.SourcesList = (() => {
     F25: "Cleaners, existing", F26: "Cleaner scav., existing", F28: "UFG 2/3", F30: "CIL2/3", F34: "UFG 1", F35: "Concentrate", F65: "Conc. elution", F66: "Goldroom",
     F70: "Lime & floc", F71: "Reagents, existing", F72: "Reagents", F75: "Water, existing", F78: "Carbon regen", F81: "Air, existing", F175: "TSF" };
   const ICO = {
+    xdl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10.5l5 5 5-5"/><path d="M5 20h14"/></svg><b>XLSX</b>',
     save: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10M7.5 9.5 12 14l4.5-4.5M5 19h14"/></svg>',
     dev: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 7v7M9.5 11.5 12 14l2.5-2.5"/></svg>',
     devOk: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M9.3 12l2 2 3.6-4"/></svg>',
@@ -92,8 +93,8 @@ window.SourcesList = (() => {
       : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off">
            <div class="sl-h">Everything</div><div class="sl-ev"></div><div class="sl-h">Sections</div><div class="sl-secs"></div></aside>
          <div class="sl-dv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
-         <div class="sl-main"><div class="sl-tbar"><b>Selection tree</b><span class="sl-sp"></span><button type="button" class="sl-tbb sl-upb" data-up="">${ICO.up}Upload</button><input type="file" class="sl-file" accept="application/pdf,.pdf" multiple hidden><button type="button" class="sl-tbb" data-x="1">Expand all</button><button type="button" class="sl-tbb" data-x="0">Collapse all</button></div>
-           <div class="sl-tree"><div class="sl-gh"><span>Name</span><span>Title</span><span>Rev</span><span>Size</span><span>Cached</span><span></span></div><div class="sl-rows"></div></div></div>`;
+         <div class="sl-main"><div class="sl-tbar"><b>Selection tree</b><span class="sl-tabs" role="tablist"><button type="button" class="on" data-tab="att">Attached</button><button type="button" data-tab="ref">Ref Only</button></span><span class="sl-sp"></span><button type="button" class="sl-tbb sl-roc" hidden title="Download every document, in the app and Ref Only, as one Excel table" aria-label="Download Excel">${ICO.xdl}</button><button type="button" class="sl-tbb sl-upb" data-up="">${ICO.up}Upload</button><input type="file" class="sl-file" accept="application/pdf,.pdf" multiple hidden><button type="button" class="sl-tbb" data-x="1">Expand all</button><button type="button" class="sl-tbb" data-x="0">Collapse all</button></div>
+           <div class="sl-tree"><div class="sl-gh"><span>Name</span><span>Title</span><span>Rev</span><span>Size</span><span>Cached</span><span></span></div><div class="sl-rows"></div></div><div class="sl-ro" hidden><div class="sl-rop"></div><div class="sl-rot"></div></div></div>`;
     const $ = s => el.querySelector(s);
     const input = o.input || $(".sl-q");
     if (input){ input.addEventListener("input", () => { q = input.value.trim().toLowerCase(); shut.clear(); draw(); }); }
@@ -136,7 +137,7 @@ window.SourcesList = (() => {
     let list = [];
     let redraw = false;   // (a redraw asked for while a download runs waits for it: it would wipe the running row)
     function draw(){ if (busyRow){ redraw = true; return; } redraw = false;
-      if (!DOCS) return; if (!phone) return drawDt(); pills(); list = shown();
+      if (!DOCS) return; if (!phone){ if (tab === "ref") roDraw(); return drawDt(); } pills(); list = shown();
       const need = list.filter(d => stOf(d) !== "ok" && stOf(d) !== "none");
       $(".sl-bar").innerHTML = `<span class="sl-n">Results <b>${list.length}</b></span>` +
         (list.length ? need.length ? `<button type="button" class="sl-all">Cache all ${need.length}</button>` : `<span class="sl-allok">${ICO.devOk} All cached</span>` : "") + `<i class="sl-pg"><i></i></i>`;
@@ -234,6 +235,10 @@ window.SourcesList = (() => {
         const x = t.closest("[data-x]");
         if (x){ const g = groups(); if (x.dataset.x === "1"){ g.forEach(id => open.add(id)); shut.clear(); }
           else { [...open].forEach(id => id[0] !== "r" && open.delete(id)); if (q) g.forEach(id => id[0] === "a" && shut.add(id)); } return draw(); }
+        const tb = t.closest("[data-tab]"); if (tb) return setTab(tb.dataset.tab);
+        const rp = t.closest("[data-rg]"); if (rp){ roG = rp.dataset.rg; return roDraw(); }
+        if (t.closest(".sl-roc")) return roXlsx();
+        const om = t.closest("[data-om]"); if (om) return openDoc(DOCS.find(d => d.number === om.dataset.om || d.ik === om.dataset.om));
         const ub = t.closest(".sl-upb"); if (ub) return pickUp(ub.dataset.up);
         const zb = t.closest("[data-zp]"); if (zb) return saveAll(grpDocs(zb.dataset.zp), zb, zb.dataset.zn);
         const r = t.closest("[data-id]"); if (!r) return;
@@ -270,6 +275,43 @@ window.SourcesList = (() => {
       dv.addEventListener("pointerup", end); dv.addEventListener("pointercancel", end);
       dv.addEventListener("dblclick", () => { setW(DEF); try { localStorage.removeItem("kcgm_srcw"); } catch (e) {} });
     }
+    // ---------- Ref Only (desktop): documents the drawings and lists mention that aren't in the library (refonly.json,
+    // tools/build_refonly.py), grouped by family; titles from the project document register, else as printed ----------
+    let tab = "att", RO = null, HELD = {}, roG = "";
+    const ROG = [["", "All"], ["project", "Project 2000"], ["vendor", "Vendor"], ["legacy", "Legacy KCGM"], ["other", "Other"]];
+    async function setTab(v){ tab = v; el.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
+      $(".sl-tree").hidden = v === "ref"; $(".sl-ro").hidden = v !== "ref"; $(".sl-roc").hidden = v !== "ref";
+      el.querySelectorAll(".sl-tbar .sl-upb,.sl-tbar [data-x]").forEach(b => b.hidden = v === "ref");
+      if (v === "ref" && !RO){ $(".sl-rot").innerHTML = `<div class="sl-none">Loading…</div>`; const j = await fetch("refonly.json").then(r => r.ok ? r.json() : {}).catch(() => ({})); RO = j.ref || []; HELD = j.held || {}; }
+      if (v === "ref") roDraw(); }
+    const roList = () => RO.filter(o => (!roG || o.g === roG) && (!q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in).join(" ")).toLowerCase().includes(q)));
+    function roDraw(){ if (!RO) return; const L = roList(), lk = !ghKey();
+      $(".sl-rop").innerHTML = ROG.map(([g, n]) => { const c = g ? RO.filter(o => o.g === g).length : RO.length; return c ? `<button type="button" class="sl-p${roG === g ? " on" : ""}" data-rg="${g}">${n}<i>${c}</i></button>` : ""; }).join("");
+      const ins = o => { const k = Object.entries(o.in).sort((a, b) => b[1] - a[1]), sh = n => esc(n.replace(/^2000-/, ""));
+        return k.slice(0, 2).map(([n]) => `<a href="#" data-om="${esc(n)}" title="Open ${esc(n)}">${sh(n)}</a>`).join(", ") + (k.length > 2 ? ` <span class="sl-mu" title="${esc(k.slice(2).map(x => x[0]).join(", "))}">+${k.length - 2} more</span>` : ""); };
+      $(".sl-rot").innerHTML = `<table class="sl-rtb"><thead><tr><th>Doc number</th><th>Title</th><th>Mentioned in</th><th class="sl-rn">Times mentioned</th><th class="nosort"></th></tr></thead><tbody>` +
+        L.map(o => `<tr><td class="sl-rk">${o.url ? `<a class="sl-spn" href="${esc(o.url)}" target="_blank" rel="noopener" title="Open in SharePoint">${esc(o.n)}</a>` : esc(o.n)}</td><td>${o.t ? esc(o.t) + (o.ts === "drw" ? ` <span class="sl-mu">(as printed)</span>` : "") : `<span class="sl-mu">Not in register</span>`}</td><td>${ins(o)}</td><td class="sl-rn" title="${o.xr} mentions in all">${o.x}</td>` +
+          `<td class="sl-ra"><button type="button" class="sl-ib sl-upb" data-up="n:${esc(o.n)}" title="Upload ${esc(o.n)}">${ICO.up}</button></td></tr>`).join("") + `</tbody></table>` +
+        (L.length ? "" : `<div class="sl-none">Nothing matches.</div>`);
+      el.querySelectorAll(".sl-rot .sl-upb").forEach(b => setLock(b, lk)); const tb = $(".sl-rtb"); if (tb && window.TSort) TSort.keep(tb, "refonly"); }
+    // the Excel download: the rows as shown (pill, search and sort), one tidy table with columns to sort and filter by,
+    // the doc number a link to its SharePoint copy; a second sheet counts them by family and type
+    const DT = { DRG: "Drawing", SCM: "Schematic", SLD: "Single line diagram", TER: "Termination diagram", TLD: "Three line diagram", STD: "Standard drawing", LST: "List", PID: "P&ID", STS: "Specification", DSH: "Datasheet", REP: "Report", BLK: "Block diagram", TQY: "Technical query", PFD: "PFD", SKT: "Sketch", SOW: "Scope of work", PHL: "Philosophy", DCR: "Design criteria", CAL: "Calculation", GAD: "General arrangement", LAY: "Layout" };
+    const DI = { EL: "Electrical", PP: "Piping", IC: "Instrumentation & control", ME: "Mechanical", PR: "Process", GE: "General", CV: "Civil", ST: "Structural", CC: "Concrete", PM: "Project management" };
+    const FAM = Object.fromEntries(ROG);
+    function roXlsx(){ if (!RO || !window.XLSX) return;
+      const part = (n, g) => { const s = n.split("-"); return g === "project" ? { area: s[1], code: s[2], disc: s[3], pkg: "" } : g === "vendor" ? { area: "", code: s[2] || "", disc: "", pkg: s[1] || "" } : { area: "", code: "", disc: "", pkg: "" }; };
+      const fold = u => { try { const m = decodeURIComponent(u || "").match(/KCGM Controlled Library\/(.*)\/[^/]*$/); return m ? m[1] : ""; } catch (e){ return ""; } };
+      const ins = o => Object.entries(o.in || {}).sort((a, b) => b[1] - a[1]).map(x => x[0]).join(", ");
+      const row = (inApp, n, g, title, from, rev, o) => { const p = part(n, g);
+        return [inApp, o.url ? { v: n, link: o.url } : n, title, from, FAM[g] || g, p.area, AREA[p.area] || "", DT[p.code] || "", p.code, DI[p.disc] || p.disc, p.pkg, rev, o.st || "", fold(o.url), o.x || 0, o.xr || 0, ins(o)]; };
+      const rows = [["In app", "Doc number", "Title", "Title from", "Family", "Area", "Area name", "Doc type", "Type code", "Discipline", "Vendor package", "Rev", "Register status", "SharePoint folder", "Mentioned in (docs)", "Times mentioned", "Mentioned in"]];
+      const seen = new Set(), ORD = new Intl.Collator(undefined, { numeric: true });
+      DOCS.filter(d => d.number && !seen.has(d.number) && seen.add(d.number)).sort((a, b) => ORD.compare(a.number, b.number)).forEach(d => { const h = HELD[d.number] || {};
+        rows.push(row("Attached", d.number, h.g || (/^2000-[A-Z]\d{2,3}-[A-Z]{3}-[A-Z]{2}-\d{5}$/.test(d.number) ? "project" : "other"), d.title || h.rt || "", d.title ? "App" : h.rt ? "Register" : "", d.rev || h.rev || "", h)); });
+      [...RO].sort((a, b) => ORD.compare(a.n, b.n)).forEach(o => rows.push(row("Ref only", o.n, o.g, o.t, o.ts === "reg" ? "Register" : o.ts === "drw" ? "As printed" : "", o.rev || "", o)));
+      const d = new Date(), ds = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      XLSX.download(`Project Library documents ${ds}.xlsx`, [{ name: "Documents", rows, widths: [10, 26, 60, 11, 13, 7, 22, 20, 9, 22, 14, 6, 9, 40, 12, 10, 60] }]); }
     // open a document: a drawing in the app's viewer (or the browser's), a list as its tables
     function openDoc(d){ if (!d) return;
       if (d.tables && !d.pdf && window.SourceView) return SourceView.open(d.k, `${d.number} ${d.title}${d.rev ? " Rev " + d.rev : ""}`);
@@ -359,10 +401,10 @@ window.SourcesList = (() => {
     // starts a new document's number with its area
     const [w, t, a] = at.split(":"), atDoc = w === "d" ? (DOCS.find(d => d.k === at.slice(2)) || {}).ik || "" : "";
     const scope = w === "a" || w === "r" ? DOCS.filter(d => d.ik && d.t === t && (w === "r" || (d.area || "–") === a)).map(d => d.ik) : [];
-    const pre = w === "a" && a !== "–" ? `2000-${a}-${{ pid: "PID", pfd: "PFD", bfd: "BLK" }[t] || "DRG"}-PR-` : "";
+    const pre = w === "n" ? at.slice(2) : w === "a" && a !== "–" ? `2000-${a}-${{ pid: "PID", pfd: "PFD", bfd: "BLK" }[t] || "DRG"}-PR-` : "";
     const scName = w === "a" ? `${a} ${AREA[a] || ""}`.trim() : w === "r" ? (TN[t] || "").replace("&amp;", "&") : "";
     const rows = files.map(f => { const g = guess(f.name), num = g.num || (!g.fresh && atDoc) || "";
-      const x = { f, num, mode: num ? "doc" : g.fresh ? "new" : "", fresh: g.fresh || pre, title: "", rev: g.rev, guessed: false, st: "", msg: "", alts: g.alts };
+      const x = { f, num, mode: num ? "doc" : g.fresh || w === "n" ? "new" : "", fresh: g.fresh || pre, title: "", rev: g.rev, guessed: false, st: "", msg: "", alts: g.alts };
       if (!x.rev){ x.rev = num ? nextRev(IDX[num].rev) : g.fresh ? "0" : ""; x.guessed = !!num; }
       return x; });
     const b = box("up-big"), mbs = n => (n / 1e6 < 0.1 ? "<0.1" : (n / 1e6).toFixed(1)) + " MB";
@@ -395,7 +437,7 @@ window.SourcesList = (() => {
     const paint = i => { const tr = b.querySelector(`tr[data-i="${i}"]`); tr.outerHTML = rowH(rows[i], i); foot(); };
     const paintChip = i => { const tr = b.querySelector(`tr[data-i="${i}"]`), [c, l, tip] = stat(rows[i]); tr.lastElementChild.innerHTML = `<span class="up-ch up-${c}" title="${esc(tip)}">${esc(l)}</span>${tip && c !== "bz" ? `<small>${esc(tip)}</small>` : ""}`; foot(); };
     b.innerHTML = `<h3>Upload ${files.length} file${files.length === 1 ? "" : "s"}</h3><p class="up-sub">Check where each file goes and its revision. They go to ${esc(REPO)} on GitHub; no redaction is done.</p>
-      <div class="up-tw"><table class="up-t"><thead><tr><th>File</th><th>Goes to</th><th>Rev</th><th></th></tr></thead><tbody>${rows.map(rowH).join("")}</tbody></table></div>
+      <div class="up-tw"><table class="up-t nosort"><thead><tr><th>File</th><th>Goes to</th><th>Rev</th><th></th></tr></thead><tbody>${rows.map(rowH).join("")}</tbody></table></div>
       <div class="up-msg" role="status"></div><div class="up-ft"><span class="sl-sp"></span><button type="button" class="up-c">Cancel</button><button type="button" class="up-go"></button></div>`;
     foot();
     const tb = b.querySelector("tbody"), msg = b.querySelector(".up-msg");
@@ -481,6 +523,12 @@ window.SourcesList = (() => {
 .sl-tbar{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--card2,var(--panel2))}.sl-tbar b{font-size:13px;letter-spacing:.04em}.sl-sp{flex:1}
 .sl-tbb{display:inline-flex;align-items:center;gap:5px;height:26px;border:1px solid var(--line);background:var(--card,var(--panel));border-radius:6px;font:inherit;font-size:12px;font-weight:700;padding:0 9px;cursor:pointer;color:var(--ink)}.sl-tbb:hover:not(:disabled){border-color:var(--th)}.sl-tbb:disabled{opacity:.45;cursor:default}
 /* the selection tree: a property grid's grey header, 22px rows, Navisworks' blue hover and selection */
+.sl-tabs{display:inline-flex;margin-left:10px;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--card,var(--panel))}.sl-tabs button{border:0;background:none;font:inherit;font-size:12px;font-weight:700;padding:4px 12px;cursor:pointer;color:var(--mute)}.sl-tabs button+button{border-left:1px solid var(--line)}.sl-tabs button.on{background:var(--th);color:#fff}
+.sl-roc{width:38px;height:34px!important;padding:0!important;flex-direction:column;justify-content:center;gap:0!important;margin:-4px 0}.sl-roc svg{width:14px;height:14px}.sl-roc b{font:800 9px/1 Arial,sans-serif;color:#1d6f42;letter-spacing:.3px;margin-top:1px}:root[data-theme="dark"] .sl-roc b{color:#3fb37a}
+.sl-ro{flex:1;display:flex;flex-direction:column;min-height:0}.sl-ro[hidden],.sl-tree[hidden]{display:none}.sl-rop{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid var(--line)}.sl-rot{flex:1;overflow:auto;font-size:13px}
+.sl-rtb{width:100%;border-collapse:collapse}.sl-rtb th{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));border-bottom:1px solid var(--line);border-right:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute);text-align:left;padding:4px 8px;white-space:nowrap}.sl-rtb th:last-child{border-right:0;width:40px}
+.sl-rtb td{padding:3px 8px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);vertical-align:top}.sl-rtb tr:hover td{background:var(--th-t,#eef1f5)}.sl-rk{white-space:nowrap;font-weight:700}.sl-rn{text-align:right;font-variant-numeric:tabular-nums;width:1%;white-space:nowrap}.sl-rtb a{color:var(--th);text-decoration:none;white-space:nowrap}.sl-rtb a:hover{text-decoration:underline}.sl-mu{color:var(--mute);font-size:12px}.sl-ra{white-space:nowrap;text-align:right;min-width:62px}.sl-mu{white-space:nowrap}.sl-ra .sl-ib{display:inline-flex;vertical-align:middle}.sl-ra .sl-ib+.sl-ib{margin-left:4px}.sl-rtb a.sl-spn{color:var(--ink);text-decoration:underline dotted color-mix(in srgb,var(--th) 60%,transparent);text-underline-offset:3px}.sl-rtb a.sl-spn:hover{color:var(--th)}
+.sl-rtb th:last-child{width:auto}
 .sl-tree{flex:1;overflow:auto;font-size:13px;--cols:minmax(250px,2.4fr) minmax(110px,2fr) 58px 78px 92px 84px}
 .sl-gh,.sl-tr{display:grid;grid-template-columns:var(--cols);min-width:706px}
 .sl-gh{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute)}.sl-gh span{padding:4px 8px;border-right:1px solid var(--line)}.sl-gh span:last-child{border-right:0}
