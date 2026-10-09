@@ -546,7 +546,7 @@
 .lk-pill{flex:none;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:99px;padding:5px 10px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;white-space:nowrap}
 .lk-pill i{font-style:normal;font-weight:600;color:var(--mute);margin-left:2px}.lk-pill.on{background:var(--lk-c);box-shadow:inset 0 0 0 1px var(--lk-a);border-color:var(--lk-a);color:color-mix(in srgb,var(--lk-a) 70%,var(--ink))}.lk-pill.on i{color:var(--mute)}
 .lk-row1{display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--lk-l);background:none;color:var(--ink);padding:7px 4px;cursor:pointer;font:inherit;font-size:var(--fb,15px);line-height:1.3}
-.lk-row1:hover,.lk-row1:focus{background:var(--lk-c)}.lk-ic1{flex:none;font-size:13px;width:18px;text-align:center}
+.lk-row1:hover,.lk-row1:focus{background:var(--rh,var(--lk-c))}.lk-ic1{flex:none;font-size:13px;width:18px;text-align:center}
 .lk-row1 b{font-family:inherit;font-size:var(--fb,15px);color:var(--lk-a)}
 .lk-row1.txt b{flex:0 1 auto;max-width:62%;overflow:hidden;text-overflow:ellipsis}   /* a sentence for a key (PFD stream names): not an ID, so it may be cut */
 .pj-tsf{flex:none;align-self:center;font-style:normal;font-size:max(9px,calc(var(--fl,13px) * .8));font-weight:800;letter-spacing:.04em;line-height:1.35;color:#fff;background:#2f7d6b;border-radius:5px;padding:0 5px;margin:0 2px;vertical-align:1px}

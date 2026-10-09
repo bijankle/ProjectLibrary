@@ -488,7 +488,7 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 /* everything that can be clicked shows the hand, and list items light up under the mouse */
 button:not(:disabled),a[href],summary,select,label[for],[role=button],[role=tab],input[type=range],input[type=checkbox],input[type=radio],[data-k],[data-dwg]{cursor:pointer}
 button:disabled{cursor:default}
-@media (hover:hover){.bw-o:hover,.bp-o:hover,.bp-c:hover{border-color:var(--gold,var(--accent))}.bw-it:hover,.bp-it:hover,.mo-i:hover,.lo-lr:hover,.lo-le button:hover{background:var(--card2,var(--panel2))}
+@media (hover:hover){.bw-o:hover,.bp-o:hover,.bp-c:hover{border-color:var(--gold,var(--accent))}.bw-it:hover,.bp-it:hover,.mo-i:hover,.lo-lr:hover,.lo-le button:hover{background:var(--rh,var(--card2))}
   .bw-cr:hover,.bw-cr:hover{filter:brightness(1.08)}.bw-any:hover,.bp-any:hover{border-color:var(--gold,var(--accent));color:var(--ink)}}
 /* ---------- phone: top row, bottom tab bar, More page ---------- */
 :root{--bn:0px}

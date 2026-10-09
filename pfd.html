@@ -47,8 +47,8 @@ html[data-accent="olive"]{--thm:#5a5a2e;--thd:#444422;--tht:#f0f0e6;--thb:#6e6e3
 html[data-accent="stone"]{--thm:#7a6a5d;--thd:#5f5147;--tht:#f3efeb;--thb:#8f7f71}
 html[data-accent="rust"]{--thm:#9a3412;--thd:#7c2a0e;--tht:#f8ece6;--thb:#b4471f}
 html[data-accent="ink"]{--thm:#111827;--thd:#000000;--tht:#e9ebef;--thb:#1f2937}
-:root{--th:var(--thm);--th2:var(--thd);--th-t:var(--tht);--th-b:var(--thb);--on-th:#fff}
-html[data-theme="dark"]{--th:color-mix(in srgb,var(--thm) 62%,#fff);--th2:color-mix(in srgb,var(--thm) 78%,#fff);--th-t:color-mix(in srgb,var(--thm) 32%,#15191e);--th-b:color-mix(in srgb,var(--thb) 80%,#fff)}   /* lifted so it reads on black */
+:root{--rh:#eef0f3;--rs:#e1e4e8;--rsb:#8b939d;--th:var(--thm);--th2:var(--thd);--th-t:var(--tht);--th-b:var(--thb);--on-th:#fff}
+html[data-theme="dark"]{--rh:#262b32;--rs:#333941;--rsb:#7a828c;--th:color-mix(in srgb,var(--thm) 62%,#fff);--th2:color-mix(in srgb,var(--thm) 78%,#fff);--th-t:color-mix(in srgb,var(--thm) 32%,#15191e);--th-b:color-mix(in srgb,var(--thb) 80%,#fff)}   /* lifted so it reads on black */
 </style>
 <link rel="manifest" href="manifest.json?v=3">
 <title>Project Library</title>
@@ -114,7 +114,7 @@ body.layout #fHead,body.layout #narBtn,body.layout #fluids,body.layout #oHead,bo
 .ctrls button{flex:1}
 .legend{display:flex;flex-direction:column;gap:2px;font-size:var(--fb,15px)}
 .lg-item{display:flex;gap:9px;align-items:center;cursor:pointer;padding:4px 6px;border-radius:7px;border:1px solid transparent;color:var(--ink)}
-.lg-item:hover{background:var(--panel2)}
+.lg-item:hover{background:var(--rh)}
 .lg-item.on{border-color:var(--accent);background:var(--panel2)}
 .lg-item svg{width:46px;height:14px;flex:none;cursor:pointer}
 .lg-hint{font-size:var(--fb,15px);color:var(--mute);margin:2px 0 6px}
@@ -416,7 +416,7 @@ svg.focus .ctl.hl, svg.focus .ilk.hl{opacity:1}
 .lg-list{display:none;flex-direction:column;gap:1px}
 .lg-sub.open + .lg-list{display:flex}
 .lg-li{font-size:var(--fb,15px);padding:4px 6px;border-radius:7px;border:1px solid transparent;cursor:pointer;display:flex;gap:7px;align-items:baseline;line-height:1.3}
-.lg-li:hover{background:var(--panel2)}
+.lg-li:hover{background:var(--rh)}
 .lg-li.on{border-color:var(--accent);background:var(--panel2)}
 .lg-li b{font-family:inherit;font-size:var(--fb,15px);flex:none;min-width:34px}
 .lg-li.st-hide{display:none}
@@ -540,7 +540,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
 .fx-n{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2);margin:2px 0 4px}.fx-n b{color:var(--ink);letter-spacing:.02em;font-variant-numeric:tabular-nums;order:2}
 .fx-it{width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;padding:7px 4px;cursor:pointer}   /* one line: lookup.js .lk-1l */
 .fx-it b{color:var(--accent);font-size:var(--fb,15px)}.fx-it .fx-w{margin-left:auto}   /* the badge at the right; the description shrinks before it */
-.fx-it:hover{background:var(--panel2)}.fx-it.on{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.fx-it:hover{background:var(--rh)}.fx-it.on{background:var(--rs)}
 .fx-w{flex:none;font-style:normal;font-size:11px;font-weight:700;color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:0 5px}.fx-w.pfd{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}.fx-w:empty{display:none}
 .fx-more{width:100%;margin:8px 0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:7px;font:inherit;font-weight:700;cursor:pointer}
 .fx-none{color:var(--mute);padding:12px 2px}

@@ -340,7 +340,7 @@ window.AssetViz = (() => {
 .vz-note{margin:8px 0 0;font-size:var(--fb,15px);color:var(--mute)}
 .vz-bars{display:flex;flex-direction:column;gap:3px}
 .vz-row{display:grid;grid-template-columns:minmax(0,42%) 1fr auto;align-items:center;gap:8px;font-size:var(--fb,15px);padding:2px 4px;border-radius:6px}
-.vz-row.act{cursor:pointer}.vz-row.act:hover,.vz-row:hover{background:var(--card2)}
+.vz-row.act{cursor:pointer}.vz-row.act:hover,.vz-row:hover{background:var(--rh,var(--card2))}
 .vz-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
 .vz-t{height:12px;display:block}.vz-t i{display:block;height:100%;background:var(--vz-bar);border-radius:0 4px 4px 0;min-width:2px}
 .vz-row.oth .vz-t i{background:color-mix(in srgb,var(--mute) 55%,transparent)}

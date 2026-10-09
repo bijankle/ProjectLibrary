@@ -47,8 +47,8 @@ html[data-accent="olive"]{--thm:#5a5a2e;--thd:#444422;--tht:#f0f0e6;--thb:#6e6e3
 html[data-accent="stone"]{--thm:#7a6a5d;--thd:#5f5147;--tht:#f3efeb;--thb:#8f7f71}
 html[data-accent="rust"]{--thm:#9a3412;--thd:#7c2a0e;--tht:#f8ece6;--thb:#b4471f}
 html[data-accent="ink"]{--thm:#111827;--thd:#000000;--tht:#e9ebef;--thb:#1f2937}
-:root{--th:var(--thm);--th2:var(--thd);--th-t:var(--tht);--th-b:var(--thb);--on-th:#fff}
-html[data-theme="dark"]{--th:color-mix(in srgb,var(--thm) 62%,#fff);--th2:color-mix(in srgb,var(--thm) 78%,#fff);--th-t:color-mix(in srgb,var(--thm) 32%,#15191e);--th-b:color-mix(in srgb,var(--thb) 80%,#fff)}   /* lifted so it reads on black */
+:root{--rh:#eef0f3;--rs:#e1e4e8;--rsb:#8b939d;--th:var(--thm);--th2:var(--thd);--th-t:var(--tht);--th-b:var(--thb);--on-th:#fff}
+html[data-theme="dark"]{--rh:#262b32;--rs:#333941;--rsb:#7a828c;--th:color-mix(in srgb,var(--thm) 62%,#fff);--th2:color-mix(in srgb,var(--thm) 78%,#fff);--th-t:color-mix(in srgb,var(--thm) 32%,#15191e);--th-b:color-mix(in srgb,var(--thb) 80%,#fff)}   /* lifted so it reads on black */
 </style>
 <link rel="manifest" href="manifest.json?v=3">
 <title>Project Library</title>
@@ -155,7 +155,7 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
 #ck{display:none}
 :root:not(.phone) #checksPane>.chips,:root:not(.phone) #checksPane>.bar,:root:not(.phone) #checksPane>table,:root:not(.phone) #checksPane>.more,:root:not(.phone) #about{display:none}
 :root:not(.phone) #ck{display:flex;height:calc(100vh - var(--tb,0px) - 40px);min-height:420px;--ckw:780px}
-.ck-l{flex:0 0 var(--ckw);min-width:520px;max-width:70%;display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:0}
+.ck-l{flex:0 0 var(--ckw);min-width:520px;max-width:70%;display:grid;grid-template-columns:190px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-height:0}
 .ck-f{flex:0 0 190px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;overflow:auto;min-height:0}
 .ck-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2);flex-basis:100%;width:100%;box-sizing:border-box;margin:6px 0 2px}
 .ck-p{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1.5px solid color-mix(in srgb,var(--ink) 16%,var(--line));background:var(--card);color:var(--ink);border-radius:9px;padding:4px 10px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap}
@@ -163,8 +163,8 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
 .ck-p.on{border-color:var(--th);box-shadow:inset 0 0 0 1px var(--th);background:var(--th-t)}.ck-p.z:not(.on){opacity:.45}
 .ck-f #xls{margin-top:auto;font-size:13px;padding:5px 10px;border-radius:9px}
 .ck-r{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
-.ck-r #q{flex:0 0 34px;height:34px;width:100%;border:1.5px solid var(--line);border-radius:17px;padding:0 12px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink)}
-.ck-r #count{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2);margin:10px 0 6px;white-space:nowrap;overflow:hidden}#count b{color:var(--ink);letter-spacing:.02em;font-variant-numeric:tabular-nums}.ck-r #count b{color:var(--ink)}
+.ck-l>#q{grid-column:1/-1;box-sizing:border-box;height:34px;width:100%;border:1.5px solid var(--line);border-radius:17px;padding:0 12px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink)}
+.ck-r #count{display:none!important}.ck-r #count.x{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2);margin:10px 0 6px;white-space:nowrap;overflow:hidden}#count b{color:var(--ink);letter-spacing:.02em;font-variant-numeric:tabular-nums}.ck-r #count b{color:var(--ink)}
 /* one grid for the header and the rows; minmax(0, …) so a long cell is cut, never pushed over the next */
 .ck-gh,.ck-row{display:grid;grid-template-columns:22px minmax(0,1fr) minmax(0,1.6fr);gap:8px;align-items:center}
 .ck-tk{width:17px;height:17px;padding:0;border:1.5px solid color-mix(in srgb,var(--ink) 45%,transparent);border-radius:4px;background:var(--card);cursor:pointer;display:inline-grid;place-items:center;vertical-align:middle}
@@ -173,11 +173,11 @@ td.item{font-family:inherit;font-weight:700;font-size:var(--fb,15px);min-width:9
 .ck-rs label{display:flex;gap:10px;align-items:center;font-weight:800;font-size:15px;cursor:pointer}.ck-rs label .ck-tk{width:20px;height:20px}
 .ck-note{margin-top:8px;width:100%;box-sizing:border-box;height:56px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink);resize:vertical}
 .ck-rh,.ck-rw{font-size:12px;color:var(--mute);margin-top:4px}.ck-rn{color:var(--ink);font-size:14px;margin-top:4px;white-space:pre-wrap}.ck-rm{font-size:13px;margin-top:4px;color:var(--mute)}.ck-rm.bad{color:var(--s-clash,#d11)}
-.ck-gh{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:0 8px 4px}.ck-gh span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ck-gh{padding:0 8px;height:26px;box-sizing:border-box;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2);margin:6px 0 6px}.ck-gh span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ck-list{flex:1;min-height:0;overflow:auto;border-top:1px solid var(--line);outline:0}
 .ck-row{height:32px;padding:0 8px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:14px;cursor:pointer}
-.ck-row>*{min-width:0;overflow:hidden;text-overflow:ellipsis}.ck-row:hover{background:var(--card2)}
-.ck-row.sel{background:var(--th-t);box-shadow:inset 3px 0 0 var(--th)}
+.ck-row>*{min-width:0;overflow:hidden;text-overflow:ellipsis}.ck-row:hover{background:var(--rh)}
+.ck-row.sel{background:var(--rs);box-shadow:inset 3px 0 0 var(--rsb)}
 .ck-c{color:var(--mute);font-size:13px}
 .ck-none{color:var(--mute);font-size:14px;padding:14px 8px}
 .ck-dv{flex:0 0 24px;position:relative;cursor:col-resize;touch-action:none}
@@ -389,7 +389,7 @@ body.splitting{cursor:col-resize;user-select:none}
   const PL = { Decision: "decisions", Clash: "clashes", Missing: "missing", Placeholder: "placeholders", Check: "checks", Diagram: "diagram checks" };
   const newer = r => r.date1 && r.date2 ? (r.date1 > r.date2 ? 1 : r.date2 > r.date1 ? 2 : 0) : 0;
   let F = [], cur = null;   // the list as drawn, the picked check (kept while it stays in the list)
-  if (!PHONE){ $("ckR").prepend($("q"), $("count")); $("ckF").append($("xls")); $("xls").textContent = "Export to Excel"; }
+  if (!PHONE){ document.querySelector(".ck-l").prepend($("q")); $("ckR").prepend($("count")); $("ckF").append($("xls")); $("xls").textContent = "Export to Excel"; }
   // desktop: one pill at a time (sel). A check carries tags (its type, its category, Resolved once ticked) and shows when
   // the pill picked is one of them; with no pill, every open check. Resolved checks show only under Resolved.
   let sel = null;   // { g: "r" | "s" | "c", v }
