@@ -59,9 +59,10 @@ def grp(n):
     if n.startswith('23517-'): return 'contractor'
     if re.match(r'\d{2,3}-[A-Z]{1,2}-\d{3,4}', n): return 'legacy'
     return 'other'
+WD = set(json.load(open(R + '/tools/withdrawn.json'))['pids'])
 out = []
 for n, c in ment.items():
-    if n in held or n in inbox or '-MDL-' in n: continue
+    if n in held or n in inbox or n in WD or '-MDL-' in n: continue   # (WD: drawings cancelled or superseded, tools/withdrawn.json)
     r = REG.get(n)
     out.append({'n': n, 'g': grp(n), 't': (r[6] if r else '') or printed.get(n, ''), 'ts': 'reg' if r and r[6] else 'drw' if n in printed else '', 'rev': r[4] if r else '', 'st': r[5] if r else '', 'url': r[1] if r else '', 'in': dict(c), 'x': len(c), 'xr': sum(c.values()), 'inbox': n in inbox})
 out.sort(key=lambda o: (-o['x'], -o['xr']))
@@ -92,7 +93,9 @@ for n, h in hd.items():
     if a and not any(f in doclist.FILES for f in src):   # (no source file name kept: the files of the app's revision)
         pre = (n + '_' + a).lower(); src = [f for f in doclist.FILES if f.startswith(pre + '.') or f.startswith(pre + '_')]
     sm = [doclist.FILES[f] for f in src if f in doclist.FILES]
-    newer = (d['file'].lower() not in src and d['mod'] > max(sm)) if sm else bool(a) and revkey(d['rev']) > revkey(a)
+    # (the app's file marked superseded or cancelled: any other latest file replaces it, whatever the dates)
+    bad = any(re.search(r'_(ssd|can)(_|\.)', f) for f in src)
+    newer = (d['file'].lower() not in src and (bad or d['mod'] > max(sm))) if sm else bool(a) and revkey(d['rev']) > revkey(a)
     if newer: old.append({'n': n, 'g': h['g'], 't': appT.get(n, '') or h.get('rt', ''), 'app': a, 'rev': d['rev'], 'st': d['st'], 'url': d['url'], 'file': d['file'], 'mod': d['mod'][:10], 'have': (P.get(n, {}).get('from') or P.get(n, {}).get('src') or [''])[0]})
 old.sort(key=lambda o: o['n'])
 print('Old revs', len(old), 'SharePoint links from the file list:', sum(1 for o in out if DL.get(nkk(o['n']))), 'of', len(out))

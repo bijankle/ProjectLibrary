@@ -4182,6 +4182,137 @@
     "2000-F16-SLD-EL-10003_1_APP.pdf"
    ],
    "status": ""
+  },
+  "2000-F00-BLK-IC-10001": {
+   "file": "SLDs/2000-F00-BLK-IC-10001.pdf",
+   "title": "General Fimiston site - overall sitewide fibre optic - communications block diagram",
+   "rev": "4A",
+   "date": "",
+   "pages": 1,
+   "size": 930560,
+   "from": [
+    "2000-F00-BLK-IC-10001_4A.pdf"
+   ],
+   "status": ""
+  },
+  "2000-F13-BLK-IC-10001": {
+   "file": "SLDs/2000-F13-BLK-IC-10001.pdf",
+   "title": "Milling & classification - F13-SR-001 - 415V switchroom & N-IO panels - communications block diagram",
+   "rev": "1",
+   "date": "2025-10-15",
+   "pages": 1,
+   "size": 623566,
+   "from": [
+    "2000-F13-BLK-IC-10001_1_APP.pdf"
+   ],
+   "status": ""
+  },
+  "2000-F13-BLK-IC-10401": {
+   "file": "SLDs/2000-F13-BLK-IC-10401.pdf",
+   "title": "Milling & classification - F13-SR-004 - 415V switchroom & N-IO panels - communications block diagram",
+   "rev": "0",
+   "date": "",
+   "pages": 1,
+   "size": 703899,
+   "from": [
+    "2000-F13-BLK-IC-10401_0_APP.pdf"
+   ],
+   "status": ""
+  },
+  "2000-F175-BLK-IC-40001": {
+   "file": "SLDs/2000-F175-BLK-IC-40001.pdf",
+   "title": "Southlakes booster station F175-SR-701 switchroom communications block diagram",
+   "rev": "1",
+   "date": "2025-11-10",
+   "pages": 1,
+   "size": 531559,
+   "from": [
+    "2000-F175-BLK-IC-40001_1_APP.pdf"
+   ],
+   "status": ""
+  },
+  "2000-F22-BLK-IC-10001": {
+   "file": "SLDs/2000-F22-BLK-IC-10001.pdf",
+   "title": "Carbon treatment & elution - F22-SR-001 415V switchroom & N-IO panels - communications block diagram sheet 1",
+   "rev": "1",
+   "date": "2026-01-06",
+   "pages": 1,
+   "size": 667786,
+   "from": [
+    "2000-F22-BLK-IC-10001_1_APP.pdf"
+   ],
+   "status": ""
+  },
+  "2000-F23-BLK-IC-10001": {
+   "file": "SLDs/2000-F23-BLK-IC-10001.pdf",
+   "title": "Final tailings handling & storage - F23-SR-001/F23-SR-002 switchrooms & N-IO panels - communications block diagram",
+   "rev": "0",
+   "date": "",
+   "pages": 1,
+   "size": 854264,
+   "from": [
+    "2000-F23-BLK-IC-10001_0_APP.pdf"
+   ],
+   "status": ""
+  },
+  "2000-F23-BLK-IC-40001": {
+   "file": "SLDs/2000-F23-BLK-IC-40001.pdf",
+   "title": "FIM III booster station F23-SR-601 switchroom communications block diagram",
+   "rev": "6",
+   "date": "",
+   "pages": 1,
+   "size": 444511,
+   "from": [
+    "2000-F23-BLK-IC-40001_6.pdf"
+   ],
+   "status": ""
+  },
+  "2000-F24-BLK-IC-10501": {
+   "file": "SLDs/2000-F24-BLK-IC-10501.pdf",
+   "title": "Air & water services - saline water F24-SW-024 and remote IO communications block diagram",
+   "rev": "2A",
+   "date": "",
+   "pages": 1,
+   "size": 574063,
+   "from": [
+    "2000-F24-BLK-IC-10501_2A.pdf"
+   ],
+   "status": ""
+  },
+  "2000-F28-BLK-IC-10001": {
+   "file": "SLDs/2000-F28-BLK-IC-10001.pdf",
+   "title": "Ultra fine grinding - F28-SR-001/F28-SR-002 switchrooms & N-IO panels - communications block diagram",
+   "rev": "0",
+   "date": "",
+   "pages": 1,
+   "size": 729559,
+   "from": [
+    "2000-F28-BLK-IC-10001_0_APP.pdf"
+   ],
+   "status": ""
+  },
+  "2000-F72-BLK-IC-10001": {
+   "file": "SLDs/2000-F72-BLK-IC-10001.pdf",
+   "title": "Reagents mixing & storage - F72-SR-001 - 415V switchroom & N-IO panels - communications block diagram",
+   "rev": "1",
+   "date": "2025-08-13",
+   "pages": 1,
+   "size": 628630,
+   "from": [
+    "2000-F72-BLK-IC-10001_1_APP.pdf"
+   ],
+   "status": ""
+  },
+  "2000-F24-PID-PR-10021": {
+   "file": "PIDs/2000-F24-PID-PR-10021.pdf",
+   "title": "Potable water, sheet 2",
+   "rev": "1",
+   "date": "2026-10-02",
+   "pages": 1,
+   "size": 216466,
+   "src": [
+    "2000-F24-PID-PR-10021_MS_1.pdf"
+   ]
   }
  }
 }

@@ -2,7 +2,7 @@
 (sources/doclist/*.xlsx in the private repository, newest file: SharePoint > the library in a flat view > Export).
 Each cell holds the file name with its SharePoint address as a hyperlink. A file's number is its name up to the first
 "_", its revision the next part (2000-F00-SLD-EL-10002_5.pdf: rev 5; _4A_RLM: rev 4A, status RLM). Of several files for
-one number, one outside a "Superseded" folder wins, then a PDF, then the latest modified date, then the highest
+one number, one outside a "Superseded" folder and not marked SSD (superseded) or CAN (cancelled) wins, then a PDF, then the latest modified date, then the highest
 revision (letters before numbers: A < B < 0 < 1 < 1A < 2). The export's Name, Path and Modified columns are used. The result is cached beside the export as doclist.json (rebuilt when the export is newer).
    from doclist import latest, revkey      latest() -> {key: {"n", "rev", "st", "url", "file", "sup"}}
 """
@@ -43,7 +43,9 @@ def latest():
         k = nk(num); e = {"n": num, "rev": rev, "st": st, "url": url, "file": name, "sup": sup, "mod": mod}
         # the newest file wins: one outside a Superseded folder, a PDF (the drawing the app shows), then the latest
         # modified date, then the highest revision
-        rank = (not sup, ext == "pdf", mod, revkey(rev))
+        # (a file marked SSD, superseded, or CAN, cancelled, or a copy named "... old", only when there's nothing else)
+        bad = st.upper().split("_")[0] in ("SSD", "CAN") or rev.upper() in ("SSD", "CAN") or stem.lower().endswith(" old")
+        rank = (not sup and not bad, ext == "pdf", mod, revkey(rev))
         if k not in best or rank > best[k][0]: best[k] = (rank, e)
     out = {k: v[1] for k, v in best.items()}; FILES.update(files)
     json.dump({"L": out, "F": files}, open(cache, "w"), separators=(",", ":"))
