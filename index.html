@@ -47,8 +47,8 @@ html[data-accent="olive"]{--thm:#5a5a2e;--thd:#444422;--tht:#f0f0e6;--thb:#6e6e3
 html[data-accent="stone"]{--thm:#7a6a5d;--thd:#5f5147;--tht:#f3efeb;--thb:#8f7f71}
 html[data-accent="rust"]{--thm:#9a3412;--thd:#7c2a0e;--tht:#f8ece6;--thb:#b4471f}
 html[data-accent="ink"]{--thm:#111827;--thd:#000000;--tht:#e9ebef;--thb:#1f2937}
-:root{--rh:#eef0f3;--rs:#e1e4e8;--rsb:#8b939d;--th:var(--thm);--th2:var(--thd);--th-t:var(--tht);--th-b:var(--thb);--on-th:#fff}
-html[data-theme="dark"]{--rh:#262b32;--rs:#333941;--rsb:#7a828c;--th:color-mix(in srgb,var(--thm) 62%,#fff);--th2:color-mix(in srgb,var(--thm) 78%,#fff);--th-t:color-mix(in srgb,var(--thm) 32%,#15191e);--th-b:color-mix(in srgb,var(--thb) 80%,#fff)}   /* lifted so it reads on black */
+:root{--rh:#eef0f3;--rs:var(--th-t);--rsb:var(--th);--hd:#eceef1;--hd2:#4b5563;--th:var(--thm);--th2:var(--thd);--th-t:var(--tht);--th-b:var(--thb);--on-th:#fff}
+html[data-theme="dark"]{--rh:#262b32;--rs:var(--th-t);--rsb:var(--th);--hd:#2a2f36;--hd2:#b3bac4;--th:color-mix(in srgb,var(--thm) 62%,#fff);--th2:color-mix(in srgb,var(--thm) 78%,#fff);--th-t:color-mix(in srgb,var(--thm) 32%,#15191e);--th-b:color-mix(in srgb,var(--thb) 80%,#fff)}   /* lifted so it reads on black */
 </style>
 <meta name="theme-color" content="#0f1216">
 <meta name="mobile-web-app-capable" content="yes">
@@ -159,7 +159,7 @@ body.searching #homeMain{display:none}
    are striped; only while it shows a results list (pills), so photo reading messages and item pages stay plain */
 #lkResults:has(.lk-pills) .lk-status{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 6px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:700;color:var(--ink);color:var(--th2)}
 
-#lkResults .lk-row1{border-bottom:0;padding:7px 8px}#lkResults .lk-row1:nth-of-type(even){background:color-mix(in srgb,var(--ink) 3.5%,transparent)}
+#lkResults .lk-row1{border-bottom:0;padding:7px 8px}#lkResults .lk-row1.zb{background:color-mix(in srgb,var(--ink) 3.5%,transparent)}
 #lkResults .lk-row1:is(:hover,:focus){background:var(--rh,var(--lk-c))}   /* (the stripe would hide lookup.js's hover) */
 :root.phone #lkResults:has(.lk-pills) .lk-status{margin:0 -16px 8px;padding:6px 16px}:root.phone #lkResults .lk-row1{width:calc(100% + 32px);margin:0 -16px;padding:7px 16px}
 .pill{flex:1;height:46px;border-radius:14px;background:var(--card);color:color-mix(in srgb,var(--gold) 70%,var(--ink));border:1px solid var(--gold);display:flex;align-items:center;
@@ -252,7 +252,7 @@ body.searching #homeMain{display:none}
 :root:not(.phone) .qd-list{border-left:1px solid var(--line);gap:2px}
 :root:not(.phone) #qdBar{display:none}
 :root:not(.phone) .card{touch-action:auto;user-select:text;-webkit-user-select:text}
-.qd-side h4,.qd-list h4{margin:8px 0 2px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2)}
+.qd-side h4,.qd-list h4{margin:8px 0 2px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2)}
 .qd-side h4:first-child,.qd-list h4:first-child{margin-top:0}
 .qd-side h4 button{margin-left:auto;border:0;background:none;color:var(--gold);font:inherit;font-size:var(--fl,13px);text-transform:none;letter-spacing:0;cursor:pointer;padding:0 0 0 8px}
 .qd-tp{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:8px;font-size:var(--fl,13px);cursor:pointer;border:0;background:none;color:var(--ink);font-family:inherit;text-align:left;width:100%}
@@ -327,22 +327,20 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 .gl-sheet{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:flex;align-items:flex-end}.gl-sheet[hidden]{display:none}
 .gl-card{position:relative;width:100%;background:var(--card);border-radius:16px 16px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(0,0,0,.2)}
 .gl-card b{display:block;font-size:20px}.gl-card small{display:block;color:var(--mute);font-weight:700;margin:2px 0 10px}.gl-card p{margin:0;font-size:16px;line-height:1.45}
-.gl-mi{margin:16px 0 4px;padding:5px 8px;background:var(--th-t);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2)}
+.gl-mi{margin:16px 0 4px;padding:5px 8px;background:var(--hd);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2)}
 .gl-fq,.gld-fq{border-bottom:1px solid var(--line)}.gl-fq summary,.gld-fq summary{cursor:pointer;font-weight:700;padding:10px 2px;list-style:none;display:flex;justify-content:space-between;gap:10px}
 .gl-fq summary::-webkit-details-marker,.gld-fq summary::-webkit-details-marker{display:none}.gl-fq summary::after,.gld-fq summary::after{content:"+";color:var(--mute);font-weight:800}.gl-fq[open] summary::after,.gld-fq[open] summary::after{content:"\2212"}
 .gl-fq div,.gld-fq div{padding:0 2px 12px;color:var(--mute);line-height:1.5}.gl-card{max-height:80vh;overflow:auto}
 /* desktop glossary */
 :root:not(.phone) #deck.glos .gl-pills{position:absolute;left:22px;top:112px;width:calc(var(--lsw) - 44px);margin:0}
 :root:not(.phone) #deck.glos #lgList{position:absolute;left:22px;width:calc(var(--lsw) - 44px);bottom:16px;display:block;background:none;border-radius:0;overflow:visible;padding:0;margin:0}
-.gld-list{position:absolute;inset:0 28px 0 0;overflow:auto;background:var(--card);border-radius:12px;overscroll-behavior:contain}
-.gld-h{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--th2);padding:5px 12px}
+.gl .gld-list{padding:0;border-bottom:0;position:absolute;inset:0;overflow:auto;background:var(--card);border-radius:12px;overscroll-behavior:contain}
+.gl .gld-h{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--th2);padding:5px 12px}
 .gld-n{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;font:inherit;font-weight:700;color:var(--ink);padding:8px 12px;cursor:pointer}
 .gld-n:hover{background:var(--rh,#eef0f3)}.gld-n.on{background:var(--rs,#e1e4e8);box-shadow:inset 3px 0 0 var(--rsb,#8b939d)}
-.gld-az{position:absolute;right:0;top:0;bottom:0;width:22px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:4px 0;font-size:11px;font-weight:800;color:var(--th2);user-select:none;cursor:pointer;touch-action:none}
-.gld-az i{font-style:normal}.gld-az i.off{opacity:.3}
 #lgDet{background:var(--card);border-radius:14px;padding:20px 24px;flex:none}#lgDet:empty{display:none}
 .gld-t{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.gld-t b{font-size:28px}.gld-t span{border:1.5px solid var(--line);border-radius:12px;padding:2px 9px;font-size:12px;font-weight:800;color:var(--mute)}
-.gld-m{font-size:17px;line-height:1.5;margin:8px 0 0}.gld-band{margin:18px 0 4px;padding:5px 8px;background:var(--th-t);font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2)}
+.gld-m{font-size:17px;line-height:1.5;margin:8px 0 0}.gld-band{margin:18px 0 4px;padding:5px 8px;background:var(--hd);font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2)}
 .gl-x{position:absolute;right:10px;top:8px;border:0;background:none;font-size:28px;line-height:1;color:var(--mute);cursor:pointer}
 :root.phone .gl-az{display:flex;flex-direction:column;justify-content:space-between;position:fixed;right:2px;top:calc(var(--tb) + 70px);bottom:calc(var(--bn) + 16px);z-index:3;touch-action:none}
 .gl-bub{position:fixed;transform:translateY(-50%);width:64px;height:64px;border-radius:16px;background:var(--th,#475569);color:#fff;font-size:34px;font-weight:900;display:grid;place-items:center;z-index:50;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.25)}.gl-bub[hidden]{display:none}
@@ -919,15 +917,10 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
   function glDesk(list, out, pl){
     const sorted = list.slice().sort((a, b) => (GL1(b[0]) === "#") - (GL1(a[0]) === "#") || a[0].localeCompare(b[0], undefined, { sensitivity: "base", numeric: true }));
     let h = "", last = ""; sorted.forEach(([k]) => { const c = GL1(k); if (c !== last){ h += `<div class="gld-h" data-l="${c}">${c}</div>`; last = c; } h += `<button type="button" class="gld-n${k === gSel ? " on" : ""}" data-k="${esc(k)}">${esc(k)}</button>`; });
-    const has = new Set(sorted.map(x => GL1(x[0])));
-    out.innerHTML = `<div class="gld-list">${h || `<div class="gl-none">No match</div>`}</div><div class="gld-az">${"#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(c => `<i data-l="${c}"${has.has(c) ? "" : ` class="off"`}>${c}</i>`).join("")}</div>`;
+    out.innerHTML = `<div class="gld-list">${h || `<div class="gl-none">No match</div>`}</div>`;
     out.style.top = (pl.offsetTop + pl.offsetHeight + 10) + "px";
-    const box = out.querySelector(".gld-list"), az = out.querySelector(".gld-az");
+    const box = out.querySelector(".gld-list");
     box.onclick = e => { const b = e.target.closest(".gld-n"); if (!b) return; gSel = b.dataset.k; box.querySelectorAll(".gld-n.on").forEach(x => x.classList.remove("on")); b.classList.add("on"); glDef(gSel); };
-    // the strip: press or drag down it to jump to a letter (the nearest one that has terms)
-    const go = e => { let t = null, dmin = 1e9; az.querySelectorAll("i:not(.off)").forEach(i => { const q = i.getBoundingClientRect(), d = Math.abs(q.top + q.height / 2 - e.clientY); if (d < dmin){ dmin = d; t = i; } });
-      const g = t && box.querySelector(`.gld-h[data-l="${CSS.escape(t.dataset.l)}"]`); if (g) box.scrollTop = g.offsetTop; };
-    az.onpointerdown = e => { az.setPointerCapture(e.pointerId); go(e); }; az.onpointermove = e => { if (e.buttons) go(e); };
     if (!sorted.some(x => x[0] === gSel)) gSel = sorted.length ? sorted[0][0] : "";
     const on = box.querySelector(`.gld-n[data-k="${CSS.escape(gSel)}"]`); if (on) on.classList.add("on");
     glDef(gSel);

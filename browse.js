@@ -42,12 +42,32 @@ window.Browse = (() => {
       case "mv": return [area(k), g("Valve type") || "?"];
       case "spi": return [area((/2000-F\d\d/.exec(g("P&IDs")) || [""])[0].slice(5)), g("Type") || "?"];
       case "hose": return [area(g("Location ref")), g("Service") || "?"];
-      case "elec": { const m = /^F(\d{2,3})/.exec(k); return [m ? "F" + m[1] : "", g("Type") || "?"]; }
+      case "elec": { const m = /^F(\d{2,3})/.exec(k); return [m ? "F" + m[1] : "", elCode(k)]; }
       case "cable": { const m = /^F(\d{2,3})/.exec(k), c = /-([A-Z]{1,2})\d{1,2}(?:-[A-Z]{1,2})?$/.exec(k); return [m ? "F" + m[1] : "", c ? (CBK[c[1]] ? c[1] : "?") : "?"]; }
       // drawings: a P&ID's area is in its number; PFD sheets are all F00, so theirs is the area of the equipment on them
       case "pid": { const m = /^2000-([FT]\d{2,3})-(PID|PFD|SLD)-/.exec(k); return !m ? null : m[2] === "PFD" ? [Lookup.pfdArea(k) || titleArea(k) || "?", "PFD"] : [m[1], m[2]]; }
     }
     return null;
+  }
+  // electrical equipment code from the tag, as the mechanical ones (F13-AC-401: AC). Equipment that belongs to another item
+  // carries its own code as a suffix (F16AG421-LCS: LCS, F13CC401-VS: VS, F13AC401-ISL: ISL); a distribution board's
+  // circuits (F00DB401-R3) go with the board
+  function elCode(k){
+    let m = /^F\d{2,3}[A-Z]+\d+[A-Z]?-(R|W|B|RWB)\d+$/.exec(k); if (m) return "DB";
+    m = /^F\d{2,3}[A-Z]+[0-9A-Z]*-([A-Z]+)[\d/]*$/.exec(k); if (m) return m[1] === "VSD" ? "VS" : m[1] === "XE" ? "XE" : m[1];
+    m = /^F\d{2,3}-([A-Z]+)/.exec(k); return m ? m[1] : "?";
+  }
+  // a name for each electrical code: the Type most of its items give (sentence case), else the mechanical code name
+  const ELN = { VS: "Variable speed drive", LCS: "Local control station", ISL: "Isolator", JB: "Junction box", XE: "Earth electrode", EB: "Earth bar",
+    CP: "Control panel", NR: "Neutral earthing resistor", DPS: "Decontactor", KEB: "Key exchange box", GPO: "General power outlet", FOB: "Fibre optic break out",
+    UA: "Fire alarm unit", CAM: "CCTV camera", BC: "Battery charger", GWY: "Network gateway", PS: "Power supply", PA: "Patch panel", PE: "Photo electric cell", UPS: "UPS" };
+  let elNames = null;
+  function elName(v){
+    if (!elNames){ elNames = {}; const c = {};
+      for (const it of Lookup.items()) if (it.t === "elec"){ const ty = String(Lookup.get(it, "Type") || "").trim(); if (!ty) continue; const k = elCode(it.key);
+        (c[k] = c[k] || {})[ty] = (c[k][ty] || 0) + 1; }
+      for (const k in c){ const n = Object.entries(c[k]).sort((a, b) => b[1] - a[1])[0][0]; elNames[k] = n === n.toUpperCase() && n.length > 4 ? n.charAt(0) + n.slice(1).toLowerCase() : n; } }
+    return ELN[v] || elNames[v] || (B.equip || {})[v] || "";
   }
   // the steps after the type, per type: [field, label]
   const STEPS = {
@@ -58,7 +78,7 @@ window.Browse = (() => {
     line: [["k", "Service"], ["a", "Area"], ["sp", "Pipe spec"], ["sz", "Size (DN)"]],
     spi: [["k", "Type"], ["a", "Area"]],
     hose: [["k", "Service"], ["a", "Area"]],
-    elec: [["k", "Equipment type"], ["a", "Area"]], cable: [["k", "Cable kind"], ["a", "Area"]],
+    elec: [["k", "Equipment code"], ["a", "Area"]], cable: [["k", "Cable kind"], ["a", "Area"]],
     pid: [["a", "Area"]], pfdd: [["a", "Area"]], sldd: [["a", "Area"]] };
   const SIZE = { cv: "Valve size (mm)", mv: "Size (DN)", line: "Size (DN)" };
   function build(){
@@ -73,7 +93,7 @@ window.Browse = (() => {
     names = {
       a: v => B.areas[v] || "", sp: v => (B.spec || {})[v] || "", sz: () => "",
       k: { mel: v => B.equip[v] || "", ins: insName, cv: v => CV[v] || "", mv: () => "", line: v => B.svc[v] || "", hose: v => B.svc[v] || "",
-        pid: () => "", pfdd: () => "", sldd: () => "", elec: () => "", cable: v => CBK[v] || "", spi: v => SPI[v] || "" } };
+        pid: () => "", pfdd: () => "", sldd: () => "", elec: elName, cable: v => CBK[v] || "", spi: v => SPI[v] || "" } };
   }
   const nameOf = (f, t, v) => v === "?" ? (f === "a" ? "No area in the tag" : "Not given") : f === "k" ? names.k[t](v) : names[f](v);
   const t = () => path.length ? path[0].v : "";
@@ -128,18 +148,14 @@ window.Browse = (() => {
           // qty × code (short name): the quantities share one right aligned column, so the items line up
           return `<button class="bw-o" data-v="${esc(v)}" data-n="${c[v]}" data-l="${esc(azKey(label))}"><em>${esc(label)}</em>${n ? ` <span>(${esc(n)})</span>` : ""}</button>`; }).join("");
       qw = Math.max(...vals.map(v => c[v].toLocaleString().length)) + 3;   // "(x" and ")"
-      az = [...new Set(vals.map(v => azKey(st[0] === "t" ? TN[v] : v === "?" ? "Other" : v)))].sort((a, b) => a.localeCompare(b));   // shown only if the list runs off the screen
+      // (no A to Z strip on desktop: the Niagara strip is for the phone only)
     } else opts = "";   // every step set (how to change one is in Help)
-    const hits = list.slice(0, shownN).map(r => r.it);
     el.innerHTML = recBar() + `<div class="bw-lw">${az ? `<div class="bw-az" aria-hidden="true">${az.map(L => `<i data-l="${esc(L)}">${esc(L)}</i>`).join("")}</div><div class="bw-bub"></div>` : ""}<div class="bw-l">${crumbs ? `<div class="bw-crs">${crumbs}</div>` : ""}<div class="bw-opts stack" style="--qw:${qw}ch">${opts}</div></div></div>
-      <div class="bw-r">${resBand(list.length)}
-      ${hits.map((it, i) => `<button class="bw-it lk-1l" data-i="${i}">${Lookup.row1(it.key, resDesc(it), Lookup.tsfTag(it))}</button>`).join("")}
-      ${list.length > hits.length ? `<button class="bw-more">Show ${Math.min(200, list.length - hits.length)} more</button>` : ""}</div>`;
+      <div class="bw-r">${resBand(list.length)}<div class="bw-vl"></div></div>`;
     el.querySelectorAll(".bw-o").forEach(b => b.onclick = () => { path.push({ f: st[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
     const any = el.querySelector(".bw-any"); if (any) any.onclick = () => { path.push({ f: st[0], v: null }); after(); };
     el.querySelectorAll(".bw-cr").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
-    el.querySelectorAll(".bw-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(hits[+b.dataset.i], list.map(r => r.it)); });
-    const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
+    resList(list, "bw-it");
     if (az) bindAZ();
     wireRec(); fit(); fitLayout();
   }
@@ -155,7 +171,7 @@ window.Browse = (() => {
   // the ones after it), then the options of the next step in a three-line block that scrolls sideways (Any first);
   // nothing chosen yet: the asset types in that block, and recent searches in a row above it. The results fill the rest.
   function drawPhone(list, st){
-    const hits = list.slice(fromN, shownN).map(r => r.it), rc = recents().slice(0, 8);
+    const rc = recents().slice(0, 8);
     const lab = (p, i) => p.f === "t" ? TN[p.v] : p.v == null ? "Any " + steps()[i - 1][1].toLowerCase() : (p.v === "?" ? "Other" : p.v);
     const chips = path.map((p, i) => `<button class="bp-c on" data-i="${i}">${esc(lab(p, i))}<i class="bp-x" aria-label="Remove">✕</i></button>`).join("");
     const nx = nextStep(), q = lk && lk.input ? lk.input.value.trim() : "";
@@ -169,22 +185,19 @@ window.Browse = (() => {
     }
     const rec = !path.length && !q && rc.length ? `<div class="bw-band">Recent</div><div class="bp-bar bp-recs">${rc.map((x, i) => `<button class="bp-c bp-r" data-r="${i}">↺ ${esc(x.q || x.key)}</button>`).join("")}</div>` : "";
     el.innerHTML = `<div class="bp-top">${rec}${chips ? `<div class="bp-bar">${chips}</div>` : ""}${opts}</div>
-      <div class="bw-r bp-l">${resBand(list.length)}${fromN ? `<button class="bw-more bw-prev">Show earlier rows</button>` : ""}
-      ${hits.map((it, i) => `<button class="bw-it bp-it lk-1l" data-i="${fromN + i}">${Lookup.row1(it.key, resDesc(it), Lookup.tsfTag(it))}</button>`).join("")}
-      ${list.length > shownN ? `<button class="bw-more">Show ${Math.min(200, list.length - shownN)} more</button>` : ""}</div>`;
+      <div class="bw-r bp-l">${resBand(list.length)}<div class="bw-vl"></div></div>`;
     el.querySelectorAll(".bp-c.on").forEach(b => b.onclick = () => { path = path.slice(0, +b.dataset.i); after(); });
     el.querySelectorAll(".bp-r").forEach(b => b.onclick = () => { const x = rc[+b.dataset.r]; if (x.q) lk.search(x.q); else lk.openKey(x.key); });
     el.querySelectorAll(".bp-o[data-v]").forEach(b => b.onclick = () => { path.push({ f: nx[0], v: b.dataset.v, n: +b.dataset.n }); after(); });
     const any = el.querySelector(".bp-any"); if (any) any.onclick = () => { path.push({ f: nx[0], v: null }); after(); };
-    el.querySelectorAll(".bp-it").forEach(b => b.onclick = () => { resY = el.querySelector(".bw-r").scrollTop; lk.openItem(list[+b.dataset.i].it, list.map(r => r.it)); });
-    const pv = el.querySelector(".bw-prev"); if (pv) pv.onclick = () => { fromN = Math.max(0, fromN - 200); draw(); };
-    const m = el.querySelector(".bw-more"); if (m) m.onclick = () => { const y = el.querySelector(".bw-r").scrollTop; shownN += 200; draw(); el.querySelector(".bw-r").scrollTop = y; };
-    // the whole list for the fast scroll index (tabs.js), not just the rows drawn so far: jumping to a group further on
-    // draws the rows up to it first
-    // (a row not drawn: draw from just before it, with "Show earlier rows" above, so a far jump stays quick)
-    el.querySelector(".bw-r").fsList = { keys: list.map(r => r.it.key), go: i => { if (i < fromN || i >= shownN){ fromN = Math.max(0, i - 10); shownN = fromN + 200; draw(); }
-      const b = el.querySelector(`.bp-it[data-i="${i}"]`), L = el.querySelector(".bw-r"); if (b && L) L.scrollTop = b.offsetTop - L.offsetTop - 40; } };
+    resList(list, "bw-it bp-it");
     fit(); Lookup.fitRows();
+  }
+  // the results: every row scrollable, only those near the view drawn (Lookup.vlist)
+  function resList(list, cls){
+    const sc = el.querySelector(".bw-r"), its = list.map(r => r.it);
+    Lookup.vlist(sc, sc.querySelector(".bw-vl"), list.length, i => `<button class="${cls} lk-1l${i % 2 ? " zb" : ""}" data-i="${i}">${Lookup.row1(its[i].key, resDesc(its[i]), Lookup.tsfTag(its[i]))}</button>`,
+      i => { resY = sc.scrollTop; lk.openItem(its[i], its); }, its.map(x => x.key));
   }
   // design 14b: full width grey header bands split the page (Recent, Asset type, Results); Results carries the count
   const resBand = n => `<div class="bw-n bw-band"><span>Results</span><b>${n.toLocaleString()}</b></div>`;
@@ -295,11 +308,11 @@ window.Browse = (() => {
 .bw-note{font-size:var(--fb,15px);color:var(--mute);line-height:1.4}
 /* design 14b: grey header bands over each section, results striped (no dividers). Desktop: the columns meet at the
    divider (no gap) so the bands run edge to edge; rows keep their text where it was, the stripe fills the column */
-.bw-band{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 4px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2)}
+.bw-band{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 4px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2)}
 .bw-band b{color:var(--ink);letter-spacing:.02em;font-variant-numeric:tabular-nums}.bw-band .bw-any{padding:0 8px}
 .bw{column-gap:0}.bw-l{padding-right:18px}.bw-opts .bw-band{margin:0 -18px 2px 0}.bw-opts.stack>.bw-o{margin-left:8px;max-width:calc(100% - 8px)}
-.bw-r{padding:0}.bw-r>.bw-band{margin:0 0 2px;padding-right:12px}
-.bw-it{border-bottom:0;padding:7px 12px 7px 8px}.bw-it:where(:nth-of-type(even)){background:color-mix(in srgb,var(--ink) 3.5%,transparent)}
+.bw-r{padding:0}.bw-r>.bw-band{margin:0 0 2px;padding-right:12px}.bw-r>.bw-n{position:sticky;top:0;z-index:3}
+.bw-it{border-bottom:0;padding:7px 12px 7px 8px}.bw-it.zb{background:color-mix(in srgb,var(--ink) 3.5%,transparent)}
 .bw-r>.bw-more{width:calc(100% - 20px);margin:8px 12px 8px 8px}
 /* phone */
 :root.phone .bw{display:flex;flex-direction:column;gap:0}

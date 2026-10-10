@@ -614,75 +614,131 @@ button:disabled{cursor:default}
   scan(); addEventListener("resize", () => document.querySelectorAll(SEL).forEach(fit));   // (a text size change)
 })();
 
-// Phone: a fast scroll index on any list longer than a page (Niagara style). While the list scrolls, its groups (a tag's
-// area "00", "13", "F21"…, a document's area, or a first letter) show as small labels down the right edge; a finger on
-// them jumps through the list, the labels near the finger curve out with the one under it highlighted, a light backdrop
-// keeps them readable and each new group gives a tick of vibration (Android). A list with no groups gets a plain handle.
+// Phone: a fast scroll index (Niagara style) on every list longer than two screens, always showing (desktop keeps its scroll bars). It sits
+// down the right edge of the list itself (below its sticky header band, above the phone's tab bar) in place of the
+// scroll bar; its labels are the list's groups (a tag's area "00", "13", "F21"…, a document's area, or a first letter).
+// A finger or the mouse on it jumps through the list, the labels near the pointer curve out with the one under it
+// highlighted, a light backdrop keeps them readable and each new group gives a tick of vibration (Android). A list with
+// no groups gets a plain handle. A list that gives its whole contents (sc.fsList, Lookup.vlist) is indexed in full.
 (() => {
   const ROWS = ".gl-e,.bw-it,.bp-it,.lk-row1,.sl-r,.ck-row,.fx-it,.lk-row,tbody tr";
   const SKIP = ".sp-body,.leaflet-container,#stage,svg";   // (maps and drawings pan)
+  const OWN = ".gl-az,.gld-az";   // (lists with their own A to Z strip)
   const keyOf = r => { const t = ((r.querySelector("b,td") || r).textContent || "").trim();
     if (r.classList && r.classList.contains("gl-e")){ const c = t.charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; }   // (the glossary: A to Z)
     let m = t.match(/^\d{4}-(F\d{2,3})-/) || t.match(/^(F\d{2,3})\b/); if (m) return m[1];
     m = t.match(/^(\d{2})-/); if (m) return m[1]; const c = t.charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
-  let el = null, sc = null, groups = [], hideT = 0, on = false, last = "";
-  const css = `.fs{position:fixed;right:0;z-index:60;width:30px;pointer-events:auto;touch-action:none;opacity:0;transition:opacity .25s;-webkit-user-select:none;user-select:none}.fs.show{opacity:1}.fs[hidden]{display:none}
-.fs.on{width:190px;background:linear-gradient(to left,var(--bg) 40%,color-mix(in srgb,var(--bg) 0%,transparent))}
-.fs i{position:absolute;right:10px;font:800 10.5px/1 var(--ff,system-ui);font-style:normal;color:var(--mute);transform-origin:right center;white-space:nowrap;padding:3px 0}
-.fs i.cur{color:var(--ink);background:var(--th-t);box-shadow:inset 0 0 0 1.5px var(--th);border-radius:10px;padding:3px 6px;right:6px}.fs.on i.cur{color:#fff;background:var(--th);border-radius:12px;padding:4px 9px}
-.fs b{position:absolute;right:3px;width:6px;height:52px;border-radius:3px;background:color-mix(in srgb,var(--mute) 70%,transparent)}.fs.on b{width:10px;right:2px;background:var(--th)}.fs b.pos{width:4px;height:26px;right:1px;background:var(--th)}.fs.on b.pos{width:4px;right:1px}`;
-  function setup(){ if (!document.documentElement.classList.contains("phone")) return false; if (el) return true;
-    const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-    el = document.createElement("div"); el.className = "fs"; el.hidden = true; document.body.appendChild(el);
-    el.addEventListener("pointerdown", e => { on = true; el.setPointerCapture(e.pointerId); el.classList.add("on", "show"); clearTimeout(hideT); drag(e); });
-    el.addEventListener("pointermove", e => { if (on) drag(e); });
-    const up = () => { if (!on) return; on = false; el.classList.remove("on"); paint(); hideSoon(); }; el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
-    return true; }
+  // (a band with a line down each side; desktop: the strip on the list's left, phone: on its right)
+  const css = `.fs{position:fixed;z-index:60;width:30px;box-sizing:border-box;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;cursor:pointer;border-left:1px solid var(--line);border-right:1px solid var(--line);background:var(--card,var(--bg))}.fs[hidden]{display:none}
+.fs i{position:absolute;left:1px;right:1px;text-align:center;font:800 10px/1 var(--ff,system-ui);font-style:normal;color:var(--mute);white-space:nowrap;overflow:hidden;padding:3px 0;border-radius:6px}
+.fs i.cur{color:var(--th2,var(--th));background:var(--th-t);box-shadow:inset 0 0 0 1.5px var(--th)}
+.fs b{position:absolute;left:11px;width:6px;height:52px;border-radius:3px;background:color-mix(in srgb,var(--mute) 70%,transparent)}.fs.on b{background:var(--th)}.fs b.pos{left:auto;right:0;width:3px;height:26px;border-radius:2px;background:var(--th)}.fs.fs-l b.pos{right:auto;left:0}
+.fs-bub{position:fixed;z-index:61;pointer-events:none;min-width:44px;height:44px;padding:0 10px;box-sizing:border-box;display:grid;place-items:center;border-radius:12px;background:var(--th-t);box-shadow:inset 0 0 0 2px var(--th),0 6px 18px #0003;color:var(--th2,var(--th));font-size:20px;font-weight:800;line-height:1}.fs-bub[hidden]{display:none}
+.fs-pad{padding-right:30px!important;box-sizing:border-box}.fs-pad.fs-pl{padding-right:0!important;padding-left:30px!important}.fs-pad.fs-m{padding-right:0!important;margin-right:16px!important}.fs-host{scrollbar-width:none}.fs-host::-webkit-scrollbar{display:none}
+:root.fs-doc{scrollbar-width:none}:root.fs-doc::-webkit-scrollbar{display:none}`;
+  const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
+  const COL = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+  const strips = new Map();   // scroll element → its strip
   const isDoc = s => s === document.scrollingElement;
-  const box = () => { const tb = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tb")) || 52, bn = el && parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--bn")) || 58;
-    if (isDoc(sc)) return [tb + 8, innerHeight - bn - 8]; const r = sc.getBoundingClientRect(); return [Math.max(r.top, tb) + 6, Math.min(r.bottom, innerHeight - bn) - 6]; };
+  const PH = () => document.documentElement.classList.contains("phone");
+  const cv = n => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(n)) || 0;
+  // the strip's place: the list's own box (cut to the window, under the top bar, above the tab bar), below a sticky band
+  // (what covers the top of a page scrolled list: the bars fixed or sticky at the top, found once per scan down the
+  // strip's own line)
+  function topCover(x){ let y = 0;
+    for (; y < innerHeight / 2; y += 4){ const e = document.elementsFromPoint(x, y).find(n => !n.closest(".fs")); if (!e) break;
+      let f = false; for (let n = e; n && n !== document.body; n = n.parentElement){ const p = getComputedStyle(n).position; if (p === "fixed" || p === "sticky"){ f = true; break; } }
+      if (!f) break; }
+    return y; }
+  function box(S){ const sc = S.sc, lo = isDoc(sc) ? S.lo || 0 : PH() ? (cv("--tb") || 52) : 0, hi = innerHeight - (PH() ? (cv("--bn") || 58) : 0);
+    // the rows' own extent (the whole list's box, or its first and last row) …
+    const F = sc.fsList, rs = S.rows; let top = -1e9, bot = 1e9, right = document.documentElement.clientWidth, left = 0;
+    if (F && F.box && F.box.isConnected){ const q = F.box.getBoundingClientRect(); top = q.top; bot = q.bottom; left = q.left; }
+    else if (rs.length){ top = rs[0].getBoundingClientRect().top; bot = rs[rs.length - 1].getBoundingClientRect().bottom; left = rs[0].parentElement.getBoundingClientRect().left; }
+    // … cut to the scrolling box (below a sticky band at its top) and to the window
+    if (!isDoc(sc)){ const q = sc.getBoundingClientRect(); let t = q.top + sc.clientTop;
+      const f = sc.firstElementChild; if (f && getComputedStyle(f).position === "sticky") t += f.offsetHeight;
+      top = Math.max(top, t); bot = Math.min(bot, q.top + sc.clientTop + sc.clientHeight); right = q.left + sc.clientLeft + sc.clientWidth; left = q.left + sc.clientLeft; }
+    return [Math.max(top, lo) + 4, Math.min(bot, hi) - 4, right, left]; }
   // the list's groups, each at where its first row sits in the scroll (0 to 1)
-  function measure(){
-    // a list that gives its whole contents (browse.js fsList): groups from every key, placed by row number
-    const F = sc.fsList; if (F && F.keys && F.keys.length){ const n = F.keys.length; groups = [];
-      F.keys.forEach((k0, i) => { const k = keyOf({ querySelector: () => null, textContent: k0 }); if (!groups.length || groups[groups.length - 1].k !== k) groups.push({ k, f: i / n, i }); });
-      if (groups.length < 3) groups = []; else if (groups.length > cap()){ const g = groups, keep = []; const c = cap(); for (let j = 0; j < c; j++) keep.push(g[Math.round(j * (g.length - 1) / (c - 1))]); groups = keep; }
-      return; }
-    const rows = [...sc.querySelectorAll(ROWS)].filter(r => r.offsetParent && !r.closest(SKIP)); groups = [];
-    if (rows.length < 30) return;
-    const top0 = isDoc(sc) ? -scrollY : sc.getBoundingClientRect().top - sc.scrollTop, span = Math.max(1, sc.scrollHeight - sc.clientHeight);
-    rows.forEach(r => { const k = keyOf(r); if (!groups.length || groups[groups.length - 1].k !== k) groups.push({ k, f: Math.min(1, Math.max(0, (r.getBoundingClientRect().top - top0) / span)) }); });
-    if (groups.length < 3) groups = [];   // (one or two groups: just the handle)
-    else if (groups.length > cap()){ const n = groups.length, keep = [], c = cap(); for (let i = 0; i < c; i++) keep.push(groups[Math.round(i * (n - 1) / (c - 1))]); groups = keep; }
-  }
-  const cap = () => { const [t, b] = box(); return Math.max(3, Math.min(18, Math.floor((b - t) / 24))); };   // (labels that fit the strip)
-  const frac = () => { const F = sc.fsList; if (F && F.keys && F.keys.length){   // (with the whole list: the first row in view of all rows)
-      const top = sc.getBoundingClientRect().top + 50, r = [...sc.querySelectorAll("[data-i]")].find(x => x.getBoundingClientRect().bottom > top);
-      return r ? +r.dataset.i / F.keys.length : 0; }
+  function measure(S){ const sc = S.sc, F = sc.fsList, [t, b] = box(S), cap = Math.max(3, Math.min(18, Math.floor((b - t) / 24)));
+    let g = [];
+    if (F && F.keys && F.keys.length){ const n = F.keys.length; F.keys.forEach((k0, i) => { const k = keyOf({ querySelector: () => null, textContent: k0 }); if (!g.length || g[g.length - 1].k !== k) g.push({ k, f: i / n, i }); }); }
+    else { const rows = S.rows, top0 = isDoc(sc) ? -scrollY : sc.getBoundingClientRect().top - sc.scrollTop, span = Math.max(1, sc.scrollHeight - sc.clientHeight);
+      rows.forEach(r => { const k = keyOf(r); if (!g.length || g[g.length - 1].k !== k) g.push({ k, f: Math.min(1, Math.max(0, (r.getBoundingClientRect().top - top0) / span)) }); }); }
+    // (one or two groups, or a list not in order such as search results by match: just the handle)
+    const ks = F && F.keys && F.keys.length ? F.keys : S.rows.map(r => ((r.querySelector("b,td") || r).textContent || "").trim());
+    let down = 0; for (let i = 1; i < ks.length; i++) if (COL.compare(ks[i - 1], ks[i]) > 0) down++;
+    if (g.length < 3 || down > ks.length * .05) g = [];
+    else if (g.length > cap){ const n = g.length, keep = []; for (let i = 0; i < cap; i++) keep.push(g[Math.round(i * (n - 1) / (cap - 1))]); g = keep; }
+    S.groups = g; }
+  const frac = S => { const sc = S.sc; if (sc.fsList && sc.fsList.box){ const bx = sc.fsList.box.getBoundingClientRect(), [t] = box(S); return Math.min(1, Math.max(0, (t - bx.top) / Math.max(1, bx.height - (isDoc(sc) ? innerHeight : sc.clientHeight) * .8))); }
     return sc.scrollTop / Math.max(1, sc.scrollHeight - sc.clientHeight); };
-  // draw: the labels evenly down the strip (or the handle); with a finger on it (sf: its place down the strip, 0 to 1)
+  // draw: the labels evenly down the strip (or the handle); with the pointer on it (sf: its place down the strip, 0 to 1)
   // the labels near it curve out and the one under it is picked, else the group being looked at is
-  function paint(sf){
-    const [t, b] = box(), H = b - t, f = frac(); el.style.top = t + "px"; el.style.height = H + "px";
-    if (!groups.length){ el.innerHTML = `<b style="top:${(sf == null ? f : sf) * (H - 52)}px"></b>`; return; }
+  // a label's size: 10px, smaller for a long one so it stays inside the band (never under 7px)
+  const fitPx = k => Math.max(7, Math.min(10, 24 / (String(k).length * .7)));
+  function paint(S, sf){
+    const el = S.el, [t, b, right, left] = box(S), H = b - t, L = !PH();
+    if (H < 60){ el.hidden = true; S.bub.hidden = true; return; } el.hidden = false; el.classList.toggle("fs-l", L);
+    const f = frac(S); el.style.top = t + "px"; el.style.height = H + "px";
+    if (L){ el.style.left = left + "px"; el.style.right = ""; } else { el.style.right = (document.documentElement.clientWidth - right) + "px"; el.style.left = ""; }
+    const groups = S.groups;
+    if (!groups.length){ el.innerHTML = `<b style="top:${(sf == null ? f : sf) * (H - 52)}px"></b>`; S.bub.hidden = true; return; }
     const n = groups.length; let cur = 0;
     if (sf != null) cur = Math.round(sf * (n - 1)); else groups.forEach((g, i) => { if (g.f <= f + 1e-6) cur = i; });
-    // (the marker on the edge: where the view is in the whole list, also while just swiping)
-    el.innerHTML = `<b class="pos" style="top:${f * (H - 26)}px"></b>` + groups.map((g, i) => { const y = i / (n - 1) * (H - 16);
-      const k = sf != null ? Math.max(0, 1 - Math.abs(y - sf * (H - 16)) / 120) : 0, dx = Math.sin(k * Math.PI / 2) * 46, s = 1 + k * .35;
-      return `<i class="${i === cur ? "cur" : ""}" style="top:${y}px;transform:translateX(${-dx}px) scale(${s});opacity:${sf != null ? .55 + k * .45 : 1}">${g.k}</i>`; }).join("");
-    if (sf != null && groups[cur].k !== last){ last = groups[cur].k; try { navigator.vibrate && navigator.vibrate(8); } catch (e) {} }
+    el.innerHTML = groups.map((g, i) => `<i class="${i === cur ? "cur" : ""}" style="top:${i / (n - 1) * (H - 16)}px;font-size:${fitPx(g.k)}px">${g.k}</i>`).join("");
+    // while dragging: the group under the pointer large beside the strip, inside the list
+    if (sf != null){ const bb = S.bub; bb.hidden = false; bb.textContent = groups[cur].k; const y = t + sf * H - 22;
+      bb.style.top = Math.max(t, Math.min(b - 44, y)) + "px"; if (L){ bb.style.left = (left + 38) + "px"; bb.style.right = ""; } else { bb.style.right = (document.documentElement.clientWidth - right + 38) + "px"; bb.style.left = ""; } }
+    else S.bub.hidden = true;
+    if (sf != null && groups[cur].k !== S.last){ S.last = groups[cur].k; try { navigator.vibrate && navigator.vibrate(8); } catch (e) {} }
   }
-  // a finger on the strip: jump to the group under it (its first row), or straight to the spot when there are no groups
-  function drag(e){ const [t, b] = box(), sf = Math.min(1, Math.max(0, (e.clientY - t) / (b - t))), span = Math.max(1, sc.scrollHeight - sc.clientHeight);
-    const g = groups.length && groups[Math.round(sf * (groups.length - 1))];
-    if (g && sc.fsList && g.i != null){ const was = sc; sc.fsList.go(g.i); sc = document.querySelector(".bw-r") || was; }
-    else sc.scrollTop = (g ? g.f : sf) * span; paint(sf); }
-  function hideSoon(){ clearTimeout(hideT); hideT = setTimeout(() => { if (!on) el.classList.remove("show"); }, 1300); }
-  addEventListener("scroll", e => {
-    if (on || !setup()) return;
-    const s = e.target === document ? document.scrollingElement : e.target;
-    if (!(s instanceof Element) || s.closest(SKIP) || [...s.querySelectorAll(".gl-az")].some(x => x.offsetParent) || s.scrollHeight < s.clientHeight * 2 || s.scrollWidth > s.clientWidth + 40 && s.scrollHeight < s.clientHeight * 2) return;
-    if (s !== sc){ sc = s; last = ""; } measure(); el.hidden = false; el.classList.add("show"); paint(); hideSoon();
-  }, { capture: true, passive: true });
+  // the pointer on the strip: jump to the group under it (its first row), or straight to the spot when there are no groups
+  function drag(S, e){ const sc = S.sc, [t, b] = box(S), sf = Math.min(1, Math.max(0, (e.clientY - t) / (b - t))), span = Math.max(1, sc.scrollHeight - (isDoc(sc) ? innerHeight : sc.clientHeight));
+    S.sf = sf; const g = S.groups.length && S.groups[Math.round(sf * (S.groups.length - 1))];
+    if (sc.fsList && sc.fsList.go) sc.fsList.go(g && g.i != null ? g.i : Math.round(sf * (sc.fsList.keys.length - 1)), t - 4);
+    else sc.scrollTop = (g ? g.f : sf) * span;
+    paint(S, sf); }
+  function make(sc){
+    const el = document.createElement("div"); el.className = "fs"; document.body.appendChild(el);
+    const bub = document.createElement("div"); bub.className = "fs-bub"; bub.hidden = true; document.body.appendChild(bub);
+    const S = { sc, el, bub, groups: [], rows: [], last: "", on: false };
+    el.addEventListener("pointerdown", e => { S.on = true; el.setPointerCapture(e.pointerId); el.classList.add("on"); drag(S, e); e.preventDefault(); });
+    el.addEventListener("pointermove", e => { if (S.on) drag(S, e); });
+    const up = () => { if (!S.on) return; S.on = false; el.classList.remove("on"); paint(S); }; el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+    el.addEventListener("wheel", e => { (isDoc(sc) ? window : sc).scrollBy(0, e.deltaY); e.preventDefault(); }, { passive: false });
+    return S; }
+  const vis = e => { if (!e.isConnected) return false; if (isDoc(e)) return true; const r = e.getBoundingClientRect(); return r.height > 80 && r.width > 80 && r.bottom > 0 && r.top < innerHeight && !!e.offsetParent; };
+  const scroller = e => { for (let x = e.parentElement; x && x !== document.body && x !== document.documentElement; x = x.parentElement){ const o = getComputedStyle(x).overflowY; if ((o === "auto" || o === "scroll") && x.scrollHeight > x.clientHeight + 4) return x; } return document.scrollingElement; };
+  const long = sc => isDoc(sc) ? sc.scrollHeight >= innerHeight * 2 : sc.scrollHeight >= sc.clientHeight * 2;
+  // find the long lists on screen and give each a strip (drop strips whose list went)
+  function scan(){
+    const found = new Map();
+    if (PH()){
+    document.querySelectorAll(".bw-r,.fs-list").forEach(x => { if (x.fsList) found.set(x, null); });
+    if (document.scrollingElement.fsList && document.scrollingElement.fsList.box && document.scrollingElement.fsList.box.isConnected) found.set(document.scrollingElement, null);
+    const all = document.querySelectorAll(ROWS);
+    for (let i = 0; i < all.length; i += Math.max(1, Math.floor(all.length / 40))){ const r = all[i]; if (!r.offsetParent || r.closest(SKIP)) continue; const sc = scroller(r); if (!found.has(sc)) found.set(sc, null); }
+    for (const sc of found.keys()){
+      let ok = vis(sc) && long(sc) && !(sc instanceof Element && !isDoc(sc) && sc.closest(SKIP)) && ![...(isDoc(sc) ? [] : sc.querySelectorAll(OWN))].some(x => x.offsetParent);
+      let rows = []; if (ok && !sc.fsList){ rows = [...sc.querySelectorAll(ROWS)].filter(r => r.offsetParent && !r.closest(SKIP) && scroller(r) === sc); if (rows.length < 30) ok = false; }
+      if (isDoc(sc) && sc.fsList && !(sc.fsList.box && sc.fsList.box.isConnected && sc.fsList.box.offsetParent)) { if (!rows.length) ok = false; }
+      if (!ok){ found.delete(sc); continue; }
+      let S = strips.get(sc); if (!S){ S = make(sc); strips.set(sc, S); }
+      S.rows = rows; found.set(sc, S); if (isDoc(sc)) S.lo = topCover(innerWidth - 15);
+      const pad = sc.fsList && sc.fsList.box ? sc.fsList.box : isDoc(sc) ? rows[0] && rows[0].parentElement : sc;   // (room for the strip beside the rows)
+      if (pad && !pad.classList.contains("fs-pad")){ pad.classList.add("fs-pad"); if (!PH()) pad.classList.add("fs-pl"); else if (isDoc(sc) && !(sc.fsList && sc.fsList.box)) pad.classList.add("fs-m"); } S.pad = pad;   // (rows in a card on a page: the card moves in, past the page's own margin)
+      const hc = isDoc(sc) ? document.documentElement.classList : sc.classList, hn = isDoc(sc) ? "fs-doc" : "fs-host"; if (!hc.contains(hn)) hc.add(hn);   // (add() rewrites the attribute even when it is there)
+      measure(S); paint(S, S.on ? S.sf : undefined);   // (while dragging: keep the picked label and its bubble)
+    }
+    }   // (desktop: no strip, the browser's own scroll bar)
+    for (const [sc, S] of strips) if (!found.has(sc)){ S.el.remove(); S.bub.remove(); strips.delete(sc); if (isDoc(sc)) document.documentElement.classList.remove("fs-doc"); else if (sc.classList){ sc.classList.remove("fs-host", "fs-pad"); }
+      if (S.pad && S.pad.classList) S.pad.classList.remove("fs-pad", "fs-m", "fs-pl"); }
+  }
+  let q = 0; const soon = () => { if (!q) q = requestAnimationFrame(() => { q = 0; scan(); }); };
+  new MutationObserver(ms => { if (ms.some(m => !(m.target.closest && m.target.closest(".fs")) && !(m.type === "attributes" && m.target.classList && m.target.classList.contains("fs")))) soon(); }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "class"] });
+  addEventListener("resize", soon);
+  addEventListener("scroll", e => { const s = e.target === document ? document.scrollingElement : e.target; const S = strips.get(s); if (S && !S.on) paint(S); else if (!S) soon(); }, { capture: true, passive: true });
+  setInterval(soon, 1500);   // (a list shown by a tab switch with no change to watch)
 })();

@@ -333,7 +333,7 @@ window.AssetViz = (() => {
 .vz-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start}
 .vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:1px;min-width:0}.vz-tile em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vz-tile span{font-size:var(--fl,13px);color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}.vz-tile b{font-size:var(--fh,22px);line-height:1.15;font-variant-numeric:tabular-nums}.vz-tile em{font-style:normal;font-size:var(--fb,15px);color:var(--mute)}
-.vz-gh{display:flex;align-items:center;margin:18px 0 10px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2);border:0}   /* the same grey band as Asset type and Results */.vz-gh:first-child{margin-top:0}
+.vz-gh{display:flex;align-items:center;margin:18px 0 10px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2);border:0}   /* the same grey band as Asset type and Results */.vz-gh:first-child{margin-top:0}
 .vz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
 .vz-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}.vz-card.span{grid-column:1/-1}
 .vz-card h3{margin:0 0 8px;font-size:var(--fl,13px);text-transform:uppercase;letter-spacing:.05em;color:var(--ink)}.vz-card h3 .vz-u{text-transform:none;letter-spacing:0}

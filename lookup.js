@@ -166,6 +166,30 @@
   addEventListener("resize", () => { fitG++; fitSoon(); });   // (the text size setting fires resize too)
   document.addEventListener("click", e => { const b = e.target.closest && e.target.closest(".pf-b"); if (!b) return; const pf = b.closest(".pf"); pfLast[pf.dataset.g] = b.dataset.p;
     [...pf.children].forEach(c => { if (c.classList.contains("pf-bar")) c.querySelectorAll(".pf-b").forEach(x => x.classList.toggle("on", x === b)); else if (c.classList.contains("pf-sec")) c.hidden = c.dataset.p !== b.dataset.p; }); });
+  // a long list drawn only where it is looked at: every row can be scrolled to, but only the rows on screen plus about a
+  // screen above and two below exist, so 24,000 results open at once and scroll smoothly (no "Show more"). The rows are
+  // one line each, so one measured row height places them all; the next batch is drawn as the view nears the edge of the
+  // drawn ones. box: the list's own element inside its scrolling parent sc; html(i): row i; click(i, e): a row picked.
+  // The fast scroll index (tabs.js) reads sc.fsList for the whole list and jumps with go(i).
+  L.vlist = (sc, box, n, html, click, keys) => {
+    let h = 0, a = -1, b = -1;
+    const doc = sc === document.scrollingElement, tgt = doc ? window : sc;
+    box.innerHTML = `<div class="vl-in"></div>`; box.style.position = "relative"; const inn = box.firstChild;
+    // (the part of the list's box that can be seen: its scrolling parent cut to the window)
+    const vTop = () => doc ? 0 : Math.max(0, sc.getBoundingClientRect().top), vH = () => doc ? innerHeight : Math.min(sc.clientHeight, innerHeight);
+    const draw = (a1, b1) => { a = a1; b = b1; let s = ""; for (let i = a; i < b; i++) s += html(i); inn.innerHTML = s; inn.style.transform = `translateY(${a * h}px)`; fitSoon(); };
+    const paint = force => {
+      if (!h){ draw(0, Math.min(n, 30)); const r = inn.firstElementChild; h = r ? r.getBoundingClientRect().height || 34 : 34; box.style.height = n * h + "px"; }
+      const v = vTop() - box.getBoundingClientRect().top, scr = Math.max(8, Math.ceil(vH() / h)), f = Math.floor(v / h);
+      if (!force && a >= 0 && f - scr / 2 >= a - 1 && f + scr * 1.5 <= b) return;   // (still inside the drawn rows)
+      draw(Math.max(0, f - scr), Math.min(n, Math.max(f, 0) + scr * 3));
+    };
+    let q = 0; const on = () => { if (!q) q = requestAnimationFrame(() => { q = 0; if (box.isConnected) paint(); else tgt.removeEventListener("scroll", on); }); };
+    if (sc._vl) (doc ? window : sc).removeEventListener("scroll", sc._vl); sc._vl = on; tgt.addEventListener("scroll", on, { passive: true });
+    inn.onclick = e => { const r = e.target.closest("[data-i]"); if (r) click(+r.dataset.i, e); };
+    if (keys) sc.fsList = { keys, uniform: true, box, go: (i, top) => { sc.scrollTop += box.getBoundingClientRect().top + i * h - (top != null ? top : vTop()); paint(); } }; else delete sc.fsList;
+    paint(true);
+  };
   L.refs = k => refs.get(norm(k)) || [];
   // ---------- no double ups ----------
   // rows [{ l: label, v: value, h: html }] in priority order. The same property (label without units, synonyms joined)
@@ -447,14 +471,15 @@
       all.forEach(it => counts[it.t] = (counts[it.t] || 0) + 1);
       if (only && !counts[only]) only = "";
       const list = only ? all.filter(it => it.t === only) : all;
-      hits = list.slice(0, shownN); lastList = list;
+      hits = list; lastList = list;
       status(all.length ? `Results <b>${(only ? list.length : all.length).toLocaleString()}</b>` : "");
       const types = TYPE_ORDER.filter(t => counts[t]);
       body.innerHTML = (types.length ? `<div class="lk-pills"><button class="lk-pill${only ? "" : " on"}" data-t="">All <i>${all.length}</i></button>${types.map(t => `<button class="lk-pill${only === t ? " on" : ""}" data-t="${t}">${ICON[t] || ""} ${esc(PILL[t] || typeName(t))} <i>${counts[t]}</i></button>`).join("")}</div>` : "") +
-        L.resultsHTML(hits, q) + (list.length > hits.length ? `<button class="lk-more">Show ${Math.min(200, list.length - hits.length)} more (${list.length - hits.length} left)</button>` : "");
-      body.querySelectorAll(".lk-row1").forEach(b => b.onclick = () => { ctx = lastList; open(hits[+b.dataset.i], true); });
+        (list.length ? `<div class="lk-vl"></div>` : L.resultsHTML([], q));
+      // every result, drawn only near the view (L.vlist); the page scrolls
+      if (list.length) L.vlist(document.scrollingElement, body.querySelector(".lk-vl"), list.length, i => L.resultsHTML([list[i]], q).replace('data-i="0"', `data-i="${i}"`).replace('class="lk-row1', `class="lk-row1${i % 2 ? " zb" : ""}`),
+        i => { ctx = lastList; open(list[i], true); }, list.map(it => it.key));
       body.querySelectorAll(".lk-pill").forEach(b => b.onclick = () => { only = b.dataset.t; showList(inp.value); });
-      const m = body.querySelector(".lk-more"); if (m) m.onclick = () => { shownN += 200; showList(inp.value, true); };
     };
     // the list an item was opened from (Browse's filtered list, search results); stepping walks it. With no list (a link,
     // a drawing, a recent) it is every item of the same kind in tag order
@@ -561,7 +586,7 @@
 .lk-bar{display:flex;gap:8px}.lk-in{flex:1;min-width:0;padding:12px 13px;border-radius:12px;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);font-size:var(--fb,15px);font-family:inherit}
 @media (min-width:901px) and (hover:hover){.lk-cam{display:none !important}}   /* no camera on a desktop */
 .lk-cam{display:flex;align-items:center;justify-content:center;color:var(--ink);flex:none;width:48px;border-radius:12px;border:1px solid var(--lk-l);background:var(--lk-c);font-size:21px;cursor:pointer}
-.lk-status{font-size:var(--fb,15px);color:var(--mute);min-height:18px;margin:6px 2px}.lk-status:not(:empty){display:flex;align-items:center;gap:6px;padding:5px 8px;margin:6px 0;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2)}.lk-status b{color:var(--ink);letter-spacing:.02em;margin-left:auto;order:2;font-variant-numeric:tabular-nums}
+.lk-status{font-size:var(--fb,15px);color:var(--mute);min-height:18px;margin:6px 2px}.lk-status:not(:empty){display:flex;align-items:center;gap:6px;padding:5px 8px;margin:6px 0;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2)}.lk-status b{color:var(--ink);letter-spacing:.02em;margin-left:auto;order:2;font-variant-numeric:tabular-nums}
 .lk-hit{display:flex;gap:10px;width:100%;text-align:left;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:12px;padding:10px 11px;margin-bottom:7px;cursor:pointer;font:inherit}
 .lk-hit:hover{border-color:var(--lk-a)}
 .lk-pills{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.lk-pills::-webkit-scrollbar{display:none}
@@ -574,7 +599,7 @@
 .pj-tsf{flex:none;align-self:center;font-style:normal;font-size:max(9px,calc(var(--fl,13px) * .8));font-weight:800;letter-spacing:.04em;line-height:1.35;color:#fff;background:#2f7d6b;border-radius:5px;padding:0 5px;margin:0 2px;vertical-align:1px}
 .lk-more{width:100%;margin:8px 0;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:10px;padding:8px;font:inherit;font-weight:700;cursor:pointer}.lk-ic{font-size:18px;line-height:1.2}.lk-hb{display:flex;flex-direction:column;gap:2px;min-width:0}
 .lk-hb b{font-family:inherit;font-size:var(--fb,15px);color:var(--lk-a);word-break:break-all}.lk-hb span{font-size:var(--fb,15px);line-height:1.3}.lk-hb em{font-size:var(--fb,15px);color:var(--mute);font-style:normal}
-.lk-rh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2);margin:2px 0 8px}
+.lk-rh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2);margin:2px 0 8px}
 .lk-rh button{border:0;background:none;color:var(--lk-a);font:inherit;text-transform:none;letter-spacing:0;font-size:var(--fb,15px);cursor:pointer;padding:4px}
 .lk-empty{color:var(--mute);font-size:var(--fb,15px);padding:10px 2px;line-height:1.45}
 .lk-nav{display:flex;gap:8px;margin:2px 0 12px}
@@ -607,7 +632,7 @@
 .lk-spec .lk-btn{font-size:var(--fb,15px);padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:var(--fb,15px);line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:var(--fb,15px);margin-left:4px}
 .lk-t td:last-child{overflow-wrap:anywhere}
-.lk-bandr td{padding:0!important;border:0!important}.lk-band{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px;background:var(--th-t);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--th2);margin:10px 0 2px}.lk-band small{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute);text-align:right}.lk-band span{white-space:nowrap}:root.phone .lk-band small{display:none}
+.lk-bandr td{padding:0!important;border:0!important}.lk-band{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2);margin:10px 0 2px}.lk-band small{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute);text-align:right}.lk-band span{white-space:nowrap}:root.phone .lk-band small{display:none}
 .lk-red,.lk-red a{color:#d11!important}.lk-clash{color:#d11;font-size:12px;font-weight:800;margin-top:2px}.lk-clash a{color:#d11;text-decoration:underline;font-weight:600;margin-left:4px}.lk-rsw{font-size:12px;color:var(--mute)}
 .lk-t td.lk-sub{color:var(--lk-a);font-size:var(--fl,13px);font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}
 .sp-self .sp-head{display:none}
