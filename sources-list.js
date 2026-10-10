@@ -12,7 +12,8 @@
 // tools/ingest_uploads.py) files it into PIDs/ or PFDs/ a few minutes later and keeps the replaced file as a
 // superseded revision (the index's "revs"), which the tree lists under the latest one (view and download only).
 window.SourcesList = (() => {
-  const REPO = "bijankle/ProjectLibrary";   // the GitHub repository the app is served from and uploads to (one home: Help → API keys shows it)
+  const REPO = "bijankle/ProjectLibrary";
+  const PRIV = "bijankle/projectlibraryprivate";   // the private repository: Ref Only files dropped back in land in its inbox/refonly for Claude to digest   // the GitHub repository the app is served from and uploads to (one home: Help → API keys shows it)
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const mb = b => { const v = (b || 0) / 1e6; return v === 0 ? "0" : v < 1 ? String(+v.toFixed(2)) : v < 10 ? String(+v.toFixed(1)) : String(Math.round(v)); };
   const TYPES = [["pid", "P&IDs"], ["pfd", "PFDs"], ["bfd", "BFDs"], ["sld", "SLDs"], ["list", "Lists"], ["report", "Reports"], ["spec", "Specs"], ["dwg", "Drawings"], ["other", "Other"]];
@@ -93,7 +94,7 @@ window.SourcesList = (() => {
       : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off">
            <div class="sl-h">Everything</div><div class="sl-ev"></div><div class="sl-h">Sections</div><div class="sl-secs"></div></aside>
          <div class="sl-dv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
-         <div class="sl-main"><div class="sl-tbar"><b>Selection tree</b><span class="sl-tabs" role="tablist"><button type="button" class="on" data-tab="att">Attached</button><button type="button" data-tab="ref">Ref Only</button></span><span class="sl-sp"></span><button type="button" class="sl-tbb sl-roc" hidden title="Download every document, in the app and Ref Only, as one Excel table" aria-label="Download Excel">${ICO.xdl}</button><button type="button" class="sl-tbb sl-upb" data-up="">${ICO.up}Upload</button><input type="file" class="sl-file" accept="application/pdf,.pdf" multiple hidden></div>
+         <div class="sl-main"><div class="sl-tbar"><b>Selection tree</b><span class="sl-tabs" role="tablist"><button type="button" class="on" data-tab="att">Attached</button><button type="button" data-tab="ref">Ref Only</button></span><span class="sl-sp"></span><button type="button" class="sl-tbb sl-roc" hidden title="Download every document, in the app and Ref Only, as one Excel table" aria-label="Download Excel">${ICO.xdl}</button><button type="button" class="sl-tbb sl-roc sl-rod" hidden title="Download every document shown from SharePoint, one by one, then drop them back in for the app" aria-label="Download all from SharePoint">${ICO.xdl.replace(/<b>.*<\/b>/, "")}<b>PDFs</b></button><button type="button" class="sl-tbb sl-upb" data-up="">${ICO.up}Upload</button><input type="file" class="sl-file" accept="application/pdf,.pdf" multiple hidden></div>
            <div class="sl-tree"><div class="sl-gh"><span><button type="button" class="sl-xa" data-x="1" title="Expand all" aria-label="Expand all"></button>Name</span><span>Title</span><span>Rev</span><span>Size</span><span>Cached</span><span></span></div><div class="sl-rows"></div></div><div class="sl-ro" hidden><div class="sl-rop"></div><div class="sl-rot"></div></div></div>`;
     const $ = s => el.querySelector(s);
     const input = o.input || $(".sl-q");
@@ -240,6 +241,7 @@ window.SourcesList = (() => {
           else { open.clear(); if (q) g.forEach(id => id[0] === "a" && shut.add(id)); } return draw(); }
         const tb = t.closest("[data-tab]"); if (tb) return setTab(tb.dataset.tab);
         const rp = t.closest("[data-rg]"); if (rp){ roG = rp.dataset.rg; return roDraw(); }
+        if (t.closest(".sl-rod")) return roGet(roList());
         if (t.closest(".sl-roc")) return roXlsx();
         const om = t.closest("[data-om]"); if (om) return openDoc(DOCS.find(d => d.number === om.dataset.om || d.ik === om.dataset.om));
         const ub = t.closest(".sl-upb"); if (ub) return pickUp(ub.dataset.up);
@@ -284,7 +286,7 @@ window.SourcesList = (() => {
     let tab = "att", RO = null, HELD = {}, roG = "";
     const ROG = [["", "All"], ["project", "Project 2000"], ["vendor", "Vendor"], ["legacy", "Legacy KCGM"], ["other", "Other"]];
     async function setTab(v){ tab = v; el.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
-      $(".sl-tree").hidden = v === "ref"; $(".sl-ro").hidden = v !== "ref"; $(".sl-roc").hidden = v !== "ref";
+      $(".sl-tree").hidden = v === "ref"; $(".sl-ro").hidden = v !== "ref"; el.querySelectorAll(".sl-roc").forEach(x => x.hidden = v !== "ref");
       el.querySelectorAll(".sl-tbar .sl-upb").forEach(b => b.hidden = v === "ref");
       if (v === "ref" && !RO){ $(".sl-rot").innerHTML = `<div class="sl-none">Loading…</div>`; const j = await fetch("refonly.json").then(r => r.ok ? r.json() : {}).catch(() => ({})); RO = j.ref || []; HELD = j.held || {}; }
       if (v === "ref") roDraw(); }
@@ -479,14 +481,80 @@ window.SourcesList = (() => {
       else { msg.className = "up-msg" + (bad ? " up-bad" : ""); msg.textContent = (ok ? `${ok} uploaded; they will appear in Sources in a few minutes. ` : "") + (fatal ? fatal + ". Check it in Help → API keys." : bad ? `${bad} failed: see the red lines, then try again.` : stopUp ? "Stopped." : ""); }
       foot(); };
   }
+  // ---------- Ref Only: download all from SharePoint, then drop them back in ----------
+  // The app can't read SharePoint files itself (SharePoint won't hand a file to another website's script), so the button
+  // sends this browser to each file's SharePoint download link in turn, in one small window kept open, the same as
+  // clicking each link; it needs SharePoint signed in here. The files land in Downloads. Dropped back in, they go to
+  // the private repository's inbox/refonly (one commit each), the ones not dropped are listed, and a prompt for Claude
+  // is ready to copy. Documents with no SharePoint link go in a text file instead.
+  const spDl = u => { const m = /^(https:\/\/[^/]+)(\/sites\/[^/]+)(\/.*)$/.exec(u || ""); if (!m) return u;
+    let path; try { path = decodeURI(m[2] + m[3]); } catch (e){ path = m[2] + m[3]; }
+    return `${m[1]}${m[2]}/_layouts/15/download.aspx?SourceUrl=${encodeURIComponent(path)}`; };
+  const fileOf = u => { try { return decodeURIComponent((u || "").split("/").pop()); } catch (e){ return (u || "").split("/").pop(); } };
+  const saveTxt = (name, text) => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); };
+  const RDK = "kcgm_rodl";   // the last list asked for: [doc number, file name] (so the drop can say what's missing)
+  const roGetList = () => { try { return JSON.parse(localStorage.getItem(RDK) || "[]"); } catch (e){ return []; } };
+  function roGet(L){
+    const ok = L.filter(o => o.url), no = L.filter(o => !o.url), b = box("up-sm"); let stop = false;
+    b.innerHTML = `<h3>Download ${ok.length.toLocaleString()} document${ok.length === 1 ? "" : "s"} from SharePoint</h3>
+      <p>The ones shown in the table now (pill and search). Each opens its SharePoint download in a small window, one about every 1.5 seconds, into your Downloads folder. Be signed in to SharePoint in this browser, and allow multiple downloads when Chrome asks.${no.length ? ` ${no.length} have no SharePoint link: they go in a text file.` : ""}</p>
+      <div class="up-msg rd-st"></div>
+      <div class="up-ft"><button type="button" class="up-c rd-drop">I have the files: drop them in</button><span class="sl-sp"></span><button type="button" class="up-c rd-x">Cancel</button><button type="button" class="up-go rd-go"${ok.length ? "" : " disabled"}>Start</button></div>`;
+    const st = b.querySelector(".rd-st"), go = b.querySelector(".rd-go"), x = b.querySelector(".rd-x");
+    b.querySelector(".rd-drop").onclick = () => { stop = true; delete b.wrap.dataset.busy; b.shut(); roDrop(); };
+    x.onclick = () => { if (b.wrap.dataset.busy){ stop = true; return; } b.shut(); };
+    go.onclick = async () => {
+      try { localStorage.setItem(RDK, JSON.stringify(ok.map(o => [o.n, fileOf(o.url)]))); } catch (e) {}
+      if (no.length) saveTxt("Ref Only - no SharePoint link.txt", `These ${no.length} Ref Only documents have no SharePoint link in the project register, so they were not downloaded:\r\n\r\n` + no.map(o => `${o.n}\t${o.t || ""}`).join("\r\n"));
+      const w = window.open("about:blank", "kcgm_spdl", "width=520,height=420"); if (!w){ st.className = "up-msg up-bad"; st.textContent = "The browser blocked the download window: allow pop-ups for this site and press Start again."; return; }
+      b.wrap.dataset.busy = 1; go.disabled = true; x.textContent = "Stop"; stop = false;
+      for (let i = 0; i < ok.length && !stop; i++){
+        st.className = "up-msg"; st.textContent = `${i + 1} of ${ok.length}: ${ok[i].n}`;
+        try { w.location.href = spDl(ok[i].url); } catch (e){ st.className = "up-msg up-bad"; st.textContent = "The download window was closed."; break; }
+        await new Promise(r => setTimeout(r, 1500)); if (w.closed){ st.className = "up-msg up-bad"; st.textContent = `Stopped at ${i + 1} of ${ok.length}: the download window was closed.`; stop = true; }
+      }
+      delete b.wrap.dataset.busy; x.textContent = "Close"; try { if (!w.closed) setTimeout(() => w.close(), 4000); } catch (e) {}
+      if (!stop){ st.className = "up-msg up-good"; st.textContent = `Sent all ${ok.length}. When the downloads finish, drop them in.`; go.textContent = "Drop them in"; go.disabled = false; go.onclick = () => { b.shut(); roDrop(); }; }
+    };
+  }
+  function roDrop(){
+    if (!ghKey()) return needKey();
+    const want = roGetList(), b = box("up-sm");
+    b.innerHTML = `<h3>Drop the downloaded files in</h3><p>They go to the private repository (${esc(PRIV)}, inbox/refonly) for Claude to digest; nothing changes in the app until then. Your GitHub key needs Contents write on that repository too.</p>
+      <label class="rd-z"><input type="file" multiple hidden accept=".pdf,application/pdf,.xlsx,.xls,.xlsm,.dwg,.zip"><b>Drop files here</b><span>or click to pick them${want.length ? ` (${want.length.toLocaleString()} expected from the last Download all)` : ""}</span></label>
+      <div class="up-msg rd-st"></div><textarea class="rd-pr" readonly hidden></textarea>
+      <div class="up-ft"><button type="button" class="up-c rd-miss" hidden>Save the missing list</button><span class="sl-sp"></span><button type="button" class="up-c rd-x">Close</button><button type="button" class="up-go rd-cp" hidden>Copy the prompt for Claude</button></div>`;
+    const z = b.querySelector(".rd-z"), inp = z.querySelector("input"), st = b.querySelector(".rd-st"), x = b.querySelector(".rd-x"); let stop = false;
+    x.onclick = () => { if (b.wrap.dataset.busy){ stop = true; return; } b.shut(); };
+    z.addEventListener("dragover", e => { e.preventDefault(); z.classList.add("on"); }); z.addEventListener("dragleave", () => z.classList.remove("on"));
+    z.addEventListener("drop", e => { e.preventDefault(); z.classList.remove("on"); send([...e.dataTransfer.files]); });
+    inp.onchange = () => send([...inp.files]);
+    async function send(files){
+      if (!files.length || b.wrap.dataset.busy) return; b.wrap.dataset.busy = 1; x.textContent = "Stop"; stop = false; z.classList.add("busy");
+      const okN = [], bad = []; const day = new Date().toISOString().slice(0, 10);
+      for (let i = 0; i < files.length && !stop; i++){ const f = files[i];
+        st.className = "up-msg"; st.textContent = `Uploading ${i + 1} of ${files.length}: ${f.name}`;
+        try { await put(`inbox/refonly/${f.name}`, await b64(f), `Ref Only file from the app: ${f.name}`, PRIV); okN.push(f.name); }
+        catch (e){ if (/already uploaded/.test(e.message)){ okN.push(f.name); continue; } bad.push([f.name, e.message]); if (e.fatal) break; } }
+      delete b.wrap.dataset.busy; x.textContent = "Close"; z.classList.remove("busy");
+      const got = new Set(okN.map(n => n.toLowerCase().replace(/ \(\d+\)(?=\.[^.]+$)/, ""))), miss = want.filter(([, f]) => !got.has(String(f).toLowerCase()));
+      st.className = "up-msg " + (bad.length ? "up-bad" : "up-good");
+      st.textContent = `Uploaded ${okN.length} of ${files.length}.` + (bad.length ? ` Not uploaded: ${bad.slice(0, 3).map(y => y[0] + " (" + y[1] + ")").join("; ")}${bad.length > 3 ? ` and ${bad.length - 3} more` : ""}.` : "") + (want.length ? ` ${miss.length ? miss.length + " of the " + want.length + " expected weren't dropped in (a broken SharePoint link or a failed download)." : "All " + want.length + " expected are in."}` : "");
+      const mb = b.querySelector(".rd-miss"); mb.hidden = !miss.length && !bad.length;
+      mb.onclick = () => saveTxt("Ref Only - not uploaded.txt", (miss.length ? `Expected from Download all but not dropped in (${miss.length}):\r\n` + miss.map(([n, f]) => `${n}\t${f}`).join("\r\n") + "\r\n\r\n" : "") + (bad.length ? `Dropped in but not uploaded (${bad.length}):\r\n` + bad.map(([n, w]) => `${n}\t${w}`).join("\r\n") : ""));
+      if (okN.length){ const pr = b.querySelector(".rd-pr"), cp = b.querySelector(".rd-cp");
+        pr.value = `I uploaded ${okN.length} Ref Only documents from the Project Library app to ${PRIV} in inbox/refonly (${day}). Digest them into the app: match each to its Ref Only entry, add the drawings to the app with their pictures, text and tag links (like the P&IDs and SLDs), pull their data into the asset pages and Checks, keep the original files in the private repository, and take them off the Ref Only list.` + (miss.length ? ` ${miss.length} expected files didn't come through; list them for me.` : "");
+        pr.hidden = cp.hidden = false; cp.onclick = () => { pr.select(); (navigator.clipboard ? navigator.clipboard.writeText(pr.value) : Promise.reject()).catch(() => document.execCommand("copy")); cp.textContent = "Copied"; }; }
+    }
+  }
   // a file as base64 in pieces (a 50 MB drawing would overflow one String.fromCharCode); 3 × 32 KB keeps the pieces whole
   async function b64(f){ const u = new Uint8Array(await f.arrayBuffer()), C = 3 * 32768, out = [];
     for (let i = 0; i < u.length; i += C){ let s = ""; const p = u.subarray(i, i + C); for (let j = 0; j < p.length; j += 8192) s += String.fromCharCode.apply(null, p.subarray(j, j + 8192)); out.push(btoa(s)); }
     return out.join(""); }
   const b64s = t => { const u = new TextEncoder().encode(t); let s = ""; u.forEach(c => s += String.fromCharCode(c)); return btoa(s); };
   // one file into the repository (the GitHub contents API: a commit per file); errors in plain words
-  async function put(path, content, message){
-    let r; try { r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path.split("/").map(encodeURIComponent).join("/")}`, { method: "PUT",
+  async function put(path, content, message, repo = REPO){
+    let r; try { r = await fetch(`https://api.github.com/repos/${repo}/contents/${path.split("/").map(encodeURIComponent).join("/")}`, { method: "PUT",
       headers: { Authorization: "Bearer " + ghKey(), Accept: "application/vnd.github+json", "Content-Type": "application/json", "X-GitHub-Api-Version": "2022-11-28" }, body: JSON.stringify({ message, content }) }); }
     catch (e){ throw Object.assign(new Error("Couldn't reach GitHub"), { fatal: true }); }
     if (r.ok) return r.json().catch(() => ({}));
@@ -529,6 +597,8 @@ window.SourcesList = (() => {
 /* the selection tree: a property grid's grey header, 22px rows, Navisworks' blue hover and selection */
 .sl-tabs{display:inline-flex;margin-left:10px;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--card,var(--panel))}.sl-tabs button{border:0;background:none;font:inherit;font-size:12px;font-weight:700;padding:4px 12px;cursor:pointer;color:var(--mute)}.sl-tabs button+button{border-left:1px solid var(--line)}.sl-tabs button.on{background:var(--th);color:#fff}
 .sl-roc{width:38px;height:34px!important;padding:0!important;flex-direction:column;justify-content:center;gap:0!important;margin:-4px 0}.sl-roc svg{width:14px;height:14px}.sl-roc b{font:800 9px/1 Arial,sans-serif;color:#1d6f42;letter-spacing:.3px;margin-top:1px}:root[data-theme="dark"] .sl-roc b{color:#3fb37a}
+.sl-rod b{color:var(--th)!important}.rd-z{display:flex;flex-direction:column;align-items:center;gap:4px;border:2px dashed var(--line);border-radius:12px;padding:22px 12px;margin:6px 0 10px;cursor:pointer;text-align:center}.rd-z.on{border-color:var(--th);background:var(--th-t)}.rd-z.busy{opacity:.5;pointer-events:none}.rd-z span{color:var(--mute);font-size:13px}
+.rd-pr{width:100%;box-sizing:border-box;min-height:110px;margin:8px 0 4px;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--card2,var(--panel2));color:var(--ink);resize:vertical}
 .sl-ro{flex:1;display:flex;flex-direction:column;min-height:0}.sl-ro[hidden],.sl-tree[hidden]{display:none}.sl-rop{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid var(--line)}.sl-rot{flex:1;overflow:auto;font-size:13px}
 .sl-rtb{width:100%;border-collapse:collapse}.sl-rtb th{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));border-bottom:1px solid var(--line);border-right:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute);text-align:left;padding:4px 8px;white-space:nowrap}.sl-rtb th:last-child{border-right:0;width:40px}
 .sl-rtb td{padding:3px 8px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);vertical-align:top}.sl-rtb tr:hover td{background:var(--rh,#eef0f3)}.sl-rk{white-space:nowrap;font-weight:700}.sl-rn{text-align:right;font-variant-numeric:tabular-nums;width:1%;white-space:nowrap}.sl-rtb a{color:var(--th);text-decoration:none;white-space:nowrap}.sl-rtb a:hover{text-decoration:underline}.sl-mu{color:var(--mute);font-size:12px}.sl-ra{white-space:nowrap;text-align:right;min-width:62px}.sl-mu{white-space:nowrap}.sl-ra .sl-ib{display:inline-flex;vertical-align:middle}.sl-ra .sl-ib+.sl-ib{margin-left:4px}.sl-rtb a.sl-spn{color:var(--ink);text-decoration:underline dotted color-mix(in srgb,var(--th) 60%,transparent);text-underline-offset:3px}.sl-rtb a.sl-spn:hover{color:var(--th)}

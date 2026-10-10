@@ -121,7 +121,7 @@ window.Tabs = (() => {
   // ---------- Help → API keys: the Google AI key (ai.js reads kcgm_gkey) and the GitHub key Sources uploads with ----------
   // Both stay in this browser only. The repository comes from sources-list.js (SourcesList.REPO), its one home.
   const KEYS = [["kcgm_gkey", "Google AI key", "Lets Gemini answer your own questions on the quiz cards. Free from aistudio.google.com.", "AIza…"],
-    ["kcgm_ghkey", "GitHub key", "Lets you upload documents in Sources. A fine-grained personal access token with Contents read and write on the repository below.", "github_pat_…"]];
+    ["kcgm_ghkey", "GitHub key", "Lets you upload documents in Sources. A fine-grained personal access token with Contents read and write on the repository below, and on bijankle/projectlibraryprivate for Ref Only files dropped back in.", "github_pat_…"]];
   function keys(){
     close(); let w = document.getElementById("keysWin");
     if (!w){ w = document.createElement("div"); w.id = "keysWin"; w.className = "hw ak"; document.body.appendChild(w);
