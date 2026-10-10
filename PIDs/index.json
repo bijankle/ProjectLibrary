@@ -2301,7 +2301,7 @@
    "title": "Process design criteria, Stage 2",
    "rev": "4",
    "pages": 20,
-   "size": 761113,
+   "size": 792669,
    "doc": true
   },
   "2000-F00-DRG-GE-10100": {
@@ -2336,7 +2336,7 @@
    "title": "Overall block flowsheet, Stage 1",
    "rev": "1",
    "pages": 1,
-   "size": 208396,
+   "size": 202058,
    "doc": true,
    "layout": true
   },
@@ -2345,7 +2345,7 @@
    "title": "Overall block flowsheet, Stage 2",
    "rev": "1",
    "pages": 1,
-   "size": 173455,
+   "size": 150002,
    "doc": true,
    "layout": true
   },
@@ -3367,6 +3367,102 @@
    "size": 455966,
    "from": [
     "2000-T03-SLD-EL-41001_1_AAN.pdf"
+   ]
+  },
+  "2000-F00-SLD-EL-10001": {
+   "file": "SLDs/2000-F00-SLD-EL-10001.pdf",
+   "title": "General Fimiston site overall sitewide 33kV distribution - single line diagram sheet 1",
+   "rev": "2",
+   "date": "2025-06-24",
+   "status": "",
+   "pages": 1,
+   "size": 1254328,
+   "from": [
+    "2000-F00-SLD-EL-10001_2_APP.pdf"
+   ]
+  },
+  "2000-F00-SLD-EL-10005": {
+   "file": "SLDs/2000-F00-SLD-EL-10005.pdf",
+   "title": "General Fimiston site F00-SW-010 33kV switchboard - single line diagram sheet 4",
+   "rev": "3",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 1276844,
+   "from": [
+    "2000-F00-SLD-EL-10005_3.pdf"
+   ]
+  },
+  "2000-F00-SLD-EL-10006": {
+   "file": "SLDs/2000-F00-SLD-EL-10006.pdf",
+   "title": "General Fimiston site F00-SW-010 33kV switchboard - single line diagram sheet 5",
+   "rev": "3",
+   "date": "2025-06-24",
+   "status": "",
+   "pages": 1,
+   "size": 1317523,
+   "from": [
+    "2000-F00-SLD-EL-10006_3_APP.pdf"
+   ]
+  },
+  "2000-F00-SLD-EL-10011": {
+   "file": "SLDs/2000-F00-SLD-EL-10011.pdf",
+   "title": "General Fimiston site overall sitewide 33kV distribution - single line diagram sheet 2",
+   "rev": "2",
+   "date": "2025-06-24",
+   "status": "",
+   "pages": 1,
+   "size": 1228236,
+   "from": [
+    "2000-F00-SLD-EL-10011_2_APP.pdf"
+   ]
+  },
+  "2000-F00-SLD-EL-10012": {
+   "file": "SLDs/2000-F00-SLD-EL-10012.pdf",
+   "title": "General Fimiston site - overall sitewide 33kV distribution - single line diagram sheet 3",
+   "rev": "3",
+   "date": "2025-07-08",
+   "status": "",
+   "pages": 1,
+   "size": 941604,
+   "from": [
+    "2000-F00-SLD-EL-10012_3_AAN.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10051": {
+   "file": "SLDs/2000-F16-SLD-EL-10051.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-011 11kV switchboard key interlocking single line diagram",
+   "rev": "1",
+   "date": "2025-09-23",
+   "status": "",
+   "pages": 1,
+   "size": 556556,
+   "from": [
+    "2000-F16-SLD-EL-10051_1_APP.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-10051": {
+   "file": "SLDs/2000-F23-SLD-EL-10051.pdf",
+   "title": "Final tailings handling & storage F23-SW-016 11kV switchboard key interlocking single line diagram",
+   "rev": "1",
+   "date": "2025-10-15",
+   "status": "",
+   "pages": 1,
+   "size": 554388,
+   "from": [
+    "2000-F23-SLD-EL-10051_1_APP.pdf"
+   ]
+  },
+  "2000-F23-SLD-EL-40002": {
+   "file": "SLDs/2000-F23-SLD-EL-40002.pdf",
+   "title": "FIM III booster station F23-SW-601 HV switchboard key interlocking single line diagram",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 334368,
+   "from": [
+    "2000-F23-SLD-EL-40002_2.pdf"
    ]
   }
  }
