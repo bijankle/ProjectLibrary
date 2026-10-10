@@ -1,7 +1,7 @@
 """Tappable tags on the single line diagrams: every word on an SLD that is a known tag (MEL equipment, electrical
 equipment, a cable) or another drawing in the app goes into pid-refs.json under that SLD, in the format
 tools/build_pid_refs.py writes ([page, left, top, width, height, target, kind, shape] in 1/10000 of the sheet).
-The P&ID and PFD entries there are left as they are.   python3 tools/build_sld_refs.py   (after build_slds.py and
+The P&ID and PFD entries there are left as they are. Also sld-tags.json: the tags on each sheet, for its page's pills.   python3 tools/build_sld_refs.py   (after build_slds.py and
 build_elec_data.py)
 """
 import json, os, re
@@ -31,4 +31,7 @@ for num, v in ix.items():
             elif k in KEYS: out.append(box + [KEYS[k][0], KEYS[k][1], "t"])
     if out: refs[num] = out; n += len(out)
 json.dump(refs, open(os.path.join(R, "pid-refs.json"), "w"), separators=(",", ":"))
+# the tags on each sheet once, for the pills on the drawing's own page (lookup.js): sld-tags.json {drawing: [tags]}
+st = {num: sorted({r[5] for r in v if r[6] != "d"}) for num, v in refs.items() if "-SLD-" in num or "-TLD-" in num or "-BLK-IC-" in num}
+json.dump({k: v for k, v in st.items() if v}, open(os.path.join(R, "sld-tags.json"), "w"), separators=(",", ":"))
 print(n, "tags on", sum(1 for k in refs if "-SLD-" in k), "SLDs")

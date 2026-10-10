@@ -45,7 +45,7 @@ window.Browse = (() => {
       case "elec": { const m = /^F(\d{2,3})/.exec(k); return [m ? "F" + m[1] : "", elCode(k)]; }
       case "cable": { const m = /^F(\d{2,3})/.exec(k), c = /-([A-Z]{1,2})\d{1,2}(?:-[A-Z]{1,2})?$/.exec(k); return [m ? "F" + m[1] : "", c ? (CBK[c[1]] ? c[1] : "?") : "?"]; }
       // drawings: a P&ID's area is in its number; PFD sheets are all F00, so theirs is the area of the equipment on them
-      case "pid": { const m = /^2000-([FT]\d{2,3})-(PID|PFD|SLD)-/.exec(k); return !m ? null : m[2] === "PFD" ? [Lookup.pfdArea(k) || titleArea(k) || "?", "PFD"] : [m[1], m[2]]; }
+      case "pid": { const m = /^2000-([FT]\d{2,3})-(PID|PFD|SLD|TLD)-/.exec(k); return !m ? null : m[2] === "PFD" ? [Lookup.pfdArea(k) || titleArea(k) || "?", "PFD"] : [m[1], m[2] === "TLD" ? "SLD" : m[2]]; }
     }
     return null;
   }

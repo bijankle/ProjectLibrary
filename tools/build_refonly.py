@@ -6,7 +6,7 @@
 With no file named it uses the newest register in sources/register/ (drop a newer export there to refresh).
 
 Titles, revs, statuses and SharePoint links come from the project document register (the register wins over a title
-printed on a drawing). 3D models (-MDL-) and anything already in the
+printed on a drawing). Every IOM manual is listed too, mentioned or not (tools/build_iom.py). 3D models (-MDL-) and anything already in the
 library or waiting in inbox/ are left out. "x" counts the documents that mention a number, "xr" every mention.
 """
 import json, re, glob, os, collections, sys
@@ -65,6 +65,14 @@ for n, c in ment.items():
     if n in held or n in inbox or n in WD or '-MDL-' in n: continue   # (WD: drawings cancelled or superseded, tools/withdrawn.json)
     r = REG.get(n)
     out.append({'n': n, 'g': grp(n), 't': (r[6] if r else '') or printed.get(n, ''), 'ts': 'reg' if r and r[6] else 'drw' if n in printed else '', 'rev': r[4] if r else '', 'st': r[5] if r else '', 'url': r[1] if r else '', 'in': dict(c), 'x': len(c), 'xr': sum(c.values()), 'inbox': n in inbox})
+# every IOM manual (iom.json, tools/build_iom.py) is listed, mentioned or not ("iom" marks them, "in" empty = no mention)
+IOMD = json.load(open(R + '/iom.json'))['d'] if os.path.exists(R + '/iom.json') else {}
+byn = {o['n']: o for o in out}
+for n, (t, rev, kind, url) in IOMD.items():
+    if n in held or n in inbox: continue
+    if n in byn: byn[n]['iom'] = 1; continue
+    r = REG.get(n)
+    out.append({'n': n, 'g': grp(n), 't': t, 'ts': 'reg', 'rev': rev, 'st': r[5] if r else '', 'url': url, 'in': {}, 'x': 0, 'xr': 0, 'inbox': False, 'iom': 1})
 out.sort(key=lambda o: (-o['x'], -o['xr']))
 hd = {}
 for n in sorted(held):

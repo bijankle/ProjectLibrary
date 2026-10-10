@@ -288,7 +288,7 @@ window.SourcesList = (() => {
     const ROG = [["", "All"], ["project", "Project 2000"], ["vendor", "Vendor"], ["legacy", "Legacy KCGM"], ["other", "Other"]];
     // the left side bar serves both tabs: on Ref Only it shows All, the families and the document types (one picked
     // at a time: roG "" | "project" … | "t:SCM"), each with its count; the search box above filters both
-    const roType = o => { const m = /^\d{4}-[A-Z]\d+-([A-Z]{3})-/.exec(o.n); return m ? m[1] : ""; };
+    const roType = o => { if (o.iom) return "IOM"; const m = /^\d{4}-[A-Z]\d+-([A-Z]{3})-/.exec(o.n); return m ? m[1] : ""; };
     async function setTab(v){ tab = v; el.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
       const R2 = v !== "att";   // (Ref Only and Old Revs share the table, the side bar filters and the buttons; Old Revs has no Excel)
       $(".sl-tree").hidden = R2; $(".sl-ro").hidden = !R2; $(".sl-sa").hidden = R2; $(".sl-sr").hidden = !R2; el.querySelectorAll(".sl-roc").forEach(x => x.hidden = !R2 || (v === "old" && !x.matches(".sl-rou,.sl-rod")));
@@ -306,6 +306,7 @@ window.SourcesList = (() => {
         ROG.slice(1).map(([g, n]) => { const a = RO.filter(o => o.g === g); return a.length ? sec(g, n, a) : ""; }).join("") +
         `<div class="sl-h">Types</div>` + Object.entries(tc).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).map(([t, a]) => sec("t:" + t, `${DT[t] || t} (${t})`, a)).join("");
       const ins = o => { const k = Object.entries(o.in).sort((a, b) => b[1] - a[1]), sh = n => esc(n.replace(/^2000-/, ""));
+        if (!k.length) return `<span class="sl-mu">No mention</span>`;
         return k.slice(0, 2).map(([n]) => `<a href="#" data-om="${esc(n)}" title="Open ${esc(n)}">${sh(n)}</a>`).join(", ") + (k.length > 2 ? ` <span class="sl-mu" title="${esc(k.slice(2).map(x => x[0]).join(", "))}">+${k.length - 2} more</span>` : ""); };
       $(".sl-rot").innerHTML = `<table class="sl-rtb"><thead><tr><th>Doc number</th><th>Title</th><th>Mentioned in</th><th class="sl-rn">Times mentioned</th><th class="nosort"></th></tr></thead><tbody>` +
         L.map(o => `<tr><td class="sl-rk">${o.url ? `<a class="sl-spn sp-a" href="${esc(o.url)}" target="_blank" rel="noopener" title="Open in SharePoint">${esc(o.n)}</a>` : esc(o.n)}</td><td>${o.t ? esc(o.t) + (o.ts === "drw" ? ` <span class="sl-mu">(as printed)</span>` : "") : `<span class="sl-mu">Not in register</span>`}</td><td>${ins(o)}</td><td class="sl-rn" title="${o.xr} mentions in all">${o.x}</td>` +
@@ -327,13 +328,13 @@ window.SourcesList = (() => {
       const tb = $(".sl-rtb"); if (tb && window.TSort) TSort.keep(tb, "oldrevs"); }
     // the Excel download: the rows as shown (pill, search and sort), one tidy table with columns to sort and filter by,
     // the doc number a link to its SharePoint copy; a second sheet counts them by family and type
-    const DT = { DRG: "Drawing", SCM: "Schematic", SLD: "Single line diagram", TER: "Termination diagram", TLD: "Three line diagram", STD: "Standard drawing", LST: "List", PID: "P&ID", STS: "Specification", DSH: "Datasheet", REP: "Report", BLK: "Block diagram", TQY: "Technical query", PFD: "PFD", SKT: "Sketch", SOW: "Scope of work", PHL: "Philosophy", DCR: "Design criteria", CAL: "Calculation", GAD: "General arrangement", LAY: "Layout" };
+    const DT = { DRG: "Drawing", SCM: "Schematic", SLD: "Single line diagram", TER: "Termination diagram", TLD: "Three line diagram", STD: "Standard drawing", LST: "List", PID: "P&ID", STS: "Specification", DSH: "Datasheet", REP: "Report", BLK: "Block diagram", TQY: "Technical query", PFD: "PFD", IOM: "IOM manual", SKT: "Sketch", SOW: "Scope of work", PHL: "Philosophy", DCR: "Design criteria", CAL: "Calculation", GAD: "General arrangement", LAY: "Layout" };
     const DI = { EL: "Electrical", PP: "Piping", IC: "Instrumentation & control", ME: "Mechanical", PR: "Process", GE: "General", CV: "Civil", ST: "Structural", CC: "Concrete", PM: "Project management" };
     const FAM = Object.fromEntries(ROG);
     function roXlsx(){ if (!RO || !window.XLSX) return;
       const part = (n, g) => { const s = n.split("-"); return g === "project" ? { area: s[1], code: s[2], disc: s[3], pkg: "" } : g === "vendor" ? { area: "", code: s[2] || "", disc: "", pkg: s[1] || "" } : { area: "", code: "", disc: "", pkg: "" }; };
       const fold = u => { try { const m = decodeURIComponent(u || "").match(/KCGM Controlled Library\/(.*)\/[^/]*$/); return m ? m[1] : ""; } catch (e){ return ""; } };
-      const ins = o => Object.entries(o.in || {}).sort((a, b) => b[1] - a[1]).map(x => x[0]).join(", ");
+      const ins = o => Object.entries(o.in || {}).sort((a, b) => b[1] - a[1]).map(x => x[0]).join(", ") || "No mention";
       const row = (inApp, n, g, title, from, rev, o) => { const p = part(n, g);
         return [inApp, o.url ? { v: n, link: o.url } : n, title, from, FAM[g] || g, p.area, AREA[p.area] || "", DT[p.code] || "", p.code, DI[p.disc] || p.disc, p.pkg, rev, o.st || "", fold(o.url), o.x || 0, o.xr || 0, ins(o)]; };
       const rows = [["In app", "Doc number", "Title", "Title from", "Family", "Area", "Area name", "Doc type", "Type code", "Discipline", "Vendor package", "Rev", "Register status", "SharePoint folder", "Mentioned in (docs)", "Times mentioned", "Mentioned in"]];

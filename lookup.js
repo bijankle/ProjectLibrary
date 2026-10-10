@@ -19,7 +19,7 @@
 
   let dtLoad = null, DOCN = new Set();   // the lists held in the app (Sources), by number
   fetch("issues.json").then(r => r.ok ? r.json() : {}).then(d => { Object.values((d.meta && d.meta.docs) || {}).forEach(x => x.number && DOCN.add(norm(x.number))); }).catch(() => {});
-  L.load = () => loading || (dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => { DB = d; build();
+  L.load = () => loading || (fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => { DB = d; build();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
     // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
@@ -68,7 +68,7 @@
     if (t === "cable") return [g("From") && "from " + g("From"), g("To") && "to " + g("To")].filter(Boolean).join(" ");
     return r[1] || "";
   }
-  const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "Drawing (P&ID / PFD)" : t === "spec" ? "Pipe & valve spec" : DB.types[t].n;
+  const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "Drawing" : t === "spec" ? "Pipe & valve spec" : DB.types[t].n;
   const textOf = it => it.txt || (it.txt = (it.r ? it.r.join(" ") : it.key + " " + it.name).toLowerCase());
 
   L.search = (q, limit = 60) => {
@@ -93,7 +93,7 @@
   // a document the app doesn't hold opens SharePoint (sp.js); a list held in the app opens in Sources
   let LINKRE = null;
   const linkify = v => esc(v).replace(LINKRE || (LINKRE = new RegExp(TAG_RE.source + (window.SP ? "|" + SP.DOC.source : ""), "g")), m => { const k = norm(m);
-    if (/-(PID|PFD|SLD|BLK)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>`;
+    if (/-(PID|PFD|SLD|TLD|BLK)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>`;
     if (byKey.has(k)) return `<a class="lk-a" data-k="${k}">${m}</a>`;
     if (window.SP && SP.url(m)) return SP.a(m);
     if (/^2000-/.test(m) && DOCN.has(k)) return `<a class="lk-a lk-doc" href="issues.html#sources" title="Open in Sources">${m}</a>`;
@@ -298,6 +298,7 @@
       if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
         kept.unshift(...dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
           return ns.length ? { l: r.l, v: ns.join(", "), h: ns.map(n => dwgA(n)).join("<br>") } : r; })); }
+      iomRow(it, kept);
       flagRows(kept, [it.key, ...twins.map(x => x.key)]);
       // MEL equipment with electrical data: two bands, Mechanical (the MEL and the other lists) and Electrical
       const el = kept.filter(r => r.s === "elx");
@@ -311,7 +312,9 @@
     }
     if (others.length) secs.push({ id: "also", label: "Also in", n: others.length, html: others.map(x => `<a class="lk-a lk-row lk-1l" data-k="${x.k}" data-t="${x.t}">${L.row1(typeName(x.t), headName(x) || x.name)}</a>`).join("") });
     // related items: one pill per list that refers to this tag (or its twin entries)
-    const rf = [...new Set([it, ...twins].flatMap(y => refs.get(y.k) || []))].filter(x => x !== it && !twins.includes(x));
+    // (an SLD, TLD or block diagram: the lists don't name it, so its pills are the tags read on the sheet)
+    const onSheet = it.t === "pid" && SLDT && SLDT[it.key] ? SLDT[it.key].flatMap(k => byKey.get(norm(k)) || []).filter(x => x.t !== "pid") : [];
+    const rf = [...new Set([...[it, ...twins].flatMap(y => refs.get(y.k) || []), ...onSheet])].filter(x => x !== it && !twins.includes(x));
     if (rf.length){
       const g = {}; rf.forEach(x => (g[x.t] = g[x.t] || []).push(x));
       TYPE_ORDER.filter(t => g[t]).forEach(t => { const a = g[t], show = a.slice(0, 60);
@@ -358,6 +361,23 @@
   // just above its P&ID (the list's own PFD plus any sheet it is read on), anything in the PDC a PDC row below it.
   // Each drawing is a link that opens the sheet (at the page) with the tag marked.
   let DT = null;
+  // IOM manuals (iom.json, tools/build_iom.py): every manual of the item's package, and any manual naming its tag in the
+  // title; those that name the tag (or the valve code, make or model) first. A row under the drawings, SharePoint links.
+  let IOM = null, SLDT = null;   // (SLDT: the tags read on each SLD / TLD / block diagram, sld-tags.json)
+  function iomRow(it, rows){
+    if (!IOM || !/^(mel|ins|cv)$/.test(it.t)) return;
+    const pk = String(L.get(it, "Package") || "").split(/[\s,/;&]+/).filter(Boolean), ns = new Set(IOM.t[it.key] || []);
+    pk.forEach(p => (IOM.p[p] || IOM.p[p.replace(/[A-Z]$/, "")] || []).forEach(n => ns.add(n)));
+    if (!ns.size) return;
+    const words = [it.key, L.get(it, "Valve code"), L.get(it, "Make / model"), L.get(it, "Model")].map(v => String(v || "").toUpperCase().trim()).filter(v => v.length > 3);
+    const score = n => (IOM.t[it.key] || []).includes(n) ? 2 : words.some(w => IOM.d[n][0].toUpperCase().includes(w)) ? 1 : 0;
+    const a = [...ns].filter(n => IOM.d[n]).sort((x, y) => score(y) - score(x) || x.localeCompare(y));
+    const one = n => { const [t, rev, k, u] = IOM.d[n], s = esc(n) + (rev ? ` Rev ${esc(rev)}` : "") + (k === "P" ? " (preliminary)" : "");
+      return (u ? `<a class="sp-a" href="${esc(encodeURI(decodeURI(u)))}" target="_blank" rel="noopener" title="Open in SharePoint">${s}</a>` : s) + `<span class="lk-iomt"> ${esc(t.toLowerCase().replace(/^./, c => c.toUpperCase()).replace(/\b[ft]\d{2,3}-[a-z]{2,4}-\d{3,4}[a-z]?\b|\biom\b|\b\d+kv\b/gi, m => m.toUpperCase().replace(/KV$/, "kV")))}</span>`; };
+    const SHOW = 4, h = a.slice(0, SHOW).map(one).join("<br>") + (a.length > SHOW ? `<details class="lk-iomm"><summary>${a.length - SHOW} more in package ${esc(pk.join(", "))}</summary>${a.slice(SHOW).map(one).join("<br>")}</details>` : "");
+    const i = rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l)); let j = i; if (i >= 0) while (j + 1 < rows.length && /^(P&IDs?|PFD)$/.test(rows[j + 1].l)) j++;
+    rows.splice(j + 1, 0, { l: a.length > 1 ? "IOMs" : "IOM", v: a.join(", "), h });
+  }
   const dwgA = (n, pg) => window.Pid && Pid.has(n) ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="${pg || 1}" href="#">${esc(Pid.label(n))}</a>` : esc(n);
   const dwgTitle = n => { const d = window.Pid && Pid.info(n); return d && d.title ? L.pidTitle(d.title) : ""; };
   function docRows(it, rows){
@@ -632,6 +652,7 @@
 .lk-spec .lk-btn{font-size:var(--fb,15px);padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:var(--fb,15px);line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:var(--fb,15px);margin-left:4px}
 .lk-t td:last-child{overflow-wrap:anywhere}
+.lk-iomt{color:var(--mute)}.lk-iomm summary{cursor:pointer;color:var(--doc-a,#0b63c5);margin-top:3px}.lk-iomm[open] summary{margin-bottom:3px}
 .lk-bandr td{padding:0!important;border:0!important}.lk-band{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2);margin:10px 0 2px}.lk-band small{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute);text-align:right}.lk-band span{white-space:nowrap}:root.phone .lk-band small{display:none}
 .lk-red,.lk-red a{color:#d11!important}.lk-clash{color:#d11;font-size:12px;font-weight:800;margin-top:2px}.lk-clash a{color:#d11;text-decoration:underline;font-weight:600;margin-left:4px}.lk-rsw{font-size:12px;color:var(--mute)}
 .lk-t td.lk-sub{color:var(--lk-a);font-size:var(--fl,13px);font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}
