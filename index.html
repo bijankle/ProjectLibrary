@@ -297,10 +297,10 @@ body.searching #homeMain{display:none}
 :root.phone .lt{margin:-12px -14px 8px;background:var(--card);border-bottom:1px solid var(--line)}
 :root.phone .lt button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:var(--fl,13px);font-weight:800;padding:11px 4px 9px;border-bottom:3px solid transparent;cursor:pointer}
 :root.phone .lt button.on{color:var(--ink);font-weight:900;border-bottom-color:var(--gold)}
-:root:not(.phone) .lt{position:absolute;left:22px;top:14px;width:calc(var(--lsw) - 44px);box-sizing:border-box;gap:2px;padding:3px;border-radius:10px;background:color-mix(in srgb,var(--ink) 8%,transparent);z-index:2}
+:root:not(.phone) .lt{position:absolute;left:22px;top:14px;width:calc(var(--lsw) - 44px);box-sizing:border-box;gap:2px;padding:3px;border-radius:10px;background:none;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 16%,var(--line));z-index:2}
 :root:not(.phone) .lt button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:var(--fb,15px);font-weight:700;padding:6px 10px;border-radius:8px;cursor:pointer}
-:root:not(.phone) .lt button.on{background:var(--th-t);color:var(--ink);box-shadow:inset 0 0 0 2.5px var(--th)}
-html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:var(--ink)}
+:root:not(.phone) .lt button.on{background:color-mix(in srgb,var(--gold,var(--accent)) 14%,var(--panel,var(--card)));box-shadow:inset 0 0 0 1.5px var(--gold,var(--accent));color:color-mix(in srgb,var(--gold,var(--accent)) 70%,var(--ink))}   /* (the Sources / Checks tab look) */
+
 :root:not(.phone) #deck{position:fixed}:root:not(.phone) .qd-side{padding-top:62px!important}
 #deck.glos .qd-main,#deck.glos .qd-list,#deck.glos #qdSideIn{display:none!important}
 #lgPane{flex:1;min-width:0;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px}#lgPane[hidden]{display:none}
@@ -334,9 +334,10 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 /* desktop glossary */
 :root:not(.phone) #deck.glos .gl-pills{position:absolute;left:22px;top:112px;width:calc(var(--lsw) - 44px);margin:0}
 :root:not(.phone) #deck.glos #lgList{position:absolute;left:22px;width:calc(var(--lsw) - 44px);bottom:16px;display:block;background:none;border-radius:0;overflow:visible;padding:0;margin:0}
-.gl .gld-list{padding:0;border-bottom:0;position:absolute;inset:0;overflow:auto;background:var(--card);border-radius:12px;overscroll-behavior:contain}
+.gl .gld-list{padding:0;border-bottom:0;position:absolute;inset:0;overflow:auto;background:var(--card);border-radius:0;overscroll-behavior:contain}
 .gl .gld-h{position:sticky;top:0;z-index:1;background:var(--card2,var(--panel2));font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--th2);padding:5px 12px}
-.gld-n{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;font:inherit;font-weight:700;color:var(--ink);padding:8px 12px;cursor:pointer}
+.gl .gld-hd{position:sticky;top:0;z-index:2;display:flex;padding:0;border-bottom:0;background:var(--hd);color:var(--hd2)}.gld-hd button{border:0;background:none;color:inherit;font:inherit;font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;cursor:pointer;text-align:left;flex:1}.gld-hd button+button{flex:none;text-align:right}.gld-hd button.on::after{content:" \25BE";letter-spacing:0}
+.gld-n{display:flex;justify-content:space-between;gap:12px;align-items:baseline;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:var(--fb,15px);font-weight:700;color:var(--ink);padding:5px 10px;cursor:pointer;white-space:nowrap}.gld-n span{overflow:hidden;text-overflow:ellipsis}.gld-n em{font-style:normal;font-weight:600;color:var(--mute);font-variant-numeric:tabular-nums;flex:none}.gld-n.zb{background:color-mix(in srgb,var(--ink) 3.5%,transparent)}
 .gld-n:hover{background:var(--rh,#eef0f3)}.gld-n.on{background:var(--rs,#e1e4e8);box-shadow:inset 3px 0 0 var(--rsb,#8b939d)}
 #lgDet{background:var(--card);border-radius:14px;padding:20px 24px;flex:none}#lgDet:empty{display:none}
 .gld-t{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.gld-t b{font-size:28px}.gld-t span{border:1.5px solid var(--line);border-radius:12px;padding:2px 9px;font-size:12px;font-weight:800;color:var(--mute)}
@@ -509,6 +510,7 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
 <script src="ai.js"></script>
 <script src="glossary.js"></script>
 <script src="glossary-faq.js"></script>
+<script src="glossary-counts.js"></script>
 <script src="pdfview.js"></script>
 <script src="spec.js"></script>
 <script src="pid.js"></script>
@@ -912,13 +914,21 @@ html[data-theme="dark"]:not(.phone) .lt button.on{background:var(--th-t);color:v
   window.kcgmRenderGloss = (f, out, box) => renderGloss(f, out, box);
   // desktop (Learn > Glossary): pills and the names under the search, an A to Z strip down the list's side; the term
   // picked shows on the right, its meaning on top and "More info" (3 FAQs, glossary-faq.js) below
-  let gSel = "";
+  let gSel = "", gSort = (() => { try { return localStorage.getItem("kcgm_gsort") || "a"; } catch (e){ return "a"; } })();
   const GL1 = k => { const c = String(k).trim().charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
   function glDesk(list, out, pl){
     const sorted = list.slice().sort((a, b) => (GL1(b[0]) === "#") - (GL1(a[0]) === "#") || a[0].localeCompare(b[0], undefined, { sensitivity: "base", numeric: true }));
-    let h = "", last = ""; sorted.forEach(([k]) => { const c = GL1(k); if (c !== last){ h += `<div class="gld-h" data-l="${c}">${c}</div>`; last = c; } h += `<button type="button" class="gld-n${k === gSel ? " on" : ""}" data-k="${esc(k)}">${esc(k)}</button>`; });
-    out.innerHTML = `<div class="gld-list">${h || `<div class="gl-none">No match</div>`}</div>`;
-    out.style.top = (pl.offsetTop + pl.offsetHeight + 10) + "px";
+    // two columns: the term, and how often it comes up in the source documents (glossary-counts.js); a click on a
+    // column header sorts by it (A to Z, or most mentioned first)
+    const C = typeof GLOSSARY_COUNT !== "undefined" ? GLOSSARY_COUNT : {}, cnt = k => (C[k] || [0])[0];
+    if (gSort === "n") sorted.sort((a, b) => cnt(b[0]) - cnt(a[0]) || a[0].localeCompare(b[0], undefined, { sensitivity: "base", numeric: true }));
+    let h = ""; sorted.forEach(([k], n) => { const c = C[k]; h += `<button type="button" class="gld-n${n % 2 ? " zb" : ""}${k === gSel ? " on" : ""}" data-k="${esc(k)}"><span>${esc(k)}</span><em title="${c ? `${c[0].toLocaleString()} mentions in ${c[1]} document${c[1] === 1 ? "" : "s"}` : "Not found in the source documents"}">${c && c[0] ? c[0].toLocaleString() : "–"}</em></button>`; });
+    out.innerHTML = `<div class="gld-list"><div class="gld-hd"><button type="button" data-s="a"${gSort === "a" ? ' class="on"' : ""}>Term</button><button type="button" data-s="n"${gSort === "n" ? ' class="on"' : ""}>Mentions</button></div>${h || `<div class="gl-none">No match</div>`}</div>`;
+    out.querySelectorAll(".gld-hd [data-s]").forEach(b => b.onclick = () => { gSort = b.dataset.s; try { localStorage.setItem("kcgm_gsort", gSort); } catch (e) {} glDesk(list, out, pl); });
+    // (the list starts under the pills; worked out again whenever the pills change size, so a list drawn while the
+    // Learn tab was hidden doesn't end up over the Quiz / Glossary switch)
+    const place = () => { if (pl.offsetHeight) out.style.top = (pl.offsetTop + pl.offsetHeight + 10) + "px"; }; place();
+    if (!pl._ro){ pl._ro = new ResizeObserver(place); pl._ro.observe(pl); }
     const box = out.querySelector(".gld-list");
     box.onclick = e => { const b = e.target.closest(".gld-n"); if (!b) return; gSel = b.dataset.k; box.querySelectorAll(".gld-n.on").forEach(x => x.classList.remove("on")); b.classList.add("on"); glDef(gSel); };
     if (!sorted.some(x => x[0] === gSel)) gSel = sorted.length ? sorted[0][0] : "";
