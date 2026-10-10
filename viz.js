@@ -298,9 +298,10 @@ window.AssetViz = (() => {
       if (!c.length && g) return ""; return `<h2 class="vz-gh">${name}</h2>` + `<div class="vz-grid">${g ? "" : tilesH}${c.map(x => x.s).join("")}</div>`; }).join("");   // the figures: a 2 by 2 block, the first cell of General
     alignTop();
   }
-  // the charts' first header (General) level with the list's first band (Asset type)
+  // the charts' first header (General) level with the Results band (it stays at the top of the list, whatever filters
+  // are picked)
   function alignTop(){ if (!el) return; watchAlign(); el.style.paddingTop = "";
-    const band = document.querySelector(".bw-l .bw-band, .bw .bw-band"), gh = el.querySelector(".vz-gh"); if (!band || !gh || cur) return;
+    const band = document.querySelector(".bw-r > .bw-n") || document.querySelector(".bw .bw-band"), gh = el.querySelector(".vz-gh"); if (!band || !gh || cur) return;
     const d = band.getBoundingClientRect().top - gh.getBoundingClientRect().top; if (d > 0 && d < 300) el.style.paddingTop = (parseFloat(getComputedStyle(el).paddingTop) || 0) + d + "px"; }
   addEventListener("resize", () => { if (el && !cur) alignTop(); });
   // (the list draws after the charts and its top moves with Recent: watch it)
