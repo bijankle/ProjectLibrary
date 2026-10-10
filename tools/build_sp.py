@@ -8,8 +8,10 @@ Of several register entries for one number, the latest revision's PDF is linked.
 import glob, json, os, re
 import openpyxl, pymupdf
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# the raw inputs (the register, inbox/) live in the private repository, cloned beside this one (or KCGM_PRIVATE)
+RP = os.environ.get("KCGM_PRIVATE") or os.path.join(os.path.dirname(R), "projectlibraryprivate")
 nk = lambda s: re.sub(r"[^A-Z0-9]", "", str(s or "").upper())
-rf = max(glob.glob(os.path.join(R, "sources", "register", "*.xls[xm]")), key=os.path.getmtime)
+rf = max(glob.glob(os.path.join(RP, "sources", "register", "*.xls[xm]")), key=os.path.getmtime)
 REG = {}
 def rk(rev, url):
     r = str(rev or "").strip().upper(); pdf = url.lower().endswith(".pdf")

@@ -12,7 +12,9 @@ library or waiting in inbox/ are left out. "x" counts the documents that mention
 import json, re, glob, os, collections, sys
 import pymupdf, openpyxl
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REGF = sys.argv[1] if len(sys.argv) > 1 else max(glob.glob(os.path.join(R, 'sources', 'register', '*.xls[xm]')), key=os.path.getmtime)
+# the raw inputs (the register, inbox/) live in the private repository, cloned beside this one (or KCGM_PRIVATE)
+RP = os.environ.get("KCGM_PRIVATE") or os.path.join(os.path.dirname(R), "projectlibraryprivate")
+REGF = sys.argv[1] if len(sys.argv) > 1 else max(glob.glob(os.path.join(RP, 'sources', 'register', '*.xls[xm]')), key=os.path.getmtime)
 wb0 = openpyxl.load_workbook(REGF, read_only=True, data_only=True)
 reg = [["" if c is None else str(c) for c in r] for r in list(wb0.worksheets[0].iter_rows(values_only=True))[1:]]
 norm = lambda n: re.sub(r'[\\/]', '-', n.strip().upper())
@@ -26,7 +28,7 @@ TOK = re.compile(r'[A-Z0-9][A-Z0-9.\\/_-]{6,}[A-Z0-9]')
 P = json.load(open(R + '/PIDs/index.json'))['pids']; meta = json.load(open(R + '/issues.json'))['meta']['docs']
 held = set(P) | {v['number'] for v in meta.values()} | {'2000-F00-STS-PP-10001'}
 base = lambda f: re.match(r'(.*?)(_[^_]*)*$', os.path.basename(f)[:-4]).group(1)
-inbox = {re.split(r'_', os.path.basename(f))[0] for f in glob.glob(R + '/inbox/**/*.pdf', recursive=True) + glob.glob(R + '/*.pdf')}
+inbox = {re.split(r'_', os.path.basename(f))[0] for f in glob.glob(RP + '/inbox/**/*.pdf', recursive=True) + glob.glob(R + '/*.pdf')}
 ment = collections.defaultdict(collections.Counter); printed = {}
 def scan(src, text, pdf=True):
     LS = text.split('\n')
@@ -39,7 +41,7 @@ def scan(src, text, pdf=True):
             rest = L.split(n.split('-')[-1], 1)[-1].strip(' -:')
             if pdf and len(rest) < 4 and i + 1 < len(LS) and not TOK.search(LS[i + 1].upper()): rest = LS[i + 1].upper().strip()
             if pdf and len(re.sub(r'[^A-Z]', '', rest)) >= 8 and n not in printed: printed[n] = rest[:120]
-pdfs = [(k, R + '/' + v['file']) for k, v in P.items()] + [(base(f), f) for f in glob.glob(R + '/inbox/**/*.pdf', recursive=True) + glob.glob(R + '/*.pdf')] + [('2000-F00-STS-PP-10001', R + '/spec/pvs.pdf')]
+pdfs = [(k, R + '/' + v['file']) for k, v in P.items()] + [(base(f), f) for f in glob.glob(RP + '/inbox/**/*.pdf', recursive=True) + glob.glob(R + '/*.pdf')] + [('2000-F00-STS-PP-10001', R + '/spec/pvs.pdf')]
 for k, f in pdfs:
     try:
         d = pymupdf.open(f); scan(re.split('_', k)[0], '\n'.join(p.get_text() for p in d))

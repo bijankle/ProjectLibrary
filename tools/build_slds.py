@@ -10,7 +10,9 @@ comes from the file name, its date from the revision table. The Borefield (N02) 
 import glob, json, os, re, sys, datetime
 import pymupdf
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-src = sorted(f for f in glob.glob(os.path.join(R, "inbox", "electrical", "*-SLD-*.pdf")) if "-N02-" not in f)
+# the raw inputs (the register, inbox/) live in the private repository, cloned beside this one (or KCGM_PRIVATE)
+RP = os.environ.get("KCGM_PRIVATE") or os.path.join(os.path.dirname(R), "projectlibraryprivate")
+src = sorted(f for f in glob.glob(os.path.join(RP, "inbox", "electrical", "*-SLD-*.pdf")) if "-N02-" not in f)
 # build_pids.py's title block and redaction helpers (its main loop isn't run)
 code = open(os.path.join(R, "tools", "build_pids.py")).read()
 argv0 = sys.argv; sys.argv = [argv0[0], src[0]]; g = {"__file__": os.path.join(R, "tools", "build_pids.py")}
@@ -38,7 +40,7 @@ def rdate(d):
 REG = {}
 try:
     import openpyxl
-    rf = max(glob.glob(os.path.join(R, "sources", "register", "*.xls[xm]")), key=os.path.getmtime)
+    rf = max(glob.glob(os.path.join(RP, "sources", "register", "*.xls[xm]")), key=os.path.getmtime)
     for r in openpyxl.load_workbook(rf, read_only=True, data_only=True).worksheets[0].iter_rows(values_only=True):
         if r[3] and r[6]: REG.setdefault(str(r[3]).strip().upper(), str(r[6]).strip())
 except (ValueError, OSError): pass

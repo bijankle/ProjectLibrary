@@ -13,7 +13,7 @@
 // superseded revision (the index's "revs"), which the tree lists under the latest one (view and download only).
 window.SourcesList = (() => {
   const REPO = "bijankle/ProjectLibrary";
-  const PRIV = "bijankle/projectlibraryprivate";   // the private repository: Ref Only files dropped back in land in its inbox/refonly for Claude to digest   // the GitHub repository the app is served from and uploads to (one home: Help → API keys shows it)
+  const PRIV = "bijankle/ProjectLibraryPrivate";   // the private repository: Ref Only files dropped back in land in its inbox/refonly for Claude to digest   // the GitHub repository the app is served from and uploads to (one home: Help → API keys shows it)
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const mb = b => { const v = (b || 0) / 1e6; return v === 0 ? "0" : v < 1 ? String(+v.toFixed(2)) : v < 10 ? String(+v.toFixed(1)) : String(Math.round(v)); };
   const TYPES = [["pid", "P&IDs"], ["pfd", "PFDs"], ["bfd", "BFDs"], ["sld", "SLDs"], ["list", "Lists"], ["report", "Reports"], ["spec", "Specs"], ["dwg", "Drawings"], ["other", "Other"]];

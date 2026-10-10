@@ -12,6 +12,8 @@ import glob, json, os, re, sys, datetime
 import pymupdf
 pymupdf.TOOLS.mupdf_display_errors(False)
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# the raw inputs (the register, inbox/) live in the private repository, cloned beside this one (or KCGM_PRIVATE)
+RP = os.environ.get("KCGM_PRIVATE") or os.path.join(os.path.dirname(R), "projectlibraryprivate")
 WORDS = re.compile(r"\b(cable|equip|equipment|from|to|location|conductor|insulation|cores?|length|installation|supplied|installed|"
                    r"nameplate|name plate|voltage|load|mcc|module|description|manufacturer|model|make|qty|rev|status|kw|type|fed)\b", re.I)
 def norm(c): return re.sub(r"[ \t]+", " ", (c or "").replace("Ɵ", "ti")).strip()
@@ -50,7 +52,7 @@ def issue_date(doc):
     ds = [x for x in ds if datetime.date(2023, 1, 1) <= x <= datetime.date.today()]
     return max(ds).isoformat() if ds else ""
 out, docs = [], {}
-for f in sorted(glob.glob(os.path.join(R, "inbox", "electrical", "*LST*.pdf"))):
+for f in sorted(glob.glob(os.path.join(RP, "inbox", "electrical", "*LST*.pdf"))):
     m = re.match(r"(2000-([A-Z0-9]+)-LST-EL-(\d+))_([A-Z0-9]+)", os.path.basename(f))
     if not m or m.group(2) == "N02": continue
     num, rev = m.group(1), m.group(4)
