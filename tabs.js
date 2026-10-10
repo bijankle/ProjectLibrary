@@ -567,6 +567,9 @@ button:disabled{cursor:default}
 /* selected: a cream fill, a solid gold ring (1.5px border plus a 1px inset shadow) and the normal ink colour for text and
    icons (counts inside stay grey); dark mode a warm brown fill. Phone only: pills, toggles, segments, chips, the tab bar */
 :root{--sel-bg:var(--th-t);--sel-ring:var(--th);--sel-ink:#1d2430}
+/* buttons sitting in a header strip (Any, Clear …): white text and a white outline on the strip's colour */
+:is(.bw-band,.lk-rh,.lk-band,.sl-h,.vz-gh,.ck-h,.fx-h,.fx-n,#side h2,.lg-sub) button{color:var(--hd2)!important;background:transparent!important;border:1px solid color-mix(in srgb,var(--hd2) 75%,transparent)!important;box-shadow:none!important}
+:is(.bw-band,.lk-rh,.lk-band,.sl-h,.vz-gh,.ck-h,.fx-h,.fx-n,#side h2,.lg-sub) button:hover{background:color-mix(in srgb,var(--hd2) 15%,transparent)!important}
 /* header strips: the theme colour with white text, and everything written in them (counts, notes) white too */
 :is(.bw-band,.lk-status:not(:empty),.lk-rh,.lk-band,.sl-h,.vz-gh,.qd-side h4,.qd-list h4,.gl-mi,.gld-band,.ck-h,.ck-r #count.x,.ck-gh,#side h2,.lg-sub,.fx-h,.fx-n) :not(button,button *,input,select,a.btn,.sp-a){color:inherit!important}html[data-theme="dark"]{--sel-ink:#e9edf2}
 :root.phone :is(.lk-pill.on,.pf-b.on,.qp.on,#qBtns #qShuf.on,#qdRev.on,.sl-p.on,.bp-c.on,.bp-f.set,.fx-p.on,#pfab button.on,.lo-lb.on,.hbtn.on,.qfbtn.on,.seg button.on,.flow.on,.step.on,.lg-item.on,.lg-li.on,.mn-th button.on){background:var(--sel-bg)!important;border:1.5px solid var(--sel-ring)!important;box-shadow:inset 0 0 0 1px var(--sel-ring)!important;color:var(--sel-ink)!important}
