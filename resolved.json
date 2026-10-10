@@ -1,14 +1,14 @@
 {
  "ace95fed": {
   "by": "Drawing check",
-  "at": "2026-10-09",
+  "at": "2026-10-10",
   "note": "Settled by the drawing: PRV 13452 is shown on 2000-F24-PID-PR-10025, not on 2000-F24-PID-PR-10011.",
   "auto": 1,
   "keep": "2000-F24-PID-PR-10025"
  },
  "46702be0": {
   "by": "Drawing check",
-  "at": "2026-10-09",
+  "at": "2026-10-10",
   "note": "Settled by the drawing: SVO 17019 is shown on 2000-F24-PID-PR-10008, not on 2000-F17-PID-PR-10001.",
   "auto": 1,
   "keep": "2000-F24-PID-PR-10008"

@@ -617,65 +617,153 @@
    "file": "PIDs/2000-F00-PID-PR-10001.pdf",
    "title": "General legend, sheet 1",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-24",
    "pages": 1,
-   "size": 219874
+   "size": 208951,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F00-PID-PR-10001_Rev1.pdf",
+     "size": 219874
+    }
+   ],
+   "src": [
+    "2000-F00-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F00-PID-PR-10002": {
    "file": "PIDs/2000-F00-PID-PR-10002.pdf",
    "title": "General legend, sheet 2",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-24",
    "pages": 1,
-   "size": 142548
+   "size": 174350,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F00-PID-PR-10002_Rev1.pdf",
+     "size": 142548
+    }
+   ],
+   "src": [
+    "2000-F00-PID-PR-10002_MS_1.pdf"
+   ]
   },
   "2000-F00-PID-PR-10003": {
    "file": "PIDs/2000-F00-PID-PR-10003.pdf",
    "title": "General legend, sheet 3",
-   "rev": "0",
-   "date": "",
+   "rev": "1",
+   "date": "2024-08-20",
    "pages": 1,
-   "size": 193850
+   "size": 218369,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F00-PID-PR-10003_Rev0.pdf",
+     "size": 193850
+    }
+   ],
+   "src": [
+    "2000-F00-PID-PR-10003_1_SSD.pdf"
+   ]
   },
   "2000-F00-PID-PR-10004": {
    "file": "PIDs/2000-F00-PID-PR-10004.pdf",
    "title": "General legend, sheet 4",
-   "rev": "0",
-   "date": "",
+   "rev": "1",
+   "date": "2026-09-24",
    "pages": 1,
-   "size": 108640
+   "size": 158262,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F00-PID-PR-10004_Rev0.pdf",
+     "size": 108640
+    }
+   ],
+   "src": [
+    "2000-F00-PID-PR-10004_MS_1.pdf"
+   ]
   },
   "2000-F00-PID-PR-10005": {
    "file": "PIDs/2000-F00-PID-PR-10005.pdf",
    "title": "General legend, sheet 5",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-24",
    "pages": 1,
-   "size": 147503
+   "size": 185189,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F00-PID-PR-10005_Rev1.pdf",
+     "size": 147503
+    }
+   ],
+   "src": [
+    "2000-F00-PID-PR-10005_MS_1.pdf"
+   ]
   },
   "2000-F00-PID-PR-10006": {
    "file": "PIDs/2000-F00-PID-PR-10006.pdf",
    "title": "General legend, sheet 6",
-   "rev": "0",
-   "date": "",
+   "rev": "1",
+   "date": "2026-09-24",
    "pages": 1,
-   "size": 79319
+   "size": 134746,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F00-PID-PR-10006_Rev0.pdf",
+     "size": 79319
+    }
+   ],
+   "src": [
+    "2000-F00-PID-PR-10006_MS_1.pdf"
+   ]
   },
   "2000-F00-PID-PR-10007": {
    "file": "PIDs/2000-F00-PID-PR-10007.pdf",
    "title": "General legend, sheet 7",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-24",
    "pages": 1,
-   "size": 166665
+   "size": 190976,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F00-PID-PR-10007_Rev1.pdf",
+     "size": 166665
+    }
+   ],
+   "src": [
+    "2000-F00-PID-PR-10007_MS_1.pdf"
+   ]
   },
   "2000-F00-PID-PR-10100": {
    "file": "PIDs/2000-F00-PID-PR-10100.pdf",
    "title": "Event pond valve station",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-24",
    "pages": 1,
-   "size": 77773
+   "size": 146106,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F00-PID-PR-10100_Rev1.pdf",
+     "size": 77773
+    }
+   ],
+   "src": [
+    "2000-F00-PID-PR-10100_MS_1.pdf"
+   ]
   },
   "2000-F00-PID-PR-10101": {
    "file": "PIDs/2000-F00-PID-PR-10101.pdf",
@@ -704,10 +792,21 @@
   "2000-F12-PID-PR-10002": {
    "file": "PIDs/2000-F12-PID-PR-10002.pdf",
    "title": "Primary crushing, sheet 2, Stage 1",
-   "rev": "1",
-   "date": "",
+   "rev": "3",
+   "date": "2025-09-05",
    "pages": 1,
-   "size": 442660
+   "size": 332584,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F12-PID-PR-10002_Rev1.pdf",
+     "size": 442660
+    }
+   ],
+   "src": [
+    "2000-F12-PID-PR-10002_3_SSD.pdf"
+   ]
   },
   "2000-F12-PID-PR-10003": {
    "file": "PIDs/2000-F12-PID-PR-10003.pdf",
@@ -720,18 +819,40 @@
   "2000-F13-PID-PR-10001": {
    "file": "PIDs/2000-F13-PID-PR-10001.pdf",
    "title": "Crushed ore stockpile, Stage 1",
-   "rev": "1",
-   "date": "",
+   "rev": "3",
+   "date": "2025-09-05",
    "pages": 1,
-   "size": 410840
+   "size": 333977,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10001_Rev1.pdf",
+     "size": 410840
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10001_3_SSD.pdf"
+   ]
   },
   "2000-F13-PID-PR-10002": {
    "file": "PIDs/2000-F13-PID-PR-10002.pdf",
    "title": "SAG and ball milling, sheet 1, Stage 1",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-09-05",
    "pages": 1,
-   "size": 382815
+   "size": 355609,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10002_Rev1.pdf",
+     "size": 382815
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10002_2_SSD.pdf"
+   ]
   },
   "2000-F13-PID-PR-10003": {
    "file": "PIDs/2000-F13-PID-PR-10003.pdf",
@@ -745,89 +866,210 @@
    "file": "PIDs/2000-F13-PID-PR-10004.pdf",
    "title": "SAG and ball milling, sheet 3, Stage 1",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-08",
    "pages": 1,
-   "size": 208568
+   "size": 234489,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10004_Rev1.pdf",
+     "size": 208568
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10004_MS-RLM1_1.pdf"
+   ]
   },
   "2000-F13-PID-PR-10005": {
    "file": "PIDs/2000-F13-PID-PR-10005.pdf",
    "title": "Pebble crushing, sheet 1, Stage 1",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-09-12",
    "pages": 1,
-   "size": 141217
+   "size": 188332,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10005_Rev1.pdf",
+     "size": 141217
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10005_2_SSD.pdf"
+   ]
   },
   "2000-F13-PID-PR-10006": {
    "file": "PIDs/2000-F13-PID-PR-10006.pdf",
    "title": "Pebble crushing, sheet 2, Stage 1",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-09-12",
    "pages": 1,
-   "size": 395519
+   "size": 349475,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10006_Rev1.pdf",
+     "size": 395519
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10006_2_SSD.pdf"
+   ]
   },
   "2000-F13-PID-PR-10007": {
    "file": "PIDs/2000-F13-PID-PR-10007.pdf",
    "title": "Trash screening, sheet 1, Stage 1",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-07-10",
    "pages": 1,
-   "size": 290465
+   "size": 298054,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10007_Rev1.pdf",
+     "size": 290465
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10007_2_SSD.pdf"
+   ]
   },
   "2000-F13-PID-PR-10008": {
    "file": "PIDs/2000-F13-PID-PR-10008.pdf",
    "title": "Trash screening, sheet 2, Stage 1",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-07-10",
    "pages": 1,
-   "size": 240701
+   "size": 247438,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10008_Rev1.pdf",
+     "size": 240701
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10008_2_SSD.pdf"
+   ]
   },
   "2000-F13-PID-PR-10009": {
    "file": "PIDs/2000-F13-PID-PR-10009.pdf",
    "title": "Mill cooling water distribution",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-07-10",
    "pages": 1,
-   "size": 208881
+   "size": 225481,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10009_Rev1.pdf",
+     "size": 208881
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10009_2_SSD.pdf"
+   ]
   },
   "2000-F13-PID-PR-10010": {
    "file": "PIDs/2000-F13-PID-PR-10010.pdf",
    "title": "SAG mill lube system, Stage 1",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-09-05",
    "pages": 1,
-   "size": 355355
+   "size": 339806,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10010_Rev1.pdf",
+     "size": 355355
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10010_2_SSD.pdf"
+   ]
   },
   "2000-F13-PID-PR-10011": {
    "file": "PIDs/2000-F13-PID-PR-10011.pdf",
    "title": "Ball mill lube system, Stage 1",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-09-05",
    "pages": 1,
-   "size": 361385
+   "size": 332584,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10011_Rev1.pdf",
+     "size": 361385
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10011_2_SSD.pdf"
+   ]
   },
   "2000-F13-PID-PR-10012": {
    "file": "PIDs/2000-F13-PID-PR-10012.pdf",
    "title": "Mill cooling and chiller water circuit",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-09-05",
    "pages": 1,
-   "size": 266305
+   "size": 294988,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10012_Rev1.pdf",
+     "size": 266305
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10012_2_SSD.pdf"
+   ]
   },
   "2000-F13-PID-PR-10013": {
    "file": "PIDs/2000-F13-PID-PR-10013.pdf",
    "title": "SAG and ball mill lube system, Stage 1",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-09-05",
    "pages": 1,
-   "size": 259088
+   "size": 242320,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10013_Rev1.pdf",
+     "size": 259088
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10013_2_SSD.pdf"
+   ]
   },
   "2000-F14-PID-PR-10001": {
    "file": "PIDs/2000-F14-PID-PR-10001.pdf",
    "title": "Gravity concentration",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-18",
    "pages": 1,
-   "size": 276293
+   "size": 276149,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F14-PID-PR-10001_Rev1.pdf",
+     "size": 276293
+    }
+   ],
+   "src": [
+    "2000-F14-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F14-PID-PR-10003": {
    "file": "PIDs/2000-F14-PID-PR-10003.pdf",
@@ -848,10 +1090,21 @@
   "2000-F16-PID-PR-10002": {
    "file": "PIDs/2000-F16-PID-PR-10002.pdf",
    "title": "Rougher flotation, sheet 2, Stage 1",
-   "rev": "2",
-   "date": "",
+   "rev": "1",
+   "date": "2026-09-18",
    "pages": 1,
-   "size": 202632
+   "size": 226908,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F16-PID-PR-10002_Rev2.pdf",
+     "size": 202632
+    }
+   ],
+   "src": [
+    "2000-F16-PID-PR-10002_MS_1.pdf"
+   ]
   },
   "2000-F16-PID-PR-10003": {
    "file": "PIDs/2000-F16-PID-PR-10003.pdf",
@@ -864,10 +1117,21 @@
   "2000-F16-PID-PR-10004": {
    "file": "PIDs/2000-F16-PID-PR-10004.pdf",
    "title": "Scavenger flotation, sheet 2, Stage 1",
-   "rev": "2",
-   "date": "",
+   "rev": "1",
+   "date": "2026-09-18",
    "pages": 1,
-   "size": 169791
+   "size": 167262,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F16-PID-PR-10004_Rev2.pdf",
+     "size": 169791
+    }
+   ],
+   "src": [
+    "2000-F16-PID-PR-10004_MS_1.pdf"
+   ]
   },
   "2000-F16-PID-PR-10005": {
    "file": "PIDs/2000-F16-PID-PR-10005.pdf",
@@ -880,26 +1144,59 @@
   "2000-F16-PID-PR-10006": {
    "file": "PIDs/2000-F16-PID-PR-10006.pdf",
    "title": "Flotation air blowers, Stage 1",
-   "rev": "2",
-   "date": "",
+   "rev": "1",
+   "date": "2026-09-18",
    "pages": 1,
-   "size": 162310
+   "size": 190932,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F16-PID-PR-10006_Rev2.pdf",
+     "size": 162310
+    }
+   ],
+   "src": [
+    "2000-F16-PID-PR-10006_MS_1.pdf"
+   ]
   },
   "2000-F17-PID-PR-10001": {
    "file": "PIDs/2000-F17-PID-PR-10001.pdf",
    "title": "Flotation tailings thickening, sheet 1, Stage 1",
-   "rev": "2",
-   "date": "",
+   "rev": "3",
+   "date": "2025-09-12",
    "pages": 1,
-   "size": 516770
+   "size": 399860,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F17-PID-PR-10001_Rev2.pdf",
+     "size": 516770
+    }
+   ],
+   "src": [
+    "2000-F17-PID-PR-10001_3_SSD.pdf"
+   ]
   },
   "2000-F17-PID-PR-10002": {
    "file": "PIDs/2000-F17-PID-PR-10002.pdf",
    "title": "Flotation tailings thickening, sheet 2, Stage 1",
-   "rev": "2",
-   "date": "",
+   "rev": "1",
+   "date": "2026-09-18",
    "pages": 1,
-   "size": 408412
+   "size": 332220,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F17-PID-PR-10002_Rev2.pdf",
+     "size": 408412
+    }
+   ],
+   "src": [
+    "2000-F17-PID-PR-10002_MS_1.pdf"
+   ]
   },
   "2000-F175-PID-PR-40002": {
    "file": "PIDs/2000-F175-PID-PR-40002.pdf",
@@ -928,10 +1225,21 @@
   "2000-F18-PID-PR-10003": {
    "file": "PIDs/2000-F18-PID-PR-10003.pdf",
    "title": "Cleaner scavenger flotation, sheet 1",
-   "rev": "2",
-   "date": "",
+   "rev": "1",
+   "date": "2026-09-18",
    "pages": 1,
-   "size": 283830
+   "size": 277952,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F18-PID-PR-10003_Rev2.pdf",
+     "size": 283830
+    }
+   ],
+   "src": [
+    "2000-F18-PID-PR-10003_MS_1.pdf"
+   ]
   },
   "2000-F18-PID-PR-10004": {
    "file": "PIDs/2000-F18-PID-PR-10004.pdf",
@@ -963,9 +1271,20 @@
    "file": "PIDs/2000-F19-PID-PR-10007.pdf",
    "title": "Ball charging system, area A",
    "rev": "1",
-   "date": "",
+   "date": "2026-10-02",
    "pages": 1,
-   "size": 203021
+   "size": 171066,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F19-PID-PR-10007_Rev1.pdf",
+     "size": 203021
+    }
+   ],
+   "src": [
+    "2000-F19-PID-PR-10007_MS_1.pdf"
+   ]
   },
   "2000-F21-PID-PR-10001": {
    "file": "PIDs/2000-F21-PID-PR-10001.pdf",
@@ -1042,18 +1361,40 @@
   "2000-F23-PID-PR-10001": {
    "file": "PIDs/2000-F23-PID-PR-10001.pdf",
    "title": "Final tails tank",
-   "rev": "2",
-   "date": "",
+   "rev": "1",
+   "date": "2026-09-04",
    "pages": 1,
-   "size": 281937
+   "size": 259910,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F23-PID-PR-10001_Rev2.pdf",
+     "size": 281937
+    }
+   ],
+   "src": [
+    "2000-F23-PID-PR-10001_MS-RLM1_1.pdf"
+   ]
   },
   "2000-F23-PID-PR-10002": {
    "file": "PIDs/2000-F23-PID-PR-10002.pdf",
    "title": "Final tails pumps",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-09-12",
    "pages": 1,
-   "size": 530159
+   "size": 404715,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F23-PID-PR-10002_Rev1.pdf",
+     "size": 530159
+    }
+   ],
+   "src": [
+    "2000-F23-PID-PR-10002_2_SSD.pdf"
+   ]
   },
   "2000-F23-PID-PR-40002": {
    "file": "PIDs/2000-F23-PID-PR-40002.pdf",
@@ -1113,33 +1454,77 @@
    "file": "PIDs/2000-F24-PID-PR-10001.pdf",
    "title": "Process water, sheet 1",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 339833
+   "size": 246798,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10001_Rev1.pdf",
+     "size": 339833
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10002": {
    "file": "PIDs/2000-F24-PID-PR-10002.pdf",
    "title": "Raw water, sheet 1",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 242842
+   "size": 197170,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10002_Rev1.pdf",
+     "size": 242842
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10002_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10003": {
    "file": "PIDs/2000-F24-PID-PR-10003.pdf",
    "title": "Gland water, sheet 1",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 195044
+   "size": 185619,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10003_Rev1.pdf",
+     "size": 195044
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10003_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10004": {
    "file": "PIDs/2000-F24-PID-PR-10004.pdf",
    "title": "Gland water, sheet 2",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 216004
+   "size": 198889,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10004_Rev1.pdf",
+     "size": 216004
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10004_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10005": {
    "file": "PIDs/2000-F24-PID-PR-10005.pdf",
@@ -1153,9 +1538,20 @@
    "file": "PIDs/2000-F24-PID-PR-10006.pdf",
    "title": "Scheme water",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 248931
+   "size": 227387,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10006_Rev1.pdf",
+     "size": 248931
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10006_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10007": {
    "file": "PIDs/2000-F24-PID-PR-10007.pdf",
@@ -1168,10 +1564,21 @@
   "2000-F24-PID-PR-10008": {
    "file": "PIDs/2000-F24-PID-PR-10008.pdf",
    "title": "Plant air, sheet 2",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-07-10",
    "pages": 1,
-   "size": 237125
+   "size": 197939,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10008_Rev1.pdf",
+     "size": 237125
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10008_2_SSD.pdf"
+   ]
   },
   "2000-F24-PID-PR-10009": {
    "file": "PIDs/2000-F24-PID-PR-10009.pdf",
@@ -1193,9 +1600,20 @@
    "file": "PIDs/2000-F24-PID-PR-10011.pdf",
    "title": "Plant air, sheet 3",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 353595
+   "size": 281373,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10011_Rev1.pdf",
+     "size": 353595
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10011_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10012": {
    "file": "PIDs/2000-F24-PID-PR-10012.pdf",
@@ -1240,26 +1658,59 @@
   "2000-F24-PID-PR-10017": {
    "file": "PIDs/2000-F24-PID-PR-10017.pdf",
    "title": "Raw water feed booster pumps",
-   "rev": "0",
-   "date": "",
+   "rev": "1",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 138807
+   "size": 141280,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10017_Rev0.pdf",
+     "size": 138807
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10017_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10018": {
    "file": "PIDs/2000-F24-PID-PR-10018.pdf",
    "title": "Raw water, sheet 2",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 249441
+   "size": 259246,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10018_Rev1.pdf",
+     "size": 249441
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10018_MS-RLM1_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10019": {
    "file": "PIDs/2000-F24-PID-PR-10019.pdf",
    "title": "Process water, sheet 3",
-   "rev": "2",
-   "date": "",
+   "rev": "1",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 499739
+   "size": 326297,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10019_Rev2.pdf",
+     "size": 499739
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10019_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10020": {
    "file": "PIDs/2000-F24-PID-PR-10020.pdf",
@@ -1273,9 +1724,20 @@
    "file": "PIDs/2000-F24-PID-PR-10022.pdf",
    "title": "Fire water, sheet 3",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 217352
+   "size": 186107,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10022_Rev1.pdf",
+     "size": 217352
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10022_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10023": {
    "file": "PIDs/2000-F24-PID-PR-10023.pdf",
@@ -1289,9 +1751,20 @@
    "file": "PIDs/2000-F24-PID-PR-10025.pdf",
    "title": "Plant air, sheet 8",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-22",
    "pages": 1,
-   "size": 94085
+   "size": 146379,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10025_Rev1.pdf",
+     "size": 94085
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10025_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10026": {
    "file": "PIDs/2000-F24-PID-PR-10026.pdf",
@@ -1305,9 +1778,20 @@
    "file": "PIDs/2000-F24-PID-PR-10027.pdf",
    "title": "Plant air, sheet 9",
    "rev": "1",
-   "date": "",
+   "date": "2026-10-02",
    "pages": 1,
-   "size": 212874
+   "size": 201919,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10027_Rev1.pdf",
+     "size": 212874
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10027_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10028": {
    "file": "PIDs/2000-F24-PID-PR-10028.pdf",
@@ -1360,10 +1844,21 @@
   "2000-F24-PID-PR-10034": {
    "file": "PIDs/2000-F24-PID-PR-10034.pdf",
    "title": "Gland water, sheet 4",
-   "rev": "0",
-   "date": "",
+   "rev": "1",
+   "date": "2025-03-25",
    "pages": 1,
-   "size": 356971
+   "size": 301762,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10034_Rev0.pdf",
+     "size": 356971
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10034_1_SSD.pdf"
+   ]
   },
   "2000-F24-PID-PR-10035": {
    "file": "PIDs/2000-F24-PID-PR-10035.pdf",
@@ -1392,10 +1887,21 @@
   "2000-F28-PID-PR-10001": {
    "file": "PIDs/2000-F28-PID-PR-10001.pdf",
    "title": "Concentrate ultra fine grinding 2, sheet 1",
-   "rev": "2",
-   "date": "",
+   "rev": "1",
+   "date": "2026-10-02",
    "pages": 1,
-   "size": 374931
+   "size": 313126,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F28-PID-PR-10001_Rev2.pdf",
+     "size": 374931
+    }
+   ],
+   "src": [
+    "2000-F28-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F28-PID-PR-10002": {
    "file": "PIDs/2000-F28-PID-PR-10002.pdf",
@@ -1409,25 +1915,58 @@
    "file": "PIDs/2000-F28-PID-PR-10003.pdf",
    "title": "Concentrate ultra fine grinding 3, sheet 1",
    "rev": "1",
-   "date": "",
+   "date": "2026-10-02",
    "pages": 1,
-   "size": 268283
+   "size": 260364,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F28-PID-PR-10003_Rev1.pdf",
+     "size": 268283
+    }
+   ],
+   "src": [
+    "2000-F28-PID-PR-10003_MS_1.pdf"
+   ]
   },
   "2000-F28-PID-PR-10004": {
    "file": "PIDs/2000-F28-PID-PR-10004.pdf",
    "title": "Concentrate ultra fine grinding 3, sheet 2",
    "rev": "1",
-   "date": "",
+   "date": "2026-10-02",
    "pages": 1,
-   "size": 323045
+   "size": 416947,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F28-PID-PR-10004_Rev1.pdf",
+     "size": 323045
+    }
+   ],
+   "src": [
+    "2000-F28-PID-PR-10004_MS_1.pdf"
+   ]
   },
   "2000-F28-PID-PR-10005": {
    "file": "PIDs/2000-F28-PID-PR-10005.pdf",
    "title": "Concentrate ultra fine grinding product",
-   "rev": "2",
-   "date": "",
+   "rev": "1",
+   "date": "2026-10-02",
    "pages": 1,
-   "size": 241680
+   "size": 244704,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F28-PID-PR-10005_Rev2.pdf",
+     "size": 241680
+    }
+   ],
+   "src": [
+    "2000-F28-PID-PR-10005_MS_1.pdf"
+   ]
   },
   "2000-F30-PID-PR-10001": {
    "file": "PIDs/2000-F30-PID-PR-10001.pdf",
@@ -1618,10 +2157,21 @@
   "2000-F34-PID-PR-10002": {
    "file": "PIDs/2000-F34-PID-PR-10002.pdf",
    "title": "UFG mill 1 product transfer",
-   "rev": "0",
-   "date": "",
+   "rev": "1",
+   "date": "2026-10-06",
    "pages": 1,
-   "size": 50614
+   "size": 121731,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F34-PID-PR-10002_Rev0.pdf",
+     "size": 50614
+    }
+   ],
+   "src": [
+    "2000-F34-PID-PR-10002_MS_1.pdf"
+   ]
   },
   "2000-F35-PID-PR-10001": {
    "file": "PIDs/2000-F35-PID-PR-10001.pdf",
@@ -1635,10 +2185,21 @@
   "2000-F35-PID-PR-10002": {
    "file": "PIDs/2000-F35-PID-PR-10002.pdf",
    "title": "UFG mill feed pumps",
-   "rev": "1",
-   "date": "",
+   "rev": "2",
+   "date": "2025-07-10",
    "pages": 1,
-   "size": 116179
+   "size": 168738,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F35-PID-PR-10002_Rev1.pdf",
+     "size": 116179
+    }
+   ],
+   "src": [
+    "2000-F35-PID-PR-10002_2_SSD.pdf"
+   ]
   },
   "2000-F35-PID-PR-10003": {
    "file": "PIDs/2000-F35-PID-PR-10003.pdf",
@@ -1677,18 +2238,40 @@
   "2000-F35-PID-PR-25001": {
    "file": "PIDs/2000-F35-PID-PR-25001.pdf",
    "title": "Concentrate stockpile",
-   "rev": "0",
+   "rev": "1A",
    "date": "",
    "pages": 1,
-   "size": 113530
+   "size": 227652,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F35-PID-PR-25001_Rev0.pdf",
+     "size": 113530
+    }
+   ],
+   "src": [
+    "2000-F35-PID-PR-25001_1A_RLM.pdf"
+   ]
   },
   "2000-F35-PID-PR-25002": {
    "file": "PIDs/2000-F35-PID-PR-25002.pdf",
    "title": "Concentrate belt filter no. 1",
-   "rev": "0",
+   "rev": "0A",
    "date": "",
    "pages": 1,
-   "size": 108611
+   "size": 128610,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F35-PID-PR-25002_Rev0.pdf",
+     "size": 108611
+    }
+   ],
+   "src": [
+    "2000-F35-PID-PR-25002_0A_RLM.pdf"
+   ]
   },
   "2000-F65-PID-PR-10001": {
    "file": "PIDs/2000-F65-PID-PR-10001.pdf",
@@ -1761,10 +2344,21 @@
   "2000-F66-PID-PR-10003": {
    "file": "PIDs/2000-F66-PID-PR-10003.pdf",
    "title": "Gravity electrowinning",
-   "rev": "2",
-   "date": "",
+   "rev": "1",
+   "date": "2026-10-06",
    "pages": 1,
-   "size": 249176
+   "size": 270633,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F66-PID-PR-10003_Rev2.pdf",
+     "size": 249176
+    }
+   ],
+   "src": [
+    "2000-F66-PID-PR-10003_MS_1.pdf"
+   ]
   },
   "2000-F66-PID-PR-10004": {
    "file": "PIDs/2000-F66-PID-PR-10004.pdf",
@@ -1877,9 +2471,20 @@
    "file": "PIDs/2000-F72-PID-PR-10009.pdf",
    "title": "Frother",
    "rev": "1",
-   "date": "",
+   "date": "2026-09-24",
    "pages": 1,
-   "size": 274929
+   "size": 249798,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F72-PID-PR-10009_Rev1.pdf",
+     "size": 274929
+    }
+   ],
+   "src": [
+    "2000-F72-PID-PR-10009_MS_1.pdf"
+   ]
   },
   "2000-F72-PID-PR-10010": {
    "file": "PIDs/2000-F72-PID-PR-10010.pdf",
@@ -1998,10 +2603,21 @@
   "2000-F75-PID-PR-25003": {
    "file": "PIDs/2000-F75-PID-PR-25003.pdf",
    "title": "Fire water network",
-   "rev": "1",
+   "rev": "2A",
    "date": "",
    "pages": 1,
-   "size": 164829
+   "size": 222524,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F75-PID-PR-25003_Rev1.pdf",
+     "size": 164829
+    }
+   ],
+   "src": [
+    "2000-F75-PID-PR-25003_2A_RLM.pdf"
+   ]
   },
   "2000-F75-PID-PR-25004": {
    "file": "PIDs/2000-F75-PID-PR-25004.pdf",
@@ -2174,11 +2790,22 @@
   "2000-F75-PID-PR-40021": {
    "file": "PIDs/2000-F75-PID-PR-40021.pdf",
    "title": "Tails TSF recommissioning, Kearns Corner",
-   "rev": "1A",
-   "date": "2025-11-11",
+   "rev": "2",
+   "date": "2025-12-16",
    "pages": 1,
-   "size": 121592,
-   "proj_src": "TSF P&IDs"
+   "size": 329313,
+   "proj_src": "TSF P&IDs",
+   "revs": [
+    {
+     "rev": "1A",
+     "date": "2025-11-11",
+     "file": "PIDs/rev/2000-F75-PID-PR-40021_Rev1A.pdf",
+     "size": 121592
+    }
+   ],
+   "src": [
+    "2000-F75-PID-PR-40021_2.pdf"
+   ]
   },
   "2000-F75-PID-PR-40022": {
    "file": "PIDs/2000-F75-PID-PR-40022.pdf",
@@ -2325,11 +2952,22 @@
   "2000-F75-PID-PR-25009": {
    "file": "PIDs/2000-F75-PID-PR-25009.pdf",
    "title": "Saline dam 3 water distribution",
-   "rev": "5",
+   "rev": "6",
    "date": "2025-12-12",
    "pages": 1,
-   "size": 220547,
-   "proj_src": "TSF P&IDs"
+   "size": 300186,
+   "proj_src": "TSF P&IDs",
+   "revs": [
+    {
+     "rev": "5",
+     "date": "2025-12-12",
+     "file": "PIDs/rev/2000-F75-PID-PR-25009_Rev5.pdf",
+     "size": 220547
+    }
+   ],
+   "src": [
+    "2000-F75-PID-PR-25009_6.pdf"
+   ]
   },
   "2000-F00-BLK-PR-20001": {
    "file": "PIDs/2000-F00-BLK-PR-20001.pdf",
@@ -2354,1164 +2992,1196 @@
    "title": "Milling & classification - SAG mill F13-SW-002 415V MCC single line diagram sheet 1",
    "rev": "1",
    "date": "2025-09-15",
-   "status": "",
    "pages": 1,
    "size": 671364,
    "from": [
     "2000-F13-SLD-EL-10301_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10302": {
    "file": "SLDs/2000-F13-SLD-EL-10302.pdf",
    "title": "Milling & classification - SAG mill F13-SW-002 415V MCC single line diagram sheet 2",
    "rev": "1",
    "date": "2025-09-15",
-   "status": "",
    "pages": 1,
    "size": 555970,
    "from": [
     "2000-F13-SLD-EL-10302_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10303": {
    "file": "SLDs/2000-F13-SLD-EL-10303.pdf",
    "title": "Milling & classification - SAG mill F13-SW-002 415V MCC single line diagram sheet 3",
    "rev": "1",
    "date": "2025-09-15",
-   "status": "",
    "pages": 1,
    "size": 555252,
    "from": [
     "2000-F13-SLD-EL-10303_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10304": {
    "file": "SLDs/2000-F13-SLD-EL-10304.pdf",
    "title": "Milling & classification - SAG mill F13-SW-002 415V MCC single line diagram sheet 4",
    "rev": "1",
    "date": "2025-09-15",
-   "status": "",
    "pages": 1,
    "size": 521174,
    "from": [
     "2000-F13-SLD-EL-10304_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10305": {
    "file": "SLDs/2000-F13-SLD-EL-10305.pdf",
    "title": "Milling & classification - SAG mill - F13-SW-002 415V MCC - single line diagram sheet 5",
    "rev": "1",
    "date": "2025-09-15",
-   "status": "",
    "pages": 1,
    "size": 508817,
    "from": [
     "2000-F13-SLD-EL-10305_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10311": {
    "file": "SLDs/2000-F13-SLD-EL-10311.pdf",
    "title": "Milling & classification - SAG mill - F13-SW-102 415V essential switchboard - single line diagram",
    "rev": "1",
    "date": "2025-09-15",
-   "status": "",
    "pages": 1,
    "size": 583649,
    "from": [
     "2000-F13-SLD-EL-10311_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10401": {
    "file": "SLDs/2000-F13-SLD-EL-10401.pdf",
    "title": "Milling & classification - recycle crushing F13-SW-014 415V MCC single line diagram sheet 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 570070,
    "from": [
     "2000-F13-SLD-EL-10401_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10402": {
    "file": "SLDs/2000-F13-SLD-EL-10402.pdf",
    "title": "Milling & classification - recycle crushing F13-SW-014 415V MCC single line diagram sheet 2",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 455010,
    "from": [
     "2000-F13-SLD-EL-10402_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10403": {
    "file": "SLDs/2000-F13-SLD-EL-10403.pdf",
    "title": "Milling & classification - recycle crushing F13-SW-014 415V MCC single line diagram sheet 3",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 453391,
    "from": [
     "2000-F13-SLD-EL-10403_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10404": {
    "file": "SLDs/2000-F13-SLD-EL-10404.pdf",
    "title": "Milling & classification - recycle crushing F13-SW-014 415V MCC single line diagram sheet 4",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 429972,
    "from": [
     "2000-F13-SLD-EL-10404_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10411": {
    "file": "SLDs/2000-F13-SLD-EL-10411.pdf",
    "title": "Milling & classification - recycle crushing - F13-SW-114 415V essential switchboard - single line diagram",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 466298,
    "from": [
     "2000-F13-SLD-EL-10411_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10701": {
    "file": "SLDs/2000-F13-SLD-EL-10701.pdf",
    "title": "Milling & classification F13-SW-020 415V MCC single line diagram sheet 1",
    "rev": "1",
    "date": "2025-06-24",
-   "status": "",
    "pages": 1,
    "size": 535987,
    "from": [
     "2000-F13-SLD-EL-10701_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10702": {
    "file": "SLDs/2000-F13-SLD-EL-10702.pdf",
    "title": "Milling & classification F13-SW-020 415V MCC single line diagram sheet 2",
    "rev": "1",
    "date": "2025-06-24",
-   "status": "",
    "pages": 1,
    "size": 427773,
    "from": [
     "2000-F13-SLD-EL-10702_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10703": {
    "file": "SLDs/2000-F13-SLD-EL-10703.pdf",
    "title": "Milling & classification F13-SW-020 415V MCC single line diagram sheet 3",
    "rev": "1",
    "date": "2025-06-24",
-   "status": "",
    "pages": 1,
    "size": 423785,
    "from": [
     "2000-F13-SLD-EL-10703_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10704": {
    "file": "SLDs/2000-F13-SLD-EL-10704.pdf",
    "title": "Milling & classification F13-SW-020 415V MCC single line diagram sheet 4",
    "rev": "1",
    "date": "2025-06-24",
-   "status": "",
    "pages": 1,
    "size": 432110,
    "from": [
     "2000-F13-SLD-EL-10704_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10711": {
    "file": "SLDs/2000-F13-SLD-EL-10711.pdf",
    "title": "Milling & classification - F13-SW-120 415V essential switchboard - single line diagram",
    "rev": "1",
    "date": "2025-06-24",
-   "status": "",
    "pages": 1,
    "size": 446217,
    "from": [
     "2000-F13-SLD-EL-10711_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10901": {
    "file": "SLDs/2000-F13-SLD-EL-10901.pdf",
    "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 1",
    "rev": "1",
    "date": "2025-10-09",
-   "status": "",
    "pages": 1,
    "size": 672636,
    "from": [
     "2000-F13-SLD-EL-10901_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10902": {
    "file": "SLDs/2000-F13-SLD-EL-10902.pdf",
    "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 2",
    "rev": "1",
    "date": "2025-10-09",
-   "status": "",
    "pages": 1,
    "size": 549214,
    "from": [
     "2000-F13-SLD-EL-10902_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10903": {
    "file": "SLDs/2000-F13-SLD-EL-10903.pdf",
    "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 3",
    "rev": "1",
    "date": "2025-10-09",
-   "status": "",
    "pages": 1,
    "size": 559221,
    "from": [
     "2000-F13-SLD-EL-10903_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10904": {
    "file": "SLDs/2000-F13-SLD-EL-10904.pdf",
    "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 4",
    "rev": "1",
    "date": "2025-10-09",
-   "status": "",
    "pages": 1,
    "size": 553660,
    "from": [
     "2000-F13-SLD-EL-10904_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10905": {
    "file": "SLDs/2000-F13-SLD-EL-10905.pdf",
    "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 5",
    "rev": "1",
    "date": "2025-10-09",
-   "status": "",
    "pages": 1,
    "size": 553592,
    "from": [
     "2000-F13-SLD-EL-10905_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10906": {
    "file": "SLDs/2000-F13-SLD-EL-10906.pdf",
    "title": "Milling & classification - ball mill F13-SW-003 415V MCC single line diagram sheet 6",
    "rev": "1",
    "date": "2025-10-09",
-   "status": "",
    "pages": 1,
    "size": 541463,
    "from": [
     "2000-F13-SLD-EL-10906_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F13-SLD-EL-10911": {
    "file": "SLDs/2000-F13-SLD-EL-10911.pdf",
    "title": "Milling & classification - ball mill - F13-SW-103 415V essential switchboard - single line diagram",
    "rev": "1",
    "date": "2025-10-09",
-   "status": "",
    "pages": 1,
    "size": 599359,
    "from": [
     "2000-F13-SLD-EL-10911_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10001": {
    "file": "SLDs/2000-F16-SLD-EL-10001.pdf",
    "title": "Rougher & scavenger flotation F16-SW-011 11kV switchboard - single line diagram sheet 1",
    "rev": "1",
    "date": "2025-09-23",
-   "status": "",
    "pages": 1,
    "size": 621633,
    "from": [
     "2000-F16-SLD-EL-10001_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10002": {
    "file": "SLDs/2000-F16-SLD-EL-10002.pdf",
    "title": "Rougher & scavenger flotation F16-SW-011 11kV switchboard - single line diagram sheet 2",
    "rev": "2",
    "date": "2025-10-15",
-   "status": "",
    "pages": 1,
    "size": 677390,
    "from": [
     "2000-F16-SLD-EL-10002_2_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10201": {
    "file": "SLDs/2000-F16-SLD-EL-10201.pdf",
    "title": "Rougher & scavenger flotation F16-SW-004 415V MCC single line diagram sheet 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 558889,
    "from": [
     "2000-F16-SLD-EL-10201_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10202": {
    "file": "SLDs/2000-F16-SLD-EL-10202.pdf",
    "title": "Rougher & scavenger flotation F16-SW-004 415V MCC single line diagram sheet 2",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 429916,
    "from": [
     "2000-F16-SLD-EL-10202_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10203": {
    "file": "SLDs/2000-F16-SLD-EL-10203.pdf",
    "title": "Rougher & scavenger flotation F16-SW-004 415V MCC single line diagram sheet 3",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 450445,
    "from": [
     "2000-F16-SLD-EL-10203_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10204": {
    "file": "SLDs/2000-F16-SLD-EL-10204.pdf",
    "title": "Rougher & scavenger flotation F16-SW-004 415V MCC single line diagram sheet 4",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 452184,
    "from": [
     "2000-F16-SLD-EL-10204_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10205": {
    "file": "SLDs/2000-F16-SLD-EL-10205.pdf",
    "title": "Rougher & scavenger flotation F16-SW-004 415V MCC single line diagram sheet 5",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 390787,
    "from": [
     "2000-F16-SLD-EL-10205_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10211": {
    "file": "SLDs/2000-F16-SLD-EL-10211.pdf",
    "title": "Rougher & scavenger flotation F16-SW-005 415V MCC single line diagram sheet 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 562654,
    "from": [
     "2000-F16-SLD-EL-10211_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10212": {
    "file": "SLDs/2000-F16-SLD-EL-10212.pdf",
    "title": "Rougher & scavenger flotation F16-SW-005 415V MCC single line diagram sheet 2",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 440871,
    "from": [
     "2000-F16-SLD-EL-10212_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10221": {
    "file": "SLDs/2000-F16-SLD-EL-10221.pdf",
    "title": "Rougher and scavenger flotation F16-SW-008 415V emergency MCC single line diagram sheet 1",
    "rev": "3",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 579852,
    "from": [
     "2000-F16-SLD-EL-10221_3.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10222": {
    "file": "SLDs/2000-F16-SLD-EL-10222.pdf",
    "title": "Rougher and scavenger flotation - F16-SW-008 415V emergency MCC - single line diagram sheet 2",
    "rev": "3",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 402410,
    "from": [
     "2000-F16-SLD-EL-10222_3.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10251": {
    "file": "SLDs/2000-F16-SLD-EL-10251.pdf",
    "title": "Rougher & scavenger flotation - F16-SW-104 415V essential switchboard - single line diagram",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 472379,
    "from": [
     "2000-F16-SLD-EL-10251_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F175-SLD-EL-40001": {
    "file": "SLDs/2000-F175-SLD-EL-40001.pdf",
    "title": "Southlakes booster station F175-SW-701 LV motor control centre single line diagram",
    "rev": "0",
    "date": "2025-11-10",
-   "status": "",
    "pages": 1,
    "size": 432364,
    "from": [
     "2000-F175-SLD-EL-40001_0_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F19-SLD-EL-10103": {
    "file": "SLDs/2000-F19-SLD-EL-10103.pdf",
    "title": "Mt Charlotte CCT milling & classification substation no. 60 415V MCC 19-SW-61 single line diagram sheet 3",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 1658239,
    "from": [
     "2000-F19-SLD-EL-10103_0.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F20-SLD-EL-10102": {
    "file": "SLDs/2000-F20-SLD-EL-10102.pdf",
    "title": "Fimiston plant - Fimiston recycle crushing substation no. 35 415V MCC 20-SW-62 single line diagram sheet 1",
    "rev": "0",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 420985,
    "from": [
     "2000-F20-SLD-EL-10102_0_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F21-SLD-EL-10201": {
    "file": "SLDs/2000-F21-SLD-EL-10201.pdf",
    "title": "Flotation tailings CIL4 F21-SW-006 415V MCC single line diagram sheet 1",
    "rev": "1",
    "date": "2025-11-19",
-   "status": "",
    "pages": 1,
    "size": 554798,
    "from": [
     "2000-F21-SLD-EL-10201_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F21-SLD-EL-10202": {
    "file": "SLDs/2000-F21-SLD-EL-10202.pdf",
    "title": "Flotation tailings CIL4 F21-SW-006 415V MCC single line diagram sheet 2",
    "rev": "1",
    "date": "2025-11-19",
-   "status": "",
    "pages": 1,
    "size": 419769,
    "from": [
     "2000-F21-SLD-EL-10202_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F21-SLD-EL-10203": {
    "file": "SLDs/2000-F21-SLD-EL-10203.pdf",
    "title": "Flotation tailings CIL4 F21-SW-006 415V MCC single line diagram sheet 3",
    "rev": "1",
    "date": "2025-11-19",
-   "status": "",
    "pages": 1,
    "size": 384962,
    "from": [
     "2000-F21-SLD-EL-10203_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F21-SLD-EL-10204": {
    "file": "SLDs/2000-F21-SLD-EL-10204.pdf",
    "title": "Flotation tailings CIL4 F21-SW-006 415V MCC single line diagram sheet 4",
    "rev": "1",
    "date": "2025-11-19",
-   "status": "",
    "pages": 1,
    "size": 391766,
    "from": [
     "2000-F21-SLD-EL-10204_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F21-SLD-EL-10251": {
    "file": "SLDs/2000-F21-SLD-EL-10251.pdf",
    "title": "Flotation tailings CIL4 F21-SW-007 415V MCC single line diagram sheet 1",
    "rev": "1",
    "date": "2025-11-19",
-   "status": "",
    "pages": 1,
    "size": 548926,
    "from": [
     "2000-F21-SLD-EL-10251_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F21-SLD-EL-10252": {
    "file": "SLDs/2000-F21-SLD-EL-10252.pdf",
    "title": "Flotation tailings CIL4 F21-SW-007 415V MCC single line diagram sheet 2",
    "rev": "1",
    "date": "2025-11-19",
-   "status": "",
    "pages": 1,
    "size": 409809,
    "from": [
     "2000-F21-SLD-EL-10252_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F21-SLD-EL-10253": {
    "file": "SLDs/2000-F21-SLD-EL-10253.pdf",
    "title": "Flotation tailings CIL4 F21-SW-007 415V MCC single line diagram sheet 3",
    "rev": "1",
    "date": "2025-11-19",
-   "status": "",
    "pages": 1,
    "size": 363156,
    "from": [
     "2000-F21-SLD-EL-10253_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F22-SLD-EL-10201": {
    "file": "SLDs/2000-F22-SLD-EL-10201.pdf",
    "title": "CIL4 carbon treatment & elution F22-SW-030 415V MCC single line diagram sheet 1",
    "rev": "1",
    "date": "2026-01-06",
-   "status": "",
    "pages": 1,
    "size": 680030,
    "from": [
     "2000-F22-SLD-EL-10201_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F22-SLD-EL-10202": {
    "file": "SLDs/2000-F22-SLD-EL-10202.pdf",
    "title": "CIL4 carbon treatment & elution F22-SW-030 415V MCC single line diagram sheet 2",
    "rev": "1",
    "date": "2026-01-06",
-   "status": "",
    "pages": 1,
    "size": 515436,
    "from": [
     "2000-F22-SLD-EL-10202_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F22-SLD-EL-10251": {
    "file": "SLDs/2000-F22-SLD-EL-10251.pdf",
    "title": "CIL4 carbon treatment & elution F22-SW-031 415V MCC single line diagram sheet 1",
    "rev": "1",
    "date": "2026-01-06",
-   "status": "",
    "pages": 1,
    "size": 678980,
    "from": [
     "2000-F22-SLD-EL-10251_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F22-SLD-EL-10252": {
    "file": "SLDs/2000-F22-SLD-EL-10252.pdf",
    "title": "CIL4 carbon treatment & elution F22-SW-031 415V MCC single line diagram sheet 2",
    "rev": "1",
    "date": "2026-01-06",
-   "status": "",
    "pages": 1,
    "size": 507478,
    "from": [
     "2000-F22-SLD-EL-10252_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F22-SLD-EL-10261": {
    "file": "SLDs/2000-F22-SLD-EL-10261.pdf",
    "title": "CIL4 carbon treatment & elution F22-SW-131 415V emergency MCC single line diagram",
    "rev": "1",
    "date": "2026-01-06",
-   "status": "",
    "pages": 1,
    "size": 595229,
    "from": [
     "2000-F22-SLD-EL-10261_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-10001": {
    "file": "SLDs/2000-F23-SLD-EL-10001.pdf",
    "title": "Final tailings handling & storage F23-SW-016 11kV switchboard - single line diagram sheet 1",
    "rev": "1",
    "date": "2025-10-15",
-   "status": "",
    "pages": 1,
    "size": 665141,
    "from": [
     "2000-F23-SLD-EL-10001_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-10002": {
    "file": "SLDs/2000-F23-SLD-EL-10002.pdf",
    "title": "Final tailings handling & storage F23-SW-016 11kV switchboard - single line diagram sheet 2",
    "rev": "1",
    "date": "2025-10-15",
-   "status": "",
    "pages": 1,
    "size": 592482,
    "from": [
     "2000-F23-SLD-EL-10002_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-10201": {
    "file": "SLDs/2000-F23-SLD-EL-10201.pdf",
    "title": "Final tailings handling & storage F23-SW-023 415V MCC single line diagram sheet 1",
    "rev": "1",
    "date": "2025-10-15",
-   "status": "",
    "pages": 1,
    "size": 654546,
    "from": [
     "2000-F23-SLD-EL-10201_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-10202": {
    "file": "SLDs/2000-F23-SLD-EL-10202.pdf",
    "title": "Final tailings handling & storage F23-SW-023 415V MCC single line diagram sheet 2",
    "rev": "1A",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 514765,
    "from": [
     "2000-F23-SLD-EL-10202_1A.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-10211": {
    "file": "SLDs/2000-F23-SLD-EL-10211.pdf",
    "title": "Final tailings handling & storage - F23-SW-123 415V emergency MCC - single line diagram sheet 1",
    "rev": "1",
    "date": "2025-10-15",
-   "status": "",
    "pages": 1,
    "size": 610623,
    "from": [
     "2000-F23-SLD-EL-10211_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-10212": {
    "file": "SLDs/2000-F23-SLD-EL-10212.pdf",
    "title": "Final tailings handling & storage - F23-SW-123 415V emergency MCC - single line diagram sheet 2",
    "rev": "1",
    "date": "2025-10-15",
-   "status": "",
    "pages": 1,
    "size": 500535,
    "from": [
     "2000-F23-SLD-EL-10212_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-40001": {
    "file": "SLDs/2000-F23-SLD-EL-40001.pdf",
    "title": "Fim III booster station F23-SW-601 HV switchboard single line diagram",
    "rev": "3",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 425374,
    "from": [
     "2000-F23-SLD-EL-40001_3.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-40011": {
    "file": "SLDs/2000-F23-SLD-EL-40011.pdf",
    "title": "Fim III booster station F23-SW-602 LV motor control centre single line diagram sheet 1 of 2",
    "rev": "3",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 443959,
    "from": [
     "2000-F23-SLD-EL-40011_3.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-40012": {
    "file": "SLDs/2000-F23-SLD-EL-40012.pdf",
    "title": "Fim III booster station F23-SW-602 LV motor control centre single line diagram sheet 2 of 2",
    "rev": "4",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 356061,
    "from": [
     "2000-F23-SLD-EL-40012_4.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F24-SLD-EL-10501": {
    "file": "SLDs/2000-F24-SLD-EL-10501.pdf",
    "title": "Air & water services - saline water F24-SW-024 415V MCC single line diagram",
    "rev": "2",
    "date": "2025-09-30",
-   "status": "",
    "pages": 1,
    "size": 617547,
    "from": [
     "2000-F24-SLD-EL-10501_2_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F25-SLD-EL-10010": {
    "file": "SLDs/2000-F25-SLD-EL-10010.pdf",
    "title": "Concentrate thickener - 25-SW-31 sub no. 6 415V MCC 25-SW-31 single line diagram",
    "rev": "0",
    "date": "2025-11-20",
-   "status": "",
    "pages": 1,
    "size": 453270,
    "from": [
     "2000-F25-SLD-EL-10010_0_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F25-SLD-EL-10011": {
    "file": "SLDs/2000-F25-SLD-EL-10011.pdf",
    "title": "Concentrate thickener - 25-SW-31 sub no. 6 415V MCC 25-SW-31 single line diagram",
    "rev": "0",
    "date": "2025-11-20",
-   "status": "",
    "pages": 1,
    "size": 450953,
    "from": [
     "2000-F25-SLD-EL-10011_0_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F28-SLD-EL-10001": {
    "file": "SLDs/2000-F28-SLD-EL-10001.pdf",
    "title": "Ultra fine grinding 2/3 F28-SW-013 11kV switchboard - single line diagram",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 574807,
    "from": [
     "2000-F28-SLD-EL-10001_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F28-SLD-EL-10201": {
    "file": "SLDs/2000-F28-SLD-EL-10201.pdf",
    "title": "Ultra fine grinding 2 / 3 F28-SW-009 415V MCC single line diagram sheet 1",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 564546,
    "from": [
     "2000-F28-SLD-EL-10201_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F28-SLD-EL-10202": {
    "file": "SLDs/2000-F28-SLD-EL-10202.pdf",
    "title": "Ultra fine grinding 2 / 3 F28-SW-009 415V MCC single line diagram sheet 2",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 440525,
    "from": [
     "2000-F28-SLD-EL-10202_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F28-SLD-EL-10203": {
    "file": "SLDs/2000-F28-SLD-EL-10203.pdf",
    "title": "Ultra fine grinding 2 / 3 F28-SW-009 415V MCC single line diagram sheet 3",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 451426,
    "from": [
     "2000-F28-SLD-EL-10203_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F28-SLD-EL-10204": {
    "file": "SLDs/2000-F28-SLD-EL-10204.pdf",
    "title": "Ultra fine grinding 2 / 3 F28-SW-009 415V MCC single line diagram sheet 4",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 421347,
    "from": [
     "2000-F28-SLD-EL-10204_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F28-SLD-EL-10211": {
    "file": "SLDs/2000-F28-SLD-EL-10211.pdf",
    "title": "Ultra fine grinding 2 / 3 - F28-SW-109 415V essential switchboard - single line diagram",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 490713,
    "from": [
     "2000-F28-SLD-EL-10211_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F30-SLD-EL-10101": {
    "file": "SLDs/2000-F30-SLD-EL-10101.pdf",
    "title": "Fimiston plant - carbon in leach (CIL3) substation no. 68 MCC 30-SW-62 single line diagram",
    "rev": "0",
    "date": "2025-07-21",
-   "status": "",
    "pages": 1,
    "size": 422685,
    "from": [
     "2000-F30-SLD-EL-10101_0_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F30-SLD-EL-10102": {
    "file": "SLDs/2000-F30-SLD-EL-10102.pdf",
    "title": "Fimiston plant - carbon in leach (CIL3) substation no. 68 MCC 30-SW-62 single line diagram sheet 3",
    "rev": "0",
    "date": "2025-07-21",
-   "status": "",
    "pages": 1,
    "size": 430725,
    "from": [
     "2000-F30-SLD-EL-10102_0_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F30-SLD-EL-10103": {
    "file": "SLDs/2000-F30-SLD-EL-10103.pdf",
    "title": "FIMISTON PLANT - CARBON IN LEACH (CIL3) - SUBSTATION No.68 MCC 30-SW-63 - SINGLE LINE DIAGRAM",
    "rev": "0",
    "date": "2025-11-20",
-   "status": "",
    "pages": 1,
    "size": 681143,
    "from": [
     "2000-F30-SLD-EL-10103_0_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F30-SLD-EL-10105": {
    "file": "SLDs/2000-F30-SLD-EL-10105.pdf",
    "title": "FIMISTON PLANT - CARBON IN LEACH (CIL3) - SUBSTATION No.68 MCC 30-SW-64 - SINGLE LINE DIAGRAM SHEET 1",
    "rev": "0",
    "date": "2025-11-20",
-   "status": "",
    "pages": 1,
    "size": 257402,
    "from": [
     "2000-F30-SLD-EL-10105_0_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F30-SLD-EL-10201": {
    "file": "SLDs/2000-F30-SLD-EL-10201.pdf",
    "title": "Fimiston plant - leach adsorption & thickening substation no. 38 MCC 30-SW-31 single line diagram",
    "rev": "0",
    "date": "2025-11-20",
-   "status": "",
    "pages": 1,
    "size": 466087,
    "from": [
     "2000-F30-SLD-EL-10201_0_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F30-SLD-EL-10202": {
    "file": "SLDs/2000-F30-SLD-EL-10202.pdf",
    "title": "Fimiston plant - leach adsorption & thickening substation no. 38 MCC 30-SW-31 single line diagram",
    "rev": "0",
    "date": "2025-11-20",
-   "status": "",
    "pages": 1,
    "size": 320230,
    "from": [
     "2000-F30-SLD-EL-10202_0_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F30-SLD-EL-10301": {
    "file": "SLDs/2000-F30-SLD-EL-10301.pdf",
    "title": "Fimiston plant - carbon in leach (CIL3) substation no. 68 MCC F30-SW-401 single line diagram sheet 1",
    "rev": "1",
    "date": "2025-12-05",
-   "status": "",
    "pages": 1,
    "size": 601517,
    "from": [
     "2000-F30-SLD-EL-10301_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F30-SLD-EL-10302": {
    "file": "SLDs/2000-F30-SLD-EL-10302.pdf",
    "title": "Fimiston plant - carbon in leach (CIL3) substation no. 68 MCC F30-SW-401 single line diagram sheet 2",
    "rev": "1",
    "date": "2025-12-05",
-   "status": "",
    "pages": 1,
    "size": 494741,
    "from": [
     "2000-F30-SLD-EL-10302_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F34-SLD-EL-10102": {
    "file": "SLDs/2000-F34-SLD-EL-10102.pdf",
    "title": "Fimiston plant - ultra fine grinding - substation no 10 415V MCC 34-SW-02 - single line diagram",
    "rev": "2",
    "date": "2026-08-07",
-   "status": "",
    "pages": 1,
    "size": 749780,
    "from": [
     "2000-F34-SLD-EL-10102_2_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F35-SLD-EL-10101": {
    "file": "SLDs/2000-F35-SLD-EL-10101.pdf",
    "title": "Fimiston plant - Fimiston recycle crushing substation no. 35 415V MCC 20-SW-62 single line diagram sheet 2",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
-   "size": 789096,
+   "size": 818563,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "SLDs/rev/2000-F35-SLD-EL-10101_Rev2.pdf",
+     "size": 789096
+    }
+   ],
    "from": [
-    "2000-F35-SLD-EL-10101_2.pdf"
-   ]
+    "2000-F35-SLD-EL-10101_2_APP.pdf"
+   ],
+   "status": ""
   },
   "2000-F66-SLD-EL-10101": {
    "file": "SLDs/2000-F66-SLD-EL-10101.pdf",
    "title": "Fimiston plant - milling CCT 2 filtration/goldroom substation no. 35 MCC F66-SW-402 single line diagram",
    "rev": "1",
    "date": "2025-11-21",
-   "status": "",
    "pages": 1,
    "size": 547550,
    "from": [
     "2000-F66-SLD-EL-10101_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F72-SLD-EL-10201": {
    "file": "SLDs/2000-F72-SLD-EL-10201.pdf",
    "title": "Reagents mixing & storage - F72-SW-072 415V MCC - single line diagram sheet 1",
    "rev": "2",
    "date": "2025-12-10",
-   "status": "",
    "pages": 1,
    "size": 683622,
    "from": [
     "2000-F72-SLD-EL-10201_2_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F72-SLD-EL-10202": {
    "file": "SLDs/2000-F72-SLD-EL-10202.pdf",
    "title": "Reagents mixing & storage - F72-SW-072 415V MCC - single line diagram sheet 2",
    "rev": "1",
    "date": "2025-12-10",
-   "status": "",
    "pages": 1,
    "size": 616208,
    "from": [
     "2000-F72-SLD-EL-10202_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F72-SLD-EL-10203": {
    "file": "SLDs/2000-F72-SLD-EL-10203.pdf",
    "title": "Reagents mixing & storage - F72-SW-072 415V MCC - single line diagram sheet 3",
    "rev": "1",
    "date": "2025-12-10",
-   "status": "",
    "pages": 1,
    "size": 620208,
    "from": [
     "2000-F72-SLD-EL-10203_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F72-SLD-EL-10204": {
    "file": "SLDs/2000-F72-SLD-EL-10204.pdf",
    "title": "Reagents mixing & storage - F72-SW-072 415V MCC - single line diagram sheet 4",
    "rev": "1",
    "date": "2025-12-10",
-   "status": "",
    "pages": 1,
    "size": 588744,
    "from": [
     "2000-F72-SLD-EL-10204_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F72-SLD-EL-10211": {
    "file": "SLDs/2000-F72-SLD-EL-10211.pdf",
    "title": "Reagents mixing & storage - F72-SW-172 415V emergency MCC - single line diagram",
    "rev": "1",
    "date": "2025-12-10",
-   "status": "",
    "pages": 1,
    "size": 575217,
    "from": [
     "2000-F72-SLD-EL-10211_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-T03-SLD-EL-41001": {
    "file": "SLDs/2000-T03-SLD-EL-41001.pdf",
    "title": "Sitewide power & communications - high voltage distribution - FIM III TSF - single line diagram",
    "rev": "1",
    "date": "2025-08-04",
-   "status": "",
    "pages": 1,
    "size": 455966,
    "from": [
     "2000-T03-SLD-EL-41001_1_AAN.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F00-SLD-EL-10001": {
    "file": "SLDs/2000-F00-SLD-EL-10001.pdf",
    "title": "General Fimiston site overall sitewide 33kV distribution - single line diagram sheet 1",
    "rev": "2",
    "date": "2025-06-24",
-   "status": "",
    "pages": 1,
    "size": 1254328,
    "from": [
     "2000-F00-SLD-EL-10001_2_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F00-SLD-EL-10005": {
    "file": "SLDs/2000-F00-SLD-EL-10005.pdf",
    "title": "General Fimiston site F00-SW-010 33kV switchboard - single line diagram sheet 4",
    "rev": "3",
-   "date": "",
-   "status": "",
+   "date": "2025-06-24",
    "pages": 1,
-   "size": 1276844,
+   "size": 784632,
+   "revs": [
+    {
+     "rev": "3",
+     "date": "",
+     "file": "SLDs/rev/2000-F00-SLD-EL-10005_Rev3.pdf",
+     "size": 1276844
+    }
+   ],
    "from": [
-    "2000-F00-SLD-EL-10005_3.pdf"
-   ]
+    "2000-F00-SLD-EL-10005_3_APP.pdf"
+   ],
+   "status": ""
   },
   "2000-F00-SLD-EL-10006": {
    "file": "SLDs/2000-F00-SLD-EL-10006.pdf",
    "title": "General Fimiston site F00-SW-010 33kV switchboard - single line diagram sheet 5",
    "rev": "3",
    "date": "2025-06-24",
-   "status": "",
    "pages": 1,
    "size": 1317523,
    "from": [
     "2000-F00-SLD-EL-10006_3_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F00-SLD-EL-10011": {
    "file": "SLDs/2000-F00-SLD-EL-10011.pdf",
    "title": "General Fimiston site overall sitewide 33kV distribution - single line diagram sheet 2",
-   "rev": "2",
-   "date": "2025-06-24",
-   "status": "",
+   "rev": "3",
+   "date": "",
    "pages": 1,
-   "size": 1228236,
+   "size": 553896,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "2025-06-24",
+     "file": "SLDs/rev/2000-F00-SLD-EL-10011_Rev2.pdf",
+     "size": 1228236
+    }
+   ],
    "from": [
-    "2000-F00-SLD-EL-10011_2_APP.pdf"
-   ]
+    "2000-F00-SLD-EL-10011_3.pdf"
+   ],
+   "status": ""
   },
   "2000-F00-SLD-EL-10012": {
    "file": "SLDs/2000-F00-SLD-EL-10012.pdf",
    "title": "General Fimiston site - overall sitewide 33kV distribution - single line diagram sheet 3",
    "rev": "3",
    "date": "2025-07-08",
-   "status": "",
    "pages": 1,
    "size": 941604,
    "from": [
     "2000-F00-SLD-EL-10012_3_AAN.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10051": {
    "file": "SLDs/2000-F16-SLD-EL-10051.pdf",
    "title": "Rougher & scavenger flotation F16-SW-011 11kV switchboard key interlocking single line diagram",
    "rev": "1",
    "date": "2025-09-23",
-   "status": "",
    "pages": 1,
    "size": 556556,
    "from": [
     "2000-F16-SLD-EL-10051_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-10051": {
    "file": "SLDs/2000-F23-SLD-EL-10051.pdf",
    "title": "Final tailings handling & storage F23-SW-016 11kV switchboard key interlocking single line diagram",
    "rev": "1",
    "date": "2025-10-15",
-   "status": "",
    "pages": 1,
    "size": 554388,
    "from": [
     "2000-F23-SLD-EL-10051_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F23-SLD-EL-40002": {
    "file": "SLDs/2000-F23-SLD-EL-40002.pdf",
    "title": "FIM III booster station F23-SW-601 HV switchboard key interlocking single line diagram",
    "rev": "2",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 334368,
    "from": [
     "2000-F23-SLD-EL-40002_2.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F00-SLD-EL-10002": {
    "file": "SLDs/2000-F00-SLD-EL-10002.pdf",
    "title": "General Fimiston site F00-SW-010 33kV switchboard - single line diagram sheet 1",
    "rev": "5",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 689626,
    "from": [
     "2000-F00-SLD-EL-10002_5.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F00-SLD-EL-10004": {
    "file": "SLDs/2000-F00-SLD-EL-10004.pdf",
    "title": "General Fimiston site F00-SW-010 33kV switchboard - single line diagram sheet 3",
    "rev": "5",
    "date": "",
-   "status": "",
    "pages": 1,
    "size": 705608,
    "from": [
     "2000-F00-SLD-EL-10004_5.pdf"
-   ]
+   ],
+   "status": ""
   },
   "2000-F00-SLD-EL-10051": {
    "file": "SLDs/2000-F00-SLD-EL-10051.pdf",
    "title": "General Fimiston site F00-SW-010 33kV switchboard electrical interlocking single line diagram sheet 1",
-   "rev": "1",
-   "date": "2026-10-02",
-   "status": "",
+   "rev": "2",
+   "date": "",
    "pages": 1,
-   "size": 844053,
+   "size": 549665,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "2026-10-02",
+     "file": "SLDs/rev/2000-F00-SLD-EL-10051_Rev1.pdf",
+     "size": 844053
+    }
+   ],
    "from": [
-    "2000-F00-SLD-EL-10051_1_RLM3.pdf"
-   ]
+    "2000-F00-SLD-EL-10051_2.pdf"
+   ],
+   "status": ""
   },
   "2000-F16-SLD-EL-10003": {
    "file": "SLDs/2000-F16-SLD-EL-10003.pdf",
    "title": "Rougher & scavenger flotation F16-SW-011 11kV switchboard - single line diagram sheet 3",
    "rev": "1",
    "date": "2025-09-23",
-   "status": "",
    "pages": 1,
    "size": 738781,
    "from": [
     "2000-F16-SLD-EL-10003_1_APP.pdf"
-   ]
+   ],
+   "status": ""
   }
  }
 }

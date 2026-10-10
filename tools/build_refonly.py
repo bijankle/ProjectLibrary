@@ -88,12 +88,12 @@ for n, h in hd.items():
     a = str(appRev.get(n, '')).strip()
     # newer: the app's own source file is on SharePoint with an older date than the latest file; else (a list, or a
     # renamed file) the latest revision is higher than the app's
-    src = [f.lower() for f in (P.get(n, {}).get('from') or [])]
+    src = [f.lower() for f in (P.get(n, {}).get('from') or P.get(n, {}).get('src') or [])]
     if a and not any(f in doclist.FILES for f in src):   # (no source file name kept: the files of the app's revision)
         pre = (n + '_' + a).lower(); src = [f for f in doclist.FILES if f.startswith(pre + '.') or f.startswith(pre + '_')]
     sm = [doclist.FILES[f] for f in src if f in doclist.FILES]
     newer = (d['file'].lower() not in src and d['mod'] > max(sm)) if sm else bool(a) and revkey(d['rev']) > revkey(a)
-    if newer: old.append({'n': n, 'g': h['g'], 't': appT.get(n, '') or h.get('rt', ''), 'app': a, 'rev': d['rev'], 'st': d['st'], 'url': d['url'], 'file': d['file'], 'mod': d['mod'][:10], 'have': (P.get(n, {}).get('from') or [''])[0]})
+    if newer: old.append({'n': n, 'g': h['g'], 't': appT.get(n, '') or h.get('rt', ''), 'app': a, 'rev': d['rev'], 'st': d['st'], 'url': d['url'], 'file': d['file'], 'mod': d['mod'][:10], 'have': (P.get(n, {}).get('from') or P.get(n, {}).get('src') or [''])[0]})
 old.sort(key=lambda o: o['n'])
 print('Old revs', len(old), 'SharePoint links from the file list:', sum(1 for o in out if DL.get(nkk(o['n']))), 'of', len(out))
 json.dump({'ref': out, 'held': hd, 'old': old}, open(R + '/refonly.json', 'w'), separators=(',', ':'))
