@@ -1,4 +1,4 @@
-"""Single line diagrams and communications block diagrams (the SLD and BLK-IC PDFs in inbox/electrical) into the app as drawings, beside the P&IDs and PFDs.
+"""Single line, three line and communications block diagrams (the SLD, TLD and BLK-IC PDFs in inbox/electrical) into the app as drawings, beside the P&IDs and PFDs.
 
   python3 tools/build_slds.py      then tools/build_pics.py, tools/build_pid_refs.py and tools/build_offline.py
 
@@ -12,7 +12,7 @@ import pymupdf
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # the raw inputs (the register, inbox/) live in the private repository, cloned beside this one (or KCGM_PRIVATE)
 RP = os.environ.get("KCGM_PRIVATE") or os.path.join(os.path.dirname(R), "projectlibraryprivate")
-src = sorted(f for f in glob.glob(os.path.join(RP, "inbox", "electrical", "*-SLD-*.pdf")) + glob.glob(os.path.join(RP, "inbox", "electrical", "*-BLK-IC-*.pdf")) if "-N02-" not in f)   # (and the communications block diagrams, same drafting)
+src = sorted(f for f in glob.glob(os.path.join(RP, "inbox", "electrical", "*-SLD-*.pdf")) + glob.glob(os.path.join(RP, "inbox", "electrical", "*-BLK-IC-*.pdf")) + glob.glob(os.path.join(RP, "inbox", "electrical", "*-TLD-EL-*.pdf")) if "-N02-" not in f)   # (and the communications block diagrams, same drafting)
 # build_pids.py's title block and redaction helpers (its main loop isn't run)
 code = open(os.path.join(R, "tools", "build_pids.py")).read()
 argv0 = sys.argv; sys.argv = [argv0[0], src[0]]; g = {"__file__": os.path.join(R, "tools", "build_pids.py")}
@@ -64,7 +64,7 @@ ix_path = os.path.join(R, "PIDs", "index.json"); ix = json.load(open(ix_path))
 for k in [k for k in ix["pids"] if "-SLD-" in k]: del ix["pids"][k]
 marks = 0
 for f in src:
-    m = re.match(r"(2000-[A-Z0-9]+-(?:SLD-EL|BLK-IC)-\d+)_([A-Z0-9]+)", os.path.basename(f)); num, rev = m.group(1), m.group(2)
+    m = re.match(r"(2000-[A-Z0-9]+-(?:SLD-EL|TLD-EL|BLK-IC)-\d+)_([A-Z0-9]+)", os.path.basename(f)); num, rev = m.group(1), m.group(2)
     d = pymupdf.open(f); d.bake()
     for p in d: p.remove_rotation()
     tb = title_of(d[0]); title, date = nice(REG.get(num) or (tb if tb != "Single line diagram" else "Single line diagram")), rdate(d)

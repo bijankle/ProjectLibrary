@@ -15,10 +15,10 @@ for t in ("mel", "elec", "cable"):
     for r in db["data"].get(t, []): KEYS.setdefault(nk(r[0]), (r[0], t))
 DW = {nk(k): k for k in ix}
 refs = json.load(open(os.path.join(R, "pid-refs.json")))
-for k in [k for k in refs if "-SLD-" in k or "-BLK-IC-" in k]: del refs[k]
+for k in [k for k in refs if "-SLD-" in k or "-TLD-" in k or "-BLK-IC-" in k]: del refs[k]
 n = 0
 for num, v in ix.items():
-    if "-SLD-" not in num and "-BLK-IC-" not in num: continue
+    if "-SLD-" not in num and "-TLD-" not in num and "-BLK-IC-" not in num: continue
     out = []
     for pi, p in enumerate(pymupdf.open(os.path.join(R, v["file"]))):
         W, H = p.rect.width, p.rect.height

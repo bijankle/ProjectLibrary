@@ -391,10 +391,10 @@
     if (pids.length) return pids;
     const pr = window.Pid && Pid.printedOn ? Pid.printedOn(it.key) : []; if (pr.length) return pr;   // (the P&IDs its label is printed on)
     // electrical items: the SLDs named in their row, else the SLDs their tag (or a cable's ends) is printed on
-    const SRE = /2000-[A-Z0-9]{3,6}-SLD-EL-\d{4,5}/g, sl = [...new Set((it.r || []).join(" ").match(SRE) || [])].filter(has);
+    const SRE = /2000-[A-Z0-9]{3,6}-[ST]LD-EL-\d{4,5}/g, sl = [...new Set((it.r || []).join(" ").match(SRE) || [])].filter(has);
     if (sl.length) return sl;
     if (/^(elec|cable|mel)$/.test(it.t) && window.Pid && Pid.printedOn){ const ks = it.t === "cable" ? [L.get(it, "To"), L.get(it, "From")] : [it.key];
-      for (const k of ks){ const p = k ? Pid.printedOn(k, /-SLD-/) : []; if (p.length) return p.slice(0, 3); } }
+      for (const k of ks){ const p = k ? Pid.printedOn(k, /-[ST]LD-/) : []; if (p.length) return p.slice(0, 3); } }
     if (it.t !== "mel") return [];
     const seen = (DT && DT[it.key]) || [];
     return [...new Set([...(String(L.get(it, "PFD")).match(DRE) || []), ...seen.map(x => x[0])])].filter(n => /-PFD-/.test(n) && has(n)); };

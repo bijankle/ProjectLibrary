@@ -4325,6 +4325,482 @@
    "from": [
     "2000-F16-BLK-IC-10001_2_APP.pdf"
    ]
+  },
+  "2000-F00-PFD-PR-10011": {
+   "file": "PFDs/2000-F00-PFD-PR-10011.pdf",
+   "title": "Flotation regrind",
+   "rev": "E",
+   "date": "2024-10-29",
+   "pages": 1,
+   "size": 94954,
+   "src": [
+    "2000-F00-PFD-PR-10011_E_APP.pdf"
+   ],
+   "ocr": 1
+  },
+  "2000-F00-PFD-PR-40001": {
+   "file": "PFDs/2000-F00-PFD-PR-40001.pdf",
+   "title": "Tailings storage facilities, sheet 1",
+   "rev": "0",
+   "date": "2025-02-20",
+   "pages": 1,
+   "size": 137786,
+   "src": [
+    "2000-F00-PFD-PR-40001_0_Primero Comments.pdf"
+   ]
+  },
+  "2000-F00-PFD-PR-40002": {
+   "file": "PFDs/2000-F00-PFD-PR-40002.pdf",
+   "title": "Tailings storage facilities, sheet 2",
+   "rev": "0",
+   "date": "2024-12-05",
+   "pages": 1,
+   "size": 57202,
+   "src": [
+    "2000-F00-PFD-PR-40002_0.pdf"
+   ]
+  },
+  "2000-F00-PFD-PR-40004": {
+   "file": "PFDs/2000-F00-PFD-PR-40004.pdf",
+   "title": "Event pond",
+   "rev": "0",
+   "date": "2024-12-05",
+   "pages": 1,
+   "size": 23178,
+   "src": [
+    "2000-F00-PFD-PR-40004_0.pdf"
+   ]
+  },
+  "2000-F00-PFD-PR-40005": {
+   "file": "PFDs/2000-F00-PFD-PR-40005.pdf",
+   "title": "Saline dam 3",
+   "rev": "0",
+   "date": "2025-02-20",
+   "pages": 1,
+   "size": 37636,
+   "src": [
+    "2000-F00-PFD-PR-40005_0_Primero Comments.pdf"
+   ]
+  },
+  "2000-F00-SLD-EL-10003": {
+   "file": "SLDs/2000-F00-SLD-EL-10003.pdf",
+   "title": "General Fimiston site F00-SW-010 33kV switchboard - single line diagram sheet 2",
+   "rev": "3",
+   "date": "2025-06-24",
+   "status": "",
+   "pages": 1,
+   "size": 897975,
+   "from": [
+    "2000-F00-SLD-EL-10003_3_APP.pdf"
+   ]
+  },
+  "2000-F12-SLD-EL-10001": {
+   "file": "SLDs/2000-F12-SLD-EL-10001.pdf",
+   "title": "Primary crushing F12-SW-012 11kV switchboard - single line diagram",
+   "rev": "1",
+   "date": "2025-09-04",
+   "status": "",
+   "pages": 1,
+   "size": 640313,
+   "from": [
+    "2000-F12-SLD-EL-10001_1_APP.pdf"
+   ]
+  },
+  "2000-F12-SLD-EL-10201": {
+   "file": "SLDs/2000-F12-SLD-EL-10201.pdf",
+   "title": "Primary crushing F12-SW-001 415V MCC single line diagram sheet 1",
+   "rev": "2",
+   "date": "2026-08-27",
+   "status": "",
+   "pages": 1,
+   "size": 578203,
+   "from": [
+    "2000-F12-SLD-EL-10201_2.pdf"
+   ]
+  },
+  "2000-F12-SLD-EL-10211": {
+   "file": "SLDs/2000-F12-SLD-EL-10211.pdf",
+   "title": "Primary crushing - F12-SW-101 415V essential switchboard - single line diagram",
+   "rev": "1",
+   "date": "2025-09-04",
+   "status": "",
+   "pages": 1,
+   "size": 882668,
+   "from": [
+    "2000-F12-SLD-EL-10211_1_APP.pdf"
+   ]
+  },
+  "2000-F28-SLD-EL-10051": {
+   "file": "SLDs/2000-F28-SLD-EL-10051.pdf",
+   "title": "Ultra fine grinding 2/3 F28-SW-013 11kV switchboard key interlocking single line diagram",
+   "rev": "2",
+   "date": "2026-10-05",
+   "status": "",
+   "pages": 1,
+   "size": 396009,
+   "from": [
+    "2000-F28-SLD-EL-10051_2.pdf"
+   ]
+  },
+  "2000-F13-TLD-EL-10012": {
+   "file": "SLDs/2000-F13-TLD-EL-10012.pdf",
+   "title": "Milling & classification - F13-SR-001 - F13-DB-201 LV switchroom 240V UPS DB - three line diagram",
+   "rev": "1",
+   "date": "2025-09-04",
+   "status": "",
+   "pages": 1,
+   "size": 556972,
+   "from": [
+    "2000-F13-TLD-EL-10012_1.pdf"
+   ]
+  },
+  "2000-F13-TLD-EL-10022": {
+   "file": "SLDs/2000-F13-TLD-EL-10022.pdf",
+   "title": "Milling & classification - F13-SR-002 - F13-DB-202 LV switchroom 240V UPS DB - three line diagram",
+   "rev": "1",
+   "date": "2025-10-01",
+   "status": "",
+   "pages": 1,
+   "size": 550328,
+   "from": [
+    "2000-F13-TLD-EL-10022_1.pdf"
+   ]
+  },
+  "2000-F13-TLD-EL-10032": {
+   "file": "SLDs/2000-F13-TLD-EL-10032.pdf",
+   "title": "Milling & classification - F13-SR-003 - F13-DB-203 HV VDS switchroom 240V UPS DB - three line diagram",
+   "rev": "1",
+   "date": "2025-09-30",
+   "status": "",
+   "pages": 1,
+   "size": 556736,
+   "from": [
+    "2000-F13-TLD-EL-10032_1.pdf"
+   ]
+  },
+  "2000-F13-TLD-EL-10042": {
+   "file": "SLDs/2000-F13-TLD-EL-10042.pdf",
+   "title": "Milling & classification - F13-SR-004 - F13-DB-204 LV switchroom 240V UPS DB - three line diagram",
+   "rev": "2",
+   "date": "2026-09-08",
+   "status": "",
+   "pages": 1,
+   "size": 512279,
+   "from": [
+    "2000-F13-TLD-EL-10042_2.pdf"
+   ]
+  },
+  "2000-F16-TLD-EL-10051": {
+   "file": "SLDs/2000-F16-TLD-EL-10051.pdf",
+   "title": "Rougher & scavenger flotation - F16-SR-001 F16-BC-001 HV switchroom 48VDC battery charger three line diagram",
+   "rev": "1",
+   "date": "2025-09-19",
+   "status": "",
+   "pages": 1,
+   "size": 466202,
+   "from": [
+    "2000-F16-TLD-EL-10051_1.pdf"
+   ]
+  },
+  "2000-F16-TLD-EL-10056": {
+   "file": "SLDs/2000-F16-TLD-EL-10056.pdf",
+   "title": "Rougher & scavenger flotation - F16-SR-002 - F16-DB-202 LV switchroom 415V UPS DB - three line diagram",
+   "rev": "2",
+   "date": "2026-09-11",
+   "status": "",
+   "pages": 1,
+   "size": 533193,
+   "from": [
+    "2000-F16-TLD-EL-10056_2.pdf"
+   ]
+  },
+  "2000-F16-TLD-EL-10057": {
+   "file": "SLDs/2000-F16-TLD-EL-10057.pdf",
+   "title": "Rougher & scavenger flotation - F16-SR-001 - F16-DB-201 HV switchroom 415V UPS DB - three line diagram",
+   "rev": "1",
+   "date": "2025-09-19",
+   "status": "",
+   "pages": 1,
+   "size": 521983,
+   "from": [
+    "2000-F16-TLD-EL-10057_1.pdf"
+   ]
+  },
+  "2000-F175-TLD-EL-40001": {
+   "file": "SLDs/2000-F175-TLD-EL-40001.pdf",
+   "title": "Southlakes booster station F175-DB-701 LV switchroom and area L&SP DB three-line diagram",
+   "rev": "0",
+   "date": "2025-05-28",
+   "status": "",
+   "pages": 1,
+   "size": 773012,
+   "from": [
+    "2000-F175-TLD-EL-40001_0.pdf"
+   ]
+  },
+  "2000-F175-TLD-EL-40002": {
+   "file": "SLDs/2000-F175-TLD-EL-40002.pdf",
+   "title": "Southlakes booster station F175-DB-702 LV switchroom 240VAC UPS DB three-line diagram",
+   "rev": "0",
+   "date": "2025-05-28",
+   "status": "",
+   "pages": 1,
+   "size": 674100,
+   "from": [
+    "2000-F175-TLD-EL-40002_0.pdf"
+   ]
+  },
+  "2000-F19-TLD-EL-10002": {
+   "file": "SLDs/2000-F19-TLD-EL-10002.pdf",
+   "title": "240V instrument disctribution board no. 62 power schematic",
+   "rev": "1",
+   "date": "2023-11-21",
+   "status": "",
+   "pages": 1,
+   "size": 419014,
+   "from": [
+    "2000-F19-TLD-EL-10002_1.pdf"
+   ]
+  },
+  "2000-F19-TLD-EL-10005": {
+   "file": "SLDs/2000-F19-TLD-EL-10005.pdf",
+   "title": "Mt Charlotte bub no. 60 MCC 19-SW-61 d.b 60 emergency power - power schematic",
+   "rev": "0",
+   "date": "2023-09-19",
+   "status": "",
+   "pages": 1,
+   "size": 500714,
+   "from": [
+    "2000-F19-TLD-EL-10005_0.pdf"
+   ]
+  },
+  "2000-F22-TLD-EL-10051": {
+   "file": "SLDs/2000-F22-TLD-EL-10051.pdf",
+   "title": "Carbon treatment & elution - F22-SR-001 F22-DB-001 LV switchroom 415V L&SP DB three line diagram",
+   "rev": "1",
+   "date": "2026-01-06",
+   "status": "",
+   "pages": 1,
+   "size": 716723,
+   "from": [
+    "2000-F22-TLD-EL-10051_1_APP.pdf"
+   ]
+  },
+  "2000-F22-TLD-EL-10052": {
+   "file": "SLDs/2000-F22-TLD-EL-10052.pdf",
+   "title": "CIL4 - carbon treatment & elution - F22-SR-001 - F22-DB-201 LV switchroom 240V UPS DB - three line diagram",
+   "rev": "1",
+   "date": "2026-01-06",
+   "status": "",
+   "pages": 1,
+   "size": 618616,
+   "from": [
+    "2000-F22-TLD-EL-10052_1_APP.pdf"
+   ]
+  },
+  "2000-F22-TLD-EL-10201": {
+   "file": "SLDs/2000-F22-TLD-EL-10201.pdf",
+   "title": "Carbon treatment & elution CIL4 - F22-DB-301 carbon trt. & elution area 415V L&SP DB - three line diagram",
+   "rev": "0",
+   "date": "2025-03-04",
+   "status": "",
+   "pages": 1,
+   "size": 811064,
+   "from": [
+    "2000-F22-TLD-EL-10201_0_RNC.pdf"
+   ]
+  },
+  "2000-F23-TLD-EL-10052": {
+   "file": "SLDs/2000-F23-TLD-EL-10052.pdf",
+   "title": "Final tailings handling & storage - F23-SR-001 F23-BC-001 HV switchroom 48VDC battery charger three line diagram",
+   "rev": "1",
+   "date": "2025-10-15",
+   "status": "",
+   "pages": 1,
+   "size": 502023,
+   "from": [
+    "2000-F23-TLD-EL-10052_1_RNC.pdf"
+   ]
+  },
+  "2000-F23-TLD-EL-10101": {
+   "file": "SLDs/2000-F23-TLD-EL-10101.pdf",
+   "title": "Final tailings handling & storage - F23-SR-002 - F23-DB-201 switchroom 240V UPS DB - three line diagram",
+   "rev": "1",
+   "date": "2025-10-15",
+   "status": "",
+   "pages": 1,
+   "size": 603766,
+   "from": [
+    "2000-F23-TLD-EL-10101_1_RNC.pdf"
+   ]
+  },
+  "2000-F23-TLD-EL-40001": {
+   "file": "SLDs/2000-F23-TLD-EL-40001.pdf",
+   "title": "FIM III booster station F23-BC-601 HV/LV switchroom 48VDC battery charger three-line diagram",
+   "rev": "2",
+   "date": "2026-04-07",
+   "status": "",
+   "pages": 1,
+   "size": 331256,
+   "from": [
+    "2000-F23-TLD-EL-40001_2.pdf"
+   ]
+  },
+  "2000-F23-TLD-EL-40011": {
+   "file": "SLDs/2000-F23-TLD-EL-40011.pdf",
+   "title": "FIM III booster station F23-DB-601 HV/LV switchroom and area L&SP DB three-line diagram",
+   "rev": "2",
+   "date": "2026-04-14",
+   "status": "",
+   "pages": 1,
+   "size": 727826,
+   "from": [
+    "2000-F23-TLD-EL-40011_2.pdf"
+   ]
+  },
+  "2000-F23-TLD-EL-40012": {
+   "file": "SLDs/2000-F23-TLD-EL-40012.pdf",
+   "title": "FIM III booster station F23-DB-602 HV/LV switchroom HVAC DB three-line diagram",
+   "rev": "2",
+   "date": "2026-04-07",
+   "status": "",
+   "pages": 1,
+   "size": 691213,
+   "from": [
+    "2000-F23-TLD-EL-40012_2.pdf"
+   ]
+  },
+  "2000-F23-TLD-EL-40013": {
+   "file": "SLDs/2000-F23-TLD-EL-40013.pdf",
+   "title": "FIM III booster station F23-DB-603 HV/LV switchroom 240VAC UPS DB three-line diagram",
+   "rev": "1",
+   "date": "2026-04-07",
+   "status": "",
+   "pages": 1,
+   "size": 523381,
+   "from": [
+    "2000-F23-TLD-EL-40013_1.pdf"
+   ]
+  },
+  "2000-F24-TLD-EL-10501": {
+   "file": "SLDs/2000-F24-TLD-EL-10501.pdf",
+   "title": "Air & water services - F24-SW-024 - F24-DB-001 outdoor MCC 415V L&SP DB - three line diagram",
+   "rev": "1",
+   "date": "2025-09-30",
+   "status": "",
+   "pages": 1,
+   "size": 599693,
+   "from": [
+    "2000-F24-TLD-EL-10501_1_RNC.pdf"
+   ]
+  },
+  "2000-F24-TLD-EL-10502": {
+   "file": "SLDs/2000-F24-TLD-EL-10502.pdf",
+   "title": "Air & water services - F24-SW-024 - F24-DB-201 outdoor MCC 240VAC UPS DB - three line diagram",
+   "rev": "1",
+   "date": "2025-09-30",
+   "status": "",
+   "pages": 1,
+   "size": 527515,
+   "from": [
+    "2000-F24-TLD-EL-10502_1_RNC.pdf"
+   ]
+  },
+  "2000-F28-TLD-EL-10051": {
+   "file": "SLDs/2000-F28-TLD-EL-10051.pdf",
+   "title": "Ultra fine grinding 2 & 3 - F28-SR-001 F28-BC-001 HV switchroom 48VDC battery charger three line diagram",
+   "rev": "1",
+   "date": "2025-10-03",
+   "status": "",
+   "pages": 1,
+   "size": 456992,
+   "from": [
+    "2000-F28-TLD-EL-10051_1.pdf"
+   ]
+  },
+  "2000-F28-TLD-EL-10054": {
+   "file": "SLDs/2000-F28-TLD-EL-10054.pdf",
+   "title": "Ultra fine grinding 2 / 3 - F28-SR-002 - F28-DB-201 switchroom 240V UPS DB - three line diagram",
+   "rev": "1",
+   "date": "2025-10-03",
+   "status": "",
+   "pages": 1,
+   "size": 550125,
+   "from": [
+    "2000-F28-TLD-EL-10054_1.pdf"
+   ]
+  },
+  "2000-F30-TLD-EL-10001": {
+   "file": "SLDs/2000-F30-TLD-EL-10001.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) 240V instrument distribution board no. 62 power schematic",
+   "rev": "0",
+   "date": "2025-04-11",
+   "status": "",
+   "pages": 1,
+   "size": 618797,
+   "from": [
+    "2000-F30-TLD-EL-10001_0.pdf"
+   ]
+  },
+  "2000-F30-TLD-EL-10003": {
+   "file": "SLDs/2000-F30-TLD-EL-10003.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) 415V small power normal d.b. no. 68a power schematic",
+   "rev": "0",
+   "date": "2025-06-13",
+   "status": "",
+   "pages": 1,
+   "size": 279719,
+   "from": [
+    "2000-F30-TLD-EL-10003_0.pdf"
+   ]
+  },
+  "2000-F72-TLD-EL-10102": {
+   "file": "SLDs/2000-F72-TLD-EL-10102.pdf",
+   "title": "Reagents mixing & storage - F72-DB-302 south reagents mixing area 415V L&SP DB - three line diagram",
+   "rev": "0",
+   "date": "2025-03-04",
+   "status": "",
+   "pages": 1,
+   "size": 799706,
+   "from": [
+    "2000-F72-TLD-EL-10102_0_RNC.pdf"
+   ]
+  },
+  "2000-F72-TLD-EL-10103": {
+   "file": "SLDs/2000-F72-TLD-EL-10103.pdf",
+   "title": "Reagents mixing & storage - F72-DB-303 hyd. peroxide mixing area 415V L&SP DB - three line diagram",
+   "rev": "1",
+   "date": "2026-07-24",
+   "status": "",
+   "pages": 1,
+   "size": 567503,
+   "from": [
+    "2000-F72-TLD-EL-10103_1.pdf"
+   ]
+  },
+  "2000-F72-TLD-EL-10104": {
+   "file": "SLDs/2000-F72-TLD-EL-10104.pdf",
+   "title": "Reagents mixing & storage - F72-SR-001 F72-DB-001 switchroom 415V L&SP DB three line diagram",
+   "rev": "1",
+   "date": "2025-12-10",
+   "status": "",
+   "pages": 1,
+   "size": 702108,
+   "from": [
+    "2000-F72-TLD-EL-10104_1_RNC.pdf"
+   ]
+  },
+  "2000-F72-TLD-EL-10105": {
+   "file": "SLDs/2000-F72-TLD-EL-10105.pdf",
+   "title": "Reagents mixing & storage - F72-SR-001 F72-DB-201 switchroom 240V UPS DB three line diagram",
+   "rev": "1",
+   "date": "2025-12-10",
+   "status": "",
+   "pages": 1,
+   "size": 592225,
+   "from": [
+    "2000-F72-TLD-EL-10105_1_RNC.pdf"
+   ]
   }
  }
 }

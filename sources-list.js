@@ -53,7 +53,7 @@ window.SourcesList = (() => {
     // a drawing that is also a source document (the PDC, the plant layout) joins that document's row
     const JOIN = { "2000-F00-DCR-PR-10002": "pdc", "2000-F00-DRG-GE-20001": "layout" };
     Object.entries(P.pids || {}).forEach(([k, d]) => { if (JOIN[k]) return;
-      const t = /-PID-/.test(k) ? "pid" : /-SLD-/.test(k) ? "sld" : /-PFD-/.test(k) ? "pfd" : /-BLK-/.test(k) ? "bfd" : "dwg", area = k.split("-")[1];
+      const t = /-PID-/.test(k) ? "pid" : /-[ST]LD-/.test(k) ? "sld" : /-PFD-/.test(k) ? "pfd" : /-BLK-/.test(k) ? "bfd" : "dwg", area = k.split("-")[1];
       out.push({ k, t, number: k, title: d.title || "", rev: d.rev || "", date: d.date || "", area, pdf: d.file, size: d.size, keep: [d.file].concat(Object.keys(off.sz || {}).filter(f => f.startsWith(d.file + ".p"))), tsf: !!d.proj_src, ik: k, revs: d.revs || [] }); });   // (with its sheet pictures)
     const KIND = { List: "list", Report: "report", Specification: "spec", Drawing: "dwg", Reference: "other" };
     Object.entries(meta).forEach(([k, v]) => {

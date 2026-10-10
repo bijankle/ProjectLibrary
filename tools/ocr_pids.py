@@ -5,7 +5,9 @@ plain sparse text mode (psm 11; orientation detection can take a whole sheet for
 Every word is written back onto the page as invisible text (vertical words rotated to match), except one the page
 already carries in the same place (the other reading, or an earlier run). Nothing visible changes.
 
-Usage: python3 tools/ocr_pids.py [PIDs/2000-F24-PID-PR-10004.pdf …]   (default: every PID; run after tools/build_pids.py)
+Usage: python3 tools/ocr_pids.py [--thick] [PIDs/2000-F24-PID-PR-10004.pdf …]   (default: every PID; run after tools/build_pids.py)
+--thick: for sheets whose text is drawn in hairlines too faint to read: every grey pixel goes black and strokes are
+thickened before reading (it also reruns a sheet already read the normal way).
 Needs the tesseract command. Uses all CPU cores; about 20 s per sheet per core.
 """
 import glob, json, os, re, subprocess, sys, tempfile
@@ -14,11 +16,16 @@ import pymupdf
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DPI = 500
 MARK = "ocr500"
+THICK = "--thick" in sys.argv
+if THICK: MARK = "ocr500thick"
 
 def words(page):
     tsv = ""
     with tempfile.TemporaryDirectory() as d:
         f = os.path.join(d, "p.png"); page.get_pixmap(dpi=DPI, colorspace=pymupdf.csGRAY).save(f)
+        if THICK:
+            from PIL import Image, ImageFilter
+            Image.open(f).point(lambda v: 0 if v < 235 else 255).filter(ImageFilter.MinFilter(3)).save(f)
         for psm in ("12", "11"):
             try: tsv += subprocess.run(["tesseract", f, "-", "--psm", psm, "tsv"], capture_output=True, text=True, timeout=300,
                                        env=dict(os.environ, OMP_THREAD_LIMIT="1")).stdout   # one thread each: the pool uses the cores
@@ -35,7 +42,7 @@ def words(page):
 
 def one(path):
     doc = pymupdf.open(path)
-    if MARK in (doc.metadata.get("keywords") or ""): return path, 0
+    if MARK in (doc.metadata.get("keywords") or "").split(): return path, 0
     font = pymupdf.Font("helv"); n = 0
     for page in doc:
         have = [(pymupdf.Rect(w[:4]), w[4]) for w in page.get_text("words")]
@@ -58,7 +65,7 @@ def one(path):
     return path, n
 
 if __name__ == "__main__":
-    files = sys.argv[1:] or sorted(glob.glob(os.path.join(ROOT, "PIDs", "*.pdf")))
+    files = [a for a in sys.argv[1:] if a != "--thick"] or sorted(glob.glob(os.path.join(ROOT, "PIDs", "*.pdf")))
     with Pool(os.cpu_count() or 2) as pool:
         for i, (p, n) in enumerate(pool.imap_unordered(one, files), 1):
             print(f"{i}/{len(files)} {os.path.basename(p)} {n} words", flush=True)

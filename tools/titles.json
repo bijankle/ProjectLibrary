@@ -1,4 +1,6 @@
 {
+ "2000-F00-BLK-PR-20001": "Overall block flowsheet, Stage 1",
+ "2000-F00-BLK-PR-20002": "Overall block flowsheet, Stage 2",
  "2000-F00-DCR-PR-10002": "Process design criteria, Stage 2",
  "2000-F00-DRG-GE-10100": "New plant general arrangement",
  "2000-F00-DRG-GE-20001": "Old plant overall layout",
@@ -12,6 +14,7 @@
  "2000-F00-PFD-PR-10008": "Trash screening",
  "2000-F00-PFD-PR-10009": "Rougher and scavenger flotation",
  "2000-F00-PFD-PR-10010": "Cleaner and cleaner scavenger flotation",
+ "2000-F00-PFD-PR-10011": "Flotation regrind",
  "2000-F00-PFD-PR-10012": "Onstream sulphur analyser",
  "2000-F00-PFD-PR-10013": "Concentrate storage and filtration, sheet 1",
  "2000-F00-PFD-PR-10014": "Concentrate storage and filtration, sheet 2",
@@ -50,6 +53,10 @@
  "2000-F00-PFD-PR-10048": "Water services, sheet 3 of 3",
  "2000-F00-PFD-PR-10049": "Air services, sheet 1 of 2",
  "2000-F00-PFD-PR-10050": "Air services, sheet 2 of 2",
+ "2000-F00-PFD-PR-40001": "Tailings storage facilities, sheet 1",
+ "2000-F00-PFD-PR-40002": "Tailings storage facilities, sheet 2",
+ "2000-F00-PFD-PR-40004": "Event pond",
+ "2000-F00-PFD-PR-40005": "Saline dam 3",
  "2000-F00-PID-PR-10001": "General legend, sheet 1",
  "2000-F00-PID-PR-10002": "General legend, sheet 2",
  "2000-F00-PID-PR-10003": "General legend, sheet 3",
@@ -135,6 +142,7 @@
  "2000-F24-PID-PR-10018": "Raw water, sheet 2",
  "2000-F24-PID-PR-10019": "Process water, sheet 3",
  "2000-F24-PID-PR-10020": "Raw water, sheet 3",
+ "2000-F24-PID-PR-10021": "Potable water, sheet 2",
  "2000-F24-PID-PR-10022": "Fire water, sheet 3",
  "2000-F24-PID-PR-10023": "Fire water, sheet 4",
  "2000-F24-PID-PR-10025": "Plant air, sheet 8",
@@ -234,6 +242,7 @@
  "2000-F75-PID-PR-25006": "Scheme water backflow prevention and metering valve station",
  "2000-F75-PID-PR-25007": "Tailings and water services, sheet 1 of 3",
  "2000-F75-PID-PR-25008": "Tailings and water services, sheet 2 of 3",
+ "2000-F75-PID-PR-25009": "Saline dam 3 water distribution",
  "2000-F75-PID-PR-25010": "Tailings and water services, sheet 3 of 3",
  "2000-F75-PID-PR-40001": "FIM II cell G decant",
  "2000-F75-PID-PR-40002": "FIM III decant, sheet 1 of 2",
@@ -261,9 +270,5 @@
  "2000-F75-PID-PR-40031": "Decant dam 3 pump upgrade, sheet 1",
  "2000-F75-PID-PR-40032": "Decant dam 3 pump upgrade, sheet 2",
  "2000-F81-PID-PR-10001": "Plant services LPG system",
- "2000-F81-PID-PR-10002": "Air services",
- "2000-F75-PID-PR-25009": "Saline dam 3 water distribution",
- "2000-F00-BLK-PR-20001": "Overall block flowsheet, Stage 1",
- "2000-F00-BLK-PR-20002": "Overall block flowsheet, Stage 2",
- "2000-F24-PID-PR-10021": "Potable water, sheet 2"
+ "2000-F81-PID-PR-10002": "Air services"
 }
