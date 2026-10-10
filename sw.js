@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION when questions change so phones pick up the new bank.
-const VERSION = "kcgm-v280";
+const VERSION = "kcgm-v281";
 // Documents (spec PDF, drawings, source tables) live in their own cache that app updates keep. The spec and drawings
 // are saved there the first time they're opened; Settings > Offline downloads (offline.js) can fetch any of them.
 const DOCS = "kcgm-docs-5",   // never rename: renaming deletes every download. A rebuilt document is refetched by its
