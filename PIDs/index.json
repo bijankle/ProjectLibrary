@@ -4313,6 +4313,18 @@
    "src": [
     "2000-F24-PID-PR-10021_MS_1.pdf"
    ]
+  },
+  "2000-F16-BLK-IC-10001": {
+   "file": "SLDs/2000-F16-BLK-IC-10001.pdf",
+   "title": "Rougher & scavenger flotation - F16-SR-001 11kV switchroom - communications block diagram",
+   "rev": "2",
+   "date": "2025-09-22",
+   "status": "",
+   "pages": 1,
+   "size": 574867,
+   "from": [
+    "2000-F16-BLK-IC-10001_2_APP.pdf"
+   ]
   }
  }
 }

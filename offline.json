@@ -518,6 +518,8 @@
   "SLDs/2000-F13-BLK-IC-10001.pdf.p1.png": "c46cb12abb",
   "SLDs/2000-F13-BLK-IC-10401.pdf": "d0db8b56b3",
   "SLDs/2000-F13-BLK-IC-10401.pdf.p1.png": "44d8d553db",
+  "SLDs/2000-F16-BLK-IC-10001.pdf": "cd4a4d314f",
+  "SLDs/2000-F16-BLK-IC-10001.pdf.p1.png": "7f3c40c096",
   "SLDs/2000-F175-BLK-IC-40001.pdf": "ee63bde47c",
   "SLDs/2000-F175-BLK-IC-40001.pdf.p1.png": "a16b79c505",
   "SLDs/2000-F22-BLK-IC-10001.pdf": "f30d97e436",
@@ -1477,6 +1479,8 @@
   "SLDs/2000-F13-BLK-IC-10001.pdf.p1.png": 86241,
   "SLDs/2000-F13-BLK-IC-10401.pdf": 703899,
   "SLDs/2000-F13-BLK-IC-10401.pdf.p1.png": 94793,
+  "SLDs/2000-F16-BLK-IC-10001.pdf": 574867,
+  "SLDs/2000-F16-BLK-IC-10001.pdf.p1.png": 67877,
   "SLDs/2000-F175-BLK-IC-40001.pdf": 531559,
   "SLDs/2000-F175-BLK-IC-40001.pdf.p1.png": 62259,
   "SLDs/2000-F22-BLK-IC-10001.pdf": 667786,
@@ -2453,7 +2457,7 @@
   {
    "id": "bfds",
    "name": "Block flowsheets",
-   "note": "12 drawings",
+   "note": "13 drawings",
    "files": [
     "PIDs/2000-F00-BLK-PR-20001.pdf",
     "PIDs/2000-F00-BLK-PR-20001.pdf.p1.png",
@@ -2465,6 +2469,8 @@
     "SLDs/2000-F13-BLK-IC-10001.pdf.p1.png",
     "SLDs/2000-F13-BLK-IC-10401.pdf",
     "SLDs/2000-F13-BLK-IC-10401.pdf.p1.png",
+    "SLDs/2000-F16-BLK-IC-10001.pdf",
+    "SLDs/2000-F16-BLK-IC-10001.pdf.p1.png",
     "SLDs/2000-F175-BLK-IC-40001.pdf",
     "SLDs/2000-F175-BLK-IC-40001.pdf.p1.png",
     "SLDs/2000-F22-BLK-IC-10001.pdf",
@@ -2480,7 +2486,7 @@
     "SLDs/2000-F72-BLK-IC-10001.pdf",
     "SLDs/2000-F72-BLK-IC-10001.pdf.p1.png"
    ],
-   "size": 7958089
+   "size": 8600833
   },
   {
    "id": "slds",
@@ -3325,5 +3331,5 @@
    "size": 105701
   }
  ],
- "total": 203702783
+ "total": 204345527
 }
