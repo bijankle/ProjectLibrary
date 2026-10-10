@@ -3464,6 +3464,54 @@
    "from": [
     "2000-F23-SLD-EL-40002_2.pdf"
    ]
+  },
+  "2000-F00-SLD-EL-10002": {
+   "file": "SLDs/2000-F00-SLD-EL-10002.pdf",
+   "title": "General Fimiston site F00-SW-010 33kV switchboard - single line diagram sheet 1",
+   "rev": "5",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 689626,
+   "from": [
+    "2000-F00-SLD-EL-10002_5.pdf"
+   ]
+  },
+  "2000-F00-SLD-EL-10004": {
+   "file": "SLDs/2000-F00-SLD-EL-10004.pdf",
+   "title": "General Fimiston site F00-SW-010 33kV switchboard - single line diagram sheet 3",
+   "rev": "5",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 705608,
+   "from": [
+    "2000-F00-SLD-EL-10004_5.pdf"
+   ]
+  },
+  "2000-F00-SLD-EL-10051": {
+   "file": "SLDs/2000-F00-SLD-EL-10051.pdf",
+   "title": "General Fimiston site F00-SW-010 33kV switchboard electrical interlocking single line diagram sheet 1",
+   "rev": "1",
+   "date": "2026-10-02",
+   "status": "",
+   "pages": 1,
+   "size": 844053,
+   "from": [
+    "2000-F00-SLD-EL-10051_1_RLM3.pdf"
+   ]
+  },
+  "2000-F16-SLD-EL-10003": {
+   "file": "SLDs/2000-F16-SLD-EL-10003.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-011 11kV switchboard - single line diagram sheet 3",
+   "rev": "1",
+   "date": "2025-09-23",
+   "status": "",
+   "pages": 1,
+   "size": 738781,
+   "from": [
+    "2000-F16-SLD-EL-10003_1_APP.pdf"
+   ]
   }
  }
 }
