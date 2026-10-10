@@ -94,7 +94,7 @@ window.SourcesList = (() => {
       : `<aside class="sl-side"><input type="search" class="sl-q" placeholder="Search sources" aria-label="Search sources" autocomplete="off">
            <div class="sl-sa"><div class="sl-h">Everything</div><div class="sl-ev"></div><div class="sl-h">Sections</div><div class="sl-secs"></div></div><div class="sl-sr" hidden></div></aside>
          <div class="sl-dv" role="separator" aria-orientation="vertical" title="Drag to resize, double click to reset"><i><b></b><b></b><b></b></i></div>
-         <div class="sl-main"><div class="sl-tbar"><span class="sl-tabs" role="tablist"><button type="button" class="on" data-tab="att">Attached</button><button type="button" data-tab="ref">Ref Only</button></span><span class="sl-sp"></span><button type="button" class="sl-tbb sl-roc" hidden title="Download every document, in the app and Ref Only, as one Excel table" aria-label="Download Excel">${ICO.xdl}</button><button type="button" class="sl-tbb sl-roc sl-rou" hidden title="Drop in PDFs for the app (ones the PDFs button fetched, or ones downloaded by hand): they go to the private repository for Claude to digest" aria-label="Upload PDFs for the app">${ICO.up.replace('width="14" height="14"', "")}<b>Upload</b></button><button type="button" class="sl-tbb sl-roc sl-rod" hidden title="Download every document shown from SharePoint, one by one, then drop them back in for the app" aria-label="Download all from SharePoint">${ICO.xdl.replace(/<b>.*<\/b>/, "")}<b>PDFs</b></button><button type="button" class="sl-tbb sl-upb" data-up="">${ICO.up}Upload</button><input type="file" class="sl-file" accept="application/pdf,.pdf" multiple hidden></div>
+         <div class="sl-main"><div class="sl-tbar"><span class="sl-tabs" role="tablist"><button type="button" class="on" data-tab="att">Attached</button><button type="button" data-tab="ref">Ref Only</button><button type="button" data-tab="old">Old Revs</button></span><span class="sl-sp"></span><button type="button" class="sl-tbb sl-roc" hidden title="Download every document, in the app and Ref Only, as one Excel table" aria-label="Download Excel">${ICO.xdl}</button><button type="button" class="sl-tbb sl-roc sl-rou" hidden title="Drop in PDFs for the app (ones the PDFs button fetched, or ones downloaded by hand): they go to the private repository for Claude to digest" aria-label="Upload PDFs for the app">${ICO.up.replace('width="14" height="14"', "")}<b>Upload</b></button><button type="button" class="sl-tbb sl-roc sl-rod" hidden title="Download every document shown from SharePoint, one by one, then drop them back in for the app" aria-label="Download all from SharePoint">${ICO.xdl.replace(/<b>.*<\/b>/, "")}<b>PDFs</b></button><button type="button" class="sl-tbb sl-upb" data-up="">${ICO.up}Upload</button><input type="file" class="sl-file" accept="application/pdf,.pdf" multiple hidden></div>
            <div class="sl-tree"><div class="sl-gh"><span><button type="button" class="sl-xa" data-x="1" title="Expand all" aria-label="Expand all"></button>Name</span><span>Title</span><span>Rev</span><span>Size</span><span>Cached</span><span></span></div><div class="sl-rows"></div></div><div class="sl-ro" hidden><div class="sl-rop"></div><div class="sl-rot"></div></div></div>`;
     const $ = s => el.querySelector(s);
     const input = o.input || $(".sl-q");
@@ -138,7 +138,7 @@ window.SourcesList = (() => {
     let list = [];
     let redraw = false;   // (a redraw asked for while a download runs waits for it: it would wipe the running row)
     function draw(){ if (busyRow){ redraw = true; return; } redraw = false;
-      if (!DOCS) return; if (!phone){ if (tab === "ref") roDraw(); return drawDt(); } pills(); list = shown();
+      if (!DOCS) return; if (!phone){ if (tab !== "att") roDraw(); return drawDt(); } pills(); list = shown();
       const need = list.filter(d => stOf(d) !== "ok" && stOf(d) !== "none");
       $(".sl-bar").innerHTML = `<span class="sl-n">Results <b>${list.length}</b></span>` +
         (list.length ? need.length ? `<button type="button" class="sl-all">Cache all ${need.length}</button>` : `<span class="sl-allok">${ICO.devOk} All cached</span>` : "") + `<i class="sl-pg"><i></i></i>`;
@@ -284,19 +284,22 @@ window.SourcesList = (() => {
     }
     // ---------- Ref Only (desktop): documents the drawings and lists mention that aren't in the library (refonly.json,
     // tools/build_refonly.py), grouped by family; titles from the project document register, else as printed ----------
-    let tab = "att", RO = null, HELD = {}, roG = "";
+    let tab = "att", tab0 = "att", RO = null, HELD = {}, OLD = [], roG = "";
     const ROG = [["", "All"], ["project", "Project 2000"], ["vendor", "Vendor"], ["legacy", "Legacy KCGM"], ["other", "Other"]];
     // the left side bar serves both tabs: on Ref Only it shows All, the families and the document types (one picked
     // at a time: roG "" | "project" … | "t:SCM"), each with its count; the search box above filters both
     const roType = o => { const m = /^\d{4}-[A-Z]\d+-([A-Z]{3})-/.exec(o.n); return m ? m[1] : ""; };
     async function setTab(v){ tab = v; el.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
-      $(".sl-tree").hidden = v === "ref"; $(".sl-ro").hidden = v !== "ref"; $(".sl-sa").hidden = v === "ref"; $(".sl-sr").hidden = v !== "ref"; el.querySelectorAll(".sl-roc").forEach(x => x.hidden = v !== "ref");
-      el.querySelectorAll(".sl-tbar .sl-upb").forEach(b => b.hidden = v === "ref");
-      if (v === "ref" && !RO){ $(".sl-rot").innerHTML = `<div class="sl-none">Loading…</div>`; const j = await fetch("refonly.json").then(r => r.ok ? r.json() : {}).catch(() => ({})); RO = j.ref || []; HELD = j.held || {}; }
-      if (v === "ref") roDraw(); }
-    const roList = () => RO.filter(o => (!roG || (roG.startsWith("t:") ? roType(o) === roG.slice(2) : o.g === roG)) && (!q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in).join(" ")).toLowerCase().includes(q)));
-    function roDraw(){ if (!RO) return; const L = roList(), lk = !ghKey();
-      const qOk = o => !q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in).join(" ")).toLowerCase().includes(q);
+      const R2 = v !== "att";   // (Ref Only and Old Revs share the table, the side bar filters and the buttons; Old Revs has no Excel)
+      $(".sl-tree").hidden = R2; $(".sl-ro").hidden = !R2; $(".sl-sa").hidden = R2; $(".sl-sr").hidden = !R2; el.querySelectorAll(".sl-roc").forEach(x => x.hidden = !R2 || (v === "old" && !x.matches(".sl-rou,.sl-rod")));
+      el.querySelectorAll(".sl-tbar .sl-upb").forEach(b => b.hidden = R2);
+      if (roG && v !== tab0) roG = ""; tab0 = v;
+      if (R2 && !RO){ $(".sl-rot").innerHTML = `<div class="sl-none">Loading…</div>`; const j = await fetch("refonly.json").then(r => r.ok ? r.json() : {}).catch(() => ({})); RO = j.ref || []; HELD = j.held || {}; OLD = j.old || []; }
+      if (R2) roDraw(); }
+    const roAll = () => tab === "old" ? OLD : RO;
+    const roList = () => roAll().filter(o => (!roG || (roG.startsWith("t:") ? roType(o) === roG.slice(2) : o.g === roG)) && (!q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in || {}).join(" ") + " " + (o.file || "")).toLowerCase().includes(q)));
+    function roDraw(){ if (!RO) return; if (tab === "old") return oldDraw(); const L = roList(), lk = !ghKey();
+      const qOk = o => !q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in || {}).join(" ") + " " + (o.file || "")).toLowerCase().includes(q);
       const sec = (id, name, all) => { const n = all.filter(qOk).length; return `<div class="sl-sec${roG === id ? " on" : ""}${q && !n ? " sl-z" : ""}" data-ro="${esc(id)}" role="button" tabindex="0"><div class="sl-st"><b>${esc(name)}</b><small>${q ? `${n} of ${all.length} match` : `${all.length.toLocaleString()} document${all.length === 1 ? "" : "s"}`}</small></div></div>`; };
       const tc = {}; RO.forEach(o => { const t = roType(o); if (t) (tc[t] = tc[t] || []).push(o); });
       $(".sl-sr").innerHTML = `<div class="sl-h">Everything</div>${sec("", "All Ref Only", RO)}<div class="sl-h">Families</div>` +
@@ -309,6 +312,19 @@ window.SourcesList = (() => {
           `<td class="sl-ra"><button type="button" class="sl-ib sl-upb" data-up="n:${esc(o.n)}" title="Upload ${esc(o.n)}">${ICO.up}</button></td></tr>`).join("") + `</tbody></table>` +
         (L.length ? "" : `<div class="sl-none">Nothing matches.</div>`);
       el.querySelectorAll(".sl-rot .sl-upb").forEach(b => setLock(b, lk)); const tb = $(".sl-rtb"); if (tb && window.TSort) TSort.keep(tb, "refonly"); }
+    // ---------- Old Revs (desktop): documents in the app with a newer file on SharePoint (refonly.json "old", from the
+    // library's file list, tools/doclist.py). The doc number opens the newer file; PDFs downloads the ones shown, Upload
+    // takes them back in (the private repository's inbox, for Claude to put in the app in place of the old one) ----------
+    function oldDraw(){
+      const qOk = o => !q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + o.file).toLowerCase().includes(q), L = roList();
+      const sec = (id, name, all) => { const n = all.filter(qOk).length; return `<div class="sl-sec${roG === id ? " on" : ""}${q && !n ? " sl-z" : ""}" data-ro="${esc(id)}" role="button" tabindex="0"><div class="sl-st"><b>${esc(name)}</b><small>${q ? `${n} of ${all.length} match` : `${all.length.toLocaleString()} document${all.length === 1 ? "" : "s"}`}</small></div></div>`; };
+      const tc = {}; OLD.forEach(o => { const t = roType(o); if (t) (tc[t] = tc[t] || []).push(o); });
+      $(".sl-sr").innerHTML = `<div class="sl-h">Everything</div>${sec("", "All Old Revs", OLD)}<div class="sl-h">Types</div>` +
+        Object.entries(tc).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).map(([t, a]) => sec("t:" + t, `${DT[t] || t} (${t})`, a)).join("");
+      $(".sl-rot").innerHTML = `<table class="sl-rtb"><thead><tr><th>Doc number</th><th>Title</th><th>Rev in app</th><th>Latest on SharePoint</th><th>Modified</th></tr></thead><tbody>` +
+        L.map(o => `<tr><td class="sl-rk"><a class="sl-spn sp-a" href="${esc(o.url)}" target="_blank" rel="noopener" title="Open the latest file in SharePoint">${esc(o.n)}</a></td><td>${esc(o.t || "")}</td><td>${esc(o.app)}</td><td>${esc(o.file)}</td><td style="white-space:nowrap">${esc(o.mod || "")}</td></tr>`).join("") + `</tbody></table>` +
+        (L.length ? "" : `<div class="sl-none">${OLD.length ? "Nothing matches." : "Every document in the app is the latest on SharePoint."}</div>`);
+      const tb = $(".sl-rtb"); if (tb && window.TSort) TSort.keep(tb, "oldrevs"); }
     // the Excel download: the rows as shown (pill, search and sort), one tidy table with columns to sort and filter by,
     // the doc number a link to its SharePoint copy; a second sheet counts them by family and type
     const DT = { DRG: "Drawing", SCM: "Schematic", SLD: "Single line diagram", TER: "Termination diagram", TLD: "Three line diagram", STD: "Standard drawing", LST: "List", PID: "P&ID", STS: "Specification", DSH: "Datasheet", REP: "Report", BLK: "Block diagram", TQY: "Technical query", PFD: "PFD", SKT: "Sketch", SOW: "Scope of work", PHL: "Philosophy", DCR: "Design criteria", CAL: "Calculation", GAD: "General arrangement", LAY: "Layout" };

@@ -22,6 +22,11 @@ for row in openpyxl.load_workbook(rf, read_only=True, data_only=True).worksheets
     k = nk(num)
     if len(k) < 7: continue
     if k not in REG or rk(rev, url) > rk(REG[k][2], REG[k][1]): REG[k] = (str(num).strip(), str(url), rev)
+# the latest revision on SharePoint (tools/doclist.py, the library's file list) replaces the register's link, and
+# numbers missing from the register get one too
+import sys; sys.path.insert(0, os.path.join(R, "tools")); from doclist import latest
+for k, d in latest().items():
+    if len(k) >= 7: REG[k] = (REG[k][0] if k in REG else d["n"], d["url"], d["rev"])
 ix = json.load(open(os.path.join(R, "PIDs", "index.json")))["pids"]
 iss = json.load(open(os.path.join(R, "issues.json")))
 held = {nk(k) for k in ix} | {nk(v.get("number", "")) for v in iss["meta"]["docs"].values()} | {nk("2000-F00-STS-PP-10001")}
