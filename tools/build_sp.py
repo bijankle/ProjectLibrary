@@ -57,4 +57,9 @@ for num, v in ix.items():
 json.dump(refs, open(os.path.join(R, "pid-refs.json"), "w"), separators=(",", ":"))
 sp = {REG[k][0]: REG[k][1] for k in sorted(found)}
 json.dump(sp, open(os.path.join(R, "sp.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+# the documents the app holds: their SharePoint address too, kept apart (sp-held.json) so text links to them still
+# open in the app; the Sources list puts it on the document number
+hsp = {REG[k][0]: REG[k][1] for k in sorted(held) if k in REG}
+json.dump(hsp, open(os.path.join(R, "sp-held.json"), "w"), ensure_ascii=False, separators=(",", ":"))
+print(len(hsp), "of", len(held), "held documents have a SharePoint link;", "none for", sorted(k for k in held if k and k not in REG)[:15])
 print(len(sp), "SharePoint links,", added, "printed references on drawings,", round(os.path.getsize(os.path.join(R, "sp.json")) / 1e3), "kB")

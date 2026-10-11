@@ -325,6 +325,15 @@
           show.map(L.line1).join("") +
           (a.length > show.length ? `<div class="lk-ns">and ${a.length - show.length} more; search the tag to see them all.</div>` : "") }); });
     }
+    // an electrical drawing: the tags read on the sheet that no list has (a switchboard the equipment lists leave out),
+    // each with the other drawings that name it
+    const ot = it.t === "pid" && SLDT && SLDT._other && SLDT._other[it.key];
+    if (ot && ot.length){
+      if (!OTBY){ OTBY = new Map(); Object.entries(SLDT._other).forEach(([d, ks]) => ks.forEach(k => OTBY.set(k, [...(OTBY.get(k) || []), d]))); }
+      secs.push({ id: "r-other", label: "Other tags", n: ot.length, html: `<div class="lk-ns">Other tags read on this sheet. No list has them, so there is no record to open.</div>` +
+        ot.map(t => { const a = (OTBY.get(t) || []).filter(d => d !== it.key && window.Pid && Pid.has(d)), SHOW = 6;
+          return `<div class="lk-row lk-ot"><b>${esc(t)}</b>${a.length ? `<div class="lk-iomt">Also on ${a.slice(0, SHOW).map(d => `<a class="lk-a" data-dwg="${esc(d)}" data-find="${esc(t)}" href="#">${esc(Pid.label(d))}</a>`).join(", ")}${a.length > SHOW ? ` and ${a.length - SHOW} more` : ""}</div>` : ""}</div>`; }).join("") });
+    }
     // a P&ID: the drawings it joins (P&IDs pill first) and the lines that cross, each split From / To one row below
     const pl = it.t === "pid" && /-PID-/.test(it.key) && L.pidLinks(it.key);
     if (pl){
@@ -368,13 +377,13 @@
   // title; those that name the tag (or the valve code, make or model) first. A row under the drawings, SharePoint links.
   let IOM = null, SLDT = null;   // (SLDT: the tags read on each SLD / TLD / block diagram, sld-tags.json)
   // the schematics a tag is read on (sld-tags.json inverted), a row under the drawings: number and title, opens the sheet
-  let SCMBY = null;
+  let SCMBY = null, OTBY = null;
   function scmRow(it, rows){
     if (!SLDT) return;
     if (!SCMBY){ SCMBY = new Map(); Object.entries(SLDT).forEach(([d, ks]) => { if (/-SCM-/.test(d)) ks.forEach(k => { const n = norm(k); SCMBY.set(n, [...(SCMBY.get(n) || []), d]); }); }); }
     const a = (SCMBY.get(it.k) || []).filter(d => window.Pid && Pid.has(d)); if (!a.length) return;
     const i = rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l)); let j = i; if (i >= 0) while (j + 1 < rows.length && /^(P&IDs?|PFD)$/.test(rows[j + 1].l)) j++;
-    rows.splice(j + 1, 0, { l: a.length > 1 ? "Schematics" : "Schematic", v: a.join(", "), h: a.map(d => dwgA(d) + (dwgTitle(d) ? `<span class="lk-iomt"> ${esc(dwgTitle(d))}</span>` : "")).join("<br>") });
+    rows.splice(j + 1, 0, { l: a.length > 1 ? "Schematics" : "Schematic", v: a.join(", "), h: a.map(d => dwgA(d)).join("<br>") });   // (the number only: the drawing's title is on its own page)
   }
   function iomRow(it, rows){
     if (!IOM || !/^(mel|ins|cv)$/.test(it.t)) return;
@@ -391,7 +400,6 @@
     rows.splice(j + 1, 0, { l: a.length > 1 ? "IOMs" : "IOM", v: a.join(", "), h });
   }
   const dwgA = (n, pg) => window.Pid && Pid.has(n) ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="${pg || 1}" href="#">${esc(Pid.label(n))}</a>` : esc(n);
-  const dwgTitle = n => { const d = window.Pid && Pid.info(n); return d && d.title ? L.pidTitle(d.title) : ""; };
   function docRows(it, rows){
     const seen = (DT && DT[it.key]) || [];
     const at = () => { const i = rows.findIndex(r => /^P&IDs?$/.test(r.l)); return i < 0 ? rows.length : i; };
@@ -399,11 +407,11 @@
       const own = String(L.get(it, "PFD")).match(/2000-[A-Z0-9]{3,6}-PFD-[A-Z]{2}-\d{4,5}/g) || [];
       const pfds = [...new Set([...own, ...seen.filter(x => /-PFD-/.test(x[0])).map(x => x[0])])];
       for (let i = rows.length - 1; i >= 0; i--) if (/^PFD$/.test(rows[i].l)) rows.splice(i, 1);
-      if (pfds.length) rows.splice(at(), 0, { l: "PFD", v: pfds.join(", "), h: pfds.map(n => dwgA(n) + (dwgTitle(n) ? ` (${esc(dwgTitle(n))})` : "")).join("<br>") });
+      if (pfds.length) rows.splice(at(), 0, { l: "PFD", v: pfds.join(", "), h: pfds.map(n => dwgA(n)).join("<br>") });
     }
     const docs = seen.filter(x => !/-P[FI]D-/.test(x[0]));
     if (docs.length){ const i = at(); rows.splice(i < rows.length ? i + 1 : i, 0, { l: docs.every(x => /-DCR-/.test(x[0])) ? "PDC" : "Documents", v: docs.map(x => x[0]).join(", "),
-      h: docs.map(x => dwgA(x[0], x[1]) + ` (${esc(dwgTitle(x[0]).toLowerCase().replace(/^./, c => c.toUpperCase()))}, page ${x[1]})`).join("<br>") }); }
+      h: docs.map(x => dwgA(x[0], x[1]) + ` (page ${x[1]})`).join("<br>") }); }
   }
   // a PFD sheet's WBS area: the area code most of its equipment starts with (read on the sheet, doc-tags.json, or the
   // equipment list's PFD column)
@@ -531,7 +539,7 @@
       const vs = body.querySelector(".lk-vslot"); if (vs) vs.outerHTML = viewsHTML(it);   // PFD / Layout on the tag's line, right
       const nv = body.querySelector(".lk-nav"); if (nv && !nv.children.length) nv.remove();
       if (PHONE() && window.Tabs && Tabs.fit){ const k = body.querySelector(".lk-hb .lk-key"); if (k) Tabs.fit(k, k.closest(".lk-kr")); }   // a long tag shrinks to fit the width
-      body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, from, { page: +a.dataset.page || 1 }); });
+      body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, a.dataset.find || from, { page: +a.dataset.page || 1 }); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
       if (!opts.noNav){ body.querySelector(".lk-back").onclick = back; body.querySelector(".lk-home").onclick = home; }
       body.querySelectorAll(".lk-st[data-s]").forEach(b => b.onclick = () => { const a = stepList(cur), i = a.indexOf(cur), x = a[i + +b.dataset.s]; if (x) open(x, false, "step"); });
@@ -695,7 +703,7 @@
 .sp-nav{display:flex;align-items:center;gap:4px}.sp-nav[hidden]{display:none}.sp-nav span{font-size:var(--fb,15px);min-width:58px;text-align:center;color:#aab4c0}
 .sp-top button,.sp-dl{border:1px solid #3a434f;background:#242a33;color:#e9edf2;border-radius:8px;min-width:34px;height:32px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;font-size:13px}
 .sp-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch;touch-action:none;overscroll-behavior:contain}   /* (touch pans and pinches are handled in pdfview.js, free in every direction) */.sp-wait :is(.sp-refs,.sp-marks,.sp-tap,.sp-hi){visibility:hidden!important}.sp-sheet{position:relative;background:#fff;margin:0 auto;box-shadow:0 2px 14px #0008;transform-origin:0 0}
-.sp-bg{position:absolute;inset:0;width:100%;height:100%}.sp-hi{position:absolute}
+.sp-bg{position:absolute;inset:0;width:100%;height:100%}.sp-hi{position:absolute;left:0;top:0;width:0;height:0}
 .sp-marks,.sp-tap{position:absolute;inset:0;pointer-events:none}.sp-arrow{position:absolute;fill:#1e6ee6;opacity:.6;overflow:visible}
 .sp-marks .sp-arrow:not(.on){opacity:.3}.sp-tap .sp-arrow{opacity:.6}.sp-marks .sp-arrow:only-child{opacity:.6}   /* (with several places, the one stepped to is the stronger) */
 @keyframes spPulse{0%{box-shadow:0 0 0 0 rgba(255,45,85,.7)}100%{box-shadow:0 0 0 22px rgba(255,45,85,0)}}
@@ -759,7 +767,7 @@
 :root.phone .sp-view .sp-ze{right:12px;bottom:calc(76px + env(safe-area-inset-bottom))}:root.phone .sp-view.find-on .sp-ze{bottom:calc(128px + env(safe-area-inset-bottom))}
 :root.phone .sp-view .sp-pg{font-size:var(--fl,13px)}
 :root.phone .sp-view .sp-body{padding:calc(60px + var(--sat, env(safe-area-inset-top))) 0 0}   /* the page starts under the round buttons */
-.sp-dn{position:absolute;left:4px;top:3px;z-index:2;font:700 24px/1.2 system-ui,sans-serif;letter-spacing:.02em;color:#3b4552;background:#ffffffe6;padding:0 3px;border-radius:3px;white-space:nowrap;pointer-events:none}.sp-dn:empty{display:none}:root.phone .sp-dn{font-size:20px;left:2px;top:1px}
+.sp-dn{position:absolute;left:4px;top:3px;z-index:2;font:700 min(24px,var(--dnf,24px))/1.2 system-ui,sans-serif;letter-spacing:.02em;color:#3b4552;background:#ffffffe6;padding:0 3px;border-radius:3px;white-space:nowrap;pointer-events:none}.sp-dn:empty{display:none}:root.phone .sp-dn{font-size:min(20px,var(--dnf,20px));left:2px;top:1px}
 :root.phone .lk-st{font-size:calc(var(--fb,15px) * 1.35)}:root.phone .lk-vw sup{font-size:max(.6em, calc(var(--fl,13px) * .8))}   /* phone: these follow the text size */
 :root.phone .lk-hb .lk-key.lk-dwg::after{content:"";display:inline-block;width:.8em;height:.8em;margin-left:.3em;vertical-align:-.05em;background:var(--lk-a,var(--th));-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4h6v6'/%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4h6v6'/%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'/%3E%3C/svg%3E") center/contain no-repeat}   /* a drawing's number opens it: a small open icon after it */
 :root.phone .lk-hb .lk-key{white-space:nowrap;word-break:normal;overflow:hidden;color:var(--ink)!important;text-decoration:none}   /* phone: every tag the same, one line */
