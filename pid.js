@@ -27,33 +27,24 @@ window.Pid = (() => {
   const index = R => { BYTAG = new Map(); Object.entries(R).forEach(([n, a]) => a.forEach(r => { if (r[6] === "d" || r[6] === "x" || r[6] === "q") return;
     String(r[5]).split("|").forEach(t => { const k = norm(t), m = BYTAG.get(k) || new Map(); m.set(n, (m.get(n) || 0) + 1); BYTAG.set(k, m); }); })); return R; };
   const printedOn = (t, rx = /-PID-/) => { const m = BYTAG && BYTAG.get(norm(t)); return m ? [...m.entries()].filter(([n]) => rx.test(n) && key(n)).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(x => x[0]) : []; };
-  // the panel under a sheet on a phone (pdfview.js): what is on the drawing as pills (the drawing's own page in the
-  // lookup), a row tapped is found on the sheet; a tag tapped on the sheet shows its record card, with the way back to
-  // the contents and on to the item's full page
-  let cx = null;
-  function panel(el, api, num){
-    const lk = window.Lookup, nk = s => lk.norm ? lk.norm(s) : norm(s); let home = "";
-    const strip = () => el.querySelectorAll(".pf-sec").forEach(sec => { if (!sec.querySelector(".lk-spec")) return;   // (the spec loads on the item page only)
-      const b = sec.closest(".pf") && sec.closest(".pf").querySelector(`.pf-b[data-p="${sec.dataset.p}"]`); if (b) b.remove(); sec.remove(); });
-    const contents = () => { el.innerHTML = home; el.scrollTop = 0; };
-    const card = t => { const it = lk && lk.find(nk(t)); if (!it || it.t === "pid") return false;
-      el.innerHTML = `<div class="sp-cxh"><button type="button" data-cx="home">‹ Contents</button><button type="button" data-cx="open">Full page ›</button></div><div class="lk sp-cxc">${lk.itemHTML(it)}</div>`;
-      el.dataset.tag = t; strip(); el.scrollTop = 0; return true; };
-    el.onclick = e => { const b = e.target.closest("[data-cx]"), a = e.target.closest("a[data-k],a[data-dwg]");
-      if (b){ if (b.dataset.cx === "home") contents(); else if (window.kcgmOpenTag){ const t = el.dataset.tag; PdfView.hide(); setTimeout(() => kcgmOpenTag(t), 60); } return; }
-      if (!a) return; e.preventDefault();
-      if (a.dataset.dwg){ open(a.dataset.dwg, a.dataset.find || num); return; }
-      const t = (a.querySelector("b") || a).textContent.trim();
-      if (a.dataset.t === "pid"){ open(t, num); return; }
-      if (el.querySelector(".sp-cxc")) card(t); else api.find(t); };
-    el.innerHTML = `<div class="lk-ns">Reading the drawing…</div>`;
-    if (lk) lk.load().then(() => { const it = lk.find(nk(num), "pid"); if (!it) { el.innerHTML = ""; return; }
-      const box = document.createElement("div"); box.innerHTML = lk.itemHTML(it); box.querySelectorAll(".lk-head").forEach(x => x.remove());
-      // (the pills only: the drawing's own fields are on its page)
-      const pf = box.querySelector(".pf"); home = `<div class="sp-cxt">On this drawing · tap one to find it</div><div class="lk sp-cxc0">${pf ? pf.outerHTML : box.innerHTML}</div>`;
-      if (!el.querySelector(".sp-cxc")){ contents(); strip(); } });
-    return { card: t => lk && lk.find(nk(t)) ? card(t) : false };
+  // the panel under a sheet on a phone (pdfview.js): the drawings this one joins, as pictures in a row to swipe through
+  // (its continuations first, in the order printed, then the other drawings named on it); a tap opens one, with the
+  // way back to this sheet marked
+  let CT = null; const ct = () => CT || (CT = fetch("contents.json").then(r => r.ok ? r.json() : {}).then(j => j.d || {}).catch(() => { CT = null; return {}; }));
+  function panel(el, num){
+    Promise.all([refs(), ct()]).then(([R, C]) => {
+      const seen = new Set([num]), list = [];
+      const add = n => { const k = key(n); if (k && !seen.has(k) && PICS(k)){ seen.add(k); list.push(k); } };
+      (R[num] || []).forEach(r => { if (r[6] === "d") String(r[5]).split("|").forEach(add); });
+      ((C[num] || {}).r || []).filter(n => /-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(n)).forEach(add);
+      if (!list.length){ el.innerHTML = `<div class="sp-cxt">Connected drawings</div><div class="lk-ns">No other drawings are named on this sheet.</div>`; return; }
+      el.innerHTML = `<div class="sp-cxt">Connected drawings · ${list.length}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
+        return `<button type="button" class="sp-cxd" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n.replace(/^2000-/, "")}</b><span>${d.title || kind(n)}</span></button>`; }).join("") + `</div>`;
+      el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => open(b.dataset.n, num, { keep: true }));
+    });
   }
+  // (only drawings with a ready-made picture: the row is pictures)
+  const PICS = k => { const d = info(k); return d && d.file; };
   function open(n, find, o = {}){
     const d = info(n); if (!d) return false;
     const r = o.restore;
@@ -61,15 +52,13 @@ window.Pid = (() => {
       number: d.number, label: label(d.number), title: label(d.number) + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []),
       back: o.back,
-      panel: (el, api) => { cx = panel(el, api, d.number); },
+      panel: el => panel(el, d.number),
       onRef: (t, k, back, box) => {
         // another drawing: opened with the ribbon back to this one marked (the way back from pid-refs.json), or, when
         // the refs don't know it, this drawing's number found on the sheet
         if (k === "sp"){ const u = window.SP && SP.url(t); if (u) window.open(u, "_blank", "noopener"); return; }
         if (k === "dwg"){ if (!key(t)) return; open(t, back == null ? d.number : null, { keep: true, back }); return; }
         // a tag: its item opens, with this sheet kept beside it and the arrow on the tag tapped (not the item's first drawing)
-        // (phone, whole sheet in view: the tag's record shows in the panel under the sheet instead)
-        if (PdfView.panelOn() && cx && cx.card(String(t).split("|")[0])) return;
         if (window.AssetViz && AssetViz.keep && box) AssetViz.keep({ n: d.number, tap: box, key: String(t).split("|")[0] });
         if (window.kcgmOpenTag){ PdfView.hide(); setTimeout(() => kcgmOpenTag(t), 60); }
       } });
