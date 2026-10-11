@@ -15,10 +15,10 @@ for t in ("mel", "elec", "cable"):
     for r in db["data"].get(t, []): KEYS.setdefault(nk(r[0]), (r[0], t))
 DW = {nk(k): k for k in ix}
 refs = json.load(open(os.path.join(R, "pid-refs.json")))
-for k in [k for k in refs if "-SLD-" in k or "-TLD-" in k or "-BLK-IC-" in k]: del refs[k]
+for k in [k for k in refs if "-SLD-" in k or "-TLD-" in k or "-SCM-" in k or "-BLK-IC-" in k]: del refs[k]
 n = 0
 for num, v in ix.items():
-    if "-SLD-" not in num and "-TLD-" not in num and "-BLK-IC-" not in num: continue
+    if "-SLD-" not in num and "-TLD-" not in num and "-SCM-" not in num and "-BLK-IC-" not in num: continue
     out = []
     for pi, p in enumerate(pymupdf.open(os.path.join(R, v["file"]))):
         W, H = p.rect.width, p.rect.height
@@ -32,6 +32,6 @@ for num, v in ix.items():
     if out: refs[num] = out; n += len(out)
 json.dump(refs, open(os.path.join(R, "pid-refs.json"), "w"), separators=(",", ":"))
 # the tags on each sheet once, for the pills on the drawing's own page (lookup.js): sld-tags.json {drawing: [tags]}
-st = {num: sorted({r[5] for r in v if r[6] != "d"}) for num, v in refs.items() if "-SLD-" in num or "-TLD-" in num or "-BLK-IC-" in num}
+st = {num: sorted({r[5] for r in v if r[6] != "d"}) for num, v in refs.items() if "-SLD-" in num or "-TLD-" in num or "-SCM-" in num or "-BLK-IC-" in num}
 json.dump({k: v for k, v in st.items() if v}, open(os.path.join(R, "sld-tags.json"), "w"), separators=(",", ":"))
 print(n, "tags on", sum(1 for k in refs if "-SLD-" in k), "SLDs")

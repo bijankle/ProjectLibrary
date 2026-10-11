@@ -24,7 +24,7 @@ def words(page):
     with tempfile.TemporaryDirectory() as d:
         f = os.path.join(d, "p.png"); page.get_pixmap(dpi=DPI, colorspace=pymupdf.csGRAY).save(f)
         if THICK:
-            from PIL import Image, ImageFilter
+            from PIL import Image, ImageFilter; Image.MAX_IMAGE_PIXELS = None   # (big sheets at 500 dpi)
             Image.open(f).point(lambda v: 0 if v < 235 else 255).filter(ImageFilter.MinFilter(3)).save(f)
         for psm in ("12", "11"):
             try: tsv += subprocess.run(["tesseract", f, "-", "--psm", psm, "tsv"], capture_output=True, text=True, timeout=300,

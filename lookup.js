@@ -96,7 +96,7 @@
   // a document the app doesn't hold opens SharePoint (sp.js); a list held in the app opens in Sources
   let LINKRE = null;
   const linkify = v => esc(v).replace(LINKRE || (LINKRE = new RegExp(TAG_RE.source + (window.SP ? "|" + SP.DOC.source : ""), "g")), m => { const k = norm(m);
-    if (/-(PID|PFD|SLD|TLD|BLK)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>`;
+    if (/-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>`;
     if (byKey.has(k)) return `<a class="lk-a" data-k="${k}">${m}</a>`;
     if (window.SP && SP.url(m)) return SP.a(m);
     if (/^2000-/.test(m) && DOCN.has(k)) return `<a class="lk-a lk-doc" href="issues.html#sources" title="Open in Sources">${m}</a>`;
@@ -301,7 +301,7 @@
       if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
         kept.unshift(...dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
           return ns.length ? { l: r.l, v: ns.join(", "), h: ns.map(n => dwgA(n)).join("<br>") } : r; })); }
-      iomRow(it, kept);
+      iomRow(it, kept); scmRow(it, kept);
       flagRows(kept, [it.key, ...twins.map(x => x.key)]);
       // MEL equipment with electrical data: two bands, Mechanical (the MEL and the other lists) and Electrical
       const el = kept.filter(r => r.s === "elx");
@@ -367,6 +367,15 @@
   // IOM manuals (iom.json, tools/build_iom.py): every manual of the item's package, and any manual naming its tag in the
   // title; those that name the tag (or the valve code, make or model) first. A row under the drawings, SharePoint links.
   let IOM = null, SLDT = null;   // (SLDT: the tags read on each SLD / TLD / block diagram, sld-tags.json)
+  // the schematics a tag is read on (sld-tags.json inverted), a row under the drawings: number and title, opens the sheet
+  let SCMBY = null;
+  function scmRow(it, rows){
+    if (!SLDT) return;
+    if (!SCMBY){ SCMBY = new Map(); Object.entries(SLDT).forEach(([d, ks]) => { if (/-SCM-/.test(d)) ks.forEach(k => { const n = norm(k); SCMBY.set(n, [...(SCMBY.get(n) || []), d]); }); }); }
+    const a = (SCMBY.get(it.k) || []).filter(d => window.Pid && Pid.has(d)); if (!a.length) return;
+    const i = rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l)); let j = i; if (i >= 0) while (j + 1 < rows.length && /^(P&IDs?|PFD)$/.test(rows[j + 1].l)) j++;
+    rows.splice(j + 1, 0, { l: a.length > 1 ? "Schematics" : "Schematic", v: a.join(", "), h: a.map(d => dwgA(d) + (dwgTitle(d) ? `<span class="lk-iomt"> ${esc(dwgTitle(d))}</span>` : "")).join("<br>") });
+  }
   function iomRow(it, rows){
     if (!IOM || !/^(mel|ins|cv)$/.test(it.t)) return;
     const pk = String(L.get(it, "Package") || "").split(/[\s,/;&]+/).filter(Boolean), ns = new Set(IOM.t[it.key] || []);
