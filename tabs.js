@@ -543,7 +543,7 @@ button:disabled{cursor:default}
 :root.phone .pj-m{left:0;width:100%;border-radius:10px}:root.phone .pj-o{height:36px;padding:0 24px 0 10px;font-size:var(--fb,15px);font-weight:700}:root.phone .pj-o i{right:9px;width:17px;height:17px;padding:1.5px}:root.phone .pj{flex:1 1 auto;min-width:72px}:root.phone .pj-b{width:100%;max-width:none;min-width:0;height:36px;border-radius:10px;padding:0 24px 0 10px;margin:0}:root.phone .pj-b b{font-size:var(--fb,15px);font-weight:700}   /* the same size as the rest of the text (it follows the text size setting) */
 .ph-top .ph-n{display:none}:root.in-settings .ph-top .ph-n{display:block}:root.in-settings .ph-top .pj{display:none}   /* (the page name only on Settings) */
 .ph-n{flex:0 1 auto;min-width:0;font-size:var(--fh,22px);font-weight:800;white-space:nowrap;overflow:hidden;line-height:1.1}   /* the page's name, like an item's tag (fitted to the row) */
-.ph-slot{flex:1;min-width:0;display:flex;align-items:center;gap:6px}.ph-slot>*{min-width:0}.ph-slot>.mo-off{display:none!important}
+.ph-slot{flex:1;min-width:0;display:flex;align-items:center;gap:4px}.ph-slot>*{min-width:0}.ph-slot>.mo-off{display:none!important}
 /* the shared bar's icons keep their size whatever the page's own styles say (the PFD page sizes every svg to fill) */
 .tb-t svg{width:24px!important;height:24px!important;flex:none;cursor:inherit!important;display:block}.mo-i i svg{width:21px!important;height:21px!important;cursor:inherit!important}.mo-i em svg{width:18px!important;height:18px!important;cursor:inherit!important}.nv-b svg,.pj svg{cursor:inherit!important}
 /* phone top row: the right end is one round button on every page: the camera on Assets, a search elsewhere, which
