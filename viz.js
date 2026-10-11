@@ -169,9 +169,10 @@ window.AssetViz = (() => {
           pick((i, r) => back.includes(r));   // (its own ribbon turns blue)
           focus(back.map(r => boxes[refsNow.indexOf(r)]).filter(Boolean)); } });   // (zoomed onto the ribbon back to where you came from)
       // the tag tapped (here or in the full screen viewer): the arrow on that very spot
-      if (tap){ const own = boxes.some(([l, t, w, h]) => tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t);   // its own tag box shows it: no second box
-        box.querySelector(".vz-mk").innerHTML = own ? "" : hbox(tap[0], tap[1], tap[2], tap[3]);
-        if (own) refsP.then(() => { if (g === gen) pick(i => { const [l, t, w, h] = boxes[i]; return tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t; }); });
+      // (decided once the tag boxes are in: before that every tag looked boxless and got a second box on top of its own)
+      if (tap){ refsP.then(() => { if (g !== gen) return; const hitT = ([l, t, w, h]) => tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t, own = boxes.some(hitT);   // its own tag box shows it: no second box
+          box.querySelector(".vz-mk").innerHTML = own ? "" : hbox(tap[0], tap[1], tap[2], tap[3]);
+          if (own) pick(i => hitT(boxes[i])); });
         return; }
       // mark the tag: a text piece holding it, or two neighbouring pieces that together do
       const want = nk(key); if (want.length < 3 || cur.t === "pid" || !own.includes(n)) return;

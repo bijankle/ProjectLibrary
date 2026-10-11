@@ -309,7 +309,7 @@ window.PdfView = (() => {
       const cls = V.fit ? " fit" + (shape(r) === "o" ? " o" : "") + (V.fq && !V.fset.has(r) ? " off" : "") : r[6] === "d" ? " d" : "";
       const rb = r[6] === "d" && Array.isArray(r[8]) && !V.rot;
       return `<a class="sp-ref${cls}${rb ? " rb" : ""}" data-i="${i}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%" title="${esc(r[5].replace(/\|/g, ", "))}">${rb ? ribbon(r[8]) : ""}</a>`; }).join("");
-    drawTap();
+    hideOwnHits(); drawTap();
   }
   // how a ref was fitted to the print on a checked sheet: "o" bubble, "b" drawn box (both exact), "t" text (a margin added)
   const shape = r => typeof r[7] === "string" ? r[7] : V.fit && r[6] === "d" ? "t" : null;
@@ -531,11 +531,16 @@ window.PdfView = (() => {
     // a red box on each place (as the labels on a checked sheet); stepping through them adds the arrow (showHit)
     const vpA = W / H;
     V.marks.innerHTML = V.hits.map(h => { const [l, t, w, hh] = PdfView.grow(h.l * 1e4, h.t * 1e4, h.w * 1e4, h.h * 1e4, vpA);
-      return `<i class="sp-hb" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${hh / 100}%"></i>`; }).join(""); drawTap();
+      return `<i class="sp-hb" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${hh / 100}%"></i>`; }).join(""); hideOwnHits(); drawTap();
     const f = V.el.querySelector(".sp-finds"); f.hidden = !V.hits.length;
     if (V.hits.length){ V.fi = -2; V.el.querySelector(".sp-fn").textContent = `${V.hits.length} result${V.hits.length === 1 ? "" : "s"}`; }
     else if (!quiet) toast(`${tag} isn't written as searchable text on this drawing.`);
   }
+  // a found place that has its own tag box on the sheet: that box shows it, so its find box is hidden (run when the
+  // finds are drawn and again when the tag boxes arrive, whichever comes last)
+  function hideOwnHits(){ if (!V.marks || !V.hits || !V.boxes) return; const kids = V.marks.children;
+    V.hits.forEach((h, i) => { const el = kids[i]; if (!el) return; const own = V.boxes.some(([l, t, w, hh]) => { l /= 1e4; t /= 1e4; w /= 1e4; hh /= 1e4;
+      return h.l < l + w && h.l + h.w > l && h.t < t + hh && h.t + h.h > t; }); el.style.display = own ? "none" : ""; }); }
   function samePlace(o, b){ const h = Math.max(o[3] - o[1], b[3] - b[1]), ov = !(b[0] > o[2] || b[2] < o[0] || b[1] > o[3] || b[3] < o[1]);
     return ov || Math.hypot((o[0] + o[2] - b[0] - b[2]) / 2, (o[1] + o[3] - b[1] - b[3]) / 2) < h * 1.5; }
   function pulse(k){ [...V.marks.children].forEach((m, i) => m.classList.toggle("on", i === k)); }
