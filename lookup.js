@@ -30,7 +30,9 @@
   // the "Project" field, and tsf_dwg for the drawings; tools/build_tsf.py); the picker shows either or both (kept between
   // visits). Items without a project (PFD streams, glossary, pipe spec) always show.
   let TSFD = new Set(), PJ = { main: true, tsf: true }; const pjFns = [];
-  try { const v = JSON.parse(localStorage.getItem("kcgm_proj") || "null"); if (v && (v.main || v.tsf)) PJ = { main: !!v.main, tsf: !!v.tsf }; } catch (e) {}
+  // (one project now, KCGM: plant and TSF always show together; a choice kept from the old picker is cleared. Items keep
+  // their p, which the layout uses to leave the TSF out)
+  try { localStorage.removeItem("kcgm_proj"); } catch (e) {}
   const dwgProj = k => TSFD.has(k) ? "tsf" : "main";
   L.proj = () => ({ ...PJ });
   L.both = () => PJ.main && PJ.tsf;
@@ -39,12 +41,13 @@
   L.onProj = f => pjFns.push(f);
   L.projCount = p => items.filter(it => it.p === p).length;
   // the small green TSF tag after a code, while both projects show
-  L.tsfTag = it => it && it.p === "tsf" && L.both() ? `<i class="pj-tsf">TSF</i>` : "";
+  L.tsfTag = () => "";   // (no TSF tag: one project)
   function build(){
     TSFD = new Set((DB.tsf_dwg || []).map(norm));
     Object.entries(DB.data).forEach(([t, rows]) => { const pj = DB.types[t].f.indexOf("Project");
       const hid = DB.types[t].hidden;
-      rows.forEach(r => { const it = { t, r, key: r[0], k: norm(r[0]), name: nameOf(t, r), p: r[pj] === "TSF" ? "tsf" : "main" }; if (!hid) items.push(it); addKey(it.k, it); }); });
+      rows.forEach(r => { const it = { t, r, key: r[0], k: norm(r[0]), name: nameOf(t, r), p: r[pj] === "TSF" ? "tsf" : "main" }; if (pj > 0) r.splice(pj, 1); if (!hid) items.push(it); addKey(it.k, it); });
+      if (pj > 0) DB.types[t].f.splice(pj, 1); });   // (the Project field read, then dropped: no Project row or column)
     // cross references: any field that mentions a known code (or a P&ID) links back to this item
     const pids = new Map();
     items.forEach(it => { if (!it.r) return;

@@ -315,10 +315,11 @@ window.Tabs = (() => {
   const PJN = { main: "Plant", tsf: "Tailings" };
   const pjGet = () => { try { const v = JSON.parse(localStorage.getItem("kcgm_proj") || "null"); if (v && (v.main || v.tsf)) return { main: !!v.main, tsf: !!v.tsf }; } catch (e) {} return { main: true, tsf: true }; };
   const pjLabel = v => v.main && v.tsf ? "All" : v.main ? PJN.main : PJN.tsf;
-  const PJ = `<div class="pj"><button type="button" class="pj-b" aria-haspopup="true" aria-expanded="false" title="Which project to show"><b class="pj-v">${pjLabel(pjGet())}</b></button><div class="pj-m" hidden></div></div>`;
+  // (one project now: the plant and the TSF together, so the box just names it; the picker code below stays for later)
+  const PJ = `<div class="pj"><span class="pj-b pj-one" title="Project"><b class="pj-v">KCGM</b></span></div>`;
   const TICK = `<svg viewBox="1.4 2 9.2 8.2" width="100%" height="100%" style="display:block;overflow:visible" aria-hidden="true"><path d="M2.4 6.3 5 8.8 9.8 3.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   function wirePj(){
-    const box = el.querySelector(".pj"); if (!box) return; const b = box.querySelector(".pj-b"), m = box.querySelector(".pj-m");
+    const box = el.querySelector(".pj"); if (!box) return; const b = box.querySelector(".pj-b"), m = box.querySelector(".pj-m"); if (!m) return;
     const count = k => { try { if (window.Lookup && Lookup.ready()) return (window.Browse && Browse.projCount ? Browse.projCount(k) : Lookup.projCount(k)).toLocaleString(); } catch (e) {} return ""; };
     const label = () => { box.querySelector(".pj-v").textContent = pjLabel(pjGet()); };
     const draw = () => { const v = pjGet();
@@ -420,6 +421,7 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .pj{position:relative;display:flex;align-items:center;flex:none}
 .pj-b{position:relative;width:104px;height:22px;display:flex;align-items:center;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:0 20px 0 8px;font:inherit;cursor:pointer;margin:0 4px}
 .pj-b b{font-size:13px;font-weight:800;line-height:1;white-space:nowrap}
+.pj-one{width:auto;min-width:64px;justify-content:center;padding:0 8px;cursor:default}.pj-one:after{display:none}
 .pj-b:after{content:"▾";position:absolute;right:7px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:11px}
 /* its list: the box's own size and lettering, each name right under the box's (a ✓ where the box has its ▾) */
 .pj-m{position:absolute;top:calc(100% + 2px);left:4px;width:104px;box-sizing:border-box;background:var(--card);border:1.5px solid var(--line);border-radius:6px;box-shadow:0 6px 16px rgba(0,0,0,.16);overflow:hidden;z-index:80}.pj-m[hidden]{display:none}
