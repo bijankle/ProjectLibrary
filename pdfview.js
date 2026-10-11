@@ -87,7 +87,8 @@ window.PdfView = (() => {
     const panFrom = (e, held) => { cancelAnimationFrame(glide); const now = performance.now(); pan = { x: e.clientX, y: e.clientY, sl: V.body.scrollLeft, st: V.body.scrollTop, s: [[now, e.clientX, e.clientY]], held: held ? now + 160 : 0, np: !!held }; };
     const zmax = () => cur.fit === "page" ? 24 : 10, gap = (a, b) => Math.max(30, Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY));   // (fingers almost touching: a few px of jitter must not read as a big zoom)
     V.body.addEventListener("pointerdown", e => { if (e.pointerType === "touch" && pts.size === 0) panFrom(e); });
-    V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ pan = null; const [a, b] = [...pts.values()]; pin = { d: gap(a, b), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1, mx: 0, my: 0 }; } });
+    // (two fingers down: the panel under the sheet goes at once, not when the pinch ends)
+    V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ pan = null; V.cx.hidden = true; V.el.classList.remove("cx-on"); const [a, b] = [...pts.values()]; pin = { d: gap(a, b), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1, mx: 0, my: 0 }; } });
     // a finger whose lift never arrived (it went down on a tag box or text that was redrawn under it, so its events were
     // lost) would pair with the next finger as a pinch and throw the sheet: the screen's own count of fingers puts it right
     V.body.addEventListener("touchstart", e => { if (pts.size <= e.touches.length) return;
@@ -109,7 +110,7 @@ window.PdfView = (() => {
     const up = e => { pts.delete(e.pointerId);
       // the pinch ends: the point of the sheet the fingers started on lands where their midpoint finished (one step, so
       // it holds whether the sheet scrolls or still sits inside the window)
-      if (pin && pts.size < 2){ const p = pin, z0 = V.zoom; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx + p.mx, p.cy + p.my, p.fx, p.fy);
+      if (pin && pts.size < 2){ const p = pin, z0 = V.zoom; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx + p.mx, p.cy + p.my, p.fx, p.fy); cxFit();
         if (V.zoom === z0){ V.body.scrollLeft -= p.mx; V.body.scrollTop -= p.my; } slide(); sharp(); lastTap = null;
         if (e.pointerType === "touch" && pts.size === 1) panFrom([...pts.values()][0], true); else pan = null; return; }
       // double-tap: in twice as close where tapped; again (zoomed in) back out to the whole sheet
