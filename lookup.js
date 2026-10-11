@@ -566,7 +566,10 @@
     const stepList = it => { if (ctx && ctx.includes(it)) return ctx;
       const all = items.filter(x => x.t === it.t && x.r !== undefined).sort((a, b) => ORD.compare(a.key, b.key)); ctx = all; return all; };
     const open = (it, push, how) => {
-      if (!it) return; remember(it); showingRecent = false; if (it.go){ it.go(); return; } if (push) stack.push({ q: inp.value, scroll: body.scrollTop, it: cur });
+      if (!it) return; remember(it); showingRecent = false; if (it.go){ it.go(); return; }
+      // phone: a drawing opens straight on the sheet (its properties page is for the desktop), the item you came from marked
+      if (PHONE() && it.t === "pid" && window.Pid && Pid.has(it.key)){ Pid.open(it.key, cur && cur.t !== "pid" ? cur.key : null); return; }
+      if (push) stack.push({ q: inp.value, scroll: body.scrollTop, it: cur });
       cur = it;
       // the tag to mark on a drawing: the item itself, or on a drawing's own page the item you came from
       const from = it.t === "pid" ? (stack.length && stack[stack.length - 1].it ? stack[stack.length - 1].it.key : null) : it.key;
@@ -735,7 +738,7 @@
 .sp-chip.off{border-color:var(--lk-l);color:var(--mute);cursor:default}.sp-warn{font-size:var(--fb,15px);color:#f59e0b;margin:4px 0}
 .sp-view{position:fixed;inset:0;z-index:2000;background:#2b2f36;display:flex;flex-direction:column}.sp-view[hidden]{display:none}
 .sp-cx{position:absolute;left:0;right:0;z-index:5;overflow:hidden;color:#fff;padding:2px 8px 4px;box-sizing:border-box;display:flex;flex-direction:column}.sp-cx[hidden]{display:none}
-.sp-view.cx-on .sp-ze{display:none!important}.sp-cxt{flex:none;font-size:.8em;font-weight:700;color:#cfd6df;letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}.sp-cx .lk-ns{color:#cfd6df}.sp-cxs{flex:1;min-height:0;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior:contain;scroll-snap-type:x proximity}.sp-cxs::-webkit-scrollbar{display:none}.sp-cxd{flex:none;width:46%;display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:0;border:0;background:none;color:#fff;font:inherit;text-align:left;cursor:pointer;scroll-snap-align:start;min-height:0}.sp-cxd img{flex:0 1 auto;min-height:0;width:100%;height:auto;object-fit:contain;object-position:left top;display:block}.sp-cxd b{font-size:.78em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sp-cxd span{font-size:.7em;color:#aeb6c0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-view.cx-on .sp-ze{display:none!important}:root.phone .sp-view.sp-phdock .sp-tt{display:none!important}.sp-cxn{flex:none;font-size:.85em;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 0 4px}.sp-cxt{flex:none;font-size:.8em;font-weight:700;color:#cfd6df;letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}.sp-cx .lk-ns{color:#cfd6df}.sp-cxs{flex:1;min-height:0;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior:contain;scroll-snap-type:x proximity}.sp-cxs::-webkit-scrollbar{display:none}.sp-cxd{flex:none;width:46%;display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:0;border:0;background:none;color:#fff;font:inherit;text-align:left;cursor:pointer;scroll-snap-align:start;min-height:0}.sp-cxd img{flex:0 1 auto;min-height:0;width:100%;height:auto;object-fit:contain;object-position:left top;display:block}.sp-cxd b{font-size:.78em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sp-cxd span{font-size:.7em;color:#aeb6c0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sp-top{display:flex;gap:8px;align-items:center;padding:8px 10px;background:#171b21;color:#e9edf2;border-bottom:1px solid #2c343e}
 .sp-tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--fb,15px)}
 .sp-q{flex:0 1 230px;min-width:90px;height:32px;box-sizing:border-box;border:1px solid #3a434f;background:#0f1216;color:#e9edf2;border-radius:8px;padding:0 9px;font:inherit;font-size:var(--fb,15px)}

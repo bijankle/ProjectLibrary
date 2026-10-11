@@ -33,12 +33,14 @@ window.Pid = (() => {
   let CT = null; const ct = () => CT || (CT = fetch("contents.json").then(r => r.ok ? r.json() : {}).then(j => j.d || {}).catch(() => { CT = null; return {}; }));
   function panel(el, num){
     Promise.all([refs(), ct()]).then(([R, C]) => {
+      // (the drawing's title heads it: the phone shows no title bar over the app's header)
+      const me = info(num), tl = me && me.title ? `<div class="sp-cxn" title="${me.title.replace(/"/g, "&quot;")}">${me.title.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))}</div>` : "";
       const seen = new Set([num]), list = [];
       const add = n => { const k = key(n); if (k && !seen.has(k) && PICS(k)){ seen.add(k); list.push(k); } };
       (R[num] || []).forEach(r => { if (r[6] === "d") String(r[5]).split("|").forEach(add); });
       ((C[num] || {}).r || []).filter(n => /-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(n)).forEach(add);
-      if (!list.length){ el.innerHTML = `<div class="sp-cxt">Connected drawings</div><div class="lk-ns">No other drawings are named on this sheet.</div>`; return; }
-      el.innerHTML = `<div class="sp-cxt">Connected drawings · ${list.length}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
+      if (!list.length){ el.innerHTML = tl + `<div class="sp-cxt">Connected drawings</div><div class="lk-ns">No other drawings are named on this sheet.</div>`; return; }
+      el.innerHTML = tl + `<div class="sp-cxt">Connected drawings · ${list.length}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
         return `<button type="button" class="sp-cxd" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n.replace(/^2000-/, "")}</b><span>${d.title || kind(n)}</span></button>`; }).join("") + `</div>`;
       // (the ribbons on it leading back here are marked, as when a ribbon is tapped; with none, this drawing's number found)
       el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => { const n = b.dataset.n, back = [];
