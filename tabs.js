@@ -364,7 +364,8 @@ window.Tabs = (() => {
   // this tab has reached, which a new view change cuts back to itself)
   const maxD = v => { try { if (v != null) sessionStorage.setItem("kcgm_maxd", v); return +sessionStorage.getItem("kcgm_maxd") || 0; } catch (e) { return 0; } };
   const curD = () => (history.state && history.state.d) || 0;
-  function fwdState(){ const can = window.navigation && "canGoForward" in navigation ? navigation.canGoForward : curD() < maxD();
+  function fwdState(){ const sp = document.documentElement.classList.contains("sp-open") || document.body.classList.contains("sp-on");
+    const can = sp && window.PdfView && PdfView.canFwd ? PdfView.canFwd() : window.navigation && "canGoForward" in navigation ? navigation.canGoForward : curD() < maxD();
     if (el) el.querySelectorAll(".nv-fwd").forEach(b => b.disabled = !can); }
   const push = st => { st = Object.assign({}, st, { d: depth = curD() + 1 }); history.pushState(st, ""); maxD(depth); fwdState(); };
   const replace = st => history.replaceState(Object.assign({}, history.state || {}, st, { d: (history.state && history.state.d) || 0 }), "");
@@ -372,13 +373,13 @@ window.Tabs = (() => {
   function goBack(){
     if (mo && !mo.hidden){ more(false); return; }
     const h = document.getElementById("helpWin"); if (h && !h.hidden){ h.hidden = true; return; }
-    if (window.PdfView && PdfView.back && PdfView.back()) return;   // a drawing open: back one drawing (or out of it)
+    if (window.PdfView && PdfView.back && PdfView.back()) return;   // a drawing open: back one view (or out of it)
     if ((history.state && history.state.d > 0) || sameSite()) history.back(); else goHome();
   }
   // ⌂ is always the Assets front page with nothing searched, filtered or open (this page does it when it holds Assets)
   function goHome(){ more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true;
     if (O.homeHere && O.onHome && O.onHome("assets") !== false) return; location.href = "index.html?cards#home"; }
-  function goFwd(){ history.forward(); }
+  function goFwd(){ if (window.PdfView && PdfView.fwd && PdfView.fwd()) return; history.forward(); }   // (a drawing open: forward one view)
   addEventListener("pageshow", () => setTimeout(fwdState, 0));
   addEventListener("popstate", e => { fwdState(); if (mo && !mo.hidden) more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true; if (O.onPop) O.onPop(e.state || {}); });
   function wireNav(){ el.querySelectorAll(".nv-back").forEach(b => b.onclick = goBack); el.querySelectorAll(".nv-home").forEach(b => b.onclick = goHome); el.querySelectorAll(".nv-fwd").forEach(b => b.onclick = goFwd); fwdState(); }

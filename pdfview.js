@@ -33,6 +33,9 @@ window.PdfView = (() => {
       <button class="sp-ze" data-a="fit" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>`;
     // phone, sheet at fit: the room left under the sheet holds a panel (cur.panel fills it: the connected drawings, pid.js)
     const cx = document.createElement("div"); cx.className = "sp-cx"; cx.hidden = true; el.appendChild(cx);
+    // a button in the top right corner over the sheet, set by the opener (cur.corner: { html, title, go }): P&IDs' Drawing legend
+    const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
+    cb.onclick = () => cur && cur.corner && cur.corner.go();
     document.body.appendChild(el);
     V = { cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), textEl: el.querySelector(".sp-text"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
@@ -230,7 +233,8 @@ window.PdfView = (() => {
   addEventListener("resize", () => { if (V && !V.el.hidden && desk()) dock(); });
   async function open(o){
     ui(); freeRotate(); const wasOpen = !V.el.hidden; cur = Object.assign({ page: 1, fit: "width" }, o);
-    V.el.hidden = false; document.body.classList.add("sp-on"); dock(); V.el.querySelector(".sp-tt").textContent = cur.title || "";
+    V.el.hidden = false; document.body.classList.add("sp-on"); dock();
+    { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } } V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
     // (in the sheet's bottom right corner, the drawing's short title under it: cur.sub)
     V.el.querySelector(".sp-dn").innerHTML = cur.label || cur.number ? esc(cur.label || cur.number) + (cur.sub ? `<small>${esc(cur.sub)}</small>` : "") : "";
@@ -303,15 +307,17 @@ window.PdfView = (() => {
     // returns to the page as it was; drawings and views within the visit step back with the app's ← (PdfView.back)
     if (history.state && history.state.sp && !V.el.hidden) history.replaceState(Object.assign({ sp: 1, id }, zIn && history.state.z ? { z: 1 } : {}), ""); else history.pushState({ sp: 1, id }, ""); fwdBtn();
   }
-  const fwdBtn = () => { const me = REG.get(curId), b = V && V.el.querySelector(".sp-fwd"); if (b) b.disabled = !me || ![...REG.values()].some(v => v.seq > me.seq); };
+  const fwdBtn = () => { const me = REG.get(curId), b = V && V.el.querySelector(".sp-fwd"), no = !me || ![...REG.values()].some(v => v.seq > me.seq); if (b) b.disabled = no;
+    if (V && !V.el.hidden) document.querySelectorAll(".nv-fwd").forEach(x => x.disabled = no); };   // (the app's → too, while a drawing is open)
   function settleSoon(){ if (!V || V.el.hidden) return; clearTimeout(st8); st8 = setTimeout(settle, 500); }
   function settle(){
     if (Date.now() < hush || !V || V.el.hidden || !V.pg) return;
     const me = REG.get(curId), s = state(); if (!me || !s) return;
     // compared with where this view started (small moves add up), not with the last small move
     if (!me.snap){ me.snap = s; me.at = s; return; } const o = me.at || me.snap;
-    const big = s.page !== o.page || Math.abs(Math.log(s.zoom / o.zoom)) > Math.log(1.1) ||
-      Math.abs(s.sl - o.sl) > V.body.clientWidth * .2 || Math.abs(s.st - o.st) > V.body.clientHeight * .2;
+    // (a step: any move past 2% of the screen's width, or a zoom past 2%; finger wobble below that is not)
+    const big = s.page !== o.page || Math.abs(Math.log(s.zoom / o.zoom)) > Math.log(1.02) ||
+      Math.abs(s.sl - o.sl) > V.body.clientWidth * .02 || Math.abs(s.st - o.st) > V.body.clientWidth * .02;
     if (big) push({ o: me.o, snap: s, at: s }); else me.snap = s;
   }
   async function restore(id){
@@ -407,11 +413,18 @@ window.PdfView = (() => {
     const l = Math.min(...hs.map(h => h.l)), t = Math.min(...hs.map(h => h.t)), rr = Math.max(...hs.map(h => h.l + h.w)), b = Math.max(...hs.map(h => h.t + h.h));
     const z = hs.length === 1 && !ext ? 4 : Math.max(1, Math.min(ext ? 2 : 4, .8 * Math.min(r.width / ((rr - l) * sw || 1), r.height / ((b - t) * sh || 1))));
     zoomTo(z, r.left + r.width / 2, r.top + r.height / 2, (l + rr) / 2, (t + b) / 2); }
-  // the app's ←: back one drawing within this visit (views of the same drawing are skipped); from the first, close
+  // the app's ← and →: one view back or forward (a small pan or zoom is a step, as undo / redo in CAD), across
+  // drawings too; ← from the first view of the visit closes the viewer, back to the page it was opened from
+  function stepTo(prev){ const id = [...REG.entries()].find(([k, v]) => v === prev)[0];
+    restore(id).then(() => history.replaceState(Object.assign({}, history.state, { sp: 1, id }), "")); }
   function back(){ if (!V || V.el.hidden) return false; const me = REG.get(curId); if (!me) { close(); return true; }
-    const prev = [...REG.values()].filter(v => v.seq < me.seq && v.o.url !== me.o.url).sort((a, b) => b.seq - a.seq)[0];
-    if (!prev){ close(); return true; } const id = [...REG.entries()].find(([k, v]) => v === prev)[0];
-    restore(id).then(() => history.replaceState({ sp: 1, id }, "")); return true; }
+    const s0 = state(); if (s0) me.snap = s0;   // (where you are now, for → to come back to)
+    const prev = [...REG.values()].filter(v => v.seq < me.seq).sort((a, b) => b.seq - a.seq)[0];
+    if (!prev){ close(); return true; } stepTo(prev); return true; }
+  function fwd(){ if (!V || V.el.hidden) return false; const me = REG.get(curId); if (!me) return false;
+    const next = [...REG.values()].filter(v => v.seq > me.seq).sort((a, b) => a.seq - b.seq)[0];
+    if (!next) return true; stepTo(next); return true; }
+  const canFwd = () => { const me = V && !V.el.hidden && REG.get(curId); return !!me && [...REG.values()].some(v => v.seq > me.seq); };
   async function go(n, fromPop){
     const d = await getDoc(cur.url); n = Math.max(1, Math.min(d.numPages, n));
     if (!fromPop && V.pg && n !== V.page){ const me = REG.get(curId); if (me) me.snap = state(); quiet(); V.page = n; push({ o: me ? me.o : cur, snap: null }); }
@@ -623,5 +636,5 @@ window.PdfView = (() => {
   // of the boxes holding a point, the one whose centre is nearest (-1: none)
   const nearest = (B, x, y) => { let k = -1, d = 1e18; B.forEach(([l, t, w, h], i) => { if (x < l || x > l + w || y < t || y > t + h) return;
       const e = (x - l - w / 2) ** 2 + (y - t - h / 2) ** 2; if (e < d){ d = e; k = i; } }); return k; };
-  return { open, close, hide, back, state, getDoc, grow, ribbon, nearest, panelOn: () => !!(V && V.cx && !V.cx.hidden && !V.el.hidden), clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
+  return { open, close, hide, back, fwd, canFwd, state, getDoc, grow, ribbon, nearest, panelOn: () => !!(V && V.cx && !V.cx.hidden && !V.el.hidden), clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
 })();

@@ -38,22 +38,27 @@ window.Pid = (() => {
   // (its continuations first, in the order printed, then the other drawings named on it); a tap opens one on the whole
   // sheet, with the way back to this sheet marked but not zoomed onto
   let CT = null; const ct = () => CT || (CT = fetch("contents.json").then(r => r.ok ? r.json() : {}).then(j => j.d || {}).catch(() => { CT = null; return {}; }));
-  function panel(el, num){
+  // the P&ID symbol legend: the general legend sheets (F00 P&IDs titled "General legend, sheet n"), in order
+  const LEGEND = () => IX ? Object.keys(IX.pids).filter(k => /-PID-/.test(k) && /legend/i.test(IX.pids[k].title || "")).sort() : [];
+  const LGI = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="9" cy="8.5" r="1.6"/><path d="M13 8.5h4M7.5 13.5h3M13 13.5h4M7.5 17.5h3M13 17.5h4"/></svg>';
+  function panel(el, num, legendFrom){
     Promise.all([refs(), ct()]).then(([R, C]) => {
       // (the drawing itself heads it, number and title, as the tiles under it: the phone shows no title bar over the app's header)
       const me = info(num), h = t => String(t || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
       const tl = `<div class="sp-cxn"><i>This drawing</i><b>${h(num.replace(/^2000-/, ""))}</b>${me && me.title ? `<span title="${h(me.title)}">${h(short(num))}</span>` : ""}</div>`;
-      const seen = new Set([num]), list = [];
+      const seen = new Set([num]), list = [], leg = LEGEND().includes(num);
       const add = n => { const k = key(n); if (k && !seen.has(k) && PICS(k)){ seen.add(k); list.push(k); } };
-      (R[num] || []).forEach(r => { if (r[6] === "d") String(r[5]).split("|").forEach(add); });
-      ((C[num] || {}).r || []).filter(n => /-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(n)).forEach(add);
+      // (a legend sheet: the other legend sheets, in order, in place of its connected drawings)
+      if (leg) LEGEND().forEach(add);
+      else { (R[num] || []).forEach(r => { if (r[6] === "d") String(r[5]).split("|").forEach(add); });
+        ((C[num] || {}).r || []).filter(n => /-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(n)).forEach(add); }
       if (!list.length){ el.innerHTML = tl + `<div class="sp-cxt">Connected drawings</div><div class="lk-ns">No other drawings are named on this sheet.</div>`; return; }
-      el.innerHTML = tl + `<div class="sp-cxt">Connected drawings · ${list.length}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
+      el.innerHTML = tl + `<div class="sp-cxt">${leg ? `P&amp;ID legend · ${list.length + 1} sheets` : `Connected drawings · ${list.length}`}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
         return `<button type="button" class="sp-cxd" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n.replace(/^2000-/, "")}</b><span>${short(n) || kind(n)}</span></button>`; }).join("") + `</div>`;
       // (the ribbons on it leading back here are marked, as when a ribbon is tapped; with none, this drawing's number found)
       el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => { const n = b.dataset.n, back = [];
         (R[n] || []).forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").some(t => key(t) === num)) back.push(j); });
-        open(n, back.length ? null : num, { keep: true, extent: true, back: back.length ? back : undefined }); });
+        open(n, back.length || leg ? null : num, { keep: true, extent: true, back: back.length ? back : undefined, legendFrom: leg ? legendFrom : undefined }); });
     });
   }
   // (only drawings with a ready-made picture: the row is pictures)
@@ -65,7 +70,11 @@ window.Pid = (() => {
       number: d.number, label: label(d.number), sub: short(d.number), title: label(d.number) + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []),
       back: o.back, extent: !!o.extent,
-      panel: el => panel(el, d.number),
+      panel: el => panel(el, d.number, o.legendFrom),
+      // P&IDs: Drawing legend opens the first legend sheet (the others in the strip under it); on a legend sheet
+      // opened that way, the button leads back to the P&ID
+      corner: !/-PID-/.test(d.number) ? null : LEGEND().includes(d.number) ? (o.legendFrom && key(o.legendFrom) ? { html: "↩ " + o.legendFrom.replace(/^2000-/, ""), title: "Back to " + o.legendFrom, go: () => open(o.legendFrom, null, { extent: true }) } : null)
+        : LEGEND().length ? { html: LGI + "Drawing legend", title: "The P&ID symbol legend", go: () => open(LEGEND()[0], null, { extent: true, legendFrom: d.number }) } : null,
       onRef: (t, k, back, box) => {
         // another drawing: opened with the ribbon back to this one marked (the way back from pid-refs.json), or, when
         // the refs don't know it, this drawing's number found on the sheet
