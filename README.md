@@ -90,3 +90,17 @@ In search, a drawing number is a blue underlined link on the drawing's own page 
 
 Settings (phone) or ⬇ Offline (PFD sidebar) lists what can be kept on the device for no signal, each with its size: Everything, the pipe and valve spec, the P&IDs, the PFD sheets, and each source document (tables for the viewer plus its Excel copy). `python3 tools/build_offline.py` writes `offline.json` from what is built; documents live in a separate cache (`kcgm-docs-N` in `sw.js`, bump N when documents are rebuilt) that app updates keep.
 
+
+## Electrical drawings (SLDs, TLDs, schematics, block diagrams)
+
+`python3 tools/build_slds.py` files them in `SLDs/`. Then `python3 tools/ocr_slds.py` reads the sheets that have no drawn text layer (text drawn as outlines, or scans): once as the sheet lies and once turned a quarter turn, because the feeder names down an SLD are written bottom to top and read upright they come out backwards and match nothing. Sheets with real text are left alone; a sheet read is marked `ocrvert` in its PDF keywords and skipped next time. About a minute a sheet per core.
+
+`python3 tools/build_sld_refs.py` then ties each sheet to its contents: every word that is a tag in the equipment, electrical, cable, instrument or control valve lists becomes a tappable box on the sheet (`pid-refs.json`) and a row under the drawing's own page (`sld-tags.json`). OCR slips are put right by position (O for 0 in the numbers and so on) and a tag split over two or three words is joined. A tag written on the sheet that no list has (many switchboards, Ethernet switches and distribution boards) is kept under `_other` in `sld-tags.json` and shown on the drawing's page as Other tags, each with the other drawings that name it. The script prints the drawings nothing was read on.
+
+Detail rows name a drawing by its number only (Schematic, PFD, Documents); the title is on the drawing's own page.
+
+## Touch on drawings, and the fast scroll strip
+
+The drawing viewer (`pdfview.js`) handles its own pan and pinch. A pinch never hands its speed to a pan: the finger left down when a pinch ends waits a moment and then pans with no glide, the glide speed comes from the last 120 ms of a drag and is capped, the zoom is held inside its limits while pinching, and a finger whose lift was lost is dropped when the next one lands. The hidden sharp layer and the drawing number label take no room, so the sheet cannot be dragged off into empty space.
+
+The fast scroll strip (`tabs.js`) is the screen's edge as far as its list is concerned: the list keeps its ordinary gap from the edge and gives up the strip's width on top, so nothing in a row sits under the strip. A pane opened over a list (Settings) gets its own strip and the strip of the list underneath is hidden.

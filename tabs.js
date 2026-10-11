@@ -641,7 +641,7 @@ button:disabled{cursor:default}
 .fs i.cur{color:var(--th2,var(--th));background:var(--th-t);box-shadow:inset 0 0 0 1.5px var(--th)}
 .fs b{position:absolute;left:11px;width:6px;height:52px;border-radius:3px;background:color-mix(in srgb,var(--mute) 70%,transparent)}.fs.on b{background:var(--th)}.fs b.pos{left:auto;right:0;width:3px;height:26px;border-radius:2px;background:var(--th)}.fs.fs-l b.pos{right:auto;left:0}
 .fs-bub{position:fixed;z-index:61;pointer-events:none;min-width:44px;height:44px;padding:0 10px;box-sizing:border-box;display:grid;place-items:center;border-radius:12px;background:var(--th-t);box-shadow:inset 0 0 0 2px var(--th),0 6px 18px #0003;color:var(--th2,var(--th));font-size:20px;font-weight:800;line-height:1}.fs-bub[hidden]{display:none}
-.fs-pad{padding-right:30px!important;box-sizing:border-box}.fs-pad.fs-pl{padding-right:0!important;padding-left:30px!important}.fs-pad.fs-m{padding-right:0!important;margin-right:16px!important}.fs-host{scrollbar-width:none}.fs-host::-webkit-scrollbar{display:none}
+.fs-pad{box-sizing:border-box}.fs-host{scrollbar-width:none}.fs-host::-webkit-scrollbar{display:none}
 :root.fs-doc{scrollbar-width:none}:root.fs-doc::-webkit-scrollbar{display:none}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   const COL = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
@@ -716,9 +716,25 @@ button:disabled{cursor:default}
     const up = () => { if (!S.on) return; S.on = false; el.classList.remove("on"); paint(S); }; el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
     el.addEventListener("wheel", e => { (isDoc(sc) ? window : sc).scrollBy(0, e.deltaY); e.preventDefault(); }, { passive: false });
     return S; }
-  const vis = e => { if (!e.isConnected) return false; if (isDoc(e)) return true; const r = e.getBoundingClientRect(); return r.height > 80 && r.width > 80 && r.bottom > 0 && r.top < innerHeight && !!e.offsetParent; };
+  // a list that can be seen: on screen, drawn (a fixed pane such as Settings has no offsetParent, so that is not the
+  // test) and not lying under a pane opened over it (its strip would show on top of the pane's own list)
+  const top1 = (x, y) => document.elementsFromPoint(x, y).find(n => !n.closest(".fs,.fs-bub"));
+  const covered = sc => { if (isDoc(sc)){ for (let n = top1(innerWidth / 2, innerHeight / 2); n && n !== document.body; n = n.parentElement) if (getComputedStyle(n).position === "fixed" && n.offsetHeight > innerHeight * .5) return true; return false; }
+    const r = sc.getBoundingClientRect(), y0 = Math.max(r.top, 0), y1 = Math.min(r.bottom, innerHeight), e = top1(r.left + r.width / 2, (y0 + y1) / 2); return !!e && !sc.contains(e); };
+  const vis = e => { if (!e.isConnected) return false; if (isDoc(e)) return !covered(e); const r = e.getBoundingClientRect();
+    return r.height > 80 && r.width > 80 && r.bottom > 0 && r.top < innerHeight && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== "hidden" && !covered(e); };
   const scroller = e => { for (let x = e.parentElement; x && x !== document.body && x !== document.documentElement; x = x.parentElement){ const o = getComputedStyle(x).overflowY; if ((o === "auto" || o === "scroll") && x.scrollHeight > x.clientHeight + 4) return x; } return document.scrollingElement; };
   const long = sc => isDoc(sc) ? sc.scrollHeight >= innerHeight * 2 : sc.scrollHeight >= sc.clientHeight * 2;
+  // room for the strip: the strip's left edge is the screen's edge as far as the list is concerned. The list keeps
+  // whatever gap it ordinarily has from the edge (its own margin or padding, measured, not assumed) and gets the strip's
+  // width on top, so nothing in a row (a button at its right end) ever sits under the strip. A card on a page moves in
+  // by its margin; a list that scrolls in its own box is padded.
+  const FSW = 30;
+  function padOn(pad, card){ const cs = getComputedStyle(pad), p = card ? "margin-right" : "padding-right";
+    pad.fsPad = [p, pad.style.getPropertyValue(p), pad.style.getPropertyPriority(p)]; pad.classList.add("fs-pad");
+    pad.style.setProperty(p, ((parseFloat(cs.getPropertyValue(p)) || 0) + FSW) + "px", "important"); }
+  function padOff(pad){ if (!pad.fsPad) return; const [p, v, pr] = pad.fsPad; pad.fsPad = null; pad.classList.remove("fs-pad");
+    if (v) pad.style.setProperty(p, v, pr); else pad.style.removeProperty(p); }
   // find the long lists on screen and give each a strip (drop strips whose list went)
   function scan(){
     const found = new Map();
@@ -734,14 +750,18 @@ button:disabled{cursor:default}
       if (!ok){ found.delete(sc); continue; }
       let S = strips.get(sc); if (!S){ S = make(sc); strips.set(sc, S); }
       S.rows = rows; found.set(sc, S); if (isDoc(sc)) S.lo = topCover(innerWidth - 15);
-      const pad = sc.fsList && sc.fsList.box ? sc.fsList.box : isDoc(sc) ? rows[0] && rows[0].parentElement : sc;   // (room for the strip beside the rows)
-      if (pad && !pad.classList.contains("fs-pad")){ pad.classList.add("fs-pad"); if (!PH()) pad.classList.add("fs-pl"); else if (isDoc(sc) && !(sc.fsList && sc.fsList.box)) pad.classList.add("fs-m"); } S.pad = pad;   // (rows in a card on a page: the card moves in, past the page's own margin)
+      // (room for the strip beside the rows only: the rows' own card or block where they share one, so a pane's header
+      // above the list keeps its full width; else the scrolling box itself)
+      const rp = rows[0] && rows[0].parentElement, own = rp && rp !== sc && !/^(TBODY|THEAD|TABLE|TR)$/.test(rp.tagName) && rows.every(r => r.parentElement === rp);
+      const pad = sc.fsList && sc.fsList.box ? sc.fsList.box : isDoc(sc) ? rp : own ? rp : sc, card = !(sc.fsList && sc.fsList.box) && (isDoc(sc) || own);
+      if (S.pad && S.pad !== pad && S.pad.classList) padOff(S.pad);   // (the list was redrawn in a new block)
+      if (pad && !pad.fsPad) padOn(pad, card); S.pad = pad;
       const hc = isDoc(sc) ? document.documentElement.classList : sc.classList, hn = isDoc(sc) ? "fs-doc" : "fs-host"; if (!hc.contains(hn)) hc.add(hn);   // (add() rewrites the attribute even when it is there)
       measure(S); paint(S, S.on ? S.sf : undefined);   // (while dragging: keep the picked label and its bubble)
     }
     }   // (desktop: no strip, the browser's own scroll bar)
-    for (const [sc, S] of strips) if (!found.has(sc)){ S.el.remove(); S.bub.remove(); strips.delete(sc); if (isDoc(sc)) document.documentElement.classList.remove("fs-doc"); else if (sc.classList){ sc.classList.remove("fs-host", "fs-pad"); }
-      if (S.pad && S.pad.classList) S.pad.classList.remove("fs-pad", "fs-m", "fs-pl"); }
+    for (const [sc, S] of strips) if (!found.has(sc)){ S.el.remove(); S.bub.remove(); strips.delete(sc); if (isDoc(sc)) document.documentElement.classList.remove("fs-doc"); else if (sc.classList){ sc.classList.remove("fs-host"); }
+      if (S.pad && S.pad.classList) padOff(S.pad); }
   }
   let q = 0; const soon = () => { if (!q) q = requestAnimationFrame(() => { q = 0; scan(); }); };
   new MutationObserver(ms => { if (ms.some(m => !(m.target.closest && m.target.closest(".fs")) && !(m.type === "attributes" && m.target.classList && m.target.classList.contains("fs")))) soon(); }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "class"] });

@@ -41,11 +41,18 @@ window.SourcesList = (() => {
   const MEM = { open: null, sel: "" };   // the desktop tree's open nodes and selected document, kept while the page is open
 
   // ---------- the documents ----------
+  // HSP: SharePoint addresses of the documents the app holds (sp-held.json, tools/build_sp.py). A document's number in
+  // the list is its SharePoint link (blue, underlined), which is where the original file comes from: there is no
+  // "save the PDF" button, only Cache (keep it on this device for the app).
+  let HSP = {}; const hnk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const spNum = (d, text) => { const u = HSP[hnk(d.number)]; if (!u) return esc(text); let h = u; try { h = encodeURI(decodeURI(u)); } catch (e) {}
+    return `<a class="sp-a sl-spl" href="${esc(h)}" target="_blank" rel="noopener" title="Open in SharePoint">${esc(text)}</a>`; };
   let DOCS = null, IDX = {};   // IDX: the drawing index (PIDs/index.json "pids"), what an upload can go to
   async function load(){
     if (DOCS) return DOCS;
     const j = u => fetch(u).then(r => r.ok ? r.json() : {}).catch(() => ({}));
-    const [P, six, iss] = await Promise.all([j("PIDs/index.json"), j("sources/index.json"), j("issues.json")]); IDX = P.pids || {};
+    const [P, six, iss, hsp] = await Promise.all([j("PIDs/index.json"), j("sources/index.json"), j("issues.json"), j("sp-held.json")]); IDX = P.pids || {};
+    HSP = {}; Object.entries(hsp || {}).forEach(([k, v]) => HSP[hnk(k)] = v);
     if (window.Offline) await Offline.load().catch(() => {});
     const off = (window.Offline && Offline.load && await Offline.load().catch(() => null)) || { groups: [], sz: {} };
     const grp = id => (off.groups || []).find(g => g.id === id);
@@ -143,7 +150,7 @@ window.SourcesList = (() => {
       $(".sl-bar").innerHTML = `<span class="sl-n">Results <b>${list.length}</b></span>` +
         (list.length ? need.length ? `<button type="button" class="sl-all">Cache all ${need.length}</button>` : `<span class="sl-allok">${ICO.devOk} All cached</span>` : "") + `<i class="sl-pg"><i></i></i>`;
       const rows = list.slice(0, 400);
-      $(".sl-list").innerHTML = rows.map(d => `<div class="sl-r" data-r="${esc(d.k)}"><div class="sl-t"><b>${esc(d.number.replace(/^2000-/, ""))}</b><span>${esc([d.title, d.rev ? "Rev " + d.rev : "", d.size ? mb(d.size) + " MB" : ""].filter(Boolean).join(" · "))}</span></div>${saveBtn(d, d.t === "list" || !d.pdf ? "x" : "p")}${keepBtn(d)}<i class="sl-rb"><i></i></i></div>`).join("") +
+      $(".sl-list").innerHTML = rows.map(d => `<div class="sl-r" data-r="${esc(d.k)}"><div class="sl-t"><b>${spNum(d, d.number.replace(/^2000-/, ""))}</b><span>${esc([d.title, d.rev ? "Rev " + d.rev : "", d.size ? mb(d.size) + " MB" : ""].filter(Boolean).join(" · "))}</span></div>${d.t === "list" || !d.pdf ? saveBtn(d, "x") : ""}${keepBtn(d)}<i class="sl-rb"><i></i></i></div>`).join("") +
         (list.length > rows.length ? `<div class="sl-none">${list.length - rows.length} more: search to narrow</div>` : !list.length ? `<div class="sl-none">Nothing matches.</div>` : "");
       wire();
     }
@@ -157,7 +164,7 @@ window.SourcesList = (() => {
       const all = $(".sl-all"); if (all) all.onclick = () => { if (busyRow === el){ stop.x = true; return; } run(list.filter(d => stOf(d) !== "ok"), null, "all"); };
       paintQ();
       el.querySelectorAll(".sl-sv").forEach(a => a.addEventListener("click", e => e.stopPropagation()));
-      el.querySelectorAll(".sl-r").forEach(x => x.onclick = () => openDoc(DOCS.find(d => d.k === x.dataset.r)));
+      el.querySelectorAll(".sl-r").forEach(x => x.onclick = e => { if (e.target.closest(".sl-spl")) return; openDoc(DOCS.find(d => d.k === x.dataset.r)); });   // (the number is its SharePoint link)
     }
 
     // ---------- desktop: sections on the left, the selection tree on the right ----------
@@ -199,7 +206,7 @@ window.SourcesList = (() => {
       const okIco = s => s === "ok" ? `<span class="sl-ok" title="Cached on this device">${ICO.devOk}</span>` : s === "old" ? `<span class="sl-ok old" title="An older copy is cached: cache it again to update">${ICO.devOk}</span>`
         : s === "part" ? `<span class="sl-ok part" title="Partly cached">${ICO.dev}</span>` : "";
       const kp = (d, s) => d.keep.length ? `<button type="button" class="sl-ib sl-kp ${s}" title="${s === "ok" ? "Cached on this device. Click to remove" : s === "old" ? "Update the cached copy" : "Cache on this device to open with no signal"}">${s === "ok" ? ICO.devOk : ICO.dev}</button>` : "";
-      const acts = (d, s, up) => (up ? upB("d:" + d.k, [d]) : "") + `<span class="sl-dl">${(d.pdf ? saveBtn(d, "p", "sl-ib", "") : "") + (d.xlsx ? saveBtn(d, "x", "sl-ib", "") : "")}</span>` + kp(d, s);
+      const acts = (d, s, up) => (up ? upB("d:" + d.k, [d]) : "") + `<span class="sl-dl">${d.xlsx ? saveBtn(d, "x", "sl-ib", "") : ""}</span>` + kp(d, s);
       // ↓ a folder's files in Downloads as one zip
       const zpBtn = (id, ds, label) => ds.some(d => d.pdf || d.xlsx) ? `<button type="button" class="sl-ib sl-zp" data-zp="${esc(id)}" data-zn="${esc(label)}" title="Download these ${ds.length} as one zip">${ICO.save}</button>` : "";
       const grp = (id, lv, pre, last, label, ds, kids) => { const o = isOpen(id);
@@ -208,7 +215,7 @@ window.SourcesList = (() => {
         if (o) kids(lv ? pre.concat(!last) : pre); };
       const doc = (d, lv, pre, last) => { const id = "d:" + d.k, o = isOpen(id), s = stOf(d), v = d.info || {}, sel = x => MEM.sel === x ? " sel" : "";
         const tip = [v.kind, v.status, v.used && "Used for " + v.used, v.note].filter(Boolean).concat("Click to open").join("\n");
-        H.push(`<div class="sl-tr sl-doc${sel(id)}" data-id="${esc(id)}" data-r="${esc(d.k)}"><span class="sl-nm">${gd(pre, lv, last)}${tg(o)}${d.pdf ? ICO.pdf : ICO.xls}<span class="sl-l">${esc(d.number + (d.rev ? "_Rev" + d.rev : ""))}</span></span>` +
+        H.push(`<div class="sl-tr sl-doc${sel(id)}" data-id="${esc(id)}" data-r="${esc(d.k)}"><span class="sl-nm">${gd(pre, lv, last)}${tg(o)}${d.pdf ? ICO.pdf : ICO.xls}<span class="sl-l">${spNum(d, d.number + (d.rev ? "_Rev" + d.rev : ""))}</span></span>` +
           `<span class="sl-c"><button type="button" class="sl-op" title="${esc(tip)}">${esc(d.title)}</button></span><span class="sl-c">${d.rev ? "Rev " + esc(d.rev) : ""}</span><span class="sl-c">${d.size ? mb(d.size) + " MB" : ""}</span>` +
           `<span class="sl-c sl-pt">${okIco(s)}</span><span class="sl-acts">${acts(d, s, 1)}</span>${tail}</div>`);
         // its revisions: the latest, then the ones it superseded (uploads keep them: the index's "revs", oldest first),
@@ -235,7 +242,7 @@ window.SourcesList = (() => {
       if (l) l.textContent = `${mb(v)} ${r.classList.contains("sl-sec") ? "of" : "/"} ${mb(busy.total)} MB`;
       if (bar) bar.style.width = (v / (busy.total || 1) * 100).toFixed(1) + "%"; }
     if (!phone){
-      el.addEventListener("click", e => { const t = e.target; if (!DOCS || t.closest(".sl-sv")) return;   // (a Save link downloads by itself)
+      el.addEventListener("click", e => { const t = e.target; if (!DOCS || t.closest(".sl-sv,.sl-spl")) return;   // (a Save link downloads by itself, a number opens SharePoint)
         const x = t.closest("[data-x]");
         if (x){ const g = groups(); if (x.dataset.x === "1"){ g.forEach(id => open.add(id)); shut.clear(); }
           else { open.clear(); if (q) g.forEach(id => id[0] === "a" && shut.add(id)); } return draw(); }

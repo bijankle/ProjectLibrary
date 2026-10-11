@@ -79,27 +79,47 @@ window.PdfView = (() => {
     // one finger pans here, not by the browser's scrolling: phones lock that to one axis when a drag starts mostly
     // across or mostly down, so the sheet would only move in x or in y. Free in every direction, then a short glide.
     let pan = null, glide = 0;
-    const panFrom = e => { cancelAnimationFrame(glide); pan = { x: e.clientX, y: e.clientY, sl: V.body.scrollLeft, st: V.body.scrollTop, vx: 0, vy: 0, t: performance.now(), lx: e.clientX, ly: e.clientY }; };
+    // (held: the finger left down when a pinch ends. Spreading fingers are still moving apart as they lift, so that
+    // finger's first moments are not a pan and its lift is never a flick: it waits a moment, then pans with no glide.)
+    const panFrom = (e, held) => { cancelAnimationFrame(glide); const now = performance.now(); pan = { x: e.clientX, y: e.clientY, sl: V.body.scrollLeft, st: V.body.scrollTop, s: [[now, e.clientX, e.clientY]], held: held ? now + 160 : 0, np: !!held }; };
+    const zmax = () => cur.fit === "page" ? 24 : 10, gap = (a, b) => Math.max(30, Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY));   // (fingers almost touching: a few px of jitter must not read as a big zoom)
     V.body.addEventListener("pointerdown", e => { if (e.pointerType === "touch" && pts.size === 0) panFrom(e); });
-    V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ pan = null; const [a, b] = [...pts.values()]; pin = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1, mx: 0, my: 0 }; } });
+    V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ pan = null; const [a, b] = [...pts.values()]; pin = { d: gap(a, b), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1, mx: 0, my: 0 }; } });
+    // a finger whose lift never arrived (it went down on a tag box or text that was redrawn under it, so its events were
+    // lost) would pair with the next finger as a pinch and throw the sheet: the screen's own count of fingers puts it right
+    V.body.addEventListener("touchstart", e => { if (pts.size <= e.touches.length) return;
+      while (pts.size > e.touches.length) pts.delete(pts.keys().next().value);
+      if (pts.size < 2 && pin){ pin = null; V.sheet.style.transform = ""; }
+      if (pts.size === 1 && !pan) panFrom([...pts.values()][0]); }, { passive: true });
     V.body.addEventListener("pointermove", e => { if (!pan || e.pointerType !== "touch" || pts.size !== 1 || !pts.has(e.pointerId)) return;
+      const now = performance.now();
+      if (pan.held){ if (now < pan.held) return; Object.assign(pan, { x: e.clientX, y: e.clientY, sl: V.body.scrollLeft, st: V.body.scrollTop, s: [[now, e.clientX, e.clientY]], held: 0 }); return; }   // (the pan starts from where the finger is now: no jump)
       V.body.scrollLeft = pan.sl - (e.clientX - pan.x); V.body.scrollTop = pan.st - (e.clientY - pan.y);
-      const now = performance.now(), dt = Math.max(1, now - pan.t); pan.vx = .8 * (e.clientX - pan.lx) / dt + .2 * pan.vx; pan.vy = .8 * (e.clientY - pan.ly) / dt + .2 * pan.vy; pan.t = now; pan.lx = e.clientX; pan.ly = e.clientY; });
-    V.body.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e); if (pin && pts.size === 2){ const [a, b] = [...pts.values()]; pin.f = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pin.d;
+      pan.s.push([now, e.clientX, e.clientY]); while (pan.s.length > 2 && now - pan.s[0][0] > 120) pan.s.shift(); });   // (the last 120 ms of the drag, for the glide's speed)
+    V.body.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e); if (pin && pts.size === 2){ const [a, b] = [...pts.values()];
+      pin.f = Math.max(1, Math.min(zmax(), pin.z * gap(a, b) / pin.d)) / pin.z;   // (never past the zoom limits, so nothing snaps back on lifting)
       // pinch and move at once (as in a photo app): the sheet scales about where the fingers started and follows their midpoint
       pin.mx = (a.clientX + b.clientX) / 2 - pin.cx; pin.my = (a.clientY + b.clientY) / 2 - pin.cy;
-      if (!pin.o){ const q = V.sheet.getBoundingClientRect(); pin.o = `${pin.cx - q.left}px ${pin.cy - q.top}px`; } V.sheet.style.transformOrigin = pin.o; V.sheet.style.transform = `translate(${pin.mx}px,${pin.my}px) scale(${pin.f})`; } });
+      if (!pin.o){ const q = V.sheet.getBoundingClientRect(); pin.o = `${pin.cx - q.left}px ${pin.cy - q.top}px`; pin.fx = (pin.cx - q.left) / q.width; pin.fy = (pin.cy - q.top) / q.height; }
+      V.sheet.style.transformOrigin = pin.o; V.sheet.style.transform = `translate(${pin.mx}px,${pin.my}px) scale(${pin.f})`; } });
     let lastTap = null;
-    const up = e => { pts.delete(e.pointerId); if (pin && pts.size < 2){ const p = pin; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx, p.cy); V.body.scrollLeft -= p.mx; V.body.scrollTop -= p.my; slide(); sharp(); lastTap = null; }
+    const up = e => { pts.delete(e.pointerId);
+      // the pinch ends: the point of the sheet the fingers started on lands where their midpoint finished (one step, so
+      // it holds whether the sheet scrolls or still sits inside the window)
+      if (pin && pts.size < 2){ const p = pin, z0 = V.zoom; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx + p.mx, p.cy + p.my, p.fx, p.fy);
+        if (V.zoom === z0){ V.body.scrollLeft -= p.mx; V.body.scrollTop -= p.my; } slide(); sharp(); lastTap = null;
+        if (e.pointerType === "touch" && pts.size === 1) panFrom([...pts.values()][0], true); else pan = null; return; }
       // double-tap: in twice as close where tapped; again (zoomed in) back out to the whole sheet
-      if (e.pointerType === "touch" && e.type === "pointerup" && !pts.size && pan && Math.hypot(e.clientX - pan.x, e.clientY - pan.y) < 10){
+      if (e.pointerType === "touch" && e.type === "pointerup" && !pts.size && pan && !pan.np && Math.hypot(e.clientX - pan.x, e.clientY - pan.y) < 10){
         const now = performance.now(); if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30){ lastTap = null; pan = null; zoomTo(V.zoom > 1.05 ? 1 : 2, e.clientX, e.clientY); return; }
         lastTap = { t: now, x: e.clientX, y: e.clientY }; }
       if (e.pointerType !== "touch") return;
-      if (pts.size === 1){ panFrom([...pts.values()][0]); return; }   // a pinch ends with one finger still down: it carries on panning
+      if (pts.size === 1){ panFrom([...pts.values()][0], true); return; }   // more fingers than a pinch, one still down: it carries on panning
       if (pts.size || !pan) return; const g = pan; pan = null;
-      if (e.type === "pointercancel" || performance.now() - g.t > 80) return;   // a finger that stopped before lifting: no glide
-      let vx = g.vx, vy = g.vy, t0 = performance.now();
+      const s = g.s, a = s[0], b = s[s.length - 1], dt = b[0] - a[0];
+      if (g.np || e.type === "pointercancel" || performance.now() - b[0] > 80 || dt < 24) return;   // after a pinch, or a finger that stopped before lifting: no glide
+      let vx = (b[1] - a[1]) / dt, vy = (b[2] - a[2]) / dt, t0 = performance.now();
+      const sp = Math.hypot(vx, vy), cap = 3; if (sp > cap){ vx *= cap / sp; vy *= cap / sp; }   // (px per ms: one odd sample can't throw the sheet across the screen)
       const step = now => { const dt = Math.min(32, now - t0); t0 = now; V.body.scrollLeft -= vx * dt; V.body.scrollTop -= vy * dt; const k = Math.pow(.995, dt); vx *= k; vy *= k;
         if (Math.hypot(vx, vy) > .02) glide = requestAnimationFrame(step); };
       if (Math.hypot(vx, vy) > .15) glide = requestAnimationFrame(step); };
@@ -413,7 +433,9 @@ window.PdfView = (() => {
     // the sharp layer no longer matches a new size: hide it (the background layer stretches) until its redraw is ready
     V.textEl.style.setProperty("--scale-factor", s);
     V.sheet.style.setProperty("--rbw", Math.max(1, Math.min(2.5, vp1.width * s * .0006)).toFixed(2) + "px");   // the red outline thins as the sheet shrinks
-    if (V.sheet.style.width !== w || V.sheet.style.height !== h || bg){ V.hi.style.visibility = "hidden"; V.sheet.style.width = w; V.sheet.style.height = h; }
+    // (the drawing number printed on the sheet never runs wider than the sheet: past its edge it gave the window room to scroll sideways into nothing)
+    V.sheet.style.setProperty("--dnf", (vp1.width * s / Math.max(8, String(cur.label || cur.number || "").length * .68)).toFixed(1) + "px");
+    if (V.sheet.style.width !== w || V.sheet.style.height !== h || bg){ hideHi(); V.sheet.style.width = w; V.sheet.style.height = h; }
     slide(); if (bg){ V.sheet.classList.add("sp-wait"); drawBg(); drawRefs(); } sharp();   // (a new page's boxes wait for its picture)
   }
   // Both layers draw off screen and are swapped in whole when finished, so nothing blanks or jumps while panning.
@@ -435,10 +457,13 @@ window.PdfView = (() => {
     bgTask.promise.then(() => { if (g !== bgGen) return; V.bg.width = off.width; V.bg.height = off.height; V.bg.getContext("2d").drawImage(off, 0, 0); V.sheet.classList.remove("sp-wait"); })
       .catch(() => { if (g === bgGen) V.sheet.classList.remove("sp-wait"); });
   }
+  // the sharp layer hidden: its box goes too. Left at the size and place of a closer zoom it kept the window scrollable
+  // far past a sheet since zoomed out, so a drag could carry the sheet off into empty space.
+  function hideHi(){ const c = V.hi.style; c.visibility = "hidden"; c.left = c.top = "0px"; c.width = c.height = "0px"; }
   function sharp(){
     if (!V.pg) return;
     const dpr = devicePixelRatio || 1, s = V.base * V.zoom, sw = V.sheet.offsetWidth, sh = V.sheet.offsetHeight;
-    if (V.picW && V.picW >= sw * dpr * .85){ hiGen++; if (hiTask) hiTask.cancel(); V.hi.style.visibility = "hidden"; return; }   // the picture is detailed enough at this zoom: no PDF drawing
+    if (V.picW && V.picW >= sw * dpr * .85){ hiGen++; if (hiTask) hiTask.cancel(); hideHi(); return; }   // the picture is detailed enough at this zoom: no PDF drawing
     const x0 = Math.max(0, V.body.scrollLeft - 8), y0 = Math.max(0, V.body.scrollTop - 8);
     const w = Math.min(sw - x0, V.body.clientWidth + 16), h = Math.min(sh - y0, V.body.clientHeight + 16);
     if (w <= 0 || h <= 0) return;
