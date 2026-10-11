@@ -56,6 +56,9 @@ window.PdfView = (() => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f"){ e.preventDefault(); q.focus(); q.select(); return; }
       if (e.key === "Escape") close(); if (e.key === "ArrowRight" && V.zoom === 1) go(V.page + 1); if (e.key === "ArrowLeft" && V.zoom === 1) go(V.page - 1); });
     addEventListener("popstate", e => { const st = e.state, v = st && st.sp && REG.get(st.id);
+      // the phone's swipe back (or the browser's Back) while zoomed in: out to the whole sheet, the viewer stays open
+      if (zIgnore){ zIgnore = false; return; }
+      if (zIn && !el.hidden && !(st && st.z)){ zIn = false; if (V.zoom > 1.001){ quiet(); zoomTo(1); } return; }
       if (v) restore(st.id); else if (!el.hidden) close(true); });
     // rotating the phone: refit the sheet once the new size has settled (keeps the zoom level)
     // (only a real size change: the browser bar sliding in and out while panning must not redraw everything)
@@ -297,7 +300,7 @@ window.PdfView = (() => {
     const id = ++seq; v.seq = id; v.depth = 1; REG.set(id, v); curId = id;
     // one browser history step for the whole visit: the phone's swipe back (or the browser's Back) leaves the viewer and
     // returns to the page as it was; drawings and views within the visit step back with the app's ← (PdfView.back)
-    if (history.state && history.state.sp && !V.el.hidden) history.replaceState({ sp: 1, id }, ""); else history.pushState({ sp: 1, id }, ""); fwdBtn();
+    if (history.state && history.state.sp && !V.el.hidden) history.replaceState(Object.assign({ sp: 1, id }, zIn && history.state.z ? { z: 1 } : {}), ""); else history.pushState({ sp: 1, id }, ""); fwdBtn();
   }
   const fwdBtn = () => { const me = REG.get(curId), b = V && V.el.querySelector(".sp-fwd"); if (b) b.disabled = !me || ![...REG.values()].some(v => v.seq > me.seq); };
   function settleSoon(){ if (!V || V.el.hidden) return; clearTimeout(st8); st8 = setTimeout(settle, 500); }
@@ -394,7 +397,7 @@ window.PdfView = (() => {
   }
   async function unrot(){ if (V) V.rot = 0; if (freed){ freed = false; try { screen.orientation.unlock(); } catch (e) {} } if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
   function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; V.cx.hidden = true; document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
-    if (!fromPop && history.state && history.state.sp) history.back(); }
+    if (!fromPop && history.state && history.state.sp){ if (zIn && history.state.z){ zIn = false; history.go(-2); } else history.back(); } else if (!fromPop) zIn = false; }
   // out of the way for a tag tapped on the sheet, its history step kept: Back from the tag's item reopens this view
   const hide = () => close(true);
   // opened for a searched item: one place on this page, four times closer centred on it; several, zoomed to fit them all
@@ -441,7 +444,15 @@ window.PdfView = (() => {
     V.sheet.style.setProperty("--dnf", (vp1.width * s / Math.max(8, String(cur.label || cur.number || "").length * .68)).toFixed(1) + "px");
     if (V.sheet.style.width !== w || V.sheet.style.height !== h || bg){ hideHi(); V.sheet.style.width = w; V.sheet.style.height = h; }
     slide(); if (bg){ V.sheet.classList.add("sp-wait"); drawBg(); drawRefs(); } sharp();   // (a new page's boxes wait for its picture)
-    cxFit();
+    cxFit(); zoomStep();
+  }
+  // zoomed in: one more browser history step, so a swipe back goes to the whole sheet first (popstate above); back at
+  // the whole sheet another way (zoom extents, double tap), that step is taken off again
+  let zIn = false, zIgnore = false;
+  function zoomStep(){
+    if (!V || V.el.hidden || !history.state || !history.state.sp) return;
+    if (V.zoom > 1.001 && !zIn){ zIn = true; history.pushState(Object.assign({}, history.state, { z: 1 }), ""); }
+    else if (V.zoom <= 1.001 && zIn){ zIn = false; if (history.state.z){ const st = Object.assign({}, history.state); delete st.z; zIgnore = true; history.back(); setTimeout(() => { if (history.state && history.state.sp) history.replaceState(Object.assign({}, st), ""); }, 60); } }
   }
   // the panel under the sheet: shown on a phone while the whole sheet is in view and leaves room under it (upright, not
   // typing in the find box), from the sheet's foot down to the buttons; zooming in gives the screen back to the sheet
