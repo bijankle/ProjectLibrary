@@ -9,8 +9,19 @@ window.SP = (() => {
   let N = new Map(), p = null;
   const load = () => p || (p = fetch("sp.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => {
     N = new Map(Object.entries(d).map(([k, v]) => [nk(k), v])); try { dispatchEvent(new Event("kcgm-sp")); } catch (e) {} return d; }));
-  // a SharePoint file opens in SharePoint's own viewer (web=1), not as a download
-  const view = u => u && /sharepoint\.com/i.test(u) && !/[?&]web=1\b/.test(u) ? u + (u.includes("?") ? "&" : "?") + "web=1" : u;
+  // a SharePoint file opens in SharePoint's own viewer, not as a download: a PDF through the library's preview page
+  // (a phone's browser hands a bare PDF link to the phone's PDF app, which has no SharePoint login and shows blank
+  // pages), anything else (Excel, Word) with web=1
+  const view = u => {
+    if (!u || !/sharepoint\.com/i.test(u) || /[?&](web=1|id=)/.test(u)) return u;
+    const m = u.match(/^(https:\/\/[^/]+)(\/sites\/[^/]+\/[^/?#]+)(\/[^?#]+\.pdf)(?:[?#].*)?$/i);
+    if (m) {
+      let lib, path;
+      try { lib = decodeURIComponent(m[2]); path = decodeURIComponent(m[2] + m[3]); } catch (e) { return u; }
+      return m[1] + encodeURI(lib) + "/Forms/AllItems.aspx?id=" + encodeURIComponent(path) + "&parent=" + encodeURIComponent(path.replace(/\/[^/]*$/, ""));
+    }
+    return u + (u.includes("?") ? "&" : "?") + "web=1";
+  };
   const url = n => view(N.get(nk(n)) || "");
   const enc = u => { try { return encodeURI(decodeURI(u)); } catch (e) { return encodeURI(u); } };
   const a = (n, text) => { const u = url(n); return u ? `<a class="sp-a" href="${esc(enc(u))}" target="_blank" rel="noopener" title="Open in SharePoint">${text == null ? esc(n) : text}</a>` : (text == null ? esc(n) : text); };
