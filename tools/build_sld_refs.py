@@ -30,6 +30,11 @@ def tag(t):
     if not x and len(s) == 4 and s[3].isalpha() and nk(f"{a}{n}{c}{s}".translate(D)) not in KEYS: s, x = s[:3], s[3]   # (556B: a suffix letter, not a fourth digit)
     t = f"{a}{n.translate(D)}-{c.translate(A)}-{s.translate(D)}{x}"
     return t if t.split("-")[0] in AREAS and c.translate(A).isalpha() else None
+# a tag read with its hyphens lost (F75PW556, F75PW556-1200): only a list's own tag, exactly, so nothing is guessed
+BARE = re.compile(r"([A-Z]\d{2,3})([A-Z]{2,4})(\d{3,4}[A-Z]?)(?:[-.][A-Z0-9.]*)?")
+def bare(t):
+    m = BARE.fullmatch(t.upper()); f = m and f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+    return f if f and nk(f) in KEYS else None
 refs = json.load(open(os.path.join(R, "pid-refs.json")))
 for k in [k for k in refs if ELEC(k)]: del refs[k]
 n = 0; other = {}
@@ -47,9 +52,18 @@ for num, v in ix.items():
             if k in KEYS: return box(a) + [KEYS[k][0], KEYS[k][1], "t"]
             f = tag(t)
             if f and nk(f) in KEYS: return box(a) + [KEYS[nk(f)][0], KEYS[nk(f)][1], "t"]
+            b = bare(t) if len(a) == 1 else None
+            if b: return box(a) + [KEYS[nk(b)][0], KEYS[nk(b)][1], "t"]
             if not f and len(a) == 1 and OLD.fullmatch(t.upper()): f = t.upper()   # the existing plant's numbering: 25-SW-31, 30-PP-65A
-            if f and len(a) == 1: oth.add(f)   # a tag no list has: named on the drawing's page, not a link on the sheet
+            if f and (len(a) == 1 or "-" in t): oth.add(f)   # (joined pieces too, when they carry the tag's own hyphens)   # a tag no list has: named on the drawing's page, not a link on the sheet
             return None
+        # side by side on the sheet (the OCR layer files each word as its own line): the same height, each word starting
+        # within a letter height or so of where the one before ends
+        def beside(a):
+            for u, w in zip(a, a[1:]):
+                h = max(u[3] - u[1], w[3] - w[1]) or 1
+                if min(u[3], w[3]) - max(u[1], w[1]) < .5 * h or not (-.3 * h < w[0] - u[2] < 1.2 * h): return False
+            return True
         used = set()
         for i, w in enumerate(ws):
             r = hit([w])
@@ -58,7 +72,7 @@ for num, v in ix.items():
         for g in (2, 3):
             for i in range(len(ws) - g + 1):
                 a = ws[i:i + g]
-                if any(j in used for j in range(i, i + g)) or len({(w[5], w[6]) for w in a}) > 1: continue
+                if any(j in used for j in range(i, i + g)) or (len({(w[5], w[6]) for w in a}) > 1 and not beside(a)): continue
                 r = hit(a)
                 if r: out.append(r); used.update(range(i, i + g))
     if out: refs[num] = out; n += len(out)
