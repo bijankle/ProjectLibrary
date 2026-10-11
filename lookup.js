@@ -10,7 +10,7 @@
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // Things that look like a plant code inside any text
   const TAG_RE = /\b(2000-[A-Z0-9]{3,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}|\d{2}-\d{4}-[A-Z0-9]{1,6}-[A-Z0-9]{2,6}-\d{2,4}(?:-[A-Z]{1,3})?|F\d{2,3}[A-Z]{2,4}\d{2,4}[A-Z]{0,4}(?:-[A-Z]{1,4}\d{0,2})?-[A-Z]{1,3}\d{1,2}(?:-[A-Z]{1,2})?|F\d{2,3}[A-Z]{2,4}\d{3,4}[A-Z]?-[A-Z]{2,4}\d{0,2}|F\d{2,3}-[A-Z]{1,4}-\d{2,4}[A-Z]?|F\d{2}-\d{5}|SP-[A-Z]{2}-\d{3}|[A-Z]{1,5} ?\d{5}[A-Z]?)\b/g;
-  const TYPE_ORDER = ["pfd", "mel", "elec", "cable", "ins", "cv", "mv", "line", "spec", "spi", "hose", "gloss", "pid"];
+  const TYPE_ORDER = ["pfd", "mel", "elec", "cable", "ins", "cv", "mv", "line", "spec", "spi", "hose", "gloss", "pid", "otag"];
   const ICON = {};   // no pictures: each list is named in words (the type line, the pills)
 
   L.addExtra = list => { extras = extras.concat(list); if (DB) indexExtras(list); };
@@ -20,7 +20,7 @@
   let dtLoad = null, sideLoad = null, DOCN = new Set();   // the lists held in the app (Sources), by number
   fetch("issues.json").then(r => r.ok ? r.json() : {}).then(d => { Object.values((d.meta && d.meta.docs) || {}).forEach(x => x.number && DOCN.add(norm(x.number))); }).catch(() => {});
   // (the sheet tags and the IOMs are waited for with the search data: a page opened before they arrived had no pills or IOM row)
-  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build();
+  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), fetch("contents.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { CT = d && d.d; CTBY = null; OTBY = null; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build(); otagExtras();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
     // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
@@ -72,7 +72,7 @@
     if (t === "cable") return [g("From") && "from " + g("From"), g("To") && "to " + g("To")].filter(Boolean).join(" ");
     return r[1] || "";
   }
-  const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "Drawing" : t === "spec" ? "Pipe & valve spec" : DB.types[t].n;
+  const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "Drawing" : t === "spec" ? "Pipe & valve spec" : t === "otag" ? "Read on drawings" : DB.types[t].n;
   const textOf = it => it.txt || (it.txt = (it.r ? it.r.join(" ") : it.key + " " + it.name).toLowerCase());
 
   L.search = (q, limit = 60) => {
@@ -108,7 +108,7 @@
     const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
     return hits.map((it, i) => `<button class="lk-row1 lk-1l${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}">${L.row1(it.key, L.listName(it), L.tsfTag(it))}</button>`).join("");
   };
-  const PILLN = { mel: "Equipment", elec: "Electrical equipment", cable: "Cables", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
+  const PILLN = { otag: "Read on drawings", mel: "Equipment", elec: "Electrical equipment", cable: "Cables", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
   const KEYF = {
     mel: ["Equipment name", "Size / description", "Installed power (kW)", "Status", "Stage", "P&ID"],
     ins: ["Description", "Instrument type", "Equipment number", "Range / units", "Loop number", "P&ID"],
@@ -302,7 +302,7 @@
       if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
         kept.unshift(...dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
           return ns.length ? { l: r.l, v: ns.join(", "), h: ns.map(n => dwgA(n)).join("<br>") } : r; })); }
-      iomRow(it, kept); scmRow(it, kept);
+      iomRow(it, kept); drawRows(it, kept);
       flagRows(kept, [it.key, ...twins.map(x => x.key)]);
       // MEL equipment with electrical data: two bands, Mechanical (the MEL and the other lists) and Electrical
       const el = kept.filter(r => r.s === "elx");
@@ -317,7 +317,9 @@
     if (others.length) secs.push({ id: "also", label: "Also in", n: others.length, html: others.map(x => `<a class="lk-a lk-row lk-1l" data-k="${x.k}" data-t="${x.t}">${L.row1(typeName(x.t), headName(x) || x.name)}</a>`).join("") });
     // related items: one pill per list that refers to this tag (or its twin entries)
     // (an SLD, TLD or block diagram: the lists don't name it, so its pills are the tags read on the sheet)
-    const onSheet = it.t === "pid" && SLDT && SLDT[it.key] ? SLDT[it.key].flatMap(k => byKey.get(norm(k)) || []).filter(x => x.t !== "pid") : [];
+    // (any drawing: everything read on the sheet, contents.json; the electrical sheet tags as before when that is missing)
+    const cs = it.t === "pid" && CT ? CT[it.key] : null;
+    const onSheet = it.t === "pid" ? [...new Set((cs ? cs.k || [] : (SLDT && SLDT[it.key]) || []).flatMap(k => byKey.get(norm(k)) || []))].filter(x => x.t !== "pid" && x.t !== "otag") : [];
     const rf = [...new Set([...[it, ...twins].flatMap(y => refs.get(y.k) || []), ...onSheet])].filter(x => x !== it && !twins.includes(x));
     if (rf.length){
       const g = {}; rf.forEach(x => (g[x.t] = g[x.t] || []).push(x));
@@ -328,13 +330,19 @@
     }
     // an electrical drawing: the tags read on the sheet that no list has (a switchboard the equipment lists leave out),
     // each with the other drawings that name it
-    const ot = it.t === "pid" && SLDT && SLDT._other && SLDT._other[it.key];
+    const ot = it.t === "pid" && (cs ? cs.o : SLDT && SLDT._other && SLDT._other[it.key]);
     if (ot && ot.length){
-      if (!OTBY){ OTBY = new Map(); Object.entries(SLDT._other).forEach(([d, ks]) => ks.forEach(k => OTBY.set(k, [...(OTBY.get(k) || []), d]))); }
+      if (!OTBY){ OTBY = new Map(); Object.entries(CT || {}).forEach(([d, e]) => (e.o || []).forEach(k => OTBY.set(k, [...(OTBY.get(k) || []), d]))); }
       secs.push({ id: "r-other", label: "Other tags", n: ot.length, html: `<div class="lk-ns">Other tags read on this sheet. No list has them, so there is no record to open.</div>` +
         ot.map(t => { const a = (OTBY.get(t) || []).filter(d => d !== it.key && window.Pid && Pid.has(d)), SHOW = 6;
           return `<div class="lk-row lk-ot"><b>${esc(t)}</b>${a.length ? `<div class="lk-iomt">Also on ${a.slice(0, SHOW).map(d => `<a class="lk-a" data-dwg="${esc(d)}" data-find="${esc(t)}" href="#">${esc(Pid.label(d))}</a>`).join(", ")}${a.length > SHOW ? ` and ${a.length - SHOW} more` : ""}</div>` : ""}</div>`; }).join("") });
     }
+    // the other drawings and documents named on the sheet (a P&ID's joining drawings have their own pill below)
+    const rr = cs && cs.r && !/-PID-/.test(it.key) ? cs.r : null;
+    if (rr && rr.length) secs.push({ id: "r-refs", label: "References", n: rr.length, html: rr.map(d => `<div class="lk-row lk-ot">${window.Pid && Pid.has(d) ? dwgA(d) : window.SP && SP.url(d) ? SP.a(d) : esc(d)}</div>`).join("") });
+    // read on drawings, no list has it: the drawings it is on, each opening on that spot
+    if (it.t === "otag") secs.push({ id: "det", label: "Drawings", n: it.dws.length, html: `<div class="lk-ns">Read on these drawings. No list has it, so there is no record to open.</div>` +
+      it.dws.map(d => `<div class="lk-row lk-ot"><a class="lk-a" data-dwg="${esc(d)}" data-find="${esc(it.key)}" href="#">${esc(Pid.label(d))}</a></div>`).join("") });
     // a P&ID: the drawings it joins (P&IDs pill first) and the lines that cross, each split From / To one row below
     const pl = it.t === "pid" && /-PID-/.test(it.key) && L.pidLinks(it.key);
     if (pl){
@@ -378,13 +386,33 @@
   // title; those that name the tag (or the valve code, make or model) first. A row under the drawings, SharePoint links.
   let IOM = null, SLDT = null;   // (SLDT: the tags read on each SLD / TLD / block diagram, sld-tags.json)
   // the schematics a tag is read on (sld-tags.json inverted), a row under the drawings: number and title, opens the sheet
-  let SCMBY = null, OTBY = null;
-  function scmRow(it, rows){
-    if (!SLDT) return;
-    if (!SCMBY){ SCMBY = new Map(); Object.entries(SLDT).forEach(([d, ks]) => { if (/-SCM-/.test(d)) ks.forEach(k => { const n = norm(k); SCMBY.set(n, [...(SCMBY.get(n) || []), d]); }); }); }
-    const a = (SCMBY.get(it.k) || []).filter(d => window.Pid && Pid.has(d)); if (!a.length) return;
-    const i = rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l)); let j = i; if (i >= 0) while (j + 1 < rows.length && /^(P&IDs?|PFD)$/.test(rows[j + 1].l)) j++;
-    rows.splice(j + 1, 0, { l: a.length > 1 ? "Schematics" : "Schematic", v: a.join(", "), h: a.map(d => dwgA(d)).join("<br>") });   // (the number only: the drawing's title is on its own page)
+  let SCMBY = null, OTBY = null, CT = null, CTBY = null;   // (CT: what is read on each drawing, contents.json, tools/build_contents.py)
+  // every drawing the item is read on (contents.json inverted), merged into its drawing rows by kind: P&ID, PFD, SLD,
+  // schematic, block diagram; numbers only, each opens the drawing
+  const DKIND = [["P&ID", /-PID-/], ["PFD", /-PFD-/], ["SLD", /-[ST]LD-/], ["Schematic", /-SCM-/], ["Block diagram", /-BLK-/], ["Drawing", /./]];
+  const dkind = d => DKIND.find(([, re]) => re.test(d))[0];
+  function ctBy(){ if (!CTBY && CT){ CTBY = new Map(); Object.entries(CT).forEach(([d, e]) => [...(e.k || []), ...(e.o || [])].forEach(k => { const n = norm(k); CTBY.set(n, [...(CTBY.get(n) || []), d]); })); } return CTBY; }
+  function drawRows(it, rows){
+    const by = ctBy(); if (!by) return;
+    const found = [...new Set([it, ...(byKey.get(it.k) || [])].flatMap(x => by.get(x.k) || []))].filter(d => d !== it.key && window.Pid && Pid.has(d));
+    if (!found.length) return;
+    const DRE2 = /2000-[A-Z0-9]{2,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}/g, lab = r => r.l.replace(/s$/, "");
+    DKIND.forEach(([kind]) => {
+      const add = found.filter(d => dkind(d) === kind); if (!add.length) return;
+      const ri = rows.findIndex(r => lab(r) === kind), had = ri >= 0 ? [...new Set(String(rows[ri].v).match(DRE2) || [])] : [];
+      const all = [...had, ...add.filter(d => !had.includes(d))]; if (all.length === had.length) return;
+      const row = { l: all.length > 1 ? kind + "s" : kind, v: all.join(", "), h: all.map(d => dwgA(d)).join("<br>") };
+      if (ri >= 0){ rows[ri] = Object.assign({}, rows[ri], row); return; }
+      let k = -1; rows.forEach((r, x) => { if (DKIND.some(([n]) => n === lab(r))) k = x; });
+      rows.splice(k + 1, 0, row);
+    });
+  }
+  // what is read on drawings that no list has (a board, a line the line list leaves out): searchable on its own; its page
+  // lists the drawings it is on, each opening on that spot
+  function otagExtras(){
+    if (!CT) return; const m = new Map();
+    Object.entries(CT).forEach(([d, e]) => (e.o || []).forEach(o => { if (!byKey.has(norm(o))) m.set(o, [...(m.get(o) || []), d]); }));
+    L.addExtra([...m].map(([o, ds]) => ({ t: "otag", key: o, code: o, name: `Read on ${ds.length} drawing${ds.length > 1 ? "s" : ""}, no list has it`, words: "drawing", dws: ds })));
   }
   function iomRow(it, rows){
     if (!IOM || !/^(mel|ins|cv)$/.test(it.t)) return;
