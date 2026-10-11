@@ -316,10 +316,22 @@ window.Tabs = (() => {
   const pjGet = () => { try { const v = JSON.parse(localStorage.getItem("kcgm_proj") || "null"); if (v && (v.main || v.tsf)) return { main: !!v.main, tsf: !!v.tsf }; } catch (e) {} return { main: true, tsf: true }; };
   const pjLabel = v => v.main && v.tsf ? "All" : v.main ? PJN.main : PJN.tsf;
   // (one project now: the plant and the TSF together, so the box just names it; the picker code below stays for later)
-  const PJ = `<div class="pj"><span class="pj-b pj-one" title="Project"><b class="pj-v">KCGM</b></span></div>`;
+  // beside it the round Update button: a red dot when a newer version is on the server; holding or hovering says when
+  // the app was last updated
+  const PJ = `<div class="pj"><span class="pj-b pj-one" title="Project"><b class="pj-v">KCGM</b></span><button type="button" class="pj-up" aria-label="Update app" title="Update app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><i class="pj-dot" hidden></i></button></div>`;
   const TICK = `<svg viewBox="1.4 2 9.2 8.2" width="100%" height="100%" style="display:block;overflow:visible" aria-hidden="true"><path d="M2.4 6.3 5 8.8 9.8 3.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   function wirePj(){
-    const box = el.querySelector(".pj"); if (!box) return; const b = box.querySelector(".pj-b"), m = box.querySelector(".pj-m"); if (!m) return;
+    const box = el.querySelector(".pj"); if (!box) return; const b = box.querySelector(".pj-b"), m = box.querySelector(".pj-m");
+    const up = box.querySelector(".pj-up");
+    if (up && !up.dataset.on){ up.dataset.on = 1;
+      const ago = () => { let t = 0; try { t = +localStorage.getItem("kcgm_updated") || 0; } catch (e) {} if (!t) return "Update app";
+        const m2 = Math.round((Date.now() - t) / 60000), d = new Date(t); return `Update app (last updated ${m2 < 1 ? "just now" : m2 < 60 ? m2 + " min ago" : m2 < 1440 ? Math.round(m2 / 60) + " h ago" : d.getDate() + " " + "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[d.getMonth()]})`; };
+      const dot = async () => { if (!window.AppUpdate) return; const [a, l] = await Promise.all([AppUpdate.installed(), AppUpdate.latest()]); const n = !!(a && l && a !== l);
+        up.querySelector(".pj-dot").hidden = !n; up.classList.toggle("new", n); up.title = (n ? "A new version is out. " : "") + ago(); };
+      up.addEventListener("pointerenter", () => { up.title = (up.classList.contains("new") ? "A new version is out. " : "") + ago(); });
+      up.onclick = e => { e.stopPropagation(); up.disabled = true; up.classList.add("spin"); stamp(); window.AppUpdate && AppUpdate.update(); };
+      setTimeout(dot, 2500); setInterval(dot, 30 * 60000); }
+    if (!m) return;
     const count = k => { try { if (window.Lookup && Lookup.ready()) return (window.Browse && Browse.projCount ? Browse.projCount(k) : Lookup.projCount(k)).toLocaleString(); } catch (e) {} return ""; };
     const label = () => { box.querySelector(".pj-v").textContent = pjLabel(pjGet()); };
     const draw = () => { const v = pjGet();
@@ -422,6 +434,10 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .pj-b{position:relative;width:104px;height:22px;display:flex;align-items:center;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:0 20px 0 8px;font:inherit;cursor:pointer;margin:0 4px}
 .pj-b b{font-size:13px;font-weight:800;line-height:1;white-space:nowrap}
 .pj-one{width:auto;min-width:64px;justify-content:center;padding:0 8px;cursor:default}.pj-one:after{display:none}
+.pj-up{position:relative;flex:none;width:22px;height:22px;margin:0 4px 0 2px;padding:0;border:1.5px solid var(--gold,#c9a227);border-radius:50%;background:var(--card);color:color-mix(in srgb,var(--gold,#c9a227) 70%,var(--ink));display:flex;align-items:center;justify-content:center;cursor:pointer}
+.pj-up svg{width:12px;height:12px}.pj-up .pj-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:#e0453a;border:1.5px solid var(--card)}.pj-up .pj-dot[hidden]{display:none}
+.pj-up.spin svg{animation:pjspin 1s linear infinite}@keyframes pjspin{to{transform:rotate(360deg)}}
+:root.phone .pj-up{width:36px;height:36px;margin:0 0 0 8px}:root.phone .pj-up svg{width:18px;height:18px}:root.phone .pj-up .pj-dot{width:10px;height:10px;top:0;right:0}:root.phone .pj .pj-b{flex:1 1 auto;width:auto}
 .pj-b:after{content:"▾";position:absolute;right:7px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:11px}
 /* its list: the box's own size and lettering, each name right under the box's (a ✓ where the box has its ▾) */
 .pj-m{position:absolute;top:calc(100% + 2px);left:4px;width:104px;box-sizing:border-box;background:var(--card);border:1.5px solid var(--line);border-radius:6px;box-shadow:0 6px 16px rgba(0,0,0,.16);overflow:hidden;z-index:80}.pj-m[hidden]{display:none}
