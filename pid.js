@@ -10,6 +10,13 @@ window.Pid = (() => {
     .then(d => { IX = d; Object.keys(d.pids).forEach(k => byN.set(norm(k), k)); setTimeout(() => refs(), 1500); return d; }).catch(e => { loading = null; throw e; }));
   const key = n => byN.get(norm(n));
   const info = n => { const k = key(n); return k ? Object.assign({ number: k }, IX.pids[k]) : null; };
+  // the drawing's own title, without the area (WBS) name in front: "Milling & classification - ball mill F13-SW-003 415V
+  // MCC single line diagram sheet 3" is "Ball mill F13-SW-003 …". The first part before " - " goes, and the next ones
+  // too while they name no plant tag and a later part does ("CIL4 - carbon treatment & elution - F22-SW-131 - …")
+  const TAGX = /\b[A-Z]?\d{2,3}-[A-Z]{2,4}-\d/;
+  const short = n => { const d = info(n), t = d && d.title || ""; const a = t.split(" - "); if (a.length < 2) return t;
+    a.shift(); while (a.length > 1 && !TAGX.test(a[0]) && a.slice(1).some(x => TAGX.test(x))) a.shift();
+    const r = a.join(" - "); return r.charAt(0).toUpperCase() + r.slice(1); };
   // the drawing's name with its revision, as on the Sources tab file names: 2000-F13-PID-PR-10002_Rev2
   const label = n => { const d = info(n); return d ? d.number + (d.rev ? "_Rev" + d.rev : "") : n; };
   // references printed on the sheets (pid-refs.json, tools/build_pid_refs.py): tapping another drawing opens it with the
@@ -35,14 +42,14 @@ window.Pid = (() => {
     Promise.all([refs(), ct()]).then(([R, C]) => {
       // (the drawing itself heads it, number and title, as the tiles under it: the phone shows no title bar over the app's header)
       const me = info(num), h = t => String(t || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-      const tl = `<div class="sp-cxn"><i>This drawing</i><b>${h(num.replace(/^2000-/, ""))}</b>${me && me.title ? `<span title="${h(me.title)}">${h(me.title)}</span>` : ""}</div>`;
+      const tl = `<div class="sp-cxn"><i>This drawing</i><b>${h(num.replace(/^2000-/, ""))}</b>${me && me.title ? `<span title="${h(me.title)}">${h(short(num))}</span>` : ""}</div>`;
       const seen = new Set([num]), list = [];
       const add = n => { const k = key(n); if (k && !seen.has(k) && PICS(k)){ seen.add(k); list.push(k); } };
       (R[num] || []).forEach(r => { if (r[6] === "d") String(r[5]).split("|").forEach(add); });
       ((C[num] || {}).r || []).filter(n => /-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(n)).forEach(add);
       if (!list.length){ el.innerHTML = tl + `<div class="sp-cxt">Connected drawings</div><div class="lk-ns">No other drawings are named on this sheet.</div>`; return; }
       el.innerHTML = tl + `<div class="sp-cxt">Connected drawings · ${list.length}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
-        return `<button type="button" class="sp-cxd" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n.replace(/^2000-/, "")}</b><span>${d.title || kind(n)}</span></button>`; }).join("") + `</div>`;
+        return `<button type="button" class="sp-cxd" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n.replace(/^2000-/, "")}</b><span>${short(n) || kind(n)}</span></button>`; }).join("") + `</div>`;
       // (the ribbons on it leading back here are marked, as when a ribbon is tapped; with none, this drawing's number found)
       el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => { const n = b.dataset.n, back = [];
         (R[n] || []).forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").some(t => key(t) === num)) back.push(j); });
@@ -55,7 +62,7 @@ window.Pid = (() => {
     const d = info(n); if (!d) return false;
     const r = o.restore;
     PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc && !d.layout ? "width" : "page", find: find || null, download: label(d.number) + ".pdf", restore: r || null,
-      number: d.number, label: label(d.number), sub: d.title || "", title: label(d.number) + (d.title ? " · " + d.title : ""),
+      number: d.number, label: label(d.number), sub: short(d.number), title: label(d.number) + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []),
       back: o.back, extent: !!o.extent,
       panel: el => panel(el, d.number),
@@ -74,5 +81,5 @@ window.Pid = (() => {
     return true;
   }
   const kind = n => /-PFD-/.test(n) ? "PFD" : /-SLD-/.test(n) ? "SLD" : /-TLD-/.test(n) ? "TLD" : /-SCM-/.test(n) ? "Schematic" : /-BLK-/.test(n) ? "Block diagram" : "P&ID";
-  return { load, printedOn, ready: () => !!IX, has: n => !!(IX && key(n)), info, label, open, kind, refs, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
+  return { load, short, printedOn, ready: () => !!IX, has: n => !!(IX && key(n)), info, label, open, kind, refs, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
 })();
