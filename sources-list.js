@@ -122,11 +122,11 @@ window.SourcesList = (() => {
     // Save: a plain link with the file's tidy name (kind "x" the Excel copy, else the PDF); cls/inner make the tree's small one
     const saveBtn = (d, kind, cls = "sl-b", inner) => { const href = kind === "x" ? d.xlsx : d.pdf; if (!href) return phone ? "" : `<span class="sl-b sl-b0"></span>`;
       const name = kind === "x" ? d.xname || fname(d) + ".xlsx" : fname(d) + ".pdf", lab = kind === "x" ? "Excel" : "PDF";
-      return `<a class="${cls} sl-sv${kind === "x" ? " sl-x" : ""}" href="${esc(href)}" download="${esc(name)}" title="Save the ${lab} to Downloads">${ICO.save}${inner != null ? inner : `<span>${lab}</span>`}</a>`; };
+      return `<a class="${cls} sl-sv${kind === "x" ? " sl-x" : ""}" href="${esc(href)}" download="${esc(name)}" title="Download the ${lab} file" aria-label="Download the ${lab} file">${ICO.save}${inner != null ? inner : ""}</a>`; };   // (the arrow only)
     const keepBtn = d => { const s = stOf(d);
       if (!d.keep.length) return `<span class="sl-b sl-b0"></span>`;
       const lab = s === "ok" ? "Cached" : s === "old" ? "Update" : "Cache";
-      return `<button type="button" class="sl-b sl-kp ${s}" data-k="${esc(d.k)}" title="${s === "ok" ? "Cached on this device. Tap to remove" : "Cache on this device to open with no signal"}">${s === "ok" ? ICO.devOk : ICO.dev}<span>${lab}</span></button>`; };
+      return `<button type="button" class="sl-b sl-kp ${s}" data-k="${esc(d.k)}" title="${s === "ok" ? "Cached on this device. Tap to remove" : "Cache on this device to open with no signal"}">${s === "ok" ? ICO.devOk : ICO.dev}</button>`; };   // (the symbol only, filling the button; the word is its label)
     function pills(){
       const base = DOCS.filter(match), cnt = {}; base.forEach(d => cnt[d.t] = (cnt[d.t] || 0) + 1);
       const tp = [["", "All", base.length], ...TYPES.filter(([k]) => cnt[k]).map(([k, n]) => [k, n, cnt[k]])];
@@ -150,7 +150,7 @@ window.SourcesList = (() => {
       $(".sl-bar").innerHTML = `<span class="sl-n">Results <b>${list.length}</b></span>` +
         (list.length ? need.length ? `<button type="button" class="sl-all">Cache all ${need.length}</button>` : `<span class="sl-allok">${ICO.devOk} All cached</span>` : "") + `<i class="sl-pg"><i></i></i>`;
       const rows = list.slice(0, 400);
-      $(".sl-list").innerHTML = rows.map(d => `<div class="sl-r" data-r="${esc(d.k)}"><div class="sl-t"><b>${spNum(d, d.number.replace(/^2000-/, ""))}</b><span>${esc([d.title, d.rev ? "Rev " + d.rev : "", d.size ? mb(d.size) + " MB" : ""].filter(Boolean).join(" · "))}</span></div>${d.t === "list" || !d.pdf ? saveBtn(d, "x") : ""}${keepBtn(d)}<i class="sl-rb"><i></i></i></div>`).join("") +
+      $(".sl-list").innerHTML = rows.map(d => `<div class="sl-r" data-r="${esc(d.k)}"><div class="sl-t"><b>${spNum(d, d.number.replace(/^2000-/, ""))}</b><span>${esc([d.title, d.rev ? "Rev " + d.rev : "", d.size ? mb(d.size) + " MB" : ""].filter(Boolean).join(" · "))}</span></div>${keepBtn(d)}<i class="sl-rb"><i></i></i></div>`).join("") +
         (list.length > rows.length ? `<div class="sl-none">${list.length - rows.length} more: search to narrow</div>` : !list.length ? `<div class="sl-none">Nothing matches.</div>` : "");
       wire();
     }
@@ -206,12 +206,12 @@ window.SourcesList = (() => {
       const okIco = s => s === "ok" ? `<span class="sl-ok" title="Cached on this device">${ICO.devOk}</span>` : s === "old" ? `<span class="sl-ok old" title="An older copy is cached: cache it again to update">${ICO.devOk}</span>`
         : s === "part" ? `<span class="sl-ok part" title="Partly cached">${ICO.dev}</span>` : "";
       const kp = (d, s) => d.keep.length ? `<button type="button" class="sl-ib sl-kp ${s}" title="${s === "ok" ? "Cached on this device. Click to remove" : s === "old" ? "Update the cached copy" : "Cache on this device to open with no signal"}">${s === "ok" ? ICO.devOk : ICO.dev}</button>` : "";
-      const acts = (d, s, up) => (up ? upB("d:" + d.k, [d]) : "") + `<span class="sl-dl">${d.xlsx ? saveBtn(d, "x", "sl-ib", "") : ""}</span>` + kp(d, s);
+      const acts = (d, s, up) => (up ? upB("d:" + d.k, [d]) : "") + kp(d, s);   // (no download: the number opens the file in SharePoint)
       // ↓ a folder's files in Downloads as one zip
       const zpBtn = (id, ds, label) => ds.some(d => d.pdf || d.xlsx) ? `<button type="button" class="sl-ib sl-zp" data-zp="${esc(id)}" data-zn="${esc(label)}" title="Download these ${ds.length} as one zip">${ICO.save}</button>` : "";
       const grp = (id, lv, pre, last, label, ds, kids) => { const o = isOpen(id);
         H.push(`<div class="sl-tr sl-grp" data-id="${esc(id)}"><span class="sl-nm">${gd(pre, lv, last)}${tg(o)}${o ? ICO.fo : ICO.fc}<span class="sl-l">${esc(label)}<em>(${ds.length})</em></span></span><span></span><span></span><span></span>` +
-          `<span class="sl-c sl-pt">${ds.filter(d => stOf(d) === "ok").length} of ${ds.length}</span><span class="sl-acts">${upB(id, ds)}${zpBtn(id, ds, label)}${caBtn(id, ds)}</span>${tail}</div>`);
+          `<span class="sl-c sl-pt">${ds.filter(d => stOf(d) === "ok").length} of ${ds.length}</span><span class="sl-acts">${upB(id, ds)}${caBtn(id, ds)}</span>${tail}</div>`);
         if (o) kids(lv ? pre.concat(!last) : pre); };
       const doc = (d, lv, pre, last) => { const id = "d:" + d.k, o = isOpen(id), s = stOf(d), v = d.info || {}, sel = x => MEM.sel === x ? " sel" : "";
         const tip = [v.kind, v.status, v.used && "Used for " + v.used, v.note].filter(Boolean).concat("Click to open").join("\n");
@@ -238,7 +238,7 @@ window.SourcesList = (() => {
     }
     function paintBusy(){ const r = busy && el.querySelector(`[data-id="${CSS.escape(busy.id)}"]`); if (!r) return;
       const v = busy.have + busy.f * (busy.total - busy.have), kb = r.querySelector(".sl-kp"), l = r.querySelector(".sl-pt"), bar = r.querySelector(".sl-rb i,.sl-pb i");
-      r.classList.add("sl-on"); if (kb && !kb.dataset.stop){ kb.dataset.stop = 1; kb.title = "Stop"; kb.innerHTML = ICO.stop + (kb.classList.contains("sl-b") ? "<span>Stop</span>" : ""); }
+      r.classList.add("sl-on"); if (kb && !kb.dataset.stop){ kb.dataset.stop = 1; kb.title = "Stop"; kb.innerHTML = ICO.stop; }
       if (l) l.textContent = `${mb(v)} ${r.classList.contains("sl-sec") ? "of" : "/"} ${mb(busy.total)} MB`;
       if (bar) bar.style.width = (v / (busy.total || 1) * 100).toFixed(1) + "%"; }
     if (!phone){
@@ -693,6 +693,12 @@ html[data-theme=dark] .up-ok{color:#4cc28a}html[data-theme=dark] .up-ck{color:#e
 .sl-r{position:relative;display:flex;align-items:center;gap:5px;padding:7px 7px 7px 9px;border-bottom:1px solid var(--line);cursor:pointer}.sl-r:last-child{border-bottom:0}
 .sl-t{flex:1;min-width:0}.sl-t b{display:block;font-size:calc(var(--fb,15px) * .9);font-weight:800;white-space:nowrap;letter-spacing:-.01em}.sl-t span{display:block;font-size:var(--fl,13px);color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sl-ph .sl-b{flex:none;flex-direction:column;gap:1px;width:40px;height:38px;padding:0;border-radius:10px;font-size:calc(var(--fl,13px) * .82)}
+/* the Cache button: the symbol alone, snug in a square with the buttons' corner */
+.sl-ph .sl-t>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}   /* (the number stops short of the buttons) */
+.sl-b.sl-sv{width:34px!important;min-width:34px!important;height:34px!important;padding:0!important;border-radius:var(--sqr,8px)!important}.sl-b.sl-sv svg{width:22px!important;height:22px!important}.sl-ph .sl-b.sl-sv{width:38px!important;min-width:38px!important;height:38px!important}.sl-ph .sl-b.sl-sv svg{width:26px!important;height:26px!important}
+.sl-b.sl-kp{width:34px!important;min-width:34px!important;height:34px!important;padding:0!important;border-radius:var(--sqr,8px)!important}.sl-b.sl-kp svg{width:24px!important;height:24px!important}
+.sl-ph .sl-b.sl-kp{width:38px!important;min-width:38px!important;height:38px!important}.sl-ph .sl-b.sl-kp svg{width:28px!important;height:28px!important}
+.sl-sec .sl-b.sl-kp{width:28px!important;min-width:28px!important;height:28px!important}.sl-sec .sl-b.sl-kp svg{width:20px!important;height:20px!important}
 .sl-ph .sl-kp.sl-on,.sl-r.sl-on .sl-kp{width:auto;min-width:44px;padding:0 6px}
 .sl-ph .sl-pg{display:none!important}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);

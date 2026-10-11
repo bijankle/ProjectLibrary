@@ -9,7 +9,9 @@ window.SP = (() => {
   let N = new Map(), p = null;
   const load = () => p || (p = fetch("sp.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => {
     N = new Map(Object.entries(d).map(([k, v]) => [nk(k), v])); try { dispatchEvent(new Event("kcgm-sp")); } catch (e) {} return d; }));
-  const url = n => N.get(nk(n)) || "";
+  // a SharePoint file opens in SharePoint's own viewer (web=1), not as a download
+  const view = u => u && /sharepoint\.com/i.test(u) && !/[?&]web=1\b/.test(u) ? u + (u.includes("?") ? "&" : "?") + "web=1" : u;
+  const url = n => view(N.get(nk(n)) || "");
   const enc = u => { try { return encodeURI(decodeURI(u)); } catch (e) { return encodeURI(u); } };
   const a = (n, text) => { const u = url(n); return u ? `<a class="sp-a" href="${esc(enc(u))}" target="_blank" rel="noopener" title="Open in SharePoint">${text == null ? esc(n) : text}</a>` : (text == null ? esc(n) : text); };
   const linkText = t => esc(t).replace(DOC, m => url(m) ? a(m) : m);
@@ -18,6 +20,8 @@ window.SP = (() => {
 a.sp-a,a.sp-a:visited,.lk a.lk-a[data-dwg],a.lk-doc{color:var(--doc-a)!important;text-decoration:underline!important;text-underline-offset:2px}
 a.sp-a::after{content:"\\2197";display:inline-block;font-size:.8em;margin-left:2px;text-decoration:none;vertical-align:1px}`;
   document.head.append(css);
+  // any SharePoint link in the app, however it was written, opens in the viewer (Ref Only's Download all doesn't use links)
+  document.addEventListener("click", e => { const a = e.target.closest && e.target.closest('a[href*="sharepoint.com"]'); if (a && !a.hasAttribute("download")) a.href = view(a.href); }, true);
   load();
-  return { load, url: n => { const u = url(n); return u ? enc(u) : ""; }, a, linkText, DOC };
+  return { load, url: n => { const u = url(n); return u ? enc(u) : ""; }, a, linkText, DOC, view };
 })();

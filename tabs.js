@@ -318,7 +318,7 @@ window.Tabs = (() => {
   // (one project now: the plant and the TSF together, so the box just names it; the picker code below stays for later)
   // beside it the round Update button: a red dot when a newer version is on the server; holding or hovering says when
   // the app was last updated
-  const PJ = `<div class="pj"><span class="pj-b pj-one" title="Project"><b class="pj-v">KCGM</b></span><button type="button" class="pj-up" aria-label="Update app" title="Update app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><i class="pj-dot" hidden></i></button></div>`;
+  const PJ = `<div class="pj"><button type="button" class="pj-b pj-one" aria-haspopup="true" aria-expanded="false" title="Project"><svg class="pj-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg><b class="pj-v">KCGM</b></button><button type="button" class="pj-up" aria-label="Update app" title="Update app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><i class="pj-dot" hidden></i></button><div class="pj-m pj-m1" hidden role="menu"><div class="pj-o1" role="menuitemradio" aria-checked="true"><b>KCGM</b><i>&#10003;</i></div><div class="pj-note">Other projects will appear here</div></div></div>`;
   const TICK = `<svg viewBox="1.4 2 9.2 8.2" width="100%" height="100%" style="display:block;overflow:visible" aria-hidden="true"><path d="M2.4 6.3 5 8.8 9.8 3.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   function wirePj(){
     const box = el.querySelector(".pj"); if (!box) return; const b = box.querySelector(".pj-b"), m = box.querySelector(".pj-m");
@@ -332,6 +332,13 @@ window.Tabs = (() => {
       up.onclick = e => { e.stopPropagation(); up.disabled = true; up.classList.add("spin"); stamp(); window.AppUpdate && AppUpdate.update(); };
       setTimeout(dot, 2500); setInterval(dot, 30 * 60000); }
     if (!m) return;
+    if (m.classList.contains("pj-m1")){   // (one project: the list shows it ticked)
+      const shut1 = () => { m.hidden = true; b.setAttribute("aria-expanded", "false"); };
+      b.onclick = e => { e.stopPropagation(); if (!m.hidden) return shut1(); close(); m.hidden = false; b.setAttribute("aria-expanded", "true"); };
+      m.querySelector(".pj-o1").onclick = e => { e.stopPropagation(); shut1(); };
+      document.addEventListener("click", e => { if (!m.hidden && !box.contains(e.target)) shut1(); });
+      addEventListener("keydown", e => { if (e.key === "Escape") shut1(); });
+      return; }
     const count = k => { try { if (window.Lookup && Lookup.ready()) return (window.Browse && Browse.projCount ? Browse.projCount(k) : Lookup.projCount(k)).toLocaleString(); } catch (e) {} return ""; };
     const label = () => { box.querySelector(".pj-v").textContent = pjLabel(pjGet()); };
     const draw = () => { const v = pjGet();
@@ -433,7 +440,25 @@ html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,
 .pj{position:relative;display:flex;align-items:center;flex:none}
 .pj-b{position:relative;width:104px;height:22px;display:flex;align-items:center;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:0 20px 0 8px;font:inherit;cursor:pointer;margin:0 4px}
 .pj-b b{font-size:13px;font-weight:800;line-height:1;white-space:nowrap}
-.pj-one{width:auto;min-width:64px;justify-content:center;padding:0 8px;cursor:default}.pj-one:after{display:none}
+.pj-one{width:auto;min-width:64px;padding:0 7px;cursor:pointer;gap:4px;font:inherit;justify-content:center}.pj-b.pj-one:after{content:"▾";color:var(--ink);position:static;transform:none;font-size:11px}
+.pj-ic{width:14px;height:14px;flex:none;color:var(--th)}   /* (the briefcase: a project) */
+.pj-one:hover{border-color:var(--th)}
+:root.phone .pj .pj-one{gap:3px;padding:0 4px!important;overflow:hidden}:root.phone .pj-ic{width:12px;height:12px}:root.phone .pj-b.pj-one:after{font-size:12px}
+.pj-m1{width:auto!important;min-width:170px;padding:4px;left:4px}:root.phone .pj-m1{left:auto!important;right:0;width:auto!important}
+.pj-o1{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-radius:6px;background:color-mix(in srgb,var(--th) 10%,transparent);cursor:pointer}.pj-o1 i{font-style:normal;color:var(--th);font-weight:800}
+.pj-note{padding:7px 10px 6px;color:var(--mute);font-size:12px;font-weight:500;white-space:nowrap}
+/* buttons are squares with the logo's corner (pills keep their round ends); on the phone the header, the search bar and
+   the buttons beside it are one size, their edges in line */
+:root{--sqr:8px}:root.phone{--sqr:10px;--ctl:34px}
+.nv-b,.nv-b.nv-logo,.pj-up,.lk-cam,.lk-back,.ph-upd,.ph-spx,.sp-nav button,.sp-fb,.sp-rot,.sp-ze,html .ph-cam,html #lkRoot .lk-cam,html .lktop .lk-cam{border-radius:var(--sqr)!important}
+html .lk-in,html .lktop .lk-in,html #lkRoot .lk-in,html .ph-slot input,html .fx-q,html .sl-q,html .mo-q,html input#q,html body .ph-slot input#q,html body .ph-slot input[id]{border-radius:var(--sqr)!important}
+/* desktop: the search bars as tall as the 34 point buttons */
+:root:not(.phone) .lktop .lk-in,:root:not(.phone) .lk-in,:root:not(.phone) .sl-q{height:34px!important;box-sizing:border-box}:root:not(.phone) .fx-q{height:34px!important;box-sizing:border-box}:root:not(.phone) .fx-q input{height:30px!important}
+:root.phone .ph-top{gap:4px}:root.phone .ph-top .nv-bh{gap:4px;margin-right:0}
+:root.phone .ph-top .nv-b,:root.phone .ph-top .nv-b.nv-logo,:root.phone .ph-top .nv-b.nv-logo svg{width:var(--ctl)!important;height:var(--ctl)!important}
+:root.phone .pj .pj-b{height:var(--ctl)!important}:root.phone .pj-up{width:var(--ctl)!important;height:var(--ctl)!important;margin-left:4px!important}
+:root.phone .lk-cam,:root.phone #lkRoot .lk-cam,:root.phone .ph-cam,:root.phone .ph-spx{width:var(--ctl)!important;height:var(--ctl)!important;min-width:var(--ctl)!important}
+:root.phone .ph-slot input,:root.phone #lkRoot .lk-in,:root.phone .lk-in,:root.phone .mo-q,:root.phone input#q,html:root.phone body .ph-slot input[id],:root.phone .ph-upd{height:var(--ctl)!important}
 .pj-up{position:relative;flex:none;width:22px;height:22px;margin:0 4px 0 2px;padding:0;border:1.5px solid var(--gold,#c9a227);border-radius:50%;background:var(--card);color:color-mix(in srgb,var(--gold,#c9a227) 70%,var(--ink));display:flex;align-items:center;justify-content:center;cursor:pointer}
 .pj-up svg{width:12px;height:12px}.pj-up .pj-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:#e0453a;border:1.5px solid var(--card)}.pj-up .pj-dot[hidden]{display:none}
 .pj-up.spin svg{animation:pjspin 1s linear infinite}@keyframes pjspin{to{transform:rotate(360deg)}}
@@ -529,9 +554,9 @@ button:disabled{cursor:default}
    (or Settings' Update) at its right */
 .ph-sr{display:none;padding:0 max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left))}:root.has-sr .ph-sr{display:block}
 :root.phone.has-sr{--tb:calc(100px + var(--sat))}
-.ph-slot>input:not([type=file]):not(#_){flex:1 1 auto;width:auto!important;min-width:0;max-width:none!important;height:40px!important;box-sizing:border-box;margin:0!important;border:1.5px solid color-mix(in srgb,var(--ink) 14%,var(--line))!important;
+.ph-slot>input:not([type=file]):not(#_){flex:1 1 auto;width:auto!important;min-width:0;max-width:none!important;height:var(--ctl,40px)!important;box-sizing:border-box;margin:0!important;border:1.5px solid color-mix(in srgb,var(--ink) 14%,var(--line))!important;
   background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7480' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E") 13px center/16px no-repeat!important;
-  color:var(--ink)!important;border-radius:20px!important;padding:0 12px 0 38px!important;font:inherit;font-size:var(--fb,15px)!important;box-shadow:none!important;outline:none}
+  color:var(--ink)!important;border-radius:var(--sqr,10px)!important;padding:0 12px 0 38px!important;font:inherit;font-size:var(--fb,15px)!important;box-shadow:none!important;outline:none}
 .ph-slot>input:not([type=file]):not(#_):focus{border-color:var(--gold,var(--accent))!important}
 .ph-slot .mo-q[hidden]{display:none}
 .ph-upd{flex:none;height:40px;border:1.5px solid var(--gold,var(--accent));background:var(--card,var(--panel));color:color-mix(in srgb,var(--gold,var(--accent)) 70%,var(--ink));border-radius:20px;padding:0 12px;font:inherit;font-weight:800;font-size:var(--fl,13px);white-space:nowrap;cursor:pointer}
