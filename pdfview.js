@@ -1,5 +1,6 @@
 // In-app PDF viewer shared by the pipe and valve spec (spec.js) and the P&IDs (pid.js).
-// PdfView.open({ url, page, title, number, fit: "width" | "page", find, download, name, refs, onRef, restore, back })
+// PdfView.open({ url, page, title, number, fit: "width" | "page", find, download, name, refs, onRef, restore, back, extent })
+//   extent: open on the whole sheet, the find marked but not zoomed onto
 //   The visible part of the page is redrawn from the PDF's own vectors at every zoom, so it stays sharp.
 //   find: a tag to mark on the page (a line number, valve, instrument…). The mark stays until another document or
 //   another search is opened; spaces, hyphens and slashes are ignored and a tag split over several text pieces is found.
@@ -242,7 +243,7 @@ window.PdfView = (() => {
       // opened for an item (cur.find): on a checked sheet that item's labels stay red with the arrow, the rest grey
       if (V.fit && cur.find){ V.marks.innerHTML = ""; V.hits = []; fitFilter(cur.find, true); const m = V.fmatch.find(r => r[0] === V.page) || V.fmatch[0];
         if (m && !o._pop && cur.back == null){ const [l, t, w, h] = boxOf(m); V.tap = { page: m[0], l: l / 1e4, t: t / 1e4, w: w / 1e4, h: h / 1e4 }; drawTap();
-          if (!cur.restore) requestAnimationFrame(() => focusHits(V.fmatch.filter(r => r[0] === V.page).map(r => { const [a, b2, c, d] = boxOf(r); return { l: a / 1e4, t: b2 / 1e4, w: c / 1e4, h: d / 1e4 }; }))); } }
+          if (!cur.restore && !cur.extent) requestAnimationFrame(() => focusHits(V.fmatch.filter(r => r[0] === V.page).map(r => { const [a, b2, c, d] = boxOf(r); return { l: a / 1e4, t: b2 / 1e4, w: c / 1e4, h: d / 1e4 }; }))); } }
       else drawRefs(); });
     V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true;
     V.el.querySelector(".sp-q").value = cur.find || "";
@@ -271,7 +272,7 @@ window.PdfView = (() => {
     const bs = rs.map(r => V.boxes[V.pageRefs.indexOf(r)]).filter(Boolean).map(b => ({ page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }));
     if (!bs.length) return;
     V.tap = Object.assign({}, bs[0], { more: bs.slice(1) }); drawTap();
-    quiet(); focusHits(bs, true);   // zoomed onto the ribbon(s) back to where you came from: all in view, never closer than 4x
+    quiet(); if (!me.extent) focusHits(bs, true);   // zoomed onto the ribbon(s) back to where you came from: all in view, never closer than 4x
     const v = REG.get(curId); if (v){ v.tap = V.tap; v.snap = state(); v.at = v.snap; }
   }
   // the place tapped or found: a highlighted box on it (no arrow), grown a little round the tag like the search boxes
@@ -414,7 +415,7 @@ window.PdfView = (() => {
     await picsP; V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true);
     (window.requestIdleCallback || setTimeout)(() => textLayer(), { timeout: 1200 });   // (the selectable text after the picture is up)
     if (V.afterPage){ const f = V.afterPage; V.afterPage = null; f(); }
-    if (cur.find){ const me2 = cur; Promise.resolve(mark(cur.find)).then(() => { if (cur === me2 && !V.fit && !cur.restore && !fromPop && V.hits && V.hits.length) focusHits(V.hits); }); } drawTap();
+    if (cur.find){ const me2 = cur; Promise.resolve(mark(cur.find)).then(() => { if (cur === me2 && !V.fit && !cur.restore && !cur.extent && !fromPop && V.hits && V.hits.length) focusHits(V.hits); }); } drawTap();
     const me = REG.get(curId); if (me && !me.snap && !fromPop){ me.snap = state(); me.at = me.snap; }
   }
   // the page's text as an invisible, selectable layer over the picture (PDF.js text layer; OCR'd sheets included),

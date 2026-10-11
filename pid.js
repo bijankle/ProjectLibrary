@@ -28,8 +28,8 @@ window.Pid = (() => {
     String(r[5]).split("|").forEach(t => { const k = norm(t), m = BYTAG.get(k) || new Map(); m.set(n, (m.get(n) || 0) + 1); BYTAG.set(k, m); }); })); return R; };
   const printedOn = (t, rx = /-PID-/) => { const m = BYTAG && BYTAG.get(norm(t)); return m ? [...m.entries()].filter(([n]) => rx.test(n) && key(n)).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(x => x[0]) : []; };
   // the panel under a sheet on a phone (pdfview.js): the drawings this one joins, as pictures in a row to swipe through
-  // (its continuations first, in the order printed, then the other drawings named on it); a tap opens one, with the
-  // way back to this sheet marked
+  // (its continuations first, in the order printed, then the other drawings named on it); a tap opens one on the whole
+  // sheet, with the way back to this sheet marked but not zoomed onto
   let CT = null; const ct = () => CT || (CT = fetch("contents.json").then(r => r.ok ? r.json() : {}).then(j => j.d || {}).catch(() => { CT = null; return {}; }));
   function panel(el, num){
     Promise.all([refs(), ct()]).then(([R, C]) => {
@@ -40,7 +40,10 @@ window.Pid = (() => {
       if (!list.length){ el.innerHTML = `<div class="sp-cxt">Connected drawings</div><div class="lk-ns">No other drawings are named on this sheet.</div>`; return; }
       el.innerHTML = `<div class="sp-cxt">Connected drawings · ${list.length}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
         return `<button type="button" class="sp-cxd" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n.replace(/^2000-/, "")}</b><span>${d.title || kind(n)}</span></button>`; }).join("") + `</div>`;
-      el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => open(b.dataset.n, num, { keep: true }));
+      // (the ribbons on it leading back here are marked, as when a ribbon is tapped; with none, this drawing's number found)
+      el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => { const n = b.dataset.n, back = [];
+        (R[n] || []).forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").some(t => key(t) === num)) back.push(j); });
+        open(n, back.length ? null : num, { keep: true, extent: true, back: back.length ? back : undefined }); });
     });
   }
   // (only drawings with a ready-made picture: the row is pictures)
@@ -51,7 +54,7 @@ window.Pid = (() => {
     PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc && !d.layout ? "width" : "page", find: find || null, download: label(d.number) + ".pdf", restore: r || null,
       number: d.number, label: label(d.number), title: label(d.number) + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []),
-      back: o.back,
+      back: o.back, extent: !!o.extent,
       panel: el => panel(el, d.number),
       onRef: (t, k, back, box) => {
         // another drawing: opened with the ribbon back to this one marked (the way back from pid-refs.json), or, when
