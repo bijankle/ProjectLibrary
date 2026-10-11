@@ -398,7 +398,7 @@
   let SCMBY = null, OTBY = null, CT = null, CTBY = null;   // (CT: what is read on each drawing, contents.json, tools/build_contents.py)
   // every drawing the item is read on (contents.json inverted), merged into its drawing rows by kind: P&ID, PFD, SLD,
   // schematic, block diagram; numbers only, each opens the drawing
-  const DKIND = [["P&ID", /-PID-/], ["PFD", /-PFD-/], ["SLD", /-[ST]LD-/], ["Schematic", /-SCM-/], ["Block diagram", /-BLK-/], ["Drawing", /./]];
+  const DKIND = [["P&ID", /-PID-/], ["PFD", /-PFD-/], ["SLD", /-SLD-/], ["TLD", /-TLD-/], ["Schematic", /-SCM-/], ["Block diagram", /-BLK-/], ["Drawing", /./]];
   const dkind = d => DKIND.find(([, re]) => re.test(d))[0];
   function ctBy(){ if (!CTBY && CT){ CTBY = new Map(); Object.entries(CT).forEach(([d, e]) => [...(e.k || []), ...(e.o || [])].forEach(k => { const n = norm(k); CTBY.set(n, [...(CTBY.get(n) || []), d]); })); } return CTBY; }
   function drawRows(it, rows){
