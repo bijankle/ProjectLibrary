@@ -33,8 +33,9 @@ window.Pid = (() => {
   let CT = null; const ct = () => CT || (CT = fetch("contents.json").then(r => r.ok ? r.json() : {}).then(j => j.d || {}).catch(() => { CT = null; return {}; }));
   function panel(el, num){
     Promise.all([refs(), ct()]).then(([R, C]) => {
-      // (the drawing's title heads it: the phone shows no title bar over the app's header)
-      const me = info(num), tl = me && me.title ? `<div class="sp-cxn" title="${me.title.replace(/"/g, "&quot;")}">${me.title.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))}</div>` : "";
+      // (the drawing itself heads it, number and title, as the tiles under it: the phone shows no title bar over the app's header)
+      const me = info(num), h = t => String(t || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+      const tl = `<div class="sp-cxn"><i>This drawing</i><b>${h(num.replace(/^2000-/, ""))}</b>${me && me.title ? `<span title="${h(me.title)}">${h(me.title)}</span>` : ""}</div>`;
       const seen = new Set([num]), list = [];
       const add = n => { const k = key(n); if (k && !seen.has(k) && PICS(k)){ seen.add(k); list.push(k); } };
       (R[num] || []).forEach(r => { if (r[6] === "d") String(r[5]).split("|").forEach(add); });
@@ -54,7 +55,7 @@ window.Pid = (() => {
     const d = info(n); if (!d) return false;
     const r = o.restore;
     PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc && !d.layout ? "width" : "page", find: find || null, download: label(d.number) + ".pdf", restore: r || null,
-      number: d.number, label: label(d.number), title: label(d.number) + (d.title ? " · " + d.title : ""),
+      number: d.number, label: label(d.number), sub: d.title || "", title: label(d.number) + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []),
       back: o.back, extent: !!o.extent,
       panel: el => panel(el, d.number),

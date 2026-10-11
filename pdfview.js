@@ -232,7 +232,8 @@ window.PdfView = (() => {
     ui(); freeRotate(); const wasOpen = !V.el.hidden; cur = Object.assign({ page: 1, fit: "width" }, o);
     V.el.hidden = false; document.body.classList.add("sp-on"); dock(); V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
-    V.el.querySelector(".sp-dn").textContent = cur.label || cur.number || "";
+    // (in the sheet's bottom right corner, the drawing's short title under it: cur.sub)
+    V.el.querySelector(".sp-dn").innerHTML = cur.label || cur.number ? esc(cur.label || cur.number) + (cur.sub ? `<small>${esc(cur.sub)}</small>` : "") : "";
     if (cur.number && document.documentElement.classList.contains("phone")) V.el.querySelector(".sp-tt").textContent = (cur.title || "").replace(cur.label || cur.number, "").replace(/^\s*·\s*/, "").trim() || cur.number;
     const dl = V.el.querySelector(".sp-dl"); dl.href = cur.url; dl.download = cur.download || cur.url.split("/").pop();
     // a new view entry, unless this open is a step back / forward through the history
