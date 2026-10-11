@@ -30,8 +30,10 @@ window.PdfView = (() => {
       <button class="sp-fb" data-a="find" title="Find in this drawing">⌕</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
       <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-text textLayer"></div><div class="sp-dn"></div></div></div><div class="sp-msg"></div>
       <button class="sp-ze" data-a="fit" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>`;
+    // phone, sheet at fit: the room left under the sheet holds a panel (cur.panel fills it: the drawing's contents, a tag tapped)
+    const cx = document.createElement("div"); cx.className = "sp-cx"; cx.hidden = true; el.appendChild(cx);
     document.body.appendChild(el);
-    V = { el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
+    V = { cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), textEl: el.querySelector(".sp-text"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
       fprev: () => V.fit ? fitStep(-1) : showHit(V.fi - 1, -1), fnext: () => V.fit ? fitStep(1) : showHit(V.fi + 1, 1), rot, close,
@@ -39,7 +41,7 @@ window.PdfView = (() => {
     // find: Ctrl+F / ⌘F while a drawing is open searches its text (the page is a picture, so the browser's own find can't)
     const q = el.querySelector(".sp-q"); let qt;
     // phone: while typing (keyboard up) only the find box and its count show, so the drawing keeps the rest of the screen
-    q.addEventListener("focus", () => el.classList.add("typing")); q.addEventListener("blur", () => el.classList.remove("typing"));
+    q.addEventListener("focus", () => { el.classList.add("typing"); cxFit(); }); q.addEventListener("blur", () => { el.classList.remove("typing"); setTimeout(cxFit, 300); });
     q.addEventListener("input", () => { clearTimeout(qt); qt = setTimeout(() => { if (!V.fit) return findText(q.value); fitFilter(q.value); if (!V.fmatch.length && q.value.trim()) findText(q.value); }, V.fit ? 150 : 350); });
     q.addEventListener("keydown", e => { e.stopPropagation();
       if (e.key === "Enter"){ e.preventDefault(); clearTimeout(qt);
@@ -250,7 +252,7 @@ window.PdfView = (() => {
       if (!(PICS && PICS[key] >= pn)) return; const im = new Image(); im.decoding = "async";
       im.onload = () => { if (cur !== me || V.pgFor === me) return; const cs = getComputedStyle(V.body), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16 - Math.max(0, (parseFloat(cs.paddingTop) || 0) - 8);
         const k = cur.fit === "page" ? Math.min(W / im.width, H / im.height) : W / im.width; V.sheet.style.width = Math.round(im.width * k) + "px"; V.sheet.style.height = Math.round(im.height * k) + "px";
-        V.bg.width = im.width; V.bg.height = im.height; V.bg.getContext("2d").drawImage(im, 0, 0); V.hi.style.visibility = "hidden"; V.msg.hidden = true; V.ox = V.oy = 0; slide(); };
+        V.bg.width = im.width; V.bg.height = im.height; V.bg.getContext("2d").drawImage(im, 0, 0); V.hi.style.visibility = "hidden"; V.msg.hidden = true; V.ox = V.oy = 0; slide(); cxFit(); };
       im.src = `${cur.url.split("?")[0]}.p${pn}.png`; });
     let d; try { d = await getDoc(cur.url); } catch (e) { V.msg.textContent = "Couldn't load the PDF (" + e.message + "). Check the connection."; return; }
     V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
@@ -389,7 +391,7 @@ window.PdfView = (() => {
     }
   }
   async function unrot(){ if (V) V.rot = 0; if (freed){ freed = false; try { screen.orientation.unlock(); } catch (e) {} } if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
-  function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
+  function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; V.cx.hidden = true; document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
     if (!fromPop && history.state && history.state.sp) history.back(); }
   // out of the way for a tag tapped on the sheet, its history step kept: Back from the tag's item reopens this view
   const hide = () => close(true);
@@ -437,6 +439,28 @@ window.PdfView = (() => {
     V.sheet.style.setProperty("--dnf", (vp1.width * s / Math.max(8, String(cur.label || cur.number || "").length * .68)).toFixed(1) + "px");
     if (V.sheet.style.width !== w || V.sheet.style.height !== h || bg){ hideHi(); V.sheet.style.width = w; V.sheet.style.height = h; }
     slide(); if (bg){ V.sheet.classList.add("sp-wait"); drawBg(); drawRefs(); } sharp();   // (a new page's boxes wait for its picture)
+    cxFit();
+  }
+  // a row tapped in the panel: its tag boxes on the sheet when it has them (zoomed onto them, the tapped box shown),
+  // else the sheet's text searched as in the find box
+  async function cxFind(t){
+    const k = norm(t), rs = V.refs.filter(r => r[6] !== "x" && r[6] !== "d" && String(r[5]).split("|").some(x => norm(x) === k));
+    if (!rs.length){ const q = V.el.querySelector(".sp-q"); q.value = t; return findText(t, true); }
+    if (rs[0][0] !== V.page) await go(rs[0][0]);
+    const hs = rs.filter(r => r[0] === V.page).map(r => { const [l, tp, w, h] = boxOf(r); return { page: V.page, l: l / 1e4, t: tp / 1e4, w: w / 1e4, h: h / 1e4 }; });
+    V.tap = Object.assign({}, hs[0], { more: hs.slice(1) }); drawTap(); focusHits(hs);
+  }
+  // the panel under the sheet: shown on a phone while the whole sheet is in view and leaves room under it (upright, not
+  // typing in the find box), from the sheet's foot down to the buttons; zooming in gives the screen back to the sheet
+  function cxFit(){
+    if (!V || !V.cx) return; const c = V.cx;
+    if (!cur || !cur.panel || desk() || V.el.hidden || V.zoom > 1.001 || V.rot || V.el.classList.contains("typing")){ c.hidden = true; return; }
+    const e = V.el.getBoundingClientRect(), sb = V.sheet.getBoundingClientRect().bottom; let lim = V.body.getBoundingClientRect().bottom;
+    V.el.querySelectorAll(".sp-top").forEach(t => { const r = t.getBoundingClientRect(); if (r.height && r.top > e.top + e.height / 2) lim = Math.min(lim, r.top); });
+    const room = lim - sb - 14; if (room < 120){ c.hidden = true; return; }
+    c.style.top = Math.round(sb - e.top + 6) + "px"; c.style.height = Math.round(room) + "px";
+    if (V.cxFor !== cur){ V.cxFor = cur; c.innerHTML = ""; cur.panel(c, { find: cxFind }); }
+    c.hidden = false;
   }
   // Both layers draw off screen and are swapped in whole when finished, so nothing blanks or jumps while panning.
   let bgTask = null, hiTask = null, bgGen = 0, hiGen = 0;
@@ -594,5 +618,5 @@ window.PdfView = (() => {
   // of the boxes holding a point, the one whose centre is nearest (-1: none)
   const nearest = (B, x, y) => { let k = -1, d = 1e18; B.forEach(([l, t, w, h], i) => { if (x < l || x > l + w || y < t || y > t + h) return;
       const e = (x - l - w / 2) ** 2 + (y - t - h / 2) ** 2; if (e < d){ d = e; k = i; } }); return k; };
-  return { open, close, hide, back, state, getDoc, grow, ribbon, nearest, clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
+  return { open, close, hide, back, state, getDoc, grow, ribbon, nearest, panelOn: () => !!(V && V.cx && !V.cx.hidden && !V.el.hidden), clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
 })();
