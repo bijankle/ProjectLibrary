@@ -17,9 +17,10 @@
   function indexExtras(list){ list.forEach(x => { x.k = norm(x.key); x.txt = (x.key + " " + x.name + " " + (x.words || "")).toLowerCase(); items.push(x); addKey(x.k, x); }); }
   function addKey(k, it){ if (!k) return; const a = byKey.get(k); if (a) a.push(it); else byKey.set(k, [it]); }
 
-  let dtLoad = null, DOCN = new Set();   // the lists held in the app (Sources), by number
+  let dtLoad = null, sideLoad = null, DOCN = new Set();   // the lists held in the app (Sources), by number
   fetch("issues.json").then(r => r.ok ? r.json() : {}).then(d => { Object.values((d.meta && d.meta.docs) || {}).forEach(x => x.number && DOCN.add(norm(x.number))); }).catch(() => {});
-  L.load = () => loading || (fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => { DB = d; build();
+  // (the sheet tags and the IOMs are waited for with the search data: a page opened before they arrived had no pills or IOM row)
+  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
     // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
