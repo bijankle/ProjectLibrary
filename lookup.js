@@ -394,8 +394,8 @@
     const words = [it.key, L.get(it, "Valve code"), L.get(it, "Make / model"), L.get(it, "Model")].map(v => String(v || "").toUpperCase().trim()).filter(v => v.length > 3);
     const score = n => (IOM.t[it.key] || []).includes(n) ? 2 : words.some(w => IOM.d[n][0].toUpperCase().includes(w)) ? 1 : 0;
     const a = [...ns].filter(n => IOM.d[n]).sort((x, y) => score(y) - score(x) || x.localeCompare(y));
-    const one = n => { const [t, rev, k, u] = IOM.d[n], s = esc(n) + (rev ? ` Rev ${esc(rev)}` : "") + (k === "P" ? " (preliminary)" : "");
-      return (u ? `<a class="sp-a" href="${esc(encodeURI(decodeURI(u)))}" target="_blank" rel="noopener" title="Open in SharePoint">${s}</a>` : s) + `<span class="lk-iomt"> ${esc(t.toLowerCase().replace(/^./, c => c.toUpperCase()).replace(/\b[ft]\d{2,3}-[a-z]{2,4}-\d{3,4}[a-z]?\b|\biom\b|\b\d+kv\b/gi, m => m.toUpperCase().replace(/KV$/, "kV")))}</span>`; };
+    // (the number only, linked to SharePoint: the manual's title is one tap away)
+    const one = n => { const u = IOM.d[n][3]; return u ? `<a class="sp-a" href="${esc(encodeURI(decodeURI(u)))}" target="_blank" rel="noopener" title="Open in SharePoint">${esc(n)}</a>` : esc(n); };
     const SHOW = 4, h = a.slice(0, SHOW).map(one).join("<br>") + (a.length > SHOW ? `<details class="lk-iomm"><summary>${a.length - SHOW} more in package ${esc(pk.join(", "))}</summary>${a.slice(SHOW).map(one).join("<br>")}</details>` : "");
     const i = rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l)); let j = i; if (i >= 0) while (j + 1 < rows.length && /^(P&IDs?|PFD)$/.test(rows[j + 1].l)) j++;
     rows.splice(j + 1, 0, { l: a.length > 1 ? "IOMs" : "IOM", v: a.join(", "), h });
