@@ -334,12 +334,21 @@
     if (ot && ot.length){
       if (!OTBY){ OTBY = new Map(); Object.entries(CT || {}).forEach(([d, e]) => (e.o || []).forEach(k => OTBY.set(k, [...(OTBY.get(k) || []), d]))); }
       secs.push({ id: "r-other", label: "Other tags", n: ot.length, html: `<div class="lk-ns">Other tags read on this sheet. No list has them, so there is no record to open.</div>` +
-        ot.map(t => { const a = (OTBY.get(t) || []).filter(d => d !== it.key && window.Pid && Pid.has(d)), SHOW = 6;
-          return `<div class="lk-row lk-ot"><b>${esc(t)}</b>${a.length ? `<div class="lk-iomt">Also on ${a.slice(0, SHOW).map(d => `<a class="lk-a" data-dwg="${esc(d)}" data-find="${esc(t)}" href="#">${esc(Pid.label(d))}</a>`).join(", ")}${a.length > SHOW ? ` and ${a.length - SHOW} more` : ""}</div>` : ""}</div>`; }).join("") });
+        ot.map(t => { const a = (OTBY.get(t) || []).filter(d => d !== it.key && window.Pid && Pid.has(d));
+          // (one row each; tapping it opens the other drawings it is on, each opening on that spot)
+          return a.length ? `<details class="lk-otd"><summary><b>${esc(t)}</b><span class="lk-otn">${a.length} other drawing${a.length > 1 ? "s" : ""}</span></summary><div class="lk-otl">${a.map(d => `<a class="lk-a" data-dwg="${esc(d)}" data-find="${esc(t)}" href="#">${esc(Pid.label(d))}</a>`).join("")}</div></details>`
+            : `<div class="lk-row lk-ot"><b>${esc(t)}</b><span class="lk-otn">only on this drawing</span></div>`; }).join("") });
     }
     // the other drawings and documents named on the sheet (a P&ID's joining drawings have their own pill below)
     const rr = cs && cs.r && !/-PID-/.test(it.key) ? cs.r : null;
-    if (rr && rr.length) secs.push({ id: "r-refs", label: "References", n: rr.length, html: rr.map(d => `<div class="lk-row lk-ot">${window.Pid && Pid.has(d) ? dwgA(d) : window.SP && SP.url(d) ? SP.a(d) : esc(d)}</div>`).join("") });
+    if (rr && rr.length){
+      const one = d => `<div class="lk-row lk-ot">${window.Pid && Pid.has(d) ? dwgA(d) : window.SP && SP.url(d) ? SP.a(d) : esc(d)}</div>`;
+      // an electrical drawing: sorted by where each sits on the sheet (tools/build_contents.py)
+      // Continuations: the drawings the sheet carries on to (supply, feeders, the feeders' schematics, linked sheets);
+      // Reference drawings: the title block's reference table, notes, standards and lists
+      const rc = cs.rc, cont = rc ? [...new Set([...(rc.f || []), ...(rc.t || []), ...(rc.l || []), ...(rc.s || [])])] : [], refd = rc ? rc.x || [] : [];
+      const html = rc ? L.pills([{ id: "rc-c", label: "Continuations", n: cont.length, html: cont.map(one).join("") }, { id: "rc-x", label: "Reference drawings", n: refd.length, html: refd.map(one).join("") }].filter(g => g.n), "rc") : rr.map(one).join("");
+      secs.push({ id: "r-refs", label: "References", n: rr.length, html }); }
     // read on drawings, no list has it: the drawings it is on, each opening on that spot
     if (it.t === "otag") secs.push({ id: "det", label: "Drawings", n: it.dws.length, html: `<div class="lk-ns">Read on these drawings. No list has it, so there is no record to open.</div>` +
       it.dws.map(d => `<div class="lk-row lk-ot"><a class="lk-a" data-dwg="${esc(d)}" data-find="${esc(it.key)}" href="#">${esc(Pid.label(d))}</a></div>`).join("") });
@@ -701,7 +710,7 @@
 .lk-spec .lk-btn{font-size:var(--fb,15px);padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:var(--fb,15px);line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:var(--fb,15px);margin-left:4px}
 .lk-t td:last-child{overflow-wrap:anywhere}
-.lk-iomt{color:var(--mute)}.lk-iomm summary{cursor:pointer;color:var(--doc-a,#0b63c5);margin-top:3px}.lk-iomm[open] summary{margin-bottom:3px}
+.lk-iomt{color:var(--mute)}.lk-otd{border-bottom:1px solid var(--lk-l,rgba(0,0,0,.08))}.lk-otd>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:7px 4px}.lk-otd>summary::-webkit-details-marker{display:none}.lk-otn{color:var(--mute);font-size:.9em;margin-left:auto;background:var(--card2,rgba(120,130,145,.14));border-radius:10px;padding:1px 8px;white-space:nowrap}.lk-otd>summary::after{content:"▾";color:var(--mute);transition:transform .15s}.lk-otd[open]>summary::after{transform:rotate(180deg)}.lk-otl{display:flex;flex-wrap:wrap;gap:4px 12px;padding:0 4px 8px 22px}.lk-iomm summary{cursor:pointer;color:var(--doc-a,#0b63c5);margin-top:3px}.lk-iomm[open] summary{margin-bottom:3px}
 .lk-bandr td{padding:0!important;border:0!important}.lk-band{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2);margin:10px 0 2px}.lk-band small{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute);text-align:right}.lk-band span{white-space:nowrap}:root.phone .lk-band small{display:none}
 .lk-red,.lk-red a{color:#d11!important}.lk-clash{color:#d11;font-size:12px;font-weight:800;margin-top:2px}.lk-clash a{color:#d11;text-decoration:underline;font-weight:600;margin-left:4px}.lk-rsw{font-size:12px;color:var(--mute)}
 .lk-t td.lk-sub{color:var(--lk-a);font-size:var(--fl,13px);font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}

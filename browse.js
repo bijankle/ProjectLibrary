@@ -7,7 +7,7 @@
 window.Browse = (() => {
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const TYPES = [["mel", "Equipment (mech)"], ["elec", "Equipment (elec)"], ["cable", "Cables"], ["ins", "Instruments"], ["cv", "Control valves"], ["mv", "Manual valves"], ["line", "Lines"],
-    ["spi", "Pipe specials"], ["hose", "Hoses"], ["pid", "P&IDs"], ["pfdd", "PFDs"], ["sldd", "SLDs"]];
+    ["spi", "Pipe specials"], ["hose", "Hoses"], ["pid", "P&IDs"], ["pfdd", "PFDs"], ["sldd", "SLDs"], ["tldd", "TLDs"], ["scmd", "Schematics"], ["blkd", "Block diagrams"]];
   // a cable's kind, from the letter before its number (F16AG421-P1 power, -C1 control…)
   const CBK = { P: "Power", C: "Control", I: "Instrument", D: "Data / comms", E: "Earth", FO: "Fibre optic", F: "Fibre optic", S: "Signal", B: "DB circuit", R: "DB circuit", W: "DB circuit", N: "Neutral" };
   const TN = Object.fromEntries(TYPES);
@@ -45,7 +45,7 @@ window.Browse = (() => {
       case "elec": { const m = /^F(\d{2,3})/.exec(k); return [m ? "F" + m[1] : "", elCode(k)]; }
       case "cable": { const m = /^F(\d{2,3})/.exec(k), c = /-([A-Z]{1,2})\d{1,2}(?:-[A-Z]{1,2})?$/.exec(k); return [m ? "F" + m[1] : "", c ? (CBK[c[1]] ? c[1] : "?") : "?"]; }
       // drawings: a P&ID's area is in its number; PFD sheets are all F00, so theirs is the area of the equipment on them
-      case "pid": { const m = /^2000-([FT]\d{2,3})-(PID|PFD|SLD|TLD|SCM)-/.exec(k); return !m ? null : m[2] === "PFD" ? [Lookup.pfdArea(k) || titleArea(k) || "?", "PFD"] : [m[1], m[2] === "TLD" || m[2] === "SCM" ? "SLD" : m[2]]; }
+      case "pid": { const m = /^2000-([FT]\d{2,3})-(PID|PFD|SLD|TLD|SCM|BLK)-/.exec(k); return !m ? null : m[2] === "PFD" ? [Lookup.pfdArea(k) || titleArea(k) || "?", "PFD"] : [m[1], m[2]]; }
     }
     return null;
   }
@@ -79,21 +79,22 @@ window.Browse = (() => {
     spi: [["k", "Type"], ["a", "Area"]],
     hose: [["k", "Service"], ["a", "Area"]],
     elec: [["k", "Equipment code"], ["a", "Area"]], cable: [["k", "Cable kind"], ["a", "Area"]],
-    pid: [["a", "Area"]], pfdd: [["a", "Area"]], sldd: [["a", "Area"]] };
+    pid: [["a", "Area"]], pfdd: [["a", "Area"]], sldd: [["a", "Area"]], tldd: [["a", "Area"]], scmd: [["a", "Area"]], blkd: [["a", "Area"]] };
   const SIZE = { cv: "Valve size (mm)", mv: "Size (DN)", line: "Size (DN)" };
+  const DKT = { PFD: "pfdd", SLD: "sldd", TLD: "tldd", SCM: "scmd", BLK: "blkd" };   // drawings by their type code, one pill each
   function build(){
     rows = [];
     for (const it of Lookup.items()){
       if (!TN[it.t]) continue;
       const f = facet(it); if (!f) continue;
-      rows.push({ it, t: it.t === "pid" && f[1] === "PFD" ? "pfdd" : it.t === "pid" && f[1] === "SLD" ? "sldd" : it.t, a: f[0] || "?", k: f[1] || "?", sp: it.t === "line" ? Lookup.get(it, "Pipe spec") || "?" : "", sz: SIZE[it.t] ? String(Lookup.get(it, SIZE[it.t]) || "?") : "" });
+      rows.push({ it, t: it.t === "pid" && DKT[f[1]] || it.t, a: f[0] || "?", k: f[1] || "?", sp: it.t === "line" ? Lookup.get(it, "Pipe spec") || "?" : "", sz: SIZE[it.t] ? String(Lookup.get(it, SIZE[it.t]) || "?") : "" });
     }
     const col = new Intl.Collator(undefined, { numeric: true });   // one collator: localeCompare with options rebuilds it on every call (about 1.5 s here)
     rows.sort((x, y) => col.compare(x.it.key, y.it.key));
     names = {
       a: v => B.areas[v] || "", sp: v => (B.spec || {})[v] || "", sz: () => "",
       k: { mel: v => B.equip[v] || "", ins: insName, cv: v => CV[v] || "", mv: () => "", line: v => B.svc[v] || "", hose: v => B.svc[v] || "",
-        pid: () => "", pfdd: () => "", sldd: () => "", elec: elName, cable: v => CBK[v] || "", spi: v => SPI[v] || "" } };
+        pid: () => "", pfdd: () => "", sldd: () => "", tldd: () => "", scmd: () => "", blkd: () => "", elec: elName, cable: v => CBK[v] || "", spi: v => SPI[v] || "" } };
   }
   const nameOf = (f, t, v) => v === "?" ? (f === "a" ? "No area in the tag" : "Not given") : f === "k" ? names.k[t](v) : names[f](v);
   const t = () => path.length ? path[0].v : "";
