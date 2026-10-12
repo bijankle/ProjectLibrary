@@ -95,7 +95,7 @@ window.AssetViz = (() => {
     const pick = test => { const rf = box.querySelector(".vz-rf"); let n = 0; [...rf.children].forEach((e, i) => { const on = !!(refsNow[i] && test(i, refsNow[i])); e.classList.toggle("pick", on); n += on; }); report(); return n; };
     // this view (sheet, zoom, place, the box picked) into the page's history step, for Back (index.html kcgmDv)
     let dvT = 0; const report = () => { clearTimeout(dvT); dvT = setTimeout(() => { if (g !== gen || !cur || !window.kcgmDv) return; const rf = box.querySelector(".vz-rf"), pi = rf ? [...rf.children].findIndex(e => e.classList.contains("pick")) : -1;
-      kcgmDv({ key: cur.key, n, z, tx, ty, tap: pi >= 0 && boxes[pi] ? boxes[pi] : (tapNow || null) }); }, 350); };
+      kcgmDv({ key: cur.key, n, z, tx, ty, tap: pi >= 0 && boxes[pi] ? boxes[pi] : (tapNow || null) }); }, 350); lastView = { n, z, tx, ty, tap: null }; };
     let tapNow = null;
     const hbox = (l, t, w, h) => { const [a, b, c, d] = PdfView.grow(l, t, w, h, W / H); return `<i class="sp-hb sp-hbon" style="left:${a / 1e4 * W}px;top:${b / 1e4 * H}px;width:${c / 1e4 * W}px;height:${d / 1e4 * H}px"></i>`; };
     // (the drawing kept in the window: centred while smaller than it, else no further than its edges)
@@ -146,7 +146,10 @@ window.AssetViz = (() => {
       const i = PdfView.nearest(boxes, (x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4); return i >= 0 ? rfEl.children[i] : null; };
     let hv = null; box.addEventListener("mousemove", e => { const a = pts.size ? null : refAt(e.clientX, e.clientY); if (a === hv) return; if (hv) hv.classList.remove("hv"); hv = a; if (a) a.classList.add("hv"); box.classList.toggle("on-ref", !!a); });
     box.addEventListener("click", e => { if (e.target.closest(".vz-zb") || moved > 4) return; const sl = getSelection(); if (sl && !sl.isCollapsed && String(sl).trim()) return;
-      const a = refAt(e.clientX, e.clientY); if (!a) return; e.stopPropagation();
+      const a = refAt(e.clientX, e.clientY);
+      // (an empty part of the sheet, an asset's page showing: the drawing's own page, the sheet left as it is)
+      if (!a){ if (cur && cur.t !== "pid" && !document.documentElement.classList.contains("phone") && window.kcgmOpenTag && !e.target.closest(".vz-tg")){ keepView = { n, z, tx, ty, tap: null, force: true }; setTimeout(() => { if (keepView && keepView.force) keepView = null; }, 2500); kcgmOpenTag(n); } return; }
+      e.stopPropagation();
       const t = a.dataset.t, k = a.dataset.k;
       // a continuation: that drawing becomes the item on the left, with the ribbon back to this one marked (pid-refs way back)
       if (k === "d"){ if (Pid.has(t)){ arrival = { to: t, back: a.dataset.b ? JSON.parse(a.dataset.b) : null }; if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }
@@ -367,5 +370,8 @@ window.AssetViz = (() => {
 .vz-tip{position:fixed;z-index:200;pointer-events:none;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:var(--fb,15px);line-height:1.35;box-shadow:0 6px 18px #0006;max-width:260px}
 .vz-tip[hidden]{display:none}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  return { mount, update, item, list, home, find, keep, restoreView };
+  // (the drawing showing beside the item; keepAll: the next item keeps the sheet exactly as it is)
+  const shownDrawing = () => cur ? shown : null;
+  let lastView = null; const keepAll = () => { if (lastView) keepView = Object.assign({}, lastView, { force: true }); setTimeout(() => { if (keepView && keepView.force) keepView = null; }, 2500); };
+  return { mount, update, item, list, home, find, keep, restoreView, shownDrawing, keepAll, setLast: v => { lastView = v; } };
 })();

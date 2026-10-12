@@ -588,6 +588,7 @@
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
       if (!opts.noNav){ body.querySelector(".lk-back").onclick = back; body.querySelector(".lk-home").onclick = home; }
       body.querySelectorAll(".lk-st[data-s]").forEach(b => b.onclick = () => { const a = stepList(cur), i = a.indexOf(cur), x = a[i + +b.dataset.s]; if (x) open(x, false, "step"); });
+      scope();
 
       const pb = body.querySelector("[data-pfd]"); if (pb) pb.onclick = () => opts.pfd(it).go();
       L.fillSpec(body, it);
@@ -603,11 +604,47 @@
     // any code link in an item (also ones filled in later, like the valve codes in a pipe spec) opens that item
     body.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a[data-k]"); if (!a || !body.contains(a)) return; e.preventDefault();
       ensure().then(() => { const x = L.find(a.dataset.k, a.dataset.t); if (x){ ctx = null; open(x, true); } }); });
+    // desktop, a drawing's own page: the search box searches in that drawing (its pills narrow to what matches, the sheet
+    // outlines it); "✕ This drawing", the P or the Assets tab goes back to the front page and the whole library
+    const inDwg = () => !PHONE() && cur && cur.t === "pid";
+    let ph0 = null, chip = null, scoped = null;
+    function scope(){
+      if (ph0 == null) ph0 = inp.placeholder;
+      if (!chip){ chip = document.createElement("button"); chip.type = "button"; chip.className = "lk-scope"; chip.hidden = true; chip.innerHTML = "✕ This drawing"; chip.title = "Search all assets instead";
+        chip.onclick = () => home(); inp.insertAdjacentElement("afterend", chip); }
+      const on = inDwg();
+      if (on && scoped !== cur){ inp.value = ""; if (window.AssetViz && AssetViz.find) AssetViz.find(""); }   // (a fresh drawing page starts unfiltered)
+      scoped = on ? cur : null; chip.hidden = !on; root.classList.toggle("lk-scoped", !!on);
+      inp.placeholder = on ? "Search in " + cur.key.replace(/^2000-/, "") + "…" : ph0;
+      if (on) filterIn(inp.value);
+    }
+    // the drawing page's rows that match, the rest hidden; each pill counts its matches, empty ones go; one left opens
+    function filterIn(q){
+      // (shown / hidden inline: the rows' own display rules outrank a hidden attribute)
+      const hide = (e, h) => { e.hidden = h; if (h) e.style.setProperty("display", "none", "important"); else e.style.removeProperty("display"); };
+      const w = norm(q), rows = el => [...el.querySelectorAll("a.lk-row, .lk-otd, .lk-ot, .lk-row")].filter((r, i, a) => !a.some(o => o !== r && o.contains(r)));
+      body.querySelectorAll(".pf").forEach(pf => { if (pf.parentElement.closest(".pf")) return;
+        let vis = [];
+        pf.querySelectorAll(":scope > .pf-sec").forEach(sec => { let n = 0;
+          rows(sec).forEach(r => { const m = !w || norm(r.textContent).includes(w); hide(r, !m); n += m; });
+          sec.querySelectorAll(".pf-b").forEach(b => { const s2 = sec.querySelector(`.pf-sec[data-p="${b.dataset.p}"]`); if (!s2) return; const k = rows(s2).filter(r => !r.hidden).length; hide(b, !!w && !k); const i = b.querySelector("i"); if (i){ if (i.dataset.n == null) i.dataset.n = i.textContent; i.textContent = w ? k : i.dataset.n; } });
+          const b = pf.querySelector(`:scope > .pf-bar > .pf-b[data-p="${sec.dataset.p}"]`); if (!b) return;
+          const i = b.querySelector("i"); if (i){ if (i.dataset.n == null) i.dataset.n = i.textContent; i.textContent = w ? n : i.dataset.n; }
+          hide(b, !!w && !n); if (!b.hidden) vis.push(b); });
+        if (w && vis.length && !vis.some(b => b.classList.contains("on"))) vis[0].click();   // (the pill showing has no matches: the first that has)
+        else if (w && vis.length === 1 && !vis[0].classList.contains("on")) vis[0].click(); });
+    }
+    // Escape (desktop): an asset's page goes to the page of the drawing beside it; on a drawing page, the search in it
+    // is cleared first, then the front page
+    addEventListener("keydown", e => { if (e.key !== "Escape" || PHONE() || e.defaultPrevented || document.documentElement.classList.contains("sp-open") || document.body.classList.contains("sp-on")) return;
+      if (document.querySelector('[role="dialog"]:not([hidden]), .mo:not([hidden])')) return;
+      if (inDwg()){ if (inp.value){ inp.value = ""; filterIn(""); if (window.AssetViz && AssetViz.find) AssetViz.find(""); } else home(); return; }
+      const n = cur && window.AssetViz && AssetViz.shownDrawing && AssetViz.shownDrawing(); if (n){ const x = L.find(norm(n), "pid"); if (x){ AssetViz.keepAll && AssetViz.keepAll(); open(x, true); } } });
     // home: back to the start (the Assets page's own reset when it has one, else an empty search)
-    const home = () => { stack.length = 0; cur = null; inp.value = ""; showList(""); if (opts.home) opts.home(); };
+    const home = () => { stack.length = 0; cur = null; inp.value = ""; showList(""); scope(); if (opts.home) opts.home(); };
     const back = () => { const s = stack.pop(); if (s && s.it){ cur = null; open(s.it, false); } else { cur = null; showList(inp.value); if (s) body.scrollTop = s.scroll; } };
-    let tmr; inp.addEventListener("input", () => { clearTimeout(tmr); tmr = setTimeout(() => { stack.length = 0; cur = null; ensure().then(() => showList(inp.value)); }, 120); });
-    inp.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); clearTimeout(tmr); stack.length = 0; rememberQ(inp.value); ensure().then(() => { showList(inp.value); if (hits.length && (hits[0].k === norm(inp.value) || hits.length === 1)) open(hits[0], true); }); inp.blur(); } });
+    let tmr; inp.addEventListener("input", () => { clearTimeout(tmr); if (inDwg()){ filterIn(inp.value); return; } tmr = setTimeout(() => { stack.length = 0; cur = null; ensure().then(() => { showList(inp.value); scope(); }); }, 120); });
+    inp.addEventListener("keydown", e => { if (e.key === "Enter" && inDwg()){ e.preventDefault(); return; } if (e.key === "Enter"){ e.preventDefault(); clearTimeout(tmr); stack.length = 0; rememberQ(inp.value); ensure().then(() => { showList(inp.value); if (hits.length && (hits[0].k === norm(inp.value) || hits.length === 1)) open(hits[0], true); }); inp.blur(); } });
     const ensure = () => done ? Promise.resolve() : (status("Loading plant lists…"), L.load().then(() => status("")).catch(e => { status("Couldn't load the lists (" + esc(e.message) + "). Check your connection and try again."); throw e; }));
     cam.onclick = () => file.click();
     file.onchange = () => { const f = file.files[0]; file.value = ""; if (!f) return;
@@ -674,7 +711,7 @@
 .lk-status{font-size:var(--fb,15px);color:var(--mute);min-height:18px;margin:6px 2px}.lk-status:not(:empty){display:flex;align-items:center;gap:6px;padding:5px 8px;margin:6px 0;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2)}.lk-status b{color:var(--ink);letter-spacing:.02em;margin-left:auto;order:2;font-variant-numeric:tabular-nums}
 .lk-hit{display:flex;gap:10px;width:100%;text-align:left;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:12px;padding:10px 11px;margin-bottom:7px;cursor:pointer;font:inherit}
 .lk-hit:hover{border-color:var(--lk-a)}
-.lk-pills{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.lk-pills::-webkit-scrollbar{display:none}:root:not(.phone) .lk-pills{flex-wrap:wrap;overflow:visible}.lk-sr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);column-gap:12px;align-items:start}.lk-fc{position:sticky;top:calc(var(--tb,0px) + 8px)}.lk-fo{display:flex;flex-direction:column;gap:4px;margin-top:4px}.lk-fo .bw-o{max-width:none}.lk-fo .bw-o.on{border-color:var(--gold,var(--accent));box-shadow:inset 0 0 0 1px var(--gold,var(--accent));color:var(--ink)}.lk-fo .bw-o em{font-style:normal;font-weight:700;color:var(--ink)}.lk-rc .bw-band b{font-variant-numeric:tabular-nums}
+.lk-pills{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.lk-pills::-webkit-scrollbar{display:none}:root:not(.phone) .lk-pills{flex-wrap:wrap;overflow:visible}.lk-scoped .lk-row[hidden],.lk-scoped .lk-otd[hidden],.lk-scoped .lk-ot[hidden],.lk-scoped .pf-b[hidden]{display:none!important}.lk-scope{display:none}:root:not(.phone) .lk-scoped .lk-scope:not([hidden]){display:inline-flex;align-items:center;flex:none;margin-left:6px;border:1px solid var(--gold,var(--accent));background:var(--card);color:var(--ink);font:inherit;font-size:var(--fl,13px);font-weight:700;border-radius:var(--sqr,8px);padding:4px 9px;cursor:pointer;white-space:nowrap}.lk-sr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);column-gap:12px;align-items:start}.lk-fc{position:sticky;top:calc(var(--tb,0px) + 8px)}.lk-fo{display:flex;flex-direction:column;gap:4px;margin-top:4px}.lk-fo .bw-o{max-width:none}.lk-fo .bw-o.on{border-color:var(--gold,var(--accent));box-shadow:inset 0 0 0 1px var(--gold,var(--accent));color:var(--ink)}.lk-fo .bw-o em{font-style:normal;font-weight:700;color:var(--ink)}.lk-rc .bw-band b{font-variant-numeric:tabular-nums}
 .lk-pill{flex:none;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:99px;padding:5px 10px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;white-space:nowrap}
 .lk-pill i{font-style:normal;font-weight:600;color:var(--mute);margin-left:2px}.lk-pill.on{background:var(--lk-c);box-shadow:inset 0 0 0 1px var(--lk-a);border-color:var(--lk-a);color:color-mix(in srgb,var(--lk-a) 70%,var(--ink))}.lk-pill.on i{color:var(--mute)}
 .lk-row1{display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--lk-l);background:none;color:var(--ink);padding:7px 4px;cursor:pointer;font:inherit;font-size:var(--fb,15px);line-height:1.3}
