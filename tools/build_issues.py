@@ -108,6 +108,30 @@ for r in ins:
         add("Stage", "Check", r["Instrument tag"] + " on " + m["Equipment number"], "Instrument " + r["Stage"], INS, "Equipment " + m["Stage"], MEL,
             "Often legitimate (Stage 2 instrument added to Stage 1 equipment). Check. " + newer(INS, MEL))
 
+# ---------- the process control tables against the instrument list (tools/build_pct.py, tools/pct_rows.json) ----------
+# Clash: the PCT puts an instrument on a P&ID the instrument list doesn't name for it, and the sheet doesn't show the tag
+# either (a tag drawn on both sheets is right on both). Missing: a field instrument the PCT controls (its Tag Source) that
+# the instrument list doesn't have.
+PR = os.path.join(HERE, "pct_rows.json")
+if os.path.exists(PR):
+    pct = json.load(open(PR)); insk = {N(r["Instrument tag"]): r for r in ins}
+    CT = json.load(open(os.path.join(HERE, "..", "contents.json")))["d"]
+    onsheet = lambda k, n: n in CT and k in {N(x) for x in CT[n].get("k", [])}
+    pk = lambda dn: "pct" + re.sub(r"\D", "", dn.split("-", 1)[1])
+    seen = set()
+    for c in pct:
+        k, d0 = c.get("k"), c["d"]
+        if k in insk and not c.get("via") and c.get("pid") and (k, c["pid"]) not in seen:
+            seen.add((k, c["pid"])); r = insk[k]; ip = re.findall(r"2000-[A-Z0-9]+-PID-PR-\d+", r["P&ID"])
+            if ip and c["pid"] not in ip and not onsheet(k, c["pid"]):
+                add("Instrument", "Clash", r["Instrument tag"] + " P&ID", r["P&ID"], INS, c["pid"] + f" ({c['s'].lower()} {c['t']})", pk(d0),
+                    newer(INS, pk(d0)) + " The tag isn't read on " + c["pid"] + " in the app, so check which sheet it is on.")
+        src = c.get("src") or ""
+        if c.get("ctl") and src and re.fullmatch(r"[A-Z]{2,4}\d{5}[A-Z]?", src) and N(src) not in insk and ("m", src) not in seen:
+            seen.add(("m", src))
+            add("Instrument", "Missing", src, f"Controlled in the process control tables ({c['s'].lower()} {c['t']}" + (f", {c['pid']}" if c.get("pid") else "") + ")", pk(d0),
+                "Not in the instrument list", INS, "In the process control tables only. Kept as a control tag (searchable); raise with the instrument list owner.")
+
 meta = {"rule": "Where two documents clash, the one with the more recent revision date is taken as true unless the comment says why not.",
         "sources": {v["title"]: {"doc": doc(k), "date": v["date"], "status": v["status"]} for k, v in REV.items()},
         "docs": REV}

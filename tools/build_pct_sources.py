@@ -10,6 +10,7 @@ equipment lists some workbooks carry (the app has those lists in their own right
 """
 import json, os, re, glob, datetime, collections, warnings
 import openpyxl
+import sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import pct_pdf   # (a PCT issued as a PDF only)
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 warnings.filterwarnings("ignore")
@@ -41,12 +42,12 @@ def trim(rows):
     return [list(r[:w]) + [""] * (w - len(r[:w])) for r in rows]
 
 docs = {}
-for f in glob.glob(os.path.join(RP, "sources", "pct", "*.xls[xm]")):
-    m = re.match(r"(2000-F\d{2}-LST-PR-\d{5})_(\w+?)_", os.path.basename(f))
+for f in glob.glob(os.path.join(RP, "sources", "pct", "*.[xp][ld][sf]*")):
+    m = re.match(r"(2000-F\d{2}-LST-PR-\d{5})_(\w+?)(?:_|\.)", os.path.basename(f))
     if m and (m.group(1) not in docs or m.group(2) > docs[m.group(1)][0]): docs[m.group(1)] = (m.group(2), f)
 for dn, (rev, f) in sorted(docs.items()):
     key = "pct" + re.sub(r"\D", "", dn.split("-", 1)[1])   # pct1310001
-    wb = openpyxl.load_workbook(f, read_only=True, data_only=True)
+    wb = pct_pdf.open(f) if f.lower().endswith('.pdf') else openpyxl.load_workbook(f, read_only=True, data_only=True)
     cov = [re.sub(r"\s+", " ", str(c)) for r in wb.worksheets[0].iter_rows(values_only=True, max_row=30) for c in r if c]
     title = REG.get(dn) or next((c for c in cov if c.upper().startswith("PROCESS CONTROL TABLES - ")), "PROCESS CONTROL TABLES")
     title = re.sub(r"\b(And|Of|For|The)\b", lambda m: m.group(0).lower(), title.title())
@@ -82,10 +83,10 @@ for dn, (rev, f) in sorted(docs.items()):
     date = max(dates) if dates else ""
     six[key] = {"chunk": CH, "xlsx": f"sources/{key}.xlsx", "fname": f"{dn} {title} Rev {rev} (tables).xlsx",
                 "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
-                "from": "XLSX", "sheets": meta, "size": os.path.getsize(path)}
+                "from": "PDF" if f.lower().endswith(".pdf") else "XLSX", "sheets": meta, "size": os.path.getsize(path)}
     revs[key] = {"title": "PCT " + dn.split("-")[1], "full": title, "number": dn, "kind": "List", "rev": rev, "date": date, "status": "", "pct": 1,
                  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
-                 "history": [{"rev": rev, "date": date, "status": ""}], "note": "Process Control Tables workbook (" + os.path.basename(f).split("_", 1)[1].rsplit(".", 1)[0] + ")", "project": ""}
+                 "history": [{"rev": rev, "date": date, "status": ""}], "note": ("Process Control Tables PDF (as issued; the tables read from it)" if f.lower().endswith(".pdf") else "Process Control Tables workbook (" + os.path.basename(f).split("_", 1)[1].rsplit(".", 1)[0] + ")"), "project": ""}
     print(key, dn, rev, date, title, len(sheets), "sheets")
 json.dump(six, open(SIX, "w"), ensure_ascii=False, indent=1)
 json.dump(revs, open(REVF, "w"), ensure_ascii=False, indent=1)

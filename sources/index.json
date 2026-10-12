@@ -1645,115 +1645,115 @@
     "chunks": 1
    }
   ],
-  "size": 678359
+  "size": 678362
  },
  "pct1410001": {
   "chunk": 5000,
   "xlsx": "sources/pct1410001.xlsx",
-  "fname": "2000-F14-LST-PR-10001 Process Control Tables - Gravity Circuit & Intensive Leaching Rev 2 (tables).xlsx",
+  "fname": "2000-F14-LST-PR-10001 Process Control Tables - Gravity Circuit & Intensive Leaching Rev 3 (tables).xlsx",
   "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
-  "from": "XLSX",
+  "from": "PDF",
   "sheets": [
    {
     "name": "Revisions",
-    "hdr": 6,
-    "n": 26,
-    "c": 6,
+    "hdr": 5,
+    "n": 30,
+    "c": 1,
     "chunks": 1
    },
    {
     "name": "1. Analogue Input",
-    "hdr": 4,
-    "n": 38,
-    "c": 43,
+    "hdr": 5,
+    "n": 34,
+    "c": 31,
+    "chunks": 1
+   },
+   {
+    "name": "2. Analogue Output",
+    "hdr": 5,
+    "n": 10,
+    "c": 11,
     "chunks": 1
    },
    {
     "name": "3. Digital Input",
     "hdr": 5,
-    "n": 58,
-    "c": 26,
-    "chunks": 1
-   },
-   {
-    "name": "2. Analogue Output",
-    "hdr": 4,
-    "n": 15,
-    "c": 21,
+    "n": 43,
+    "c": 12,
     "chunks": 1
    },
    {
     "name": "4. Digital Output",
     "hdr": 5,
-    "n": 23,
-    "c": 22,
+    "n": 15,
+    "c": 12,
     "chunks": 1
    },
    {
     "name": "5. Totalisers",
     "hdr": 5,
-    "n": 14,
-    "c": 22,
+    "n": 9,
+    "c": 11,
     "chunks": 1
    },
    {
     "name": "6. OnOff Valves",
     "hdr": 5,
-    "n": 69,
-    "c": 39,
+    "n": 51,
+    "c": 23,
     "chunks": 1
    },
    {
     "name": "9. Drives",
     "hdr": 5,
-    "n": 216,
-    "c": 41,
+    "n": 25,
+    "c": 28,
     "chunks": 1
    },
    {
     "name": "7. Control Valves",
     "hdr": 5,
-    "n": 14,
-    "c": 34,
+    "n": 11,
+    "c": 23,
     "chunks": 1
    },
    {
     "name": "8. PID Cont",
     "hdr": 5,
-    "n": 15,
-    "c": 61,
+    "n": 11,
+    "c": 49,
     "chunks": 1
    },
    {
     "name": "10. Sequence",
-    "hdr": 4,
-    "n": 14,
+    "hdr": 5,
+    "n": 6,
     "c": 12,
     "chunks": 1
    },
    {
     "name": "11. Calculation",
     "hdr": 5,
-    "n": 20,
-    "c": 22,
+    "n": 18,
+    "c": 16,
     "chunks": 1
    },
    {
     "name": "12. Misc",
     "hdr": 5,
-    "n": 57,
-    "c": 17,
+    "n": 52,
+    "c": 10,
     "chunks": 1
    },
    {
     "name": "13. Alarm Database",
     "hdr": 5,
-    "n": 140,
-    "c": 24,
+    "n": 127,
+    "c": 14,
     "chunks": 1
    }
   ],
-  "size": 110067
+  "size": 57113
  },
  "pct1610001": {
   "chunk": 5000,
@@ -2091,7 +2091,7 @@
     "chunks": 1
    }
   ],
-  "size": 146846
+  "size": 146843
  },
  "pct2310001": {
   "chunk": 5000,
@@ -2558,7 +2558,7 @@
     "chunks": 1
    }
   ],
-  "size": 52059
+  "size": 52056
  },
  "pct3510001": {
   "chunk": 5000,
@@ -2666,7 +2666,7 @@
     "chunks": 1
    }
   ],
-  "size": 38574
+  "size": 38575
  },
  "pct7210001": {
   "chunk": 5000,

@@ -1188,19 +1188,19 @@
   "full": "Process Control Tables - Gravity Circuit & Intensive Leaching",
   "number": "2000-F14-LST-PR-10001",
   "kind": "List",
-  "rev": "2",
-  "date": "2026-09-01",
+  "rev": "3",
+  "date": "2026-09-21",
   "status": "",
   "pct": 1,
   "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
   "history": [
    {
-    "rev": "2",
-    "date": "2026-09-01",
+    "rev": "3",
+    "date": "2026-09-21",
     "status": ""
    }
   ],
-  "note": "Process Control Tables workbook (2_Area_F14_PCT)",
+  "note": "Process Control Tables PDF (as issued; the tables read from it)",
   "project": ""
  },
  "pct1610001": {

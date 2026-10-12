@@ -10,7 +10,7 @@
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // Things that look like a plant code inside any text
   const TAG_RE = /\b(2000-[A-Z0-9]{3,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}|\d{2}-\d{4}-[A-Z0-9]{1,6}-[A-Z0-9]{2,6}-\d{2,4}(?:-[A-Z]{1,3})?|F\d{2,3}[A-Z]{2,4}\d{2,4}[A-Z]{0,4}(?:-[A-Z]{1,4}\d{0,2})?-[A-Z]{1,3}\d{1,2}(?:-[A-Z]{1,2})?|F\d{2,3}[A-Z]{2,4}\d{3,4}[A-Z]?-[A-Z]{2,4}\d{0,2}|F\d{2,3}-[A-Z]{1,4}-\d{2,4}[A-Z]?|F\d{2}-\d{5}|SP-[A-Z]{2}-\d{3}|[A-Z]{1,5} ?\d{5}[A-Z]?)\b/g;
-  const TYPE_ORDER = ["pfd", "mel", "elec", "cable", "ins", "cv", "mv", "line", "spec", "spi", "hose", "gloss", "pid", "otag"];
+  const TYPE_ORDER = ["pfd", "mel", "elec", "cable", "ins", "cv", "mv", "line", "spec", "spi", "hose", "ctl", "gloss", "pid", "otag"];
   const ICON = {};   // no pictures: each list is named in words (the type line, the pills)
 
   L.addExtra = list => { extras = extras.concat(list); if (DB) indexExtras(list); };
@@ -108,7 +108,7 @@
     const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
     return hits.map((it, i) => `<button class="lk-row1 lk-1l${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}">${L.row1(it.key, L.listName(it), L.tsfTag(it))}</button>`).join("");
   };
-  const PILLN = { otag: "Read on drawings", mel: "Equipment", elec: "Electrical equipment", cable: "Cables", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
+  const PILLN = { otag: "Read on drawings", ctl: "Control tags", mel: "Equipment", elec: "Electrical equipment", cable: "Cables", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
   const KEYF = {
     mel: ["Equipment name", "Size / description", "Installed power (kW)", "Status", "Stage", "P&ID"],
     ins: ["Description", "Instrument type", "Equipment number", "Range / units", "Loop number", "P&ID"],
@@ -564,7 +564,7 @@
     const status = m => { stat.innerHTML = m || ""; };
     // filter pills: one per list with matches (with counts); the choice is kept while typing
     let only = "", shownN = 80;
-    const PILL = { pfd: "PFD", mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spec: "Spec", pid: "Drawings", spi: "SPI", hose: "Hoses", gloss: "Glossary" };
+    const PILL = { ctl: "Control tags", pfd: "PFD", mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spec: "Spec", pid: "Drawings", spi: "SPI", hose: "Hoses", gloss: "Glossary" };
     const showList = (q, keepN) => {
       if (opts.onList) opts.onList();
       // opts.within(q): a page can take the typing for itself (Assets: with Browse filters set, the search narrows that list)

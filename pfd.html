@@ -1154,8 +1154,12 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
     selIds: () => new Set(sel.filter(x => x.k === "n" || x.k === "s").map(x => x.id)),
     nodeState: id => gState(byId[id] && byId[id].g), streamState: id => gState(sById[id] && sById[id].g) });
   // each switch between PFD and Layout is a history entry (Back returns to the other one)
-  let curView = location.hash === "#layout" ? "layout" : "pfd";
-  const setView = (v, pop) => { const s2 = v === "map" ? "layout" : "pfd"; if (!pop && curView && curView !== s2 && Tabs.push) Tabs.push({ s: s2 }); else if (Tabs.replace) Tabs.replace({ s: s2 }); curView = s2;
+  // (the address follows the view, so a reload, e.g. the app updating itself in the background, reopens the view you were on;
+  // this entry's own view wins over the address when the page loads)
+  const stS = history.state && (history.state.s === "layout" || history.state.s === "pfd") ? history.state.s : "";
+  let curView = stS || (location.hash === "#layout" ? "layout" : "pfd");
+  const setHash = s2 => { try { history.replaceState(history.state, "", location.pathname + location.search + "#" + s2); } catch (e) {} };
+  const setView = (v, pop) => { const s2 = v === "map" ? "layout" : "pfd"; if (!pop && curView && curView !== s2 && Tabs.push) Tabs.push({ s: s2 }); else if (Tabs.replace) Tabs.replace({ s: s2 }); curView = s2; setHash(s2);
     document.querySelectorAll("#viewSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pref.set("pfd_view", v); Tabs.set(v === "map" ? "layout" : "pfd");
     if (PHONE) $("search").placeholder = v === "map" ? "Search the layout" : "Search the PFD";
     PFDLayout.show(v === "map").then(ok => { if (!ok) setView("pfd"); else if (window.fxView) fxView(); });
@@ -1176,7 +1180,7 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
   if (Tabs.replace && !(history.state && history.state.s)) Tabs.replace({ s: curView });
   caseHome(curView === "layout" ? "map" : "pfd");
   const openHash = () => { if (location.hash === "#layout") setView("map"); else if (location.hash === "#pfd" && PFDLayout.active()) setView("pfd"); };
-  window.addEventListener("hashchange", openHash); if (location.hash === "#layout") setTimeout(openHash, 0);
+  window.addEventListener("hashchange", openHash); if (curView === "layout") setTimeout(() => setView("map", true), 0); else if (location.hash === "#layout") setHash("pfd");
   $("tSvc").addEventListener("click", () => $("mapView").classList.toggle("svcon", $("tSvc").classList.contains("on")));
   $("mapView").classList.toggle("svcon", pref.get("pfd_svc", "0") === "1");
 

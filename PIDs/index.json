@@ -1679,10 +1679,21 @@
   "2000-F24-PID-PR-10009": {
    "file": "PIDs/2000-F24-PID-PR-10009.pdf",
    "title": "Fire water, sheet 1",
-   "rev": "3",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 395732
+   "size": 251222,
+   "revs": [
+    {
+     "rev": "3",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10009_Rev3.pdf",
+     "size": 395732
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10009_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10010": {
    "file": "PIDs/2000-F24-PID-PR-10010.pdf",
@@ -1943,7 +1954,7 @@
    "rev": "MS_1",
    "date": "2025-03-25",
    "pages": 1,
-   "size": 350247,
+   "size": 349797,
    "revs": [
     {
      "rev": "0",

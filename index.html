@@ -515,6 +515,7 @@ body.searching #homeMain{display:none}
 <script src="spec.js"></script>
 <script src="pid.js"></script>
 <script src="offline.js"></script>
+<script>setTimeout(() => window.Offline && Offline.sync().catch(() => {}), 6000);   // (drawings rebuilt on the server replace the copies saved here)</script>
 <script src="sp.js"></script>
 <script src="checks-state.js"></script>
 <script src="lookup.js"></script>

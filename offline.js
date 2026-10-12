@@ -8,6 +8,7 @@ window.Offline = (() => {
   const mb = b => b >= 1e9 ? (b / 1e9).toFixed(2) + " GB" : b >= 1e6 ? (b / 1e6).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1e3)) + " kB";
   let M = null, busy = false;
   const url = f => new URL(f, location.href).href;
+  const fresh = f => f + (f.includes("?") ? "&" : "?") + "fresh=1";   // (straight from the server: sw.js would answer from the saved copy)
   // which version of each file this device holds, kept beside the files: {file: fingerprint from offline.json}
   const VER = () => url("__docs_versions.json");
   let held = null;
@@ -31,7 +32,7 @@ window.Offline = (() => {
     const total = need.reduce((t, f) => t + (M.sz[f] || 0), 0) || 1; let done = 0;
     for (const f of need){
       if (stop.x) throw new Error("stopped");
-      const r = await fetch(f, { cache: "no-store" }); if (!r.ok) throw new Error(f + " " + r.status);
+      const r = await fetch(fresh(f), { cache: "no-store" }); if (!r.ok) throw new Error(f + " " + r.status);
       await c.put(url(f), r); held[f] = M.ver[f]; done += M.sz[f] || 0; prog(done / total);
       if (need.indexOf(f) % 10 === 9) await saveHeld(c);
     }
@@ -95,5 +96,30 @@ window.Offline = (() => {
 .dl-r.have .dl-b{border-color:transparent;color:#22a35a}.dl-b:disabled{opacity:.35;cursor:default}.dl-r.busy .dl-s{color:var(--ink);font-weight:700}
 .dl-bar{display:none;position:absolute;left:0;right:0;bottom:-1px;height:3px}.dl-bars .dl-r.busy .dl-bar{display:block}.dl-bar i{display:block;height:100%;width:0;background:var(--gold,var(--accent));transition:width .2s}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-  return { mount, rows, load, check, get, drop, busy: () => busy, setBusy: v => busy = v };
+  // keep the documents on this device current (run once a session, in the background): a drawing or table rebuilt on the
+  // server under the same name (a newer revision swapped in, the title block cleared) replaces the copy saved here, so its
+  // picture always matches the tag boxes drawn over it. A copy whose version this device recorded is checked against
+  // offline.json; one saved on first open (sw.js) and not yet recorded is checked once by its ETag (or, saved after
+  // offline.json was built, taken as current).
+  async function sync(){
+    if (!("caches" in window) || busy) return 0;
+    await load(); const c = await caches.open(CACHE); await loadHeld(c);
+    const built = M.built ? Date.parse(M.built) : 0, base = url("./"), stale = [];
+    for (const req of await c.keys()){
+      const u = req.url.split("?")[0]; if (!u.startsWith(base) || u === VER()) continue;
+      const f = decodeURIComponent(u.slice(base.length)); if (!M.ver[f]) continue;
+      if (held[f]){ if (held[f] !== M.ver[f]) stale.push([f, req]); continue; }
+      const r = await c.match(req), d = r && Date.parse(r.headers.get("date") || "");
+      if (d && built && d > built + 20 * 60e3){   // (20 minutes after the build: the site was live by then)
+        held[f] = M.ver[f]; continue; }
+      try { const h = await fetch(fresh(f), { method: "HEAD", cache: "no-store" }), tag = x => x && (x.headers.get("etag") || x.headers.get("last-modified")), et = tag(h), was = tag(r);
+        if (h.ok && et && was && et === was) held[f] = M.ver[f]; else if (h.ok) stale.push([f, req]); } catch (e){ return 0; }   // (offline: try next time)
+    }
+    let n = 0;
+    for (const [f, req] of stale){
+      try { const r = await fetch(fresh(f), { cache: "no-store" }); if (!r.ok) continue; await c.put(req, r); held[f] = M.ver[f]; n++; } catch (e){ break; }
+    }
+    await saveHeld(c); return n;
+  }
+  return { mount, rows, load, check, get, drop, sync, busy: () => busy, setBusy: v => busy = v };
 })();

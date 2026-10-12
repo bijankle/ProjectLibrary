@@ -11,13 +11,14 @@ number and first letter (a transmitter first).
 """
 import json, re, glob, os, datetime, collections
 import openpyxl
+import sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import pct_pdf   # (a PCT issued as a PDF only)
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RP = os.environ.get("KCGM_PRIVATE") or os.path.join(os.path.dirname(R), "projectlibraryprivate")
 norm = lambda s: re.sub(r'[\s\-_/.]+', '', str(s or '').upper())
 SD = json.load(open(R + '/search-data.json'))
 KEYS = {}   # app key -> list type
 for t, rows in SD['data'].items():
-    if isinstance(rows, list):
+    if isinstance(rows, list) and t != 'ctl':   # (ctl: this script's own control tags, rebuilt below)
         for r in rows:
             if r and isinstance(r, list): KEYS.setdefault(norm(r[0]), t)
 byloop = collections.defaultdict(list)
@@ -72,12 +73,12 @@ def nice(x):
             'Upper Limit': 'Output upper limit', 'Destination (Output) Tag': 'Output tag', 'Destination Description': 'Output to'}.get(x, 'Comments' if x.endswith(' Comments') else x)
 
 docs = {}
-for f in glob.glob(os.path.join(RP, 'sources', 'pct', '*.xls[xm]')):
-    m = re.match(r'(2000-F\d{2}-LST-PR-\d{5})_(\w+?)_', os.path.basename(f))
+for f in glob.glob(os.path.join(RP, 'sources', 'pct', '*.[xp][ld][sf]*')):
+    m = re.match(r'(2000-F\d{2}-LST-PR-\d{5})_(\w+?)(?:_|\.)', os.path.basename(f))
     if m and (m.group(1) not in docs or m.group(2) > docs[m.group(1)][0]): docs[m.group(1)] = (m.group(2), f)
 REC = []
 for dn, (rev, f) in sorted(docs.items()):
-    wb = openpyxl.load_workbook(f, read_only=True, data_only=True)
+    wb = pct_pdf.open(f) if f.lower().endswith('.pdf') else openpyxl.load_workbook(f, read_only=True, data_only=True)
     area = dn.split('-')[1]
     for ws in wb.worksheets:
         m = re.match(r'(\d+)\.', ws.title)
@@ -86,7 +87,7 @@ for dn, (rev, f) in sorted(docs.items()):
         rows = [list(r) for r in ws.iter_rows(values_only=True, max_col=120)]
         h = next((i for i, r in enumerate(rows[:12]) if any(str(c).strip() in ('Tag Name', 'Seq No.') for c in r if c)), None)
         if h is None: continue
-        sub = h + 1 if any(str(c).strip() in ('Area', 'Min', 'P_LL') for c in rows[h + 1] if c) else h
+        sub = h + 1 if h + 1 < len(rows) and any(str(c).strip() in ('Area', 'Min', 'P_LL') for c in rows[h + 1] if c) else h
         top, low = rows[sub - 1], rows[sub]
         n = max(len(top), len(low)); top += [None] * (n - len(top)); low += [None] * (n - len(low))
         names, grp, g = [], [], ''
@@ -113,7 +114,7 @@ for dn, (rev, f) in sorted(docs.items()):
             r = r + [None] * (n - len(r))
             v = [val(c) for c in r[:n]]
             t = v[cT] if cT is not None else ''
-            if t and re.search(r'refer to|^tag name$', t, re.I): t = ''
+            if t and (re.search(r'refer to|^tag name$', t, re.I) or not re.fullmatch(r'(?=.*[A-Z])[A-Z0-9][A-Z0-9_\-./]{2,39}', t.upper())): t = ''   # (a tag: no spaces, a letter in it; not a step number or a note)
             if t:
                 s = v[cS] if cS is not None else ''
                 cur = {'s': sec, 'd': dn, 'rev': rev, 'a': area, 't': t, 'src': s if s and s != t else '', 'pid': v[cP] if cP is not None and v[cP].startswith('2000-') else '',
@@ -176,6 +177,28 @@ for i, c in enumerate(REC):
     if c['s'] == 'Sequence': k = None
     if k: by[k].append(i); c['k'] = k
     else: miss[c['s']] += 1
+# control tags no list holds (soft tags, calculations, sequences, signals): searchable in their own right ("Control tag",
+# search-data.json type ctl), on a sheet where other rows did match (a sheet with nothing matching is left out)
+hit = collections.Counter((c['d'], c['s']) for c in REC if c.get('k'))
+CT = {}
+for i, c in enumerate(REC):
+    if c.get('k') or not (hit[(c['d'], c['s'])] or c['s'] == 'Sequence'): continue
+    k = norm(c['t'])
+    if not k or k in KEYS: continue
+    c['k'] = k; c['ctl'] = 1; by[k].append(i); miss[c['s']] -= 1
+    dsc = next((v for l, v in c['f'] if l in ('Faceplate', 'Description', 'Description (Software Tag Only)', 'Seq Description', 'Name')), '')
+    e = CT.setdefault(k, [c['t'], dsc, [], c['a'], c['pid'], []])
+    if c['s'] not in e[2]: e[2].append(c['s'])
+    if c['d'] not in e[5]: e[5].append(c['d'])
+    if not e[1]: e[1] = dsc
+    if not e[4]: e[4] = c['pid']
+for k in CT: KEYS[k] = 'ctl'
+SD['types']['ctl'] = {'n': 'Control tag', 'doc': 'Process Control Tables', 'rev': '', 'f': ['Control tag', 'Description', 'Kind', 'Area', 'P&ID', 'Process control tables']}
+SD['data']['ctl'] = [[e[0], e[1], ', '.join(e[2]), e[3], e[4], ', '.join(e[5])] for k, e in sorted(CT.items())]
+json.dump(SD, open(R + '/search-data.json', 'w'), separators=(',', ':'), ensure_ascii=False)
+print(len(CT), 'control tags added to the search (type ctl)')
+for i, c in enumerate(REC):
+    k = c.get('k')
     txt = ' '.join([v for _, v in c['f']] + [v for x in c['x'] for v in x])
     for m in TAGIN.findall(txt):
         mk = appkey(m)
@@ -183,6 +206,7 @@ for i, c in enumerate(REC):
     c['rel'] = sorted({appkey(m) for m in TAGIN.findall(txt)} - {None, k})
 # per item bundles, sharded (pct/<n>.json, n = the key's character codes summed, mod 32; lookup.js uses the same) with
 # an index of the keys (pct/idx.json): an item's own rows, and the conditions of other rows that name it
+json.dump([{q: c.get(q) for q in ('s', 'd', 'rev', 't', 'src', 'pid', 'k', 'via', 'ctl')} for c in REC], open(R + '/tools/pct_rows.json', 'w'), separators=(',', ':'))   # (tools/build_issues.py)
 NSH = 32
 shard = lambda k: sum(map(ord, k)) % NSH
 def named(c, k):

@@ -38,6 +38,7 @@ cache = re.search(r'const DOCS = "([^"]+)"', open(os.path.join(ROOT, "sw.js")).r
 # a short fingerprint of every file, so devices re-download only what has changed
 ver = {f: hashlib.sha1(open(os.path.join(ROOT, f), "rb").read()).hexdigest()[:10] for g in groups for f in g["files"]}
 sz = {f: os.path.getsize(os.path.join(ROOT, f)) for f in ver}
-json.dump({"cache": cache, "ver": ver, "sz": sz, "groups": groups, "total": sum(g["size"] for g in groups)}, open(os.path.join(ROOT, "offline.json"), "w"), indent=1)
+import datetime
+json.dump({"cache": cache, "built": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"), "ver": ver, "sz": sz, "groups": groups, "total": sum(g["size"] for g in groups)}, open(os.path.join(ROOT, "offline.json"), "w"), indent=1)
 for g in groups: print(f"{g['name'][:40]:40} {len(g['files']):4} files {g['size'] / 1e6:7.1f} MB")
 print(f"{'Everything':40} {sum(len(g['files']) for g in groups):4} files {sum(g['size'] for g in groups) / 1e6:7.1f} MB")
