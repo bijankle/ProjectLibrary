@@ -129,3 +129,10 @@ if __name__ == "__main__":
         c[s] += 1
         if s not in ("ok",): print(s, k)
     print(dict(c))
+    # (the app leaves its own corner label off a cleared sheet: the number and title are printed on it now)
+    if not dry and not out:
+        d = json.load(open(os.path.join(R, "PIDs", "index.json")))
+        for k, v in d["pids"].items():
+            f = os.path.join(R, v["file"])
+            if re.search(r"-(SLD|TLD|SCM|BLK)-", k) and os.path.exists(f) and "tbclear" in (pymupdf.open(f).metadata.get("keywords") or ""): v["tb"] = 1
+        json.dump(d, open(os.path.join(R, "PIDs", "index.json"), "w"), indent=1, ensure_ascii=False)
