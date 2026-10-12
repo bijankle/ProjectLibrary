@@ -232,7 +232,8 @@ window.PdfView = (() => {
   }
   addEventListener("resize", () => { if (V && !V.el.hidden && desk()) dock(); });
   async function open(o){
-    ui(); freeRotate(); const wasOpen = !V.el.hidden; cur = Object.assign({ page: 1, fit: "width" }, o);
+    ui(); freeRotate(); const wasOpen = !V.el.hidden; lastNum = wasOpen && cur && cur.number !== o.number ? cur.number : wasOpen ? lastNum : null;
+    cur = Object.assign({ page: 1, fit: "width" }, o);
     V.el.hidden = false; document.body.classList.add("sp-on"); dock();
     { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } } V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
@@ -636,5 +637,9 @@ window.PdfView = (() => {
   // of the boxes holding a point, the one whose centre is nearest (-1: none)
   const nearest = (B, x, y) => { let k = -1, d = 1e18; B.forEach(([l, t, w, h], i) => { if (x < l || x > l + w || y < t || y > t + h) return;
       const e = (x - l - w / 2) ** 2 + (y - t - h / 2) ** 2; if (e < d){ d = e; k = i; } }); return k; };
-  return { open, close, hide, back, fwd, canFwd, state, getDoc, grow, ribbon, nearest, panelOn: () => !!(V && V.cx && !V.cx.hidden && !V.el.hidden), clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
+  // the drawing viewed before this one in the visit (the strip under the sheet marks it)
+  // (whichever way you left it: the strip, a ribbon, ← or →; the visit's first drawing has none)
+  let lastNum = null;
+  const came = () => lastNum && cur && lastNum !== cur.number ? lastNum : null;
+  return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, panelOn: () => !!(V && V.cx && !V.cx.hidden && !V.el.hidden), clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
 })();
