@@ -61,8 +61,11 @@ window.PdfView = (() => {
     addEventListener("popstate", e => { const st = e.state, v = st && st.sp && REG.get(st.id);
       // the phone's swipe back (or the browser's Back) while zoomed in: out to the whole sheet, the viewer stays open
       if (zIgnore){ zIgnore = false; return; }
-      if (zIn && !el.hidden && !(st && st.z)){ zIn = false; if (V.zoom > 1.001){ quiet(); zoomTo(1); } return; }
-      if (v) restore(st.id); else if (!el.hidden) close(true); });
+      // (only onto the visit's own step: landing on a page step is → past the drawing, or Back past it, and closes)
+      if (zIn && !el.hidden && st && st.sp && !st.z){ zIn = false; if (V.zoom > 1.001){ quiet(); zoomTo(1); } return; }
+      // (→ onto the zoom step of the view already showing: nothing to see there, on to the step after it)
+      if (!el.hidden && st && st.sp && st.z && st.id === curId){ zIn = true; history.forward(); return; }
+      if (v){ zIn = !!st.z; restore(st.id); } else if (!el.hidden) close(true); });
     // rotating the phone: refit the sheet once the new size has settled (keeps the zoom level)
     // (only a real size change: the browser bar sliding in and out while panning must not redraw everything)
     let rt, lastW = 0, lastH = 0; const refit = () => { clearTimeout(rt); rt = setTimeout(() => { if (el.hidden) return; const w = V.body.clientWidth, h = V.body.clientHeight;
@@ -300,16 +303,23 @@ window.PdfView = (() => {
   // ---------- view history ----------
   const REG = new Map(); let curId = 0, seq = 0, hush = 0, st8 = null;
   const quiet = () => { hush = Date.now() + 500; };   // (moves made by a restore are not new views)
+  // visits: one per time the viewer comes up over the page (a browser history step each). The views of a visit are
+  // stepped with the app's ← / →; before its first view, and after its last, come the page's own steps (searches,
+  // filters, items), so drawings and pages make one timeline. VST[visit] is the page state the visit opened over.
+  let visit = 0; const VST = {};
   function push(v){
-    // a new step drops the views ahead of it, as the browser does
-    const me = REG.get(curId); if (me) [...REG.keys()].forEach(k => { if (REG.get(k).seq > me.seq) REG.delete(k); });
-    const id = ++seq; v.seq = id; v.depth = 1; REG.set(id, v); curId = id;
+    const nv = !(history.state && history.state.sp && !V.el.hidden && REG.get(curId));
+    if (nv){ visit++; VST[visit] = history.state; }
+    // a new step drops this visit's views ahead of it, as the browser does (other visits keep theirs: they are
+    // still steps in the browser's history)
+    const me = REG.get(curId); if (me && !nv) [...REG.keys()].forEach(k => { const x = REG.get(k); if (x.seq > me.seq && x.visit === me.visit) REG.delete(k); });
+    const id = ++seq; v.seq = id; v.depth = 1; v.visit = nv ? visit : me ? me.visit : visit; REG.set(id, v); curId = id;
     // one browser history step for the whole visit: the phone's swipe back (or the browser's Back) leaves the viewer and
     // returns to the page as it was; drawings and views within the visit step back with the app's ← (PdfView.back)
     if (history.state && history.state.sp && !V.el.hidden) history.replaceState(Object.assign({ sp: 1, id }, zIn && history.state.z ? { z: 1 } : {}), ""); else history.pushState({ sp: 1, id }, ""); fwdBtn();
   }
-  const fwdBtn = () => { const me = REG.get(curId), b = V && V.el.querySelector(".sp-fwd"), no = !me || ![...REG.values()].some(v => v.seq > me.seq); if (b) b.disabled = no;
-    if (V && !V.el.hidden) document.querySelectorAll(".nv-fwd").forEach(x => x.disabled = no); };   // (the app's → too, while a drawing is open)
+  const fwdBtn = () => { const me = REG.get(curId), b = V && V.el.querySelector(".sp-fwd"), no = !me || ![...REG.values()].some(v => v.seq > me.seq && v.visit === me.visit); if (b) b.disabled = no;
+    if (V && !V.el.hidden){ const nf = no && !(window.navigation && navigation.canGoForward); document.querySelectorAll(".nv-fwd").forEach(x => x.disabled = nf); } };   // (past the visit's last view, → carries on through the browser's steps)   // (the app's → too, while a drawing is open)
   function settleSoon(){ if (!V || V.el.hidden) return; clearTimeout(st8); st8 = setTimeout(settle, 500); }
   function settle(){
     if (Date.now() < hush || !V || V.el.hidden || !V.pg) return;
@@ -404,8 +414,13 @@ window.PdfView = (() => {
     }
   }
   async function unrot(){ if (V) V.rot = 0; if (freed){ freed = false; try { screen.orientation.unlock(); } catch (e) {} } if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
-  function close(fromPop){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; V.cx.hidden = true; document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
-    if (!fromPop && history.state && history.state.sp){ if (zIn && history.state.z){ zIn = false; history.go(-2); } else history.back(); } else if (!fromPop) zIn = false; }
+  function close(fromPop, stepBack){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; V.cx.hidden = true; document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
+    if (!fromPop && history.state && history.state.sp){
+      if (stepBack){ if (zIn && history.state.z){ zIn = false; history.go(-2); } else history.back(); }
+      // (✕: the drawing stays a step in the history, Back from the page returns to it; the page as it was under the viewer is the new step)
+      else { const me = REG.get(curId), pg = me && VST[me.visit]; zIn = false; if (me){ me.snap = state() || me.snap; }
+        history.pushState(Object.assign({}, pg || {}, { d: ((pg && pg.d) || 0) + 1 }), ""); } }
+    else if (!fromPop) zIn = false; }
   // out of the way for a tag tapped on the sheet, its history step kept: Back from the tag's item reopens this view
   const hide = () => close(true);
   // opened for a searched item: one place on this page, four times closer centred on it; several, zoomed to fit them all
@@ -420,12 +435,12 @@ window.PdfView = (() => {
     restore(id).then(() => history.replaceState(Object.assign({}, history.state, { sp: 1, id }), "")); }
   function back(){ if (!V || V.el.hidden) return false; const me = REG.get(curId); if (!me) { close(); return true; }
     const s0 = state(); if (s0) me.snap = s0;   // (where you are now, for → to come back to)
-    const prev = [...REG.values()].filter(v => v.seq < me.seq).sort((a, b) => b.seq - a.seq)[0];
-    if (!prev){ close(); return true; } stepTo(prev); return true; }
+    const prev = [...REG.values()].filter(v => v.seq < me.seq && v.visit === me.visit).sort((a, b) => b.seq - a.seq)[0];
+    if (!prev){ close(false, true); return true; } stepTo(prev); return true; }   // (before the visit's first view: the page it opened over)
   function fwd(){ if (!V || V.el.hidden) return false; const me = REG.get(curId); if (!me) return false;
-    const next = [...REG.values()].filter(v => v.seq > me.seq).sort((a, b) => a.seq - b.seq)[0];
-    if (!next) return true; stepTo(next); return true; }
-  const canFwd = () => { const me = V && !V.el.hidden && REG.get(curId); return !!me && [...REG.values()].some(v => v.seq > me.seq); };
+    const next = [...REG.values()].filter(v => v.seq > me.seq && v.visit === me.visit).sort((a, b) => a.seq - b.seq)[0];
+    if (!next) return false; stepTo(next); return true; }   // (past the visit's last view: the browser's forward, the page after it)
+  const canFwd = () => { const me = V && !V.el.hidden && REG.get(curId); return !!me && [...REG.values()].some(v => v.seq > me.seq && v.visit === me.visit) || !!(window.navigation && navigation.canGoForward); };
   async function go(n, fromPop){
     const d = await getDoc(cur.url); n = Math.max(1, Math.min(d.numPages, n));
     if (!fromPop && V.pg && n !== V.page){ const me = REG.get(curId); if (me) me.snap = state(); quiet(); V.page = n; push({ o: me ? me.o : cur, snap: null }); }
@@ -466,6 +481,7 @@ window.PdfView = (() => {
   let zIn = false, zIgnore = false;
   function zoomStep(){
     if (!V || V.el.hidden || !history.state || !history.state.sp) return;
+    if (Date.now() < hush && V.zoom > 1.001) return;   // (a view put back by ← / → or Back is not a new zoom: no step, or the steps ahead would be lost)
     if (V.zoom > 1.001 && !zIn){ zIn = true; history.pushState(Object.assign({}, history.state, { z: 1 }), ""); }
     else if (V.zoom <= 1.001 && zIn){ zIn = false; if (history.state.z){ const st = Object.assign({}, history.state); delete st.z; zIgnore = true; history.back(); setTimeout(() => { if (history.state && history.state.sp) history.replaceState(Object.assign({}, st), ""); }, 60); } }
   }
