@@ -5,10 +5,14 @@
   U.installed = async () => { try { const ks = await caches.keys(); return ks.filter(k => /^kcgm-v/.test(k)).sort().pop() || null; } catch (e) { return null; } };
   U.latest = async () => { try { const t = await (await fetch("sw.js?" + Date.now(), { cache: "no-store" })).text(); return (t.match(/VERSION = "([^"]+)"/) || [])[1] || null; } catch (e) { return null; } };
   U.update = async () => {
-    try { const regs = navigator.serviceWorker ? await navigator.serviceWorker.getRegistrations() : []; await Promise.all(regs.map(r => r.update().catch(() => {}))); } catch (e) {}
+    // (at most 4 s waiting on the service worker: it can sit installing the new version, and the reload brings it in anyway)
+    try { const regs = navigator.serviceWorker ? await navigator.serviceWorker.getRegistrations() : []; await Promise.race([Promise.all(regs.map(r => r.update().catch(() => {}))), new Promise(ok => setTimeout(ok, 4000))]); } catch (e) {}
     // only the app's own copy (kcgm-v…); downloaded documents (kcgm-docs…) are kept
     try { const ks = await caches.keys(); await Promise.all(ks.filter(k => /^kcgm-v/.test(k)).map(k => caches.delete(k))); } catch (e) {}
-    const q = new URLSearchParams(location.search); q.set("u", Date.now()); location.replace(location.pathname + "?" + q.toString() + location.hash);
+    // (the page's state kept: the search, filters and item open come back after the reload)
+    const q = new URLSearchParams(location.search); q.set("u", Date.now());
+    try { history.replaceState(history.state, "", location.pathname + "?" + q.toString() + location.hash); location.reload(); }
+    catch (e) { location.replace(location.pathname + "?" + q.toString() + location.hash); }
   };
   U.mount = (btn, info) => {
     const show = async () => { const [a, b] = await Promise.all([U.installed(), U.latest()]);

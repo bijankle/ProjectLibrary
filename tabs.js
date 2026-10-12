@@ -209,7 +209,7 @@ window.Tabs = (() => {
     bn.innerHTML = [...TABS, ["more", "Settings", "#"]].map(([id, n, href]) => `<a class="tb-t bn-t" data-t="${id}" href="${href}"><i>${ico(id)}</i><span>${n}</span></a>`).join("");
     mo = document.createElement("div"); mo.className = "mo"; mo.hidden = true; mo.setAttribute("role", "dialog"); mo.setAttribute("aria-label", "More");
     document.body.prepend(el); document.body.append(bn, mo); document.documentElement.classList.add("has-tb", "has-bn");
-    wireNav(); wirePj();
+    wireNav(); wirePj(); pullRefresh();
     new MutationObserver(() => syncRow()).observe(el.querySelector(".ph-slot"), { attributes: true, subtree: true, childList: true, attributeFilter: ["class", "hidden", "style"] });
     bn.querySelectorAll(".tb-t").forEach(a => a.onclick = e => {
       if (a.dataset.t === "more"){ e.preventDefault(); mo.hidden ? more(true) : more(false); return; }
@@ -379,6 +379,37 @@ window.Tabs = (() => {
   // ⌂ is always the Assets front page with nothing searched, filtered or open (this page does it when it holds Assets)
   function goHome(){ more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true;
     if (O.homeHere && O.onHome && O.onHome("assets") !== false) return; location.href = "index.html?cards#home"; }
+  // phone, Assets: pull down from the top of the page (already scrolled to the top) to update the app, as the
+  // refresh button by the project box does. A round arrow comes down under the search row and turns as you pull; let
+  // go past the line and it updates (search and filters kept), short of it and it springs back. Anywhere the page
+  // can still scroll up, the drag scrolls as normal.
+  function pullRefresh(){
+    if (!/(^|\/)(index\.html)?$/.test(location.pathname) || document.getElementById("ptr")) return;
+    const ic = document.createElement("div"); ic.id = "ptr"; ic.hidden = true;
+    ic.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
+    document.body.appendChild(ic);
+    const LINE = 70; let s = null;
+    const top0 = () => { const r = document.querySelector(".ph-sr"), t = document.querySelector(".ph-top"), e = r && r.offsetHeight ? r : t; return e ? e.getBoundingClientRect().bottom : 0; };
+    const blocked = t => !document.documentElement.classList.contains("phone") || document.documentElement.classList.contains("sp-open") || document.body.classList.contains("sp-on") ||
+      (mo && !mo.hidden) || (document.scrollingElement || document.documentElement).scrollTop > 0 ||
+      (t.closest && t.closest('input,textarea,select,.ph-top,.ph-sr,.bn,[role="dialog"],.fx-sheet,.sheet,dialog'));
+    addEventListener("touchstart", e => { s = null; if (e.touches.length !== 1 || blocked(e.target)) return;
+      // (inside a box that scrolls on its own and isn't at its top: that box scrolls)
+      for (let n = e.target; n && n !== document.body; n = n.parentElement){ const cs = getComputedStyle(n); if (/(auto|scroll)/.test(cs.overflowY) && n.scrollHeight > n.clientHeight + 2 && n.scrollTop > 0) return; }
+      s = { x: e.touches[0].clientX, y: e.touches[0].clientY, d: 0, on: false }; }, { passive: true });
+    addEventListener("touchmove", e => { if (!s) return; const t = e.touches[0], dy = t.clientY - s.y, dx = t.clientX - s.x;
+      if (!s.on){ if (Math.abs(dx) > 12 && Math.abs(dx) > dy) { s = null; return; } if (dy < 8) { if (dy < -4) s = null; return; } s.on = true; }
+      if ((document.scrollingElement || document.documentElement).scrollTop > 0){ s = null; ic.hidden = true; return; }
+      s.d = Math.max(0, dy - 8) * .55; const k = Math.min(1, s.d / LINE);
+      ic.hidden = false; ic.classList.toggle("go", s.d >= LINE);
+      ic.style.transform = `translate(-50%, ${Math.min(s.d, LINE * 1.3) - 44}px) rotate(${k * 300}deg)`; ic.style.opacity = Math.min(1, .3 + k);
+      ic.style.top = top0() + "px"; }, { passive: true });
+    const end = () => { if (!s) return; const go = s.on && s.d >= LINE; s = null;
+      if (go){ ic.classList.add("spin"); ic.style.transform = `translate(-50%, ${LINE * .7 - 44}px)`; stamp(); window.AppUpdate ? AppUpdate.update() : location.reload(); return; }
+      ic.style.transition = "transform .2s, opacity .2s"; ic.style.transform = "translate(-50%, -44px)"; ic.style.opacity = 0;
+      setTimeout(() => { ic.hidden = true; ic.style.transition = ""; }, 220); };
+    addEventListener("touchend", end, { passive: true }); addEventListener("touchcancel", end, { passive: true });
+  }
   function goFwd(){ if (window.PdfView && PdfView.fwd && PdfView.fwd()) return; history.forward(); }   // (a drawing open: forward one view)
   addEventListener("pageshow", () => setTimeout(fwdState, 0));
   addEventListener("popstate", e => { fwdState(); if (mo && !mo.hidden) more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true; if (O.onPop) O.onPop(e.state || {}); });
@@ -462,7 +493,7 @@ html .lk-in,html .lktop .lk-in,html #lkRoot .lk-in,html .ph-slot input,html .fx-
 :root.phone .ph-slot input,:root.phone #lkRoot .lk-in,:root.phone .lk-in,:root.phone .mo-q,:root.phone input#q,html:root.phone body .ph-slot input[id],:root.phone .ph-upd{height:var(--ctl)!important}
 .pj-up{position:relative;flex:none;width:22px;height:22px;margin:0 4px 0 2px;padding:0;border:1.5px solid var(--gold,#c9a227);border-radius:50%;background:var(--card);color:color-mix(in srgb,var(--gold,#c9a227) 70%,var(--ink));display:flex;align-items:center;justify-content:center;cursor:pointer}
 .pj-up svg{width:12px;height:12px}.pj-up .pj-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:#e0453a;border:1.5px solid var(--card)}.pj-up .pj-dot[hidden]{display:none}
-.pj-up.spin svg{animation:pjspin 1s linear infinite}@keyframes pjspin{to{transform:rotate(360deg)}}
+.pj-up.spin svg{animation:pjspin 1s linear infinite}#ptr{position:fixed;left:50%;z-index:60;width:38px;height:38px;border-radius:50%;background:var(--card,#fff);color:var(--th2,#2b3a4c);border:1.5px solid var(--line,#d5d9de);box-shadow:0 2px 8px #0003;display:grid;place-items:center;pointer-events:none;transform:translate(-50%,-44px)}#ptr[hidden]{display:none}#ptr.go{color:var(--gold,#c9a227);border-color:var(--gold,#c9a227)}#ptr.spin svg{animation:pjspin .8s linear infinite}@keyframes pjspin{to{transform:rotate(360deg)}}
 :root.phone .pj-up{width:36px;height:36px;margin:0 0 0 8px}:root.phone .pj-up svg{width:18px;height:18px}:root.phone .pj-up .pj-dot{width:10px;height:10px;top:0;right:0}:root.phone .pj .pj-b{flex:1 1 auto;width:auto}
 .pj-b:after{content:"▾";position:absolute;right:7px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:11px}
 /* its list: the box's own size and lettering, each name right under the box's (a ✓ where the box has its ▾) */
