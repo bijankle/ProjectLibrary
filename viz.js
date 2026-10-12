@@ -61,8 +61,11 @@ window.AssetViz = (() => {
     let n = 0; refsNow.forEach((r, i) => { if (String(r[5]).split("|").some(t => fnorm(t).includes(w)) && rf.children[i]){ rf.children[i].classList.add("hit"); n++; } });
     if (n) return;
     const sr = stage.getBoundingClientRect(), z = finder.z || 1;
-    fd.innerHTML = [...box.querySelectorAll(".vz-tx span")].filter(sp => fnorm(sp.textContent).includes(w)).slice(0, 300).map(sp => { const q = sp.getBoundingClientRect();
-      return `<i style="left:${(q.left - sr.left) / z - 2}px;top:${(q.top - sr.top) / z - 2}px;width:${q.width / z + 4}px;height:${q.height / z + 4}px"></i>`; }).join("");
+    // (a word the sheet carries twice in one place, its own text and the OCR reading, gets one box)
+    const qs = [], same = (a, b) => { const x = Math.min(a.right, b.right) - Math.max(a.left, b.left), y = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+      return x > 0 && y > 0 && x * y > .4 * Math.min(a.width * a.height, b.width * b.height); };
+    [...box.querySelectorAll(".vz-tx span")].filter(sp => fnorm(sp.textContent).includes(w)).forEach(sp => { const q = sp.getBoundingClientRect(); if (qs.length < 300 && !qs.some(o => same(o, q))) qs.push(q); });
+    fd.innerHTML = qs.map(q => `<i style="left:${(q.left - sr.left) / z - 2}px;top:${(q.top - sr.top) / z - 2}px;width:${q.width / z + 4}px;height:${q.height / z + 4}px"></i>`).join("");
   }
   function home(){ if (!cur) return; cur = null; shown = null; lastSig = ""; draw(true); }
   // a drawing's series: the sheets whose title differs only by the sheet number ("Plant air, sheet 3" → "Plant air"),
