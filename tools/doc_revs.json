@@ -22,9 +22,9 @@
   "full": "Instrument List",
   "number": "2000-F00-LST-IC-11011",
   "kind": "List",
-  "rev": "1",
-  "date": "2026-07-08",
-  "status": "Re-Issued for Use",
+  "rev": "2",
+  "date": "2026-09-07",
+  "status": "As Built for SP1",
   "used": "Instrument search, control loop tags on the Smart PFD",
   "history": [
    {
@@ -36,6 +36,11 @@
     "rev": "1",
     "date": "2026-07-08",
     "status": "Re-Issued for Use"
+   },
+   {
+    "rev": "2",
+    "date": "2026-09-07",
+    "status": "As Built for SP1"
    }
   ],
   "note": ""

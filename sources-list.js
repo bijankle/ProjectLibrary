@@ -215,7 +215,7 @@ window.SourcesList = (() => {
         if (o) kids(lv ? pre.concat(!last) : pre); };
       const doc = (d, lv, pre, last) => { const id = "d:" + d.k, o = isOpen(id), s = stOf(d), v = d.info || {}, sel = x => MEM.sel === x ? " sel" : "";
         const tip = [v.kind, v.status, v.used && "Used for " + v.used, v.note].filter(Boolean).concat("Click to open").join("\n");
-        H.push(`<div class="sl-tr sl-doc${sel(id)}" data-id="${esc(id)}" data-r="${esc(d.k)}"><span class="sl-nm">${gd(pre, lv, last)}${tg(o)}${d.pdf ? ICO.pdf : ICO.xls}<span class="sl-l">${spNum(d, d.number + (d.rev ? "_Rev" + d.rev : ""))}</span></span>` +
+        H.push(`<div class="sl-tr sl-doc${sel(id)}" data-id="${esc(id)}" data-r="${esc(d.k)}"><span class="sl-nm">${gd(pre, lv, last)}${tg(o)}${d.pdf ? ICO.pdf : ICO.xls}<span class="sl-l">${spNum(d, d.number + (d.rev ? "_Rev" + d.rev : "").replace(/_Rev(?![0-9])/, "_"))}</span></span>` +
           `<span class="sl-c"><button type="button" class="sl-op" title="${esc(tip)}">${esc(d.title)}</button></span><span class="sl-c">${d.rev ? "Rev " + esc(d.rev) : ""}</span><span class="sl-c">${d.size ? mb(d.size) + " MB" : ""}</span>` +
           `<span class="sl-c sl-pt">${okIco(s)}</span><span class="sl-acts">${acts(d, s, 1)}</span>${tail}</div>`);
         // its revisions: the latest, then the ones it superseded (uploads keep them: the index's "revs", oldest first),

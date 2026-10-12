@@ -79,6 +79,9 @@ for n in sorted(held):
     r = REG.get(n); c = ment.get(n, {})
     hd[n] = {'g': grp(n), 'rev': r[4] if r else '', 'st': r[5] if r else '', 'url': r[1] if r else '', 'rt': r[6] if r else '', 'in': dict(c), 'x': len(c), 'xr': sum(c.values())}
 # the latest revision on SharePoint (tools/doclist.py, from an export of the library's file list) wins over the register
+# (a markup set the register files on its own, 2000-F13-PID-PR-10002_MS, is the drawing the app holds once the app has
+# that issue: not Ref Only)
+out = [o for o in out if not (o['n'].upper().endswith('_MS') and str(P.get(o['n'][:-3], {}).get('rev', '')).upper().startswith('MS'))]
 # for the link and the revision; documents in the app whose revision is older than SharePoint's go in "old" (Old Revs)
 import sys; sys.path.insert(0, os.path.join(R, 'tools')); import doclist; from doclist import latest, revkey
 DL = latest(); nkk = lambda s: re.sub(r'[^A-Z0-9]', '', str(s or '').upper())

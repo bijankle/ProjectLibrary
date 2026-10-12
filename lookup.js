@@ -584,7 +584,17 @@
       const vs = body.querySelector(".lk-vslot"); if (vs) vs.outerHTML = viewsHTML(it);   // PFD / Layout on the tag's line, right
       const nv = body.querySelector(".lk-nav"); if (nv && !nv.children.length) nv.remove();
       if (PHONE() && window.Tabs && Tabs.fit){ const k = body.querySelector(".lk-hb .lk-key"); if (k) Tabs.fit(k, k.closest(".lk-kr")); }   // a long tag shrinks to fit the width
-      body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault(); Pid.open(a.dataset.dwg, a.dataset.find || from, { page: +a.dataset.page || 1 }); });
+      // (desktop: the drawing number at the head of its page opens SharePoint's latest file, named with that file's
+      // revision; the other drawing links go to the drawing's page in the app)
+      const hk = !PHONE() && body.querySelector("a.lk-key.lk-dwg");
+      const head = H => { const n0 = hk.dataset.dwg || hk.dataset.n, u0 = H && H[n0], spu = hk && hk.isConnected && (u0 ? (window.SP && SP.view ? SP.view(u0) : u0) : window.SP && SP.url(n0)); if (!spu) return;
+        const n = hk.dataset.dwg || hk.dataset.n, f = decodeURIComponent((u0 || spu).split("?")[0].split("/").pop()).replace(/\.pdf$/i, ""), x = f.slice(n.length + 1), m = x.match(/^(\d+[A-Z]?)(?:_[A-Z]{2,4})?$/i);
+        hk.textContent = n + (x ? (m ? "_Rev" + m[1] : "_" + x) : ""); hk.href = spu; hk.target = "_blank"; hk.rel = "noopener"; hk.title = "Open the latest in SharePoint"; hk.dataset.n = n; hk.removeAttribute("data-dwg"); hk.classList.add("sp-a"); hk.onclick = null; };
+      if (hk){ hk.dataset.n = hk.dataset.dwg; hk.removeAttribute("data-dwg"); hk.onclick = e => { if (!hk.target) e.preventDefault(); };   // (until SharePoint's list is in: a click does nothing rather than open the old full screen view)
+        heldP().then(head); }
+      body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault();
+        if (!PHONE() && window.kcgmOpenTag && !a.dataset.find){ kcgmOpenTag(a.dataset.dwg); return; }
+        Pid.open(a.dataset.dwg, a.dataset.find || from, { page: +a.dataset.page || 1 }); });
       body.scrollTop = 0; if (root.scrollIntoView && opts.scrollTop) opts.scrollTop();
       if (!opts.noNav){ body.querySelector(".lk-back").onclick = back; body.querySelector(".lk-home").onclick = home; }
       body.querySelectorAll(".lk-st[data-s]").forEach(b => b.onclick = () => { const a = stepList(cur), i = a.indexOf(cur), x = a[i + +b.dataset.s]; if (x) open(x, false, "step"); });
@@ -606,6 +616,8 @@
       ensure().then(() => { const x = L.find(a.dataset.k, a.dataset.t); if (x){ ctx = null; open(x, true); } }); });
     // desktop, a drawing's own page: the search box searches in that drawing (its pills narrow to what matches, the sheet
     // outlines it); "✕ This drawing", the P or the Assets tab goes back to the front page and the whole library
+    // (the SharePoint addresses of the documents the app holds, tools/build_sp.py: a drawing's latest file)
+    let HELD = null; const heldP = () => HELD || (HELD = Promise.all([fetch("sp-held.json").then(r => r.ok ? r.json() : {}).catch(() => ({})), window.SP && SP.load ? SP.load() : null]).then(a => a[0]));
     const inDwg = () => !PHONE() && cur && cur.t === "pid";
     let ph0 = null, chip = null, scoped = null;
     function scope(){

@@ -17,8 +17,10 @@ window.Pid = (() => {
   const short = n => { const d = info(n), t = d && d.title || ""; const a = t.split(" - "); if (a.length < 2) return t;
     a.shift(); while (a.length > 1 && !TAGX.test(a[0]) && a.slice(1).some(x => TAGX.test(x))) a.shift();
     const r = a.join(" - "); return r.charAt(0).toUpperCase() + r.slice(1); };
-  // the drawing's name with its revision, as on the Sources tab file names: 2000-F13-PID-PR-10002_Rev2
-  const label = n => { const d = info(n); return d ? d.number + (d.rev ? "_Rev" + d.rev : "") : n; };
+  // the drawing's name with its revision, as on the Sources tab file names: 2000-F13-PID-PR-10002_Rev2, or as
+  // SharePoint writes a lettered issue: 2000-F13-PID-PR-10002_MS_1
+  const revX = r => !r ? "" : /^\d+[A-Z]?$/i.test(r) ? "_Rev" + r : "_" + r;
+  const label = n => { const d = info(n); return d ? d.number + revX(d.rev) : n; };
   // references printed on the sheets (pid-refs.json, tools/build_pid_refs.py): tapping another drawing opens it with the
   // way back marked, tapping a tag opens it in the lookup (window.kcgmOpenTag, set by the page). Back steps through the
   // views (pdfview.js keeps them as browser history).

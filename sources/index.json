@@ -25,120 +25,19 @@
  "ins": {
   "chunk": 5000,
   "xlsx": "sources/ins.xlsx",
-  "fname": "2000-F00-LST-IC-11011 Instrument List Rev 1 (tables).xlsx",
-  "how": "Every sheet of the original except the cover page, rebuilt from the cell values",
-  "from": "XLSX",
+  "fname": "2000-F00-LST-IC-11011 Instrument List Rev 2 (tables).xlsx",
+  "how": "The master instrument table of the PDF (cover page left out), one row per instrument",
+  "from": "PDF",
   "sheets": [
    {
-    "name": "IO Count",
-    "hdr": 5,
-    "hidden": true,
-    "n": 59,
-    "c": 20,
-    "chunks": 1
-   },
-   {
     "name": "MASTER Instrument List",
-    "hdr": 1,
-    "n": 6514,
-    "c": 53,
-    "chunks": 2
-   },
-   {
-    "name": "ME05 - Cyclones",
-    "hidden": true,
-    "n": 253,
-    "c": 29,
-    "chunks": 1
-   },
-   {
-    "name": "ME08 - SAG Mill",
-    "hidden": true,
-    "n": 269,
-    "c": 29,
-    "chunks": 1
-   },
-   {
-    "name": "ME09 - Ball Mill",
-    "hidden": true,
-    "n": 269,
-    "c": 29,
-    "chunks": 1
-   },
-   {
-    "name": "ME51 - Pebble Crushers",
-    "hidden": true,
-    "n": 73,
-    "c": 29,
-    "chunks": 1
-   },
-   {
-    "name": "ME52 - Int. Cyanide Leach React",
-    "hidden": true,
-    "n": 22,
-    "c": 29,
-    "chunks": 1
-   },
-   {
-    "name": "ME25 - Air Blowers",
-    "hidden": true,
-    "n": 47,
-    "c": 29,
-    "chunks": 1
-   },
-   {
-    "name": "ME-10 - Pre-Leach Thickener",
-    "hidden": true,
-    "n": 21,
-    "c": 29,
-    "chunks": 1
-   },
-   {
-    "name": "ME-16 - Elution Heater",
-    "hidden": true,
-    "n": 26,
-    "c": 29,
-    "chunks": 1
-   },
-   {
-    "name": "ME39 - Regrind Mill",
-    "hidden": true,
-    "n": 179,
-    "c": 29,
-    "chunks": 1
-   },
-   {
-    "name": "IO SumIfs",
-    "hdr": 3,
-    "hidden": true,
-    "n": 23,
-    "c": 10,
-    "chunks": 1
-   },
-   {
-    "name": "PLC IO counts",
-    "hidden": true,
-    "n": 73,
-    "c": 16,
-    "chunks": 1
-   },
-   {
-    "name": "IO Allocation",
-    "hidden": true,
-    "n": 142,
+    "hdr": 0,
+    "n": 6190,
     "c": 15,
-    "chunks": 1
-   },
-   {
-    "name": "IO Counts",
-    "hdr": 6,
-    "hidden": true,
-    "n": 128,
-    "c": 26,
-    "chunks": 1
+    "chunks": 2
    }
   ],
-  "size": 1172772
+  "size": 474776
  },
  "cv": {
   "chunk": 5000,
