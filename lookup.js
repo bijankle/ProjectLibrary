@@ -20,7 +20,7 @@
   let dtLoad = null, sideLoad = null, DOCN = new Set();   // the lists held in the app (Sources), by number
   fetch("issues.json").then(r => r.ok ? r.json() : {}).then(d => { Object.values((d.meta && d.meta.docs) || {}).forEach(x => x.number && DOCN.add(norm(x.number))); }).catch(() => {});
   // (the sheet tags and the IOMs are waited for with the search data: a page opened before they arrived had no pills or IOM row)
-  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), fetch("contents.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { CT = d && d.d; CTBY = null; OTBY = null; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build(); otagExtras();
+  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), fetch("pct/idx.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { PCTI = d; }), fetch("contents.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { CT = d && d.d; CTBY = null; OTBY = null; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build(); otagExtras();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
     // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
@@ -311,6 +311,9 @@
         const band = (t, d) => `<tr class="lk-bandr"><td colspan="2"><div class="lk-band"><span>${t}</span><small>${linkify(d)}</small></div></td></tr>`;
         secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${band("Mechanical", "MEL " + (DB.types.mel.doc || ""))}${L.rowsHTML(me)}${band("Electrical", docs)}${L.rowsHTML(el.filter(r => r.l !== "Source"))}</table>` }); }
       else secs.push({ id: "det", label: "Details", html: `<table class="lk-t">${L.rowsHTML(kept)}</table>` });
+      // Control: the process control tables' rows for the tag (pct/, tools/build_pct.py), filled once its shard is loaded
+      const ck = PCTI && [it, ...twins].map(x => x.k).find(k => PCTI.k[k]);
+      if (ck){ const [a, b] = PCTI.k[ck]; secs.push({ id: "ctl", label: "Control", n: a + b, html: `<div class="lk-ctl" data-k="${esc(ck)}"><div class="lk-ns">Loading the process control tables…</div></div>` }); }
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
       if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
     }
@@ -383,6 +386,30 @@
     if (el.dataset.k) it = L.find(el.dataset.k, el.dataset.t) || it;   // the spec may come from the same tag in another list
     Spec.load().then(() => { if (!el.isConnected) return; el.innerHTML = Spec.html(it, it.r && DB.types[it.t] ? DB.types[it.t].f : []); Spec.bind(el); })
       .catch(e => { el.innerHTML = `<div class="lk-ns">Couldn't load the pipe and valve spec (${esc(e.message)}).</div>`; }); };
+  // the Control section: each row the process control tables hold for the tag (its alarms in one table), the interlock,
+  // permissive and condition lines under it, then the other tags whose logic names it
+  let PCTI = null; const PCTS = {};
+  const DESCF = /^(description|valve description|controller description|name)$/i;
+  const ctlTxt = v => linkify(String(v)).replace(/\n/g, "<br>");
+  const ctlHTML = (b, key) => {
+    const R = b.r || [], al = R.filter(r => r.s === "Alarm"), rest = R.filter(r => r.s !== "Alarm");
+    const docA = r => linkify(r.d) + " Rev " + esc(r.rev || "");
+    const band = (t, sm) => `<div class="lk-band"><span>${esc(t)}</span><small>${sm}</small></div>`;
+    let h = rest.map(r => {
+      const f = (r.f || []).filter(([l]) => !DESCF.test(l));
+      const sub = r.h && r.x && r.x.length ? `<div class="lk-ctw"><table class="lk-ct"><tr>${r.h.map(x => `<th>${esc(x)}</th>`).join("")}</tr>${r.x.map(x => `<tr>${x.map(v => `<td>${ctlTxt(v)}</td>`).join("")}</tr>`).join("")}</table></div>` : "";
+      return band(r.s + (norm(r.t) !== key ? " · " + r.t : ""), docA(r)) + (f.length ? `<table class="lk-t">${f.map(([l, v]) => `<tr><td>${esc(l)}</td><td>${ctlTxt(v)}</td></tr>`).join("")}</table>` : "") + sub; }).join("");
+    if (al.length){ const C = [["Tag", r => r.t], ["State", r => g(r, "Alarm State")], ["Value", r => [g(r, "Alarm Value"), g(r, "Alarm Units")].filter(Boolean).join(" ")], ["Delay (s)", r => g(r, "On Delay (s)")], ["Priority", r => g(r, "Priority")], ["Masking", r => g(r, "Alarm masking") || g(r, "Alarm Masking Condition")], ["Operator response", r => g(r, "Operator Response")]];
+      const g = (r, l) => ((r.f || []).find(x => x[0] === l) || [])[1] || "";
+      const use = C.filter(([, fn]) => al.some(r => fn(r)));
+      h += band("Alarms", [...new Set(al.map(docA))].join(" · ")) + `<div class="lk-ctw"><table class="lk-ct"><tr>${use.map(([t]) => `<th>${t}</th>`).join("")}</tr>${al.map(r => `<tr>${use.map(([, fn]) => `<td>${ctlTxt(fn(r))}</td>`).join("")}</tr>`).join("")}</table></div>`; }
+    if (b.u && b.u.length) h += band("Named in the logic of", b.u.length + (b.u.length === 1 ? " row" : " rows")) + b.u.map(([k, t, sec, hits]) => `<div class="lk-cu"><div>${k ? `<a class="lk-a" data-k="${esc(k)}">${esc(t)}</a>` : esc(t)} <em>${esc(sec)}</em></div>${hits.map(([l, v]) => `<div class="lk-cuv">${l ? `<b>${esc(l)}</b> ` : ""}${ctlTxt(v)}</div>`).join("")}</div>`).join("");
+    return h || `<div class="lk-ns">No control data.</div>`; };
+  L.fillCtl = root => { const el = root.querySelector(".lk-ctl"); if (!el || !PCTI) return; const k = el.dataset.k;
+    const n = [...k].reduce((a, c) => a + c.charCodeAt(0), 0) % PCTI.n;
+    (PCTS[n] = PCTS[n] || fetch(`pct/${n}.json`).then(r => { if (!r.ok) throw new Error("control tables " + r.status); return r.json(); }))
+      .then(d => { if (el.isConnected) el.innerHTML = ctlHTML(d[k] || {}, k); })
+      .catch(e => { delete PCTS[n]; el.innerHTML = `<div class="lk-ns">Couldn't load the process control tables (${esc(e.message)}).</div>`; }); };
   // for the Browse pickers (browse.js): every item, a field by name, the list icons and names
   L.items = () => items;
   L.get = (it, n) => { if (!it.r || !DB.types[it.t]) return ""; const i = DB.types[it.t].f.indexOf(n); return i < 0 ? "" : it.r[i] || ""; };
@@ -601,7 +628,7 @@
       scope();
 
       const pb = body.querySelector("[data-pfd]"); if (pb) pb.onclick = () => opts.pfd(it).go();
-      L.fillSpec(body, it);
+      L.fillSpec(body, it); L.fillCtl(body);
       if (opts.onOpen) opts.onOpen(it, how);
     };
     let cur = null;
@@ -767,7 +794,7 @@
 .lk-spec .sp-t{font-size:var(--fb,15px);line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:var(--fb,15px);margin-left:4px}
 .lk-t td:last-child{overflow-wrap:anywhere}
 .lk-iomt{color:var(--mute)}.lk-otd{border-bottom:1px solid var(--lk-l,rgba(0,0,0,.08))}.lk-otd>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:7px 4px}.lk-otd>summary::-webkit-details-marker{display:none}.lk-otn{color:var(--mute);font-size:.9em;margin-left:auto;background:var(--card2,rgba(120,130,145,.14));border-radius:10px;padding:1px 8px;white-space:nowrap}.lk-otd>summary::after{content:"▾";color:var(--mute);transition:transform .15s}.lk-otd[open]>summary::after{transform:rotate(180deg)}.lk-otl{display:flex;flex-wrap:wrap;gap:4px 12px;padding:0 4px 8px 22px}.lk-iomm summary{cursor:pointer;color:var(--doc-a,#0b63c5);margin-top:3px}.lk-iomm[open] summary{margin-bottom:3px}
-.lk-bandr td{padding:0!important;border:0!important}.lk-band{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2);margin:10px 0 2px}.lk-band small{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute);text-align:right}.lk-band span{white-space:nowrap}:root.phone .lk-band small{display:none}
+.lk-ctw{overflow-x:auto;margin:2px 0 6px}.lk-ct{border-collapse:collapse;font-size:var(--fl,13px);min-width:100%}.lk-ct th{text-align:left;font-weight:700;color:var(--mute);border-bottom:1px solid var(--line,#ddd);padding:3px 6px;white-space:nowrap}.lk-ct td{border-bottom:1px solid var(--line,#eee);padding:3px 6px;vertical-align:top}.lk-ctl .lk-band:first-child{margin-top:2px}.lk-cu{padding:5px 2px;border-bottom:1px solid var(--line,#eee)}.lk-cu em{font-style:normal;color:var(--mute);font-size:var(--fl,13px);margin-left:4px}.lk-cuv{font-size:var(--fl,13px);margin-top:2px;color:var(--ink)}.lk-cuv b{color:var(--mute);font-weight:600}.lk-bandr td{padding:0!important;border:0!important}.lk-band{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2);margin:10px 0 2px}.lk-band small{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute);text-align:right}.lk-band span{white-space:nowrap}:root.phone .lk-band small{display:none}
 .lk-red,.lk-red a{color:#d11!important}.lk-clash{color:#d11;font-size:12px;font-weight:800;margin-top:2px}.lk-clash a{color:#d11;text-decoration:underline;font-weight:600;margin-left:4px}.lk-rsw{font-size:12px;color:var(--mute)}
 .lk-t td.lk-sub{color:var(--lk-a);font-size:var(--fl,13px);font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}
 .sp-self .sp-head{display:none}

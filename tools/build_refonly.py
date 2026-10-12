@@ -109,7 +109,8 @@ for n, h in hd.items():
     sm = [doclist.FILES[f] for f in src if f in doclist.FILES]
     # (the app's file marked superseded or cancelled: any other latest file replaces it, whatever the dates)
     bad = any(re.search(r'_(ssd|can)(_|\.)', f) for f in src)
-    newer = (d['file'].lower() not in src and (bad or d['mod'] > max(sm))) if sm else bool(a) and revkey(d['rev']) > revkey(a)
+    # (an MS issue on SharePoint over a numbered revision in the app: newer whatever the dates)
+    newer = (d['file'].lower() not in src and (bad or d['mod'] > max(sm) or revkey(d['rev'])[0] == 3 > revkey(a)[0])) if sm else bool(a) and revkey(d['rev']) > revkey(a)
     if newer: old.append({'n': n, 'g': h['g'], 't': appT.get(n, '') or h.get('rt', ''), 'app': a, 'rev': d['rev'], 'st': d['st'], 'url': d['url'], 'file': d['file'], 'mod': d['mod'][:10], 'have': (P.get(n, {}).get('from') or P.get(n, {}).get('src') or [''])[0]})
 old.sort(key=lambda o: o['n'])
 print('Old revs', len(old), 'SharePoint links from the file list:', sum(1 for o in out if DL.get(nkk(o['n']))), 'of', len(out))

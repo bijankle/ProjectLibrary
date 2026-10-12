@@ -1162,5 +1162,225 @@
   ],
   "note": "PDF list; tables read from the PDF.",
   "project": "TSF"
+ },
+ "pct1310001": {
+  "title": "PCT F13",
+  "full": "Process Control Tables - Milling & Classification (F13)",
+  "number": "2000-F13-LST-PR-10001",
+  "kind": "List",
+  "rev": "2",
+  "date": "2025-11-18",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "2",
+    "date": "2025-11-18",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (2_Area_F13_PCT)",
+  "project": ""
+ },
+ "pct1410001": {
+  "title": "PCT F14",
+  "full": "Process Control Tables - Gravity Circuit & Intensive Leaching",
+  "number": "2000-F14-LST-PR-10001",
+  "kind": "List",
+  "rev": "2",
+  "date": "2026-09-01",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "2",
+    "date": "2026-09-01",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (2_Area_F14_PCT)",
+  "project": ""
+ },
+ "pct1610001": {
+  "title": "PCT F16",
+  "full": "Process Control Tables - Flotation (F16, F17, F18)",
+  "number": "2000-F16-LST-PR-10001",
+  "kind": "List",
+  "rev": "5",
+  "date": "2025-10-17",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "5",
+    "date": "2025-10-17",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (5_Area_16_PCT)",
+  "project": ""
+ },
+ "pct2110101": {
+  "title": "PCT F21",
+  "full": "Process Control Tables - Flotation Tailings CIL4 (F21)",
+  "number": "2000-F21-LST-PR-10101",
+  "kind": "List",
+  "rev": "1",
+  "date": "2026-09-01",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "1",
+    "date": "2026-09-01",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (1_Area_F21_PCT)",
+  "project": ""
+ },
+ "pct2210101": {
+  "title": "PCT F22",
+  "full": "Process Control Tables - CIL4 Carbon Treatment, Elution, Electrowinning & Goldroom (Area F22 & F66)",
+  "number": "2000-F22-LST-PR-10101",
+  "kind": "List",
+  "rev": "1",
+  "date": "2026-09-01",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "1",
+    "date": "2026-09-01",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (1_Area_F22_PCT)",
+  "project": ""
+ },
+ "pct2310001": {
+  "title": "PCT F23",
+  "full": "Process Control Tables - Final Tailings Handling and Storage",
+  "number": "2000-F23-LST-PR-10001",
+  "kind": "List",
+  "rev": "2",
+  "date": "2025-10-17",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "2",
+    "date": "2025-10-17",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (2_Area_23_PCT)",
+  "project": ""
+ },
+ "pct2410001": {
+  "title": "PCT F24",
+  "full": "Process Control Tables - Air & Water Services (F24)",
+  "number": "2000-F24-LST-PR-10001",
+  "kind": "List",
+  "rev": "3",
+  "date": "2026-08-05",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "3",
+    "date": "2026-08-05",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (3_Area_24_PCT)",
+  "project": ""
+ },
+ "pct2810001": {
+  "title": "PCT F28",
+  "full": "Process Control Tables - Ultrafine Grinding 2",
+  "number": "2000-F28-LST-PR-10001",
+  "kind": "List",
+  "rev": "2",
+  "date": "2025-11-18",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "2",
+    "date": "2025-11-18",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (2_Area_28_PCT)",
+  "project": ""
+ },
+ "pct3010001": {
+  "title": "PCT F30",
+  "full": "Process Control Tables - Concentrate Pre-Leach Thickening, CIL2/3 & Post-Leach Thickening",
+  "number": "2000-F30-LST-PR-10001",
+  "kind": "List",
+  "rev": "2",
+  "date": "2026-03-18",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "2",
+    "date": "2026-03-18",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (2_Area_F30_PCT)",
+  "project": ""
+ },
+ "pct3510001": {
+  "title": "PCT F35",
+  "full": "Process Control Tables - Concentrate Handling & Filtration",
+  "number": "2000-F35-LST-PR-10001",
+  "kind": "List",
+  "rev": "3",
+  "date": "2026-03-19",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "3",
+    "date": "2026-03-19",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (3_Area_F35_PCT)",
+  "project": ""
+ },
+ "pct7210001": {
+  "title": "PCT F72",
+  "full": "Process Control Tables - Reagents Mixing & Storage",
+  "number": "2000-F72-LST-PR-10001",
+  "kind": "List",
+  "rev": "3",
+  "date": "2025-11-18",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "3",
+    "date": "2025-11-18",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables workbook (3_Area_72_PCT)",
+  "project": ""
  }
 }

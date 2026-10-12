@@ -25,6 +25,8 @@ sld = sorted(v["file"] for k, v in dw.items() if "-SLD-" in k or "-TLD-" in k)
 add("slds", "Single and three line diagrams", f"{len(sld)} drawings", pics(sld))
 scm = sorted(v["file"] for k, v in dw.items() if "-SCM-" in k)
 if scm: add("scms", "Schematics", f"{len(scm)} drawings", pics(scm))
+pct = sorted(rel(p) for p in glob.glob(os.path.join(ROOT, "pct", "*.json")) if not p.endswith("idx.json"))
+add("pct", "Process control data", "Each asset's ranges, set points, alarms and interlocks from the process control tables (tools/build_pct.py)", pct)
 six = json.load(open(os.path.join(ROOT, "sources", "index.json"))) if os.path.exists(os.path.join(ROOT, "sources", "index.json")) else {}
 revs = json.load(open(os.path.join(ROOT, "tools", "doc_revs.json")))
 for k, d in six.items():

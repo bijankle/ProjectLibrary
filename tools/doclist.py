@@ -11,7 +11,11 @@ R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RP = os.environ.get("KCGM_PRIVATE") or os.path.join(os.path.dirname(R), "projectlibraryprivate")
 nk = lambda s: re.sub(r"[^A-Z0-9]", "", str(s or "").upper())
 def revkey(r):
+    """revision order: an MS issue (as-built markup set, MS, MS_1, MS_2 ...) is later than any numbered revision, a higher
+    MS number later again (a redline copy, MS-RLM1_1, just under the clean MS_1); then numbers (2A after 2); then letters"""
     r = str(r or "").strip().upper()
+    m = re.fullmatch(r"MS(-RLM\d*)?(?:_(\d+))?", r)
+    if m: return (3, int(m.group(2) or 0), "0" if m.group(1) else "1")
     m = re.fullmatch(r"(\d+)([A-Z]*)", r)
     if m: return (2, int(m.group(1)), m.group(2))
     if re.fullmatch(r"[A-Z]{1,2}", r): return (1, 0, r)
@@ -37,6 +41,8 @@ def latest():
         parts = stem.split("_"); num = parts[0].strip()
         if len(nk(num)) < 7 or len(parts) < 2: continue
         rev = parts[1].strip(); st = "_".join(parts[2:]).strip()
+        if re.fullmatch(r"MS(-RLM\d*)?", rev, re.I) and len(parts) > 2 and parts[2].strip().isdigit():   # (NUMBER_MS_2: revision MS_2)
+            rev = rev + "_" + parts[2].strip(); st = "_".join(parts[3:]).strip()
         mod = str(row[col["Modified"]] or "")[:19]; files[name.lower()] = mod
         sup = "/superseded" in ("/" + path).lower()
         url = "https://nsrltd.sharepoint.com/" + quote(path + "/" + name)
@@ -45,7 +51,8 @@ def latest():
         # modified date, then the highest revision
         # (a file marked SSD, superseded, or CAN, cancelled, or a copy named "... old", only when there's nothing else)
         bad = st.upper().split("_")[0] in ("SSD", "CAN") or rev.upper() in ("SSD", "CAN") or stem.lower().endswith(" old")
-        rank = (not sup and not bad, ext == "pdf", mod, revkey(rev))
+        # (an MS issue outranks the numbered revisions whatever the dates, the higher MS number first)
+        rk = revkey(rev); rank = (not sup and not bad, rk[:2] if rk[0] == 3 else (0, 0), ext == "pdf", mod, rk)
         if k not in best or rank > best[k][0]: best[k] = (rank, e)
     out = {k: v[1] for k, v in best.items()}; FILES.update(files)
     json.dump({"L": out, "F": files}, open(cache, "w"), separators=(",", ":"))
