@@ -1518,6 +1518,114 @@
   ],
   "size": 29378
  },
+ "pct1210001": {
+  "chunk": 5000,
+  "xlsx": "sources/pct1210001.xlsx",
+  "fname": "2000-F12-LST-PR-10001 Process Control Tables - Crushing (F12) Rev 4 (tables).xlsx",
+  "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Revisions",
+    "hdr": 5,
+    "n": 26,
+    "c": 1,
+    "chunks": 1
+   },
+   {
+    "name": "1. Analogue Input",
+    "hdr": 5,
+    "n": 70,
+    "c": 31,
+    "chunks": 1
+   },
+   {
+    "name": "2. Analogue Output",
+    "hdr": 5,
+    "n": 6,
+    "c": 10,
+    "chunks": 1
+   },
+   {
+    "name": "3. Digital Input",
+    "hdr": 5,
+    "n": 171,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "4. Digital Output",
+    "hdr": 5,
+    "n": 42,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "5. Totalisers",
+    "hdr": 5,
+    "n": 7,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "6. OnOff Valves",
+    "hdr": 5,
+    "n": 36,
+    "c": 22,
+    "chunks": 1
+   },
+   {
+    "name": "7. Control Valves",
+    "hdr": 5,
+    "n": 7,
+    "c": 22,
+    "chunks": 1
+   },
+   {
+    "name": "8. PID Cont",
+    "hdr": 5,
+    "n": 9,
+    "c": 49,
+    "chunks": 1
+   },
+   {
+    "name": "9. Drives",
+    "hdr": 5,
+    "n": 39,
+    "c": 26,
+    "chunks": 1
+   },
+   {
+    "name": "10. Sequence",
+    "hdr": 5,
+    "n": 7,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "11. Calculation",
+    "hdr": 5,
+    "n": 17,
+    "c": 16,
+    "chunks": 1
+   },
+   {
+    "name": "12. Misc",
+    "hdr": 5,
+    "n": 32,
+    "c": 10,
+    "chunks": 1
+   },
+   {
+    "name": "13. Alarm Database",
+    "hdr": 5,
+    "n": 231,
+    "c": 14,
+    "chunks": 1
+   }
+  ],
+  "size": 82294
+ },
  "pct1310001": {
   "chunk": 5000,
   "xlsx": "sources/pct1310001.xlsx",
@@ -1753,7 +1861,7 @@
     "chunks": 1
    }
   ],
-  "size": 57113
+  "size": 57064
  },
  "pct1610001": {
   "chunk": 5000,
@@ -1875,7 +1983,101 @@
     "chunks": 1
    }
   ],
-  "size": 534913
+  "size": 534912
+ },
+ "pct1910001": {
+  "chunk": 5000,
+  "xlsx": "sources/pct1910001.xlsx",
+  "fname": "2000-F19-LST-PR-10001 Process Control Tables - Ball Charger System Rev 0 (tables).xlsx",
+  "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Revisions",
+    "hdr": 5,
+    "n": 17,
+    "c": 1,
+    "chunks": 1
+   },
+   {
+    "name": "1. Analogue Input",
+    "hdr": 5,
+    "n": 14,
+    "c": 32,
+    "chunks": 1
+   },
+   {
+    "name": "3. Digital Input",
+    "hdr": 5,
+    "n": 56,
+    "c": 14,
+    "chunks": 1
+   },
+   {
+    "name": "5. Totalisers",
+    "hdr": 5,
+    "n": 7,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "6. OnOff Valves",
+    "hdr": 5,
+    "n": 6,
+    "c": 23,
+    "chunks": 1
+   },
+   {
+    "name": "7. Control Valves",
+    "hdr": 5,
+    "n": 6,
+    "c": 23,
+    "chunks": 1
+   },
+   {
+    "name": "8. PID Cont",
+    "hdr": 5,
+    "n": 6,
+    "c": 49,
+    "chunks": 1
+   },
+   {
+    "name": "9. Drives",
+    "hdr": 5,
+    "n": 50,
+    "c": 26,
+    "chunks": 1
+   },
+   {
+    "name": "10. Sequence",
+    "hdr": 5,
+    "n": 7,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "11. Calculation",
+    "hdr": 5,
+    "n": 12,
+    "c": 16,
+    "chunks": 1
+   },
+   {
+    "name": "12. Misc",
+    "hdr": 5,
+    "n": 41,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "13. Alarm Database",
+    "hdr": 5,
+    "n": 31,
+    "c": 14,
+    "chunks": 1
+   }
+  ],
+  "size": 36730
  },
  "pct2110101": {
   "chunk": 5000,
@@ -1983,7 +2185,7 @@
     "chunks": 1
    }
   ],
-  "size": 157087
+  "size": 157089
  },
  "pct2210101": {
   "chunk": 5000,
@@ -2459,6 +2661,107 @@
   ],
   "size": 138152
  },
+ "pct2810101": {
+  "chunk": 5000,
+  "xlsx": "sources/pct2810101.xlsx",
+  "fname": "2000-F28-LST-PR-10101 Process Control Tables - Ultrafine Grinding 3 (Area F28) and UFG Circuit Feed Pumps (Area F35) Rev 0 (tables).xlsx",
+  "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Revisions",
+    "hdr": 6,
+    "n": 24,
+    "c": 1,
+    "chunks": 1
+   },
+   {
+    "name": "1. Analogue Input",
+    "hdr": 5,
+    "n": 49,
+    "c": 35,
+    "chunks": 1
+   },
+   {
+    "name": "2. Analogue Output",
+    "hdr": 5,
+    "n": 6,
+    "c": 10,
+    "chunks": 1
+   },
+   {
+    "name": "3. Digital Input",
+    "hdr": 5,
+    "n": 35,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "4. Digital Output",
+    "hdr": 5,
+    "n": 7,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "5. Totalisers",
+    "hdr": 5,
+    "n": 7,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "6. OnOff Valves",
+    "hdr": 5,
+    "n": 56,
+    "c": 22,
+    "chunks": 1
+   },
+   {
+    "name": "7. Control Valves",
+    "hdr": 5,
+    "n": 12,
+    "c": 22,
+    "chunks": 1
+   },
+   {
+    "name": "8. PID Cont",
+    "hdr": 5,
+    "n": 20,
+    "c": 53,
+    "chunks": 1
+   },
+   {
+    "name": "9. Drives",
+    "hdr": 5,
+    "n": 267,
+    "c": 26,
+    "chunks": 1
+   },
+   {
+    "name": "11. Calculation",
+    "hdr": 5,
+    "n": 48,
+    "c": 16,
+    "chunks": 1
+   },
+   {
+    "name": "12. Misc",
+    "hdr": 5,
+    "n": 13,
+    "c": 10,
+    "chunks": 1
+   },
+   {
+    "name": "13. Alarm Database",
+    "hdr": 5,
+    "n": 139,
+    "c": 14,
+    "chunks": 1
+   }
+  ],
+  "size": 78703
+ },
  "pct3010001": {
   "chunk": 5000,
   "xlsx": "sources/pct3010001.xlsx",
@@ -2558,7 +2861,296 @@
     "chunks": 1
    }
   ],
-  "size": 52056
+  "size": 52057
+ },
+ "pct3010101": {
+  "chunk": 5000,
+  "xlsx": "sources/pct3010101.xlsx",
+  "fname": "2000-F30-LST-PR-10101 Process Control Tables - Concentrate Pre-Leach Thickening, CIL2/3 & Tails (Stage 2 - Area F30) Rev 0 (tables).xlsx",
+  "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Revisions",
+    "hdr": 4,
+    "n": 20,
+    "c": 1,
+    "chunks": 1
+   },
+   {
+    "name": "1. Analogue Input",
+    "hdr": 5,
+    "n": 50,
+    "c": 32,
+    "chunks": 1
+   },
+   {
+    "name": "2. Analogue Output",
+    "hdr": 5,
+    "n": 8,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "3. Digital Input",
+    "hdr": 5,
+    "n": 37,
+    "c": 13,
+    "chunks": 1
+   },
+   {
+    "name": "5. Totalisers",
+    "hdr": 5,
+    "n": 8,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "6. OnOff Valves",
+    "hdr": 5,
+    "n": 72,
+    "c": 22,
+    "chunks": 1
+   },
+   {
+    "name": "7. Control Valves",
+    "hdr": 5,
+    "n": 17,
+    "c": 22,
+    "chunks": 1
+   },
+   {
+    "name": "8. PID Cont",
+    "hdr": 5,
+    "n": 29,
+    "c": 50,
+    "chunks": 1
+   },
+   {
+    "name": "9. Drives",
+    "hdr": 5,
+    "n": 238,
+    "c": 26,
+    "chunks": 1
+   },
+   {
+    "name": "12. Misc",
+    "hdr": 5,
+    "n": 13,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "13. Alarm Database",
+    "hdr": 5,
+    "n": 139,
+    "c": 14,
+    "chunks": 1
+   }
+  ],
+  "size": 68740
+ },
+ "pct3010201": {
+  "chunk": 5000,
+  "xlsx": "sources/pct3010201.xlsx",
+  "fname": "2000-F30-LST-PR-10201 Process Control Tables - FCS0105 Rev 1 (tables).xlsx",
+  "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Revisions",
+    "hdr": 5,
+    "n": 24,
+    "c": 1,
+    "chunks": 1
+   },
+   {
+    "name": "1. Analogue Input",
+    "hdr": 5,
+    "n": 345,
+    "c": 43,
+    "chunks": 1
+   },
+   {
+    "name": "2. Analogue Output",
+    "hdr": 5,
+    "n": 21,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "3. Digital Input",
+    "hdr": 5,
+    "n": 82,
+    "c": 15,
+    "chunks": 1
+   },
+   {
+    "name": "4. Digital Output",
+    "hdr": 5,
+    "n": 43,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "5. Totalisers",
+    "hdr": 5,
+    "n": 6,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "6. OnOff Valves",
+    "hdr": 5,
+    "n": 98,
+    "c": 26,
+    "chunks": 1
+   },
+   {
+    "name": "7. Control Valves",
+    "hdr": 5,
+    "n": 6,
+    "c": 23,
+    "chunks": 1
+   },
+   {
+    "name": "8. PID Cont",
+    "hdr": 5,
+    "n": 42,
+    "c": 38,
+    "chunks": 1
+   },
+   {
+    "name": "9. Drives",
+    "hdr": 5,
+    "n": 972,
+    "c": 33,
+    "chunks": 1
+   },
+   {
+    "name": "10. Sequence",
+    "hdr": 5,
+    "n": 7,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "11. Calculation",
+    "hdr": 5,
+    "n": 131,
+    "c": 21,
+    "chunks": 1
+   },
+   {
+    "name": "12. Misc",
+    "hdr": 5,
+    "n": 7,
+    "c": 11,
+    "chunks": 1
+   }
+  ],
+  "size": 209273
+ },
+ "pct3020001": {
+  "chunk": 5000,
+  "xlsx": "sources/pct3020001.xlsx",
+  "fname": "2000-F30-LST-PR-20001 Process Control Tables - FCS0205 Rev 4 (tables).xlsx",
+  "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Revisions",
+    "hdr": 5,
+    "n": 20,
+    "c": 1,
+    "chunks": 1
+   },
+   {
+    "name": "1. Analogue Input",
+    "hdr": 5,
+    "n": 350,
+    "c": 41,
+    "chunks": 1
+   },
+   {
+    "name": "2. Analogue Output",
+    "hdr": 5,
+    "n": 22,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "3. Digital Input",
+    "hdr": 5,
+    "n": 83,
+    "c": 15,
+    "chunks": 1
+   },
+   {
+    "name": "4. Digital Output",
+    "hdr": 5,
+    "n": 44,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "5. Totalisers",
+    "hdr": 5,
+    "n": 6,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "6. OnOff Valves",
+    "hdr": 5,
+    "n": 85,
+    "c": 26,
+    "chunks": 1
+   },
+   {
+    "name": "7. Control Valves",
+    "hdr": 5,
+    "n": 8,
+    "c": 23,
+    "chunks": 1
+   },
+   {
+    "name": "8. PID Cont",
+    "hdr": 5,
+    "n": 42,
+    "c": 39,
+    "chunks": 1
+   },
+   {
+    "name": "9. Drives",
+    "hdr": 5,
+    "n": 971,
+    "c": 34,
+    "chunks": 1
+   },
+   {
+    "name": "10. Sequence",
+    "hdr": 5,
+    "n": 7,
+    "c": 12,
+    "chunks": 1
+   },
+   {
+    "name": "11. Calculation",
+    "hdr": 5,
+    "n": 135,
+    "c": 21,
+    "chunks": 1
+   },
+   {
+    "name": "12. Misc",
+    "hdr": 5,
+    "n": 7,
+    "c": 11,
+    "chunks": 1
+   }
+  ],
+  "size": 213176
  },
  "pct3510001": {
   "chunk": 5000,
@@ -2666,7 +3258,7 @@
     "chunks": 1
    }
   ],
-  "size": 38575
+  "size": 38574
  },
  "pct7210001": {
   "chunk": 5000,
@@ -2788,6 +3380,107 @@
     "chunks": 1
    }
   ],
-  "size": 128451
+  "size": 128450
+ },
+ "pct7210101": {
+  "chunk": 5000,
+  "xlsx": "sources/pct7210101.xlsx",
+  "fname": "2000-F72-LST-PR-10101 Process Control Tables - Reagents Mixing & Storage (Stage 2) Rev 2 (tables).xlsx",
+  "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
+  "from": "PDF",
+  "sheets": [
+   {
+    "name": "Revisions",
+    "hdr": 5,
+    "n": 27,
+    "c": 1,
+    "chunks": 1
+   },
+   {
+    "name": "1. Analogue Input",
+    "hdr": 5,
+    "n": 78,
+    "c": 31,
+    "chunks": 1
+   },
+   {
+    "name": "2. Analogue Output",
+    "hdr": 5,
+    "n": 21,
+    "c": 10,
+    "chunks": 1
+   },
+   {
+    "name": "3. Digital Input",
+    "hdr": 5,
+    "n": 133,
+    "c": 13,
+    "chunks": 1
+   },
+   {
+    "name": "4. Digital Output",
+    "hdr": 5,
+    "n": 34,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "6. OnOff Valves",
+    "hdr": 5,
+    "n": 57,
+    "c": 22,
+    "chunks": 1
+   },
+   {
+    "name": "5. Totalisers",
+    "hdr": 5,
+    "n": 8,
+    "c": 11,
+    "chunks": 1
+   },
+   {
+    "name": "8. PID Cont",
+    "hdr": 5,
+    "n": 17,
+    "c": 49,
+    "chunks": 1
+   },
+   {
+    "name": "7. Control Valves",
+    "hdr": 5,
+    "n": 14,
+    "c": 22,
+    "chunks": 1
+   },
+   {
+    "name": "9. Drives",
+    "hdr": 5,
+    "n": 504,
+    "c": 26,
+    "chunks": 1
+   },
+   {
+    "name": "11. Calculation",
+    "hdr": 5,
+    "n": 47,
+    "c": 16,
+    "chunks": 1
+   },
+   {
+    "name": "12. Misc",
+    "hdr": 5,
+    "n": 38,
+    "c": 10,
+    "chunks": 1
+   },
+   {
+    "name": "13. Alarm Database",
+    "hdr": 5,
+    "n": 274,
+    "c": 14,
+    "chunks": 1
+   }
+  ],
+  "size": 122445
  }
 }

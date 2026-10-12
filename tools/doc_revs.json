@@ -1163,6 +1163,26 @@
   "note": "PDF list; tables read from the PDF.",
   "project": "TSF"
  },
+ "pct1210001": {
+  "title": "PCT F12",
+  "full": "Process Control Tables - Crushing (F12)",
+  "number": "2000-F12-LST-PR-10001",
+  "kind": "List",
+  "rev": "4",
+  "date": "2026-09-21",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "4",
+    "date": "2026-09-21",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables PDF (as issued; the tables read from it)",
+  "project": ""
+ },
  "pct1310001": {
   "title": "PCT F13",
   "full": "Process Control Tables - Milling & Classification (F13)",
@@ -1221,6 +1241,26 @@
    }
   ],
   "note": "Process Control Tables workbook (5_Area_16_PCT)",
+  "project": ""
+ },
+ "pct1910001": {
+  "title": "PCT F19",
+  "full": "Process Control Tables - Ball Charger System",
+  "number": "2000-F19-LST-PR-10001",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-01-22",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-01-22",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables PDF (as issued; the tables read from it)",
   "project": ""
  },
  "pct2110101": {
@@ -1323,6 +1363,26 @@
   "note": "Process Control Tables workbook (2_Area_28_PCT)",
   "project": ""
  },
+ "pct2810101": {
+  "title": "PCT F28",
+  "full": "Process Control Tables - Ultrafine Grinding 3 (Area F28) and UFG Circuit Feed Pumps (Area F35)",
+  "number": "2000-F28-LST-PR-10101",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-05-05",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-05-05",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables PDF (as issued; the tables read from it)",
+  "project": ""
+ },
  "pct3010001": {
   "title": "PCT F30",
   "full": "Process Control Tables - Concentrate Pre-Leach Thickening, CIL2/3 & Post-Leach Thickening",
@@ -1341,6 +1401,66 @@
    }
   ],
   "note": "Process Control Tables workbook (2_Area_F30_PCT)",
+  "project": ""
+ },
+ "pct3010101": {
+  "title": "PCT F30",
+  "full": "Process Control Tables - Concentrate Pre-Leach Thickening, CIL2/3 & Tails (Stage 2 - Area F30)",
+  "number": "2000-F30-LST-PR-10101",
+  "kind": "List",
+  "rev": "0",
+  "date": "2025-06-03",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "0",
+    "date": "2025-06-03",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables PDF (as issued; the tables read from it)",
+  "project": ""
+ },
+ "pct3010201": {
+  "title": "PCT F30",
+  "full": "Process Control Tables - FCS0105",
+  "number": "2000-F30-LST-PR-10201",
+  "kind": "List",
+  "rev": "1",
+  "date": "",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "1",
+    "date": "",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables PDF (as issued; the tables read from it)",
+  "project": ""
+ },
+ "pct3020001": {
+  "title": "PCT F30",
+  "full": "Process Control Tables - FCS0205",
+  "number": "2000-F30-LST-PR-20001",
+  "kind": "List",
+  "rev": "4",
+  "date": "",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "4",
+    "date": "",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables PDF (as issued; the tables read from it)",
   "project": ""
  },
  "pct3510001": {
@@ -1381,6 +1501,26 @@
    }
   ],
   "note": "Process Control Tables workbook (3_Area_72_PCT)",
+  "project": ""
+ },
+ "pct7210101": {
+  "title": "PCT F72",
+  "full": "Process Control Tables - Reagents Mixing & Storage (Stage 2)",
+  "number": "2000-F72-LST-PR-10101",
+  "kind": "List",
+  "rev": "2",
+  "date": "2026-09-01",
+  "status": "",
+  "pct": 1,
+  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
+  "history": [
+   {
+    "rev": "2",
+    "date": "2026-09-01",
+    "status": ""
+   }
+  ],
+  "note": "Process Control Tables PDF (as issued; the tables read from it)",
   "project": ""
  }
 }
