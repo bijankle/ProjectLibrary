@@ -41,6 +41,7 @@ window.Pid = (() => {
   // the P&ID symbol legend: the general legend sheets (F00 P&IDs titled "General legend, sheet n"), in order
   const LEGEND = () => IX ? Object.keys(IX.pids).filter(k => /-PID-/.test(k) && /legend/i.test(IX.pids[k].title || "")).sort() : [];
   const LGI = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="9" cy="8.5" r="1.6"/><path d="M13 8.5h4M7.5 13.5h3M13 13.5h4M7.5 17.5h3M13 17.5h4"/></svg>';
+  let SW = null;
   function panel(el, num, legendFrom){
     Promise.all([refs(), ct()]).then(([R, C]) => {
       // (the drawing itself heads it, number and title, as the tiles under it: the phone shows no title bar over the app's header)
@@ -61,9 +62,13 @@ window.Pid = (() => {
         return `<button type="button" class="sp-cxd${n === was ? " prev" : ""}${n === num ? " cur" : ""}" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n === was ? '<i>↩ Back to</i> ' : ""}${n.replace(/^2000-/, "")}</b><span>${short(n) || kind(n)}</span></button>`; }).join("") + `</div>`;
       // (the ribbons on it leading back here are marked, as when a ribbon is tapped; with none, this drawing's number found)
       { const c = el.querySelector(".sp-cxd.cur"), sc = el.querySelector(".sp-cxs"); if (c && sc) sc.scrollLeft = Math.max(0, c.offsetLeft - sc.offsetLeft - (sc.clientWidth - c.offsetWidth) / 2); }
-      el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => { const n = b.dataset.n, back = []; if (n === num) return;
+      const go = n => { const back = []; if (!n || n === num) return;
         (R[n] || []).forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").some(t => key(t) === num)) back.push(j); });
-        open(n, back.length || leg ? null : num, { keep: true, extent: true, back: back.length ? back : undefined, legendFrom: leg ? legendFrom : undefined }); });
+        open(n, back.length || leg ? null : num, { keep: true, extent: true, back: back.length ? back : undefined, legendFrom: leg ? legendFrom : undefined }); };
+      el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => go(b.dataset.n));
+      // a swipe across the whole sheet (pdfview.js): on the legend, the next / previous sheet in order; elsewhere, to the
+      // left the first connected drawing (not the one you came from), to the right back to the one you came from
+      SW = { num, target: dir => leg ? list[list.indexOf(num) + dir] : dir > 0 ? list.find(x => x !== was) || list[0] : was || null, go };
     });
   }
   // (only drawings with a ready-made picture: the row is pictures)
@@ -76,6 +81,8 @@ window.Pid = (() => {
       refs: refs().then(R => R[d.number] || []),
       back: o.back, extent: !!o.extent,
       panel: el => panel(el, d.number, o.legendFrom),
+      // (true when there is a drawing that way: the sheet then slides out)
+      swipe: (dir, run) => { const t = SW && SW.num === d.number && SW.target(dir); if (t && run) SW.go(t); return !!t; },
       // P&IDs: Drawing legend opens the first legend sheet (the others in the strip under it); on a legend sheet
       // opened that way, the button leads back to the P&ID
       corner: !/-PID-/.test(d.number) ? null : LEGEND().includes(d.number) ? (o.legendFrom && key(o.legendFrom) ? { html: "↩ " + o.legendFrom.replace(/^2000-/, ""), title: "Back to " + o.legendFrom, go: () => open(o.legendFrom, null, { extent: true }) } : null)

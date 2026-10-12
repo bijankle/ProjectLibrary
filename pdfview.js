@@ -108,6 +108,8 @@ window.PdfView = (() => {
       const now = performance.now();
       if (pan.held){ if (now < pan.held) return; Object.assign(pan, { x: e.clientX, y: e.clientY, sl: V.body.scrollLeft, st: V.body.scrollTop, s: [[now, e.clientX, e.clientY]], held: 0 }); return; }   // (the pan starts from where the finger is now: no jump)
       V.body.scrollLeft = pan.sl - (e.clientX - pan.x); V.body.scrollTop = pan.st - (e.clientY - pan.y);
+      // (the whole sheet in view with the strip under it: the sheet follows a sideways drag, for a swipe to the next drawing)
+      if (cur.swipe && !V.cx.hidden){ const dx = e.clientX - pan.x, dy = e.clientY - pan.y; if (Math.abs(dx) > Math.abs(dy)) V.sheet.style.transform = `translateX(${dx * .6}px)`; }
       pan.s.push([now, e.clientX, e.clientY]); while (pan.s.length > 2 && now - pan.s[0][0] > 120) pan.s.shift(); });   // (the last 120 ms of the drag, for the glide's speed)
     V.body.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e); if (pin && pts.size === 2){ const [a, b] = [...pts.values()];
       pin.f = Math.max(1, Math.min(zmax(), pin.z * gap(a, b) / pin.d)) / pin.z;   // (never past the zoom limits, so nothing snaps back on lifting)
@@ -127,6 +129,11 @@ window.PdfView = (() => {
         const now = performance.now(); if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30){ lastTap = null; pan = null; zoomTo(V.zoom > 1.05 ? 1 : 2, e.clientX, e.clientY); return; }
         lastTap = { t: now, x: e.clientX, y: e.clientY }; }
       if (e.pointerType !== "touch") return;
+      // a swipe across the whole sheet (strip showing): the next drawing (cur.swipe, pid.js); short of one, the sheet slides back
+      if (cur.swipe && !V.cx.hidden && pan && !pan.np && !pts.size && e.type === "pointerup"){ const dx = e.clientX - pan.x, dy = e.clientY - pan.y, sw = Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy) && cur.swipe(dx < 0 ? 1 : -1);
+        V.sheet.style.transition = "transform .18s"; V.sheet.style.transform = sw ? `translateX(${dx < 0 ? -V.body.clientWidth : V.body.clientWidth}px)` : "";
+        const was = cur; setTimeout(() => { V.sheet.style.transition = ""; V.sheet.style.transform = ""; if (sw && cur === was) V.sheet.style.opacity = 0; }, 200);   // (hidden until the next drawing is in, unless it is in already)
+        if (sw){ pan = null; lastTap = null; setTimeout(() => cur.swipe(dx < 0 ? 1 : -1, true), 120); return; } }
       if (pts.size === 1){ panFrom([...pts.values()][0], true); return; }   // more fingers than a pinch, one still down: it carries on panning
       if (pts.size || !pan) return; const g = pan; pan = null;
       const s = g.s, a = s[0], b = s[s.length - 1], dt = b[0] - a[0];
@@ -266,7 +273,7 @@ window.PdfView = (() => {
       if (!(PICS && PICS[key] >= pn)) return; const im = new Image(); im.decoding = "async";
       im.onload = () => { if (cur !== me || V.pgFor === me) return; const cs = getComputedStyle(V.body), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16 - Math.max(0, (parseFloat(cs.paddingTop) || 0) - 8);
         const k = cur.fit === "page" ? Math.min(W / im.width, H / im.height) : W / im.width; V.sheet.style.width = Math.round(im.width * k) + "px"; V.sheet.style.height = Math.round(im.height * k) + "px";
-        V.bg.width = im.width; V.bg.height = im.height; V.bg.getContext("2d").drawImage(im, 0, 0); V.hi.style.visibility = "hidden"; V.msg.hidden = true; V.ox = V.oy = 0; slide(); cxFit(); };
+        V.bg.width = im.width; V.bg.height = im.height; V.bg.getContext("2d").drawImage(im, 0, 0); V.hi.style.visibility = "hidden"; V.msg.hidden = true; V.ox = V.oy = 0; slide(); cxFit(); V.sheet.style.opacity = ""; };
       im.src = `${cur.url.split("?")[0]}.p${pn}.png`; });
     let d; try { d = await getDoc(cur.url); } catch (e) { V.msg.textContent = "Couldn't load the PDF (" + e.message + "). Check the connection."; return; }
     V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
@@ -446,7 +453,7 @@ window.PdfView = (() => {
     if (!fromPop && V.pg && n !== V.page){ const me = REG.get(curId); if (me) me.snap = state(); quiet(); V.page = n; push({ o: me ? me.o : cur, snap: null }); }
     V.page = n;
     V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
-    await picsP; V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true);
+    await picsP; V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true); V.sheet.style.opacity = "";
     (window.requestIdleCallback || setTimeout)(() => textLayer(), { timeout: 1200 });   // (the selectable text after the picture is up)
     if (V.afterPage){ const f = V.afterPage; V.afterPage = null; f(); }
     if (cur.find){ const me2 = cur; Promise.resolve(mark(cur.find)).then(() => { if (cur === me2 && !V.fit && !cur.restore && !cur.extent && !fromPop && V.hits && V.hits.length) focusHits(V.hits); }); } drawTap();
