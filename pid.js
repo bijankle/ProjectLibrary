@@ -27,7 +27,14 @@ window.Pid = (() => {
   // with the same text, is hidden so a match shows one box)
   const same = (a, b) => { if (a[0] !== b[0] || a[5] !== b[5]) return false; const x = Math.min(a[1] + a[3], b[1] + b[3]) - Math.max(a[1], b[1]), y = Math.min(a[2] + a[4], b[2] + b[4]) - Math.max(a[2], b[2]);
     return x > 0 && y > 0 && x * y > .4 * Math.min(a[3] * a[4], b[3] * b[4]); };
-  const dedupe = R => { Object.values(R).forEach(a => { const keep = []; a.forEach(r => { if (r[6] !== "x" && keep.some(o => same(o, r))) r[6] = "x"; else keep.push(r); }); }); return R; };   // (marked, not removed: links name refs by their place in the list)
+  // (two boxes over one bubble with different tags, one of them a tag already boxed elsewhere on the page: that one is a
+  // stray reading, e.g. LSLL13216 laid over the LAL bubble beside the LALL one; the box naming the bubble's own tag stays)
+  const over = (a, b) => { if (a[0] !== b[0]) return false; const x = Math.min(a[1] + a[3], b[1] + b[3]) - Math.max(a[1], b[1]), y = Math.min(a[2] + a[4], b[2] + b[4]) - Math.max(a[2], b[2]);
+    return x > 0 && y > 0 && x * y > .5 * Math.min(a[3] * a[4], b[3] * b[4]); };
+  const dedupe = R => { Object.values(R).forEach(a => { const keep = []; a.forEach(r => { if (r[6] !== "x" && keep.some(o => same(o, r))) r[6] = "x"; else keep.push(r); });
+    const live = a.filter(r => r[6] !== "x" && r[6] !== "d"), cnt = new Map(); live.forEach(r => cnt.set(r[0] + "|" + r[5], (cnt.get(r[0] + "|" + r[5]) || 0) + 1));
+    live.forEach(r => { if (r[6] === "x" || cnt.get(r[0] + "|" + r[5]) < 2) return;
+      if (live.some(o => o !== r && o[6] !== "x" && o[5] !== r[5] && over(o, r) && cnt.get(o[0] + "|" + o[5]) < 2)){ r[6] = "x"; cnt.set(r[0] + "|" + r[5], cnt.get(r[0] + "|" + r[5]) - 1); } }); }); return R; };   // (marked, not removed: links name refs by their place in the list)
   const refs = () => REFS || (REFS = fetch("pid-refs.json").then(r => r.ok ? r.json() : {}).then(dedupe).then(index).catch(() => { REFS = null; return {}; }));
   // which P&IDs print each tag (for an item whose own P&ID field names a vendor drawing the library doesn't hold)
   let BYTAG = null;
