@@ -145,7 +145,9 @@ window.AssetViz = (() => {
     const rfEl = box.querySelector(".vz-rf"), refAt = (x, y) => { if (!boxes.length) return null; const q = rfEl.getBoundingClientRect(); if (!q.width) return null;
       const i = PdfView.nearest(boxes, (x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4); return i >= 0 ? rfEl.children[i] : null; };
     let hv = null; box.addEventListener("mousemove", e => { const a = pts.size ? null : refAt(e.clientX, e.clientY); if (a === hv) return; if (hv) hv.classList.remove("hv"); hv = a; if (a) a.classList.add("hv"); box.classList.toggle("on-ref", !!a); });
-    box.addEventListener("click", e => { if (e.target.closest(".vz-zb") || moved > 4) return; const sl = getSelection(); if (sl && !sl.isCollapsed && String(sl).trim()) return;
+    // (a text selection made on the sheet means that click was the end of selecting; one elsewhere on the page, e.g. the
+    // item's heading, doesn't stop a tap on the sheet)
+    box.addEventListener("click", e => { if (e.target.closest(".vz-zb") || moved > 4) return; const sl = getSelection(); if (sl && !sl.isCollapsed && String(sl).trim() && box.contains(sl.anchorNode)) return;
       const a = refAt(e.clientX, e.clientY);
       // (an empty part of the sheet, an asset's page showing: the drawing's own page, the sheet left as it is)
       if (!a){ if (cur && cur.t !== "pid" && !document.documentElement.classList.contains("phone") && window.kcgmOpenTag && !e.target.closest(".vz-tg")){ keepView = { n, z, tx, ty, tap: null, force: true }; setTimeout(() => { if (keepView && keepView.force) keepView = null; }, 2500); kcgmOpenTag(n); } return; }

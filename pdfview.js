@@ -203,7 +203,7 @@ window.PdfView = (() => {
       if (hv) hv.classList.remove("hv"); hv = a; if (a) a.classList.add("hv"); V.body.classList.toggle("on-ref", !!a); });
     V.body.addEventListener("click", e => {
       if (!e.target.closest || !e.target.closest(".sp-pick")) pickClose(); else return;
-      const sel = getSelection(); if (sel && !sel.isCollapsed && String(sel).trim()) return;   // (finishing a text selection, not a tap)
+      const sel = getSelection(); if (sel && !sel.isCollapsed && String(sel).trim() && V.body.contains(sel.anchorNode)) return;   // (finishing a text selection on the sheet, not a tap; one elsewhere doesn't count)
       const a = refAt(e.clientX, e.clientY);
       if (!a || (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8)) return;
       const r = V.pageRefs[+a.dataset.i]; if (!r || !cur.onRef) return;

@@ -61,7 +61,7 @@ window.Pid = (() => {
       const me = info(num), h = t => String(t || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
       const tl = `<div class="sp-cxn"><i>This drawing</i><b>${h(num.replace(/^2000-/, ""))}</b>${me && me.title ? `<span title="${h(me.title)}">${h(short(num))}</span>` : ""}</div>`;
       const seen = new Set([num]), list = [], leg = LEGEND().includes(num);
-      // (the drawing you came from first, marked: blue outline and "↩ Back to")
+      // (the drawing you came from first, marked: blue outline and a round blue back arrow in its top left corner)
       // (on a legend sheet: all the sheets in order, the one in view outlined (no label, so the numbers line up), no "Back to")
       const was = !leg && window.PdfView && PdfView.came && key(PdfView.came() || "");
       const add = n => { const k = key(n); if (k && !seen.has(k) && PICS(k)){ seen.add(k); list.push(k); } };
@@ -72,7 +72,7 @@ window.Pid = (() => {
         ((C[num] || {}).r || []).filter(n => /-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(n)).forEach(add); }
       if (!list.length){ el.innerHTML = tl + `<div class="sp-cxt">Connected drawings</div><div class="lk-ns">No other drawings are named on this sheet.</div>`; return; }
       el.innerHTML = tl + `<div class="sp-cxt">${leg ? `P&amp;ID legend · ${list.length} sheets` : `Connected drawings · ${list.length}`}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
-        return `<button type="button" class="sp-cxd${n === was ? " prev" : ""}${n === num ? " cur" : ""}" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n === was ? '<i>↩ Back to</i> ' : ""}${n.replace(/^2000-/, "")}</b><span>${short(n) || kind(n)}</span></button>`; }).join("") + `</div>`;
+        return `<button type="button" class="sp-cxd${n === was ? " prev" : ""}${n === num ? " cur" : ""}" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png">${n === was ? '<i class="sp-cxb" title="Back to this drawing">↩</i>' : ""}<b>${n.replace(/^2000-/, "")}</b><span>${short(n) || kind(n)}</span></button>`; }).join("") + `</div>`;
       // (the ribbons on it leading back here are marked, as when a ribbon is tapped; with none, this drawing's number found)
       { const c = el.querySelector(".sp-cxd.cur"), sc = el.querySelector(".sp-cxs"); if (c && sc) sc.scrollLeft = Math.max(0, c.offsetLeft - sc.offsetLeft - (sc.clientWidth - c.offsetWidth) / 2); }
       const go = n => { const back = []; if (!n || n === num) return;
