@@ -83,7 +83,7 @@ window.Pid = (() => {
     const d = info(n); if (!d) return false;
     const r = o.restore;
     PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc && !d.layout ? "width" : "page", find: find || null, download: label(d.number) + ".pdf", restore: r || null,
-      number: d.number, label: label(d.number), sub: short(d.number), title: label(d.number) + (d.title ? " · " + d.title : ""),
+      number: d.number, label: label(d.number), sub: short(d.number), nodn: !!d.tb, title: label(d.number) + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []),
       back: o.back, extent: !!o.extent,
       panel: el => panel(el, d.number, o.legendFrom),

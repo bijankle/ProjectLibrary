@@ -65,8 +65,8 @@ def rclass(num, ref, box, ws, W, H):
 out = {}
 # (sheets whose title block was cleared, tools/clear_titleblock.py: what was read off the block before keeps counting,
 # merged with this reading, so the reference tables still feed the Reference drawings pill)
-try: OLD = json.load(open(os.path.join(R, "contents.json")))["d"]
-except Exception: OLD = {}
+try: PREV = json.load(open(os.path.join(R, "contents.json")))["d"]
+except Exception: PREV = {}
 for num, v in ix.items():
     keys, oth, docs = set(), set(), set()
     for r in refs.get(num, []):   # the tag boxes already on the sheet
@@ -136,8 +136,8 @@ for num, v in ix.items():
     # (an OCR fragment that lost the area's F: 00-SW-010 when F00-SW-010 is on the sheet or in a list)
     oth = {o for o in oth if not (re.fullmatch(r"\d{2,3}-[A-Z]{2,4}-\d{3}[A-Z]?", o) and ("F" + o in oth or nk("F" + o) in KEYS or "F" + o in keys))}
     docs.discard(num)
-    if "tbclear" in (d.metadata.get("keywords") or "") and num in OLD:
-        o = OLD[num]; keys |= set(o.get("k", [])); oth |= set(o.get("o", [])); docs |= set(o.get("r", []))
+    if "tbclear" in (d.metadata.get("keywords") or "") and num in PREV:
+        o = PREV[num]; keys |= set(o.get("k", [])); oth |= set(o.get("o", [])); docs |= set(o.get("r", []))
         for c, refs_ in (o.get("rc") or {}).items():
             for one in refs_:
                 if one not in rc or {"f": 0, "t": 0, "s": 1, "x": 2, "l": 3}[c] < {"f": 0, "t": 0, "s": 1, "x": 2, "l": 3}[rc[one]]: rc[one] = c

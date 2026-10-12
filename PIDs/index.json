@@ -2997,7 +2997,8 @@
    "from": [
     "2000-F13-SLD-EL-10301_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10302": {
    "file": "SLDs/2000-F13-SLD-EL-10302.pdf",
@@ -3009,7 +3010,8 @@
    "from": [
     "2000-F13-SLD-EL-10302_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10303": {
    "file": "SLDs/2000-F13-SLD-EL-10303.pdf",
@@ -3021,7 +3023,8 @@
    "from": [
     "2000-F13-SLD-EL-10303_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10304": {
    "file": "SLDs/2000-F13-SLD-EL-10304.pdf",
@@ -3033,7 +3036,8 @@
    "from": [
     "2000-F13-SLD-EL-10304_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10305": {
    "file": "SLDs/2000-F13-SLD-EL-10305.pdf",
@@ -3045,7 +3049,8 @@
    "from": [
     "2000-F13-SLD-EL-10305_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10311": {
    "file": "SLDs/2000-F13-SLD-EL-10311.pdf",
@@ -3057,7 +3062,8 @@
    "from": [
     "2000-F13-SLD-EL-10311_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10401": {
    "file": "SLDs/2000-F13-SLD-EL-10401.pdf",
@@ -3069,7 +3075,8 @@
    "from": [
     "2000-F13-SLD-EL-10401_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10402": {
    "file": "SLDs/2000-F13-SLD-EL-10402.pdf",
@@ -3081,7 +3088,8 @@
    "from": [
     "2000-F13-SLD-EL-10402_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10403": {
    "file": "SLDs/2000-F13-SLD-EL-10403.pdf",
@@ -3093,7 +3101,8 @@
    "from": [
     "2000-F13-SLD-EL-10403_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10404": {
    "file": "SLDs/2000-F13-SLD-EL-10404.pdf",
@@ -3105,7 +3114,8 @@
    "from": [
     "2000-F13-SLD-EL-10404_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10411": {
    "file": "SLDs/2000-F13-SLD-EL-10411.pdf",
@@ -3117,7 +3127,8 @@
    "from": [
     "2000-F13-SLD-EL-10411_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10701": {
    "file": "SLDs/2000-F13-SLD-EL-10701.pdf",
@@ -3129,7 +3140,8 @@
    "from": [
     "2000-F13-SLD-EL-10701_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10702": {
    "file": "SLDs/2000-F13-SLD-EL-10702.pdf",
@@ -3141,7 +3153,8 @@
    "from": [
     "2000-F13-SLD-EL-10702_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10703": {
    "file": "SLDs/2000-F13-SLD-EL-10703.pdf",
@@ -3153,7 +3166,8 @@
    "from": [
     "2000-F13-SLD-EL-10703_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10704": {
    "file": "SLDs/2000-F13-SLD-EL-10704.pdf",
@@ -3165,7 +3179,8 @@
    "from": [
     "2000-F13-SLD-EL-10704_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10711": {
    "file": "SLDs/2000-F13-SLD-EL-10711.pdf",
@@ -3177,7 +3192,8 @@
    "from": [
     "2000-F13-SLD-EL-10711_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10901": {
    "file": "SLDs/2000-F13-SLD-EL-10901.pdf",
@@ -3189,7 +3205,8 @@
    "from": [
     "2000-F13-SLD-EL-10901_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10902": {
    "file": "SLDs/2000-F13-SLD-EL-10902.pdf",
@@ -3201,7 +3218,8 @@
    "from": [
     "2000-F13-SLD-EL-10902_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10903": {
    "file": "SLDs/2000-F13-SLD-EL-10903.pdf",
@@ -3213,7 +3231,8 @@
    "from": [
     "2000-F13-SLD-EL-10903_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10904": {
    "file": "SLDs/2000-F13-SLD-EL-10904.pdf",
@@ -3225,7 +3244,8 @@
    "from": [
     "2000-F13-SLD-EL-10904_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10905": {
    "file": "SLDs/2000-F13-SLD-EL-10905.pdf",
@@ -3237,7 +3257,8 @@
    "from": [
     "2000-F13-SLD-EL-10905_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10906": {
    "file": "SLDs/2000-F13-SLD-EL-10906.pdf",
@@ -3249,7 +3270,8 @@
    "from": [
     "2000-F13-SLD-EL-10906_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-SLD-EL-10911": {
    "file": "SLDs/2000-F13-SLD-EL-10911.pdf",
@@ -3261,7 +3283,8 @@
    "from": [
     "2000-F13-SLD-EL-10911_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10001": {
    "file": "SLDs/2000-F16-SLD-EL-10001.pdf",
@@ -3273,7 +3296,8 @@
    "from": [
     "2000-F16-SLD-EL-10001_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10002": {
    "file": "SLDs/2000-F16-SLD-EL-10002.pdf",
@@ -3285,7 +3309,8 @@
    "from": [
     "2000-F16-SLD-EL-10002_2_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10201": {
    "file": "SLDs/2000-F16-SLD-EL-10201.pdf",
@@ -3297,7 +3322,8 @@
    "from": [
     "2000-F16-SLD-EL-10201_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10202": {
    "file": "SLDs/2000-F16-SLD-EL-10202.pdf",
@@ -3309,7 +3335,8 @@
    "from": [
     "2000-F16-SLD-EL-10202_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10203": {
    "file": "SLDs/2000-F16-SLD-EL-10203.pdf",
@@ -3321,7 +3348,8 @@
    "from": [
     "2000-F16-SLD-EL-10203_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10204": {
    "file": "SLDs/2000-F16-SLD-EL-10204.pdf",
@@ -3333,7 +3361,8 @@
    "from": [
     "2000-F16-SLD-EL-10204_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10205": {
    "file": "SLDs/2000-F16-SLD-EL-10205.pdf",
@@ -3345,7 +3374,8 @@
    "from": [
     "2000-F16-SLD-EL-10205_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10211": {
    "file": "SLDs/2000-F16-SLD-EL-10211.pdf",
@@ -3357,7 +3387,8 @@
    "from": [
     "2000-F16-SLD-EL-10211_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10212": {
    "file": "SLDs/2000-F16-SLD-EL-10212.pdf",
@@ -3369,7 +3400,8 @@
    "from": [
     "2000-F16-SLD-EL-10212_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10221": {
    "file": "SLDs/2000-F16-SLD-EL-10221.pdf",
@@ -3381,7 +3413,8 @@
    "from": [
     "2000-F16-SLD-EL-10221_3.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10222": {
    "file": "SLDs/2000-F16-SLD-EL-10222.pdf",
@@ -3393,7 +3426,8 @@
    "from": [
     "2000-F16-SLD-EL-10222_3.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10251": {
    "file": "SLDs/2000-F16-SLD-EL-10251.pdf",
@@ -3405,7 +3439,8 @@
    "from": [
     "2000-F16-SLD-EL-10251_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F175-SLD-EL-40001": {
    "file": "SLDs/2000-F175-SLD-EL-40001.pdf",
@@ -3429,7 +3464,8 @@
    "from": [
     "2000-F19-SLD-EL-10103_0.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F20-SLD-EL-10102": {
    "file": "SLDs/2000-F20-SLD-EL-10102.pdf",
@@ -3441,7 +3477,8 @@
    "from": [
     "2000-F20-SLD-EL-10102_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F21-SLD-EL-10201": {
    "file": "SLDs/2000-F21-SLD-EL-10201.pdf",
@@ -3453,7 +3490,8 @@
    "from": [
     "2000-F21-SLD-EL-10201_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F21-SLD-EL-10202": {
    "file": "SLDs/2000-F21-SLD-EL-10202.pdf",
@@ -3465,7 +3503,8 @@
    "from": [
     "2000-F21-SLD-EL-10202_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F21-SLD-EL-10203": {
    "file": "SLDs/2000-F21-SLD-EL-10203.pdf",
@@ -3477,7 +3516,8 @@
    "from": [
     "2000-F21-SLD-EL-10203_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F21-SLD-EL-10204": {
    "file": "SLDs/2000-F21-SLD-EL-10204.pdf",
@@ -3489,7 +3529,8 @@
    "from": [
     "2000-F21-SLD-EL-10204_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F21-SLD-EL-10251": {
    "file": "SLDs/2000-F21-SLD-EL-10251.pdf",
@@ -3501,7 +3542,8 @@
    "from": [
     "2000-F21-SLD-EL-10251_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F21-SLD-EL-10252": {
    "file": "SLDs/2000-F21-SLD-EL-10252.pdf",
@@ -3513,7 +3555,8 @@
    "from": [
     "2000-F21-SLD-EL-10252_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F21-SLD-EL-10253": {
    "file": "SLDs/2000-F21-SLD-EL-10253.pdf",
@@ -3525,7 +3568,8 @@
    "from": [
     "2000-F21-SLD-EL-10253_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F22-SLD-EL-10201": {
    "file": "SLDs/2000-F22-SLD-EL-10201.pdf",
@@ -3537,7 +3581,8 @@
    "from": [
     "2000-F22-SLD-EL-10201_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F22-SLD-EL-10202": {
    "file": "SLDs/2000-F22-SLD-EL-10202.pdf",
@@ -3549,7 +3594,8 @@
    "from": [
     "2000-F22-SLD-EL-10202_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F22-SLD-EL-10251": {
    "file": "SLDs/2000-F22-SLD-EL-10251.pdf",
@@ -3561,7 +3607,8 @@
    "from": [
     "2000-F22-SLD-EL-10251_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F22-SLD-EL-10252": {
    "file": "SLDs/2000-F22-SLD-EL-10252.pdf",
@@ -3573,7 +3620,8 @@
    "from": [
     "2000-F22-SLD-EL-10252_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F22-SLD-EL-10261": {
    "file": "SLDs/2000-F22-SLD-EL-10261.pdf",
@@ -3585,7 +3633,8 @@
    "from": [
     "2000-F22-SLD-EL-10261_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-SLD-EL-10001": {
    "file": "SLDs/2000-F23-SLD-EL-10001.pdf",
@@ -3597,7 +3646,8 @@
    "from": [
     "2000-F23-SLD-EL-10001_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-SLD-EL-10002": {
    "file": "SLDs/2000-F23-SLD-EL-10002.pdf",
@@ -3609,7 +3659,8 @@
    "from": [
     "2000-F23-SLD-EL-10002_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-SLD-EL-10201": {
    "file": "SLDs/2000-F23-SLD-EL-10201.pdf",
@@ -3621,7 +3672,8 @@
    "from": [
     "2000-F23-SLD-EL-10201_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-SLD-EL-10202": {
    "file": "SLDs/2000-F23-SLD-EL-10202.pdf",
@@ -3633,7 +3685,8 @@
    "from": [
     "2000-F23-SLD-EL-10202_1A.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-SLD-EL-10211": {
    "file": "SLDs/2000-F23-SLD-EL-10211.pdf",
@@ -3645,7 +3698,8 @@
    "from": [
     "2000-F23-SLD-EL-10211_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-SLD-EL-10212": {
    "file": "SLDs/2000-F23-SLD-EL-10212.pdf",
@@ -3657,7 +3711,8 @@
    "from": [
     "2000-F23-SLD-EL-10212_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-SLD-EL-40001": {
    "file": "SLDs/2000-F23-SLD-EL-40001.pdf",
@@ -3705,7 +3760,8 @@
    "from": [
     "2000-F24-SLD-EL-10501_2_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F25-SLD-EL-10010": {
    "file": "SLDs/2000-F25-SLD-EL-10010.pdf",
@@ -3717,7 +3773,8 @@
    "from": [
     "2000-F25-SLD-EL-10010_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F25-SLD-EL-10011": {
    "file": "SLDs/2000-F25-SLD-EL-10011.pdf",
@@ -3729,7 +3786,8 @@
    "from": [
     "2000-F25-SLD-EL-10011_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F28-SLD-EL-10001": {
    "file": "SLDs/2000-F28-SLD-EL-10001.pdf",
@@ -3741,7 +3799,8 @@
    "from": [
     "2000-F28-SLD-EL-10001_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F28-SLD-EL-10201": {
    "file": "SLDs/2000-F28-SLD-EL-10201.pdf",
@@ -3753,7 +3812,8 @@
    "from": [
     "2000-F28-SLD-EL-10201_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F28-SLD-EL-10202": {
    "file": "SLDs/2000-F28-SLD-EL-10202.pdf",
@@ -3765,7 +3825,8 @@
    "from": [
     "2000-F28-SLD-EL-10202_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F28-SLD-EL-10203": {
    "file": "SLDs/2000-F28-SLD-EL-10203.pdf",
@@ -3777,7 +3838,8 @@
    "from": [
     "2000-F28-SLD-EL-10203_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F28-SLD-EL-10204": {
    "file": "SLDs/2000-F28-SLD-EL-10204.pdf",
@@ -3789,7 +3851,8 @@
    "from": [
     "2000-F28-SLD-EL-10204_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F28-SLD-EL-10211": {
    "file": "SLDs/2000-F28-SLD-EL-10211.pdf",
@@ -3801,7 +3864,8 @@
    "from": [
     "2000-F28-SLD-EL-10211_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F30-SLD-EL-10101": {
    "file": "SLDs/2000-F30-SLD-EL-10101.pdf",
@@ -3813,7 +3877,8 @@
    "from": [
     "2000-F30-SLD-EL-10101_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F30-SLD-EL-10102": {
    "file": "SLDs/2000-F30-SLD-EL-10102.pdf",
@@ -3825,7 +3890,8 @@
    "from": [
     "2000-F30-SLD-EL-10102_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F30-SLD-EL-10103": {
    "file": "SLDs/2000-F30-SLD-EL-10103.pdf",
@@ -3837,7 +3903,8 @@
    "from": [
     "2000-F30-SLD-EL-10103_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F30-SLD-EL-10105": {
    "file": "SLDs/2000-F30-SLD-EL-10105.pdf",
@@ -3849,7 +3916,8 @@
    "from": [
     "2000-F30-SLD-EL-10105_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F30-SLD-EL-10201": {
    "file": "SLDs/2000-F30-SLD-EL-10201.pdf",
@@ -3861,7 +3929,8 @@
    "from": [
     "2000-F30-SLD-EL-10201_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F30-SLD-EL-10202": {
    "file": "SLDs/2000-F30-SLD-EL-10202.pdf",
@@ -3873,7 +3942,8 @@
    "from": [
     "2000-F30-SLD-EL-10202_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F30-SLD-EL-10301": {
    "file": "SLDs/2000-F30-SLD-EL-10301.pdf",
@@ -3885,7 +3955,8 @@
    "from": [
     "2000-F30-SLD-EL-10301_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F30-SLD-EL-10302": {
    "file": "SLDs/2000-F30-SLD-EL-10302.pdf",
@@ -3897,7 +3968,8 @@
    "from": [
     "2000-F30-SLD-EL-10302_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F34-SLD-EL-10102": {
    "file": "SLDs/2000-F34-SLD-EL-10102.pdf",
@@ -3909,7 +3981,8 @@
    "from": [
     "2000-F34-SLD-EL-10102_2_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F35-SLD-EL-10101": {
    "file": "SLDs/2000-F35-SLD-EL-10101.pdf",
@@ -3929,7 +4002,8 @@
    "from": [
     "2000-F35-SLD-EL-10101_2_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F66-SLD-EL-10101": {
    "file": "SLDs/2000-F66-SLD-EL-10101.pdf",
@@ -3941,7 +4015,8 @@
    "from": [
     "2000-F66-SLD-EL-10101_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F72-SLD-EL-10201": {
    "file": "SLDs/2000-F72-SLD-EL-10201.pdf",
@@ -3953,7 +4028,8 @@
    "from": [
     "2000-F72-SLD-EL-10201_2_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F72-SLD-EL-10202": {
    "file": "SLDs/2000-F72-SLD-EL-10202.pdf",
@@ -3965,7 +4041,8 @@
    "from": [
     "2000-F72-SLD-EL-10202_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F72-SLD-EL-10203": {
    "file": "SLDs/2000-F72-SLD-EL-10203.pdf",
@@ -3977,7 +4054,8 @@
    "from": [
     "2000-F72-SLD-EL-10203_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F72-SLD-EL-10204": {
    "file": "SLDs/2000-F72-SLD-EL-10204.pdf",
@@ -3989,7 +4067,8 @@
    "from": [
     "2000-F72-SLD-EL-10204_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F72-SLD-EL-10211": {
    "file": "SLDs/2000-F72-SLD-EL-10211.pdf",
@@ -4001,7 +4080,8 @@
    "from": [
     "2000-F72-SLD-EL-10211_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-T03-SLD-EL-41001": {
    "file": "SLDs/2000-T03-SLD-EL-41001.pdf",
@@ -4025,7 +4105,8 @@
    "from": [
     "2000-F00-SLD-EL-10001_2_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F00-SLD-EL-10005": {
    "file": "SLDs/2000-F00-SLD-EL-10005.pdf",
@@ -4045,7 +4126,8 @@
    "from": [
     "2000-F00-SLD-EL-10005_3_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F00-SLD-EL-10006": {
    "file": "SLDs/2000-F00-SLD-EL-10006.pdf",
@@ -4057,7 +4139,8 @@
    "from": [
     "2000-F00-SLD-EL-10006_3_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F00-SLD-EL-10011": {
    "file": "SLDs/2000-F00-SLD-EL-10011.pdf",
@@ -4077,7 +4160,8 @@
    "from": [
     "2000-F00-SLD-EL-10011_3.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F00-SLD-EL-10012": {
    "file": "SLDs/2000-F00-SLD-EL-10012.pdf",
@@ -4089,7 +4173,8 @@
    "from": [
     "2000-F00-SLD-EL-10012_3_AAN.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10051": {
    "file": "SLDs/2000-F16-SLD-EL-10051.pdf",
@@ -4101,7 +4186,8 @@
    "from": [
     "2000-F16-SLD-EL-10051_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-SLD-EL-10051": {
    "file": "SLDs/2000-F23-SLD-EL-10051.pdf",
@@ -4113,7 +4199,8 @@
    "from": [
     "2000-F23-SLD-EL-10051_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-SLD-EL-40002": {
    "file": "SLDs/2000-F23-SLD-EL-40002.pdf",
@@ -4137,7 +4224,8 @@
    "from": [
     "2000-F00-SLD-EL-10002_5.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F00-SLD-EL-10004": {
    "file": "SLDs/2000-F00-SLD-EL-10004.pdf",
@@ -4149,7 +4237,8 @@
    "from": [
     "2000-F00-SLD-EL-10004_5.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F00-SLD-EL-10051": {
    "file": "SLDs/2000-F00-SLD-EL-10051.pdf",
@@ -4169,7 +4258,8 @@
    "from": [
     "2000-F00-SLD-EL-10051_2.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F16-SLD-EL-10003": {
    "file": "SLDs/2000-F16-SLD-EL-10003.pdf",
@@ -4181,7 +4271,8 @@
    "from": [
     "2000-F16-SLD-EL-10003_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F00-BLK-IC-10001": {
    "file": "SLDs/2000-F00-BLK-IC-10001.pdf",
@@ -4193,7 +4284,8 @@
    "from": [
     "2000-F00-BLK-IC-10001_4A.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-BLK-IC-10001": {
    "file": "SLDs/2000-F13-BLK-IC-10001.pdf",
@@ -4205,7 +4297,8 @@
    "from": [
     "2000-F13-BLK-IC-10001_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F13-BLK-IC-10401": {
    "file": "SLDs/2000-F13-BLK-IC-10401.pdf",
@@ -4217,7 +4310,8 @@
    "from": [
     "2000-F13-BLK-IC-10401_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F175-BLK-IC-40001": {
    "file": "SLDs/2000-F175-BLK-IC-40001.pdf",
@@ -4241,7 +4335,8 @@
    "from": [
     "2000-F22-BLK-IC-10001_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-BLK-IC-10001": {
    "file": "SLDs/2000-F23-BLK-IC-10001.pdf",
@@ -4253,7 +4348,8 @@
    "from": [
     "2000-F23-BLK-IC-10001_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F23-BLK-IC-40001": {
    "file": "SLDs/2000-F23-BLK-IC-40001.pdf",
@@ -4277,7 +4373,8 @@
    "from": [
     "2000-F24-BLK-IC-10501_2A.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F28-BLK-IC-10001": {
    "file": "SLDs/2000-F28-BLK-IC-10001.pdf",
@@ -4289,7 +4386,8 @@
    "from": [
     "2000-F28-BLK-IC-10001_0_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F72-BLK-IC-10001": {
    "file": "SLDs/2000-F72-BLK-IC-10001.pdf",
@@ -4301,7 +4399,8 @@
    "from": [
     "2000-F72-BLK-IC-10001_1_APP.pdf"
    ],
-   "status": ""
+   "status": "",
+   "tb": 1
   },
   "2000-F24-PID-PR-10021": {
    "file": "PIDs/2000-F24-PID-PR-10021.pdf",
@@ -4324,7 +4423,8 @@
    "size": 731134,
    "from": [
     "2000-F16-BLK-IC-10001_2_APP.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F00-PFD-PR-10011": {
    "file": "PFDs/2000-F00-PFD-PR-10011.pdf",
@@ -4392,7 +4492,8 @@
    "size": 1049121,
    "from": [
     "2000-F00-SLD-EL-10003_3_APP.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SLD-EL-10001": {
    "file": "SLDs/2000-F12-SLD-EL-10001.pdf",
@@ -4404,7 +4505,8 @@
    "size": 766420,
    "from": [
     "2000-F12-SLD-EL-10001_1_APP.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SLD-EL-10201": {
    "file": "SLDs/2000-F12-SLD-EL-10201.pdf",
@@ -4416,7 +4518,8 @@
    "size": 706560,
    "from": [
     "2000-F12-SLD-EL-10201_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SLD-EL-10211": {
    "file": "SLDs/2000-F12-SLD-EL-10211.pdf",
@@ -4428,7 +4531,8 @@
    "size": 980658,
    "from": [
     "2000-F12-SLD-EL-10211_1_APP.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SLD-EL-10051": {
    "file": "SLDs/2000-F28-SLD-EL-10051.pdf",
@@ -4440,7 +4544,8 @@
    "size": 440966,
    "from": [
     "2000-F28-SLD-EL-10051_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-TLD-EL-10012": {
    "file": "SLDs/2000-F13-TLD-EL-10012.pdf",
@@ -4452,7 +4557,8 @@
    "size": 609451,
    "from": [
     "2000-F13-TLD-EL-10012_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-TLD-EL-10022": {
    "file": "SLDs/2000-F13-TLD-EL-10022.pdf",
@@ -4464,7 +4570,8 @@
    "size": 598978,
    "from": [
     "2000-F13-TLD-EL-10022_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-TLD-EL-10032": {
    "file": "SLDs/2000-F13-TLD-EL-10032.pdf",
@@ -4476,7 +4583,8 @@
    "size": 603104,
    "from": [
     "2000-F13-TLD-EL-10032_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-TLD-EL-10042": {
    "file": "SLDs/2000-F13-TLD-EL-10042.pdf",
@@ -4488,7 +4596,8 @@
    "size": 578408,
    "from": [
     "2000-F13-TLD-EL-10042_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-TLD-EL-10051": {
    "file": "SLDs/2000-F16-TLD-EL-10051.pdf",
@@ -4500,7 +4609,8 @@
    "size": 498593,
    "from": [
     "2000-F16-TLD-EL-10051_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-TLD-EL-10056": {
    "file": "SLDs/2000-F16-TLD-EL-10056.pdf",
@@ -4512,7 +4622,8 @@
    "size": 607531,
    "from": [
     "2000-F16-TLD-EL-10056_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-TLD-EL-10057": {
    "file": "SLDs/2000-F16-TLD-EL-10057.pdf",
@@ -4524,7 +4635,8 @@
    "size": 560805,
    "from": [
     "2000-F16-TLD-EL-10057_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F175-TLD-EL-40001": {
    "file": "SLDs/2000-F175-TLD-EL-40001.pdf",
@@ -4560,7 +4672,8 @@
    "size": 443078,
    "from": [
     "2000-F19-TLD-EL-10002_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F19-TLD-EL-10005": {
    "file": "SLDs/2000-F19-TLD-EL-10005.pdf",
@@ -4572,7 +4685,8 @@
    "size": 582325,
    "from": [
     "2000-F19-TLD-EL-10005_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-TLD-EL-10051": {
    "file": "SLDs/2000-F22-TLD-EL-10051.pdf",
@@ -4584,7 +4698,8 @@
    "size": 812093,
    "from": [
     "2000-F22-TLD-EL-10051_1_APP.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-TLD-EL-10052": {
    "file": "SLDs/2000-F22-TLD-EL-10052.pdf",
@@ -4596,7 +4711,8 @@
    "size": 671966,
    "from": [
     "2000-F22-TLD-EL-10052_1_APP.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-TLD-EL-10201": {
    "file": "SLDs/2000-F22-TLD-EL-10201.pdf",
@@ -4608,7 +4724,8 @@
    "size": 891016,
    "from": [
     "2000-F22-TLD-EL-10201_0_RNC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-TLD-EL-10052": {
    "file": "SLDs/2000-F23-TLD-EL-10052.pdf",
@@ -4620,7 +4737,8 @@
    "size": 537603,
    "from": [
     "2000-F23-TLD-EL-10052_1_RNC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-TLD-EL-10101": {
    "file": "SLDs/2000-F23-TLD-EL-10101.pdf",
@@ -4632,7 +4750,8 @@
    "size": 652610,
    "from": [
     "2000-F23-TLD-EL-10101_1_RNC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-TLD-EL-40001": {
    "file": "SLDs/2000-F23-TLD-EL-40001.pdf",
@@ -4692,7 +4811,8 @@
    "size": 650622,
    "from": [
     "2000-F24-TLD-EL-10501_1_RNC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-TLD-EL-10502": {
    "file": "SLDs/2000-F24-TLD-EL-10502.pdf",
@@ -4704,7 +4824,8 @@
    "size": 566255,
    "from": [
     "2000-F24-TLD-EL-10502_1_RNC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-TLD-EL-10051": {
    "file": "SLDs/2000-F28-TLD-EL-10051.pdf",
@@ -4716,7 +4837,8 @@
    "size": 492567,
    "from": [
     "2000-F28-TLD-EL-10051_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-TLD-EL-10054": {
    "file": "SLDs/2000-F28-TLD-EL-10054.pdf",
@@ -4728,7 +4850,8 @@
    "size": 595273,
    "from": [
     "2000-F28-TLD-EL-10054_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-TLD-EL-10001": {
    "file": "SLDs/2000-F30-TLD-EL-10001.pdf",
@@ -4740,7 +4863,8 @@
    "size": 639543,
    "from": [
     "2000-F30-TLD-EL-10001_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-TLD-EL-10003": {
    "file": "SLDs/2000-F30-TLD-EL-10003.pdf",
@@ -4764,7 +4888,8 @@
    "size": 886702,
    "from": [
     "2000-F72-TLD-EL-10102_0_RNC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-TLD-EL-10103": {
    "file": "SLDs/2000-F72-TLD-EL-10103.pdf",
@@ -4776,7 +4901,8 @@
    "size": 643292,
    "from": [
     "2000-F72-TLD-EL-10103_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-TLD-EL-10104": {
    "file": "SLDs/2000-F72-TLD-EL-10104.pdf",
@@ -4788,7 +4914,8 @@
    "size": 924555,
    "from": [
     "2000-F72-TLD-EL-10104_1_RNC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-TLD-EL-10105": {
    "file": "SLDs/2000-F72-TLD-EL-10105.pdf",
@@ -4800,7 +4927,8 @@
    "size": 644031,
    "from": [
     "2000-F72-TLD-EL-10105_1_RNC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F00-SCM-EL-10211": {
    "file": "SLDs/2000-F00-SCM-EL-10211.pdf",
@@ -4812,7 +4940,8 @@
    "size": 625621,
    "from": [
     "2000-F00-SCM-EL-10211_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F00-SCM-EL-10212": {
    "file": "SLDs/2000-F00-SCM-EL-10212.pdf",
@@ -4824,7 +4953,8 @@
    "size": 628328,
    "from": [
     "2000-F00-SCM-EL-10212_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F00-SCM-EL-10213": {
    "file": "SLDs/2000-F00-SCM-EL-10213.pdf",
@@ -4836,7 +4966,8 @@
    "size": 534758,
    "from": [
     "2000-F00-SCM-EL-10213_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10101": {
    "file": "SLDs/2000-F12-SCM-EL-10101.pdf",
@@ -4848,7 +4979,8 @@
    "size": 492757,
    "from": [
     "2000-F12-SCM-EL-10101_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10103": {
    "file": "SLDs/2000-F12-SCM-EL-10103.pdf",
@@ -4860,7 +4992,8 @@
    "size": 889128,
    "from": [
     "2000-F12-SCM-EL-10103_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10105": {
    "file": "SLDs/2000-F12-SCM-EL-10105.pdf",
@@ -4872,7 +5005,8 @@
    "size": 952146,
    "from": [
     "2000-F12-SCM-EL-10105_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10107": {
    "file": "SLDs/2000-F12-SCM-EL-10107.pdf",
@@ -4884,7 +5018,8 @@
    "size": 491714,
    "from": [
     "2000-F12-SCM-EL-10107_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10109": {
    "file": "SLDs/2000-F12-SCM-EL-10109.pdf",
@@ -4896,7 +5031,8 @@
    "size": 488626,
    "from": [
     "2000-F12-SCM-EL-10109_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10201": {
    "file": "SLDs/2000-F12-SCM-EL-10201.pdf",
@@ -4908,7 +5044,8 @@
    "size": 733554,
    "from": [
     "2000-F12-SCM-EL-10201_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10202": {
    "file": "SLDs/2000-F12-SCM-EL-10202.pdf",
@@ -4920,7 +5057,8 @@
    "size": 656501,
    "from": [
     "2000-F12-SCM-EL-10202_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10203": {
    "file": "SLDs/2000-F12-SCM-EL-10203.pdf",
@@ -4932,7 +5070,8 @@
    "size": 606421,
    "from": [
     "2000-F12-SCM-EL-10203_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10205": {
    "file": "SLDs/2000-F12-SCM-EL-10205.pdf",
@@ -4944,7 +5083,8 @@
    "size": 533753,
    "from": [
     "2000-F12-SCM-EL-10205_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10206": {
    "file": "SLDs/2000-F12-SCM-EL-10206.pdf",
@@ -4956,7 +5096,8 @@
    "size": 492064,
    "from": [
     "2000-F12-SCM-EL-10206_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10207": {
    "file": "SLDs/2000-F12-SCM-EL-10207.pdf",
@@ -4968,7 +5109,8 @@
    "size": 531983,
    "from": [
     "2000-F12-SCM-EL-10207_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10208": {
    "file": "SLDs/2000-F12-SCM-EL-10208.pdf",
@@ -4980,7 +5122,8 @@
    "size": 568459,
    "from": [
     "2000-F12-SCM-EL-10208_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10209": {
    "file": "SLDs/2000-F12-SCM-EL-10209.pdf",
@@ -4992,7 +5135,8 @@
    "size": 549531,
    "from": [
     "2000-F12-SCM-EL-10209_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10210": {
    "file": "SLDs/2000-F12-SCM-EL-10210.pdf",
@@ -5004,7 +5148,8 @@
    "size": 520249,
    "from": [
     "2000-F12-SCM-EL-10210_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10211": {
    "file": "SLDs/2000-F12-SCM-EL-10211.pdf",
@@ -5016,7 +5161,8 @@
    "size": 517746,
    "from": [
     "2000-F12-SCM-EL-10211_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10212": {
    "file": "SLDs/2000-F12-SCM-EL-10212.pdf",
@@ -5028,7 +5174,8 @@
    "size": 619881,
    "from": [
     "2000-F12-SCM-EL-10212_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10213": {
    "file": "SLDs/2000-F12-SCM-EL-10213.pdf",
@@ -5040,7 +5187,8 @@
    "size": 898752,
    "from": [
     "2000-F12-SCM-EL-10213_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10214": {
    "file": "SLDs/2000-F12-SCM-EL-10214.pdf",
@@ -5052,7 +5200,8 @@
    "size": 591943,
    "from": [
     "2000-F12-SCM-EL-10214_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10215": {
    "file": "SLDs/2000-F12-SCM-EL-10215.pdf",
@@ -5064,7 +5213,8 @@
    "size": 599619,
    "from": [
     "2000-F12-SCM-EL-10215_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10217": {
    "file": "SLDs/2000-F12-SCM-EL-10217.pdf",
@@ -5076,7 +5226,8 @@
    "size": 629907,
    "from": [
     "2000-F12-SCM-EL-10217_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10218": {
    "file": "SLDs/2000-F12-SCM-EL-10218.pdf",
@@ -5088,7 +5239,8 @@
    "size": 623006,
    "from": [
     "2000-F12-SCM-EL-10218_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10220": {
    "file": "SLDs/2000-F12-SCM-EL-10220.pdf",
@@ -5100,7 +5252,8 @@
    "size": 601392,
    "from": [
     "2000-F12-SCM-EL-10220_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10232": {
    "file": "SLDs/2000-F12-SCM-EL-10232.pdf",
@@ -5112,7 +5265,8 @@
    "size": 527634,
    "from": [
     "2000-F12-SCM-EL-10232_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10233": {
    "file": "SLDs/2000-F12-SCM-EL-10233.pdf",
@@ -5136,7 +5290,8 @@
    "size": 912599,
    "from": [
     "2000-F12-SCM-EL-10401_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10402": {
    "file": "SLDs/2000-F12-SCM-EL-10402.pdf",
@@ -5148,7 +5303,8 @@
    "size": 956191,
    "from": [
     "2000-F12-SCM-EL-10402_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10405": {
    "file": "SLDs/2000-F12-SCM-EL-10405.pdf",
@@ -5160,7 +5316,8 @@
    "size": 518208,
    "from": [
     "2000-F12-SCM-EL-10405_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10406": {
    "file": "SLDs/2000-F12-SCM-EL-10406.pdf",
@@ -5172,7 +5329,8 @@
    "size": 519631,
    "from": [
     "2000-F12-SCM-EL-10406_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F12-SCM-EL-10407": {
    "file": "SLDs/2000-F12-SCM-EL-10407.pdf",
@@ -5184,7 +5342,8 @@
    "size": 592823,
    "from": [
     "2000-F12-SCM-EL-10407_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10201": {
    "file": "SLDs/2000-F13-SCM-EL-10201.pdf",
@@ -5196,7 +5355,8 @@
    "size": 532108,
    "from": [
     "2000-F13-SCM-EL-10201_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10202": {
    "file": "SLDs/2000-F13-SCM-EL-10202.pdf",
@@ -5208,7 +5368,8 @@
    "size": 578641,
    "from": [
     "2000-F13-SCM-EL-10202_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10203": {
    "file": "SLDs/2000-F13-SCM-EL-10203.pdf",
@@ -5220,7 +5381,8 @@
    "size": 869399,
    "from": [
     "2000-F13-SCM-EL-10203_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10204": {
    "file": "SLDs/2000-F13-SCM-EL-10204.pdf",
@@ -5232,7 +5394,8 @@
    "size": 892955,
    "from": [
     "2000-F13-SCM-EL-10204_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10205": {
    "file": "SLDs/2000-F13-SCM-EL-10205.pdf",
@@ -5244,7 +5407,8 @@
    "size": 865960,
    "from": [
     "2000-F13-SCM-EL-10205_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10206": {
    "file": "SLDs/2000-F13-SCM-EL-10206.pdf",
@@ -5256,7 +5420,8 @@
    "size": 547385,
    "from": [
     "2000-F13-SCM-EL-10206_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10303": {
    "file": "SLDs/2000-F13-SCM-EL-10303.pdf",
@@ -5268,7 +5433,8 @@
    "size": 726360,
    "from": [
     "2000-F13-SCM-EL-10303_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10304": {
    "file": "SLDs/2000-F13-SCM-EL-10304.pdf",
@@ -5280,7 +5446,8 @@
    "size": 700485,
    "from": [
     "2000-F13-SCM-EL-10304_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10305": {
    "file": "SLDs/2000-F13-SCM-EL-10305.pdf",
@@ -5292,7 +5459,8 @@
    "size": 585984,
    "from": [
     "2000-F13-SCM-EL-10305_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10306": {
    "file": "SLDs/2000-F13-SCM-EL-10306.pdf",
@@ -5304,7 +5472,8 @@
    "size": 539407,
    "from": [
     "2000-F13-SCM-EL-10306_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10307": {
    "file": "SLDs/2000-F13-SCM-EL-10307.pdf",
@@ -5316,7 +5485,8 @@
    "size": 532046,
    "from": [
     "2000-F13-SCM-EL-10307_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10308": {
    "file": "SLDs/2000-F13-SCM-EL-10308.pdf",
@@ -5328,7 +5498,8 @@
    "size": 618698,
    "from": [
     "2000-F13-SCM-EL-10308_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10309": {
    "file": "SLDs/2000-F13-SCM-EL-10309.pdf",
@@ -5340,7 +5511,8 @@
    "size": 519898,
    "from": [
     "2000-F13-SCM-EL-10309_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10310": {
    "file": "SLDs/2000-F13-SCM-EL-10310.pdf",
@@ -5352,7 +5524,8 @@
    "size": 532811,
    "from": [
     "2000-F13-SCM-EL-10310_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10311": {
    "file": "SLDs/2000-F13-SCM-EL-10311.pdf",
@@ -5364,7 +5537,8 @@
    "size": 826391,
    "from": [
     "2000-F13-SCM-EL-10311_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10312": {
    "file": "SLDs/2000-F13-SCM-EL-10312.pdf",
@@ -5376,7 +5550,8 @@
    "size": 601021,
    "from": [
     "2000-F13-SCM-EL-10312_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10313": {
    "file": "SLDs/2000-F13-SCM-EL-10313.pdf",
@@ -5388,7 +5563,8 @@
    "size": 606279,
    "from": [
     "2000-F13-SCM-EL-10313_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10314": {
    "file": "SLDs/2000-F13-SCM-EL-10314.pdf",
@@ -5400,7 +5576,8 @@
    "size": 612440,
    "from": [
     "2000-F13-SCM-EL-10314_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10315": {
    "file": "SLDs/2000-F13-SCM-EL-10315.pdf",
@@ -5412,7 +5589,8 @@
    "size": 610796,
    "from": [
     "2000-F13-SCM-EL-10315_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10316": {
    "file": "SLDs/2000-F13-SCM-EL-10316.pdf",
@@ -5424,7 +5602,8 @@
    "size": 611438,
    "from": [
     "2000-F13-SCM-EL-10316_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10317": {
    "file": "SLDs/2000-F13-SCM-EL-10317.pdf",
@@ -5436,7 +5615,8 @@
    "size": 606195,
    "from": [
     "2000-F13-SCM-EL-10317_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10318": {
    "file": "SLDs/2000-F13-SCM-EL-10318.pdf",
@@ -5448,7 +5628,8 @@
    "size": 611844,
    "from": [
     "2000-F13-SCM-EL-10318_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10319": {
    "file": "SLDs/2000-F13-SCM-EL-10319.pdf",
@@ -5460,7 +5641,8 @@
    "size": 612595,
    "from": [
     "2000-F13-SCM-EL-10319_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10320": {
    "file": "SLDs/2000-F13-SCM-EL-10320.pdf",
@@ -5472,7 +5654,8 @@
    "size": 610484,
    "from": [
     "2000-F13-SCM-EL-10320_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10322": {
    "file": "SLDs/2000-F13-SCM-EL-10322.pdf",
@@ -5484,7 +5667,8 @@
    "size": 584046,
    "from": [
     "2000-F13-SCM-EL-10322_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10323": {
    "file": "SLDs/2000-F13-SCM-EL-10323.pdf",
@@ -5496,7 +5680,8 @@
    "size": 622786,
    "from": [
     "2000-F13-SCM-EL-10323_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10324": {
    "file": "SLDs/2000-F13-SCM-EL-10324.pdf",
@@ -5508,7 +5693,8 @@
    "size": 537304,
    "from": [
     "2000-F13-SCM-EL-10324_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10325": {
    "file": "SLDs/2000-F13-SCM-EL-10325.pdf",
@@ -5520,7 +5706,8 @@
    "size": 612896,
    "from": [
     "2000-F13-SCM-EL-10325_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10327": {
    "file": "SLDs/2000-F13-SCM-EL-10327.pdf",
@@ -5532,7 +5719,8 @@
    "size": 551643,
    "from": [
     "2000-F13-SCM-EL-10327_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10328": {
    "file": "SLDs/2000-F13-SCM-EL-10328.pdf",
@@ -5544,7 +5732,8 @@
    "size": 675080,
    "from": [
     "2000-F13-SCM-EL-10328_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10329": {
    "file": "SLDs/2000-F13-SCM-EL-10329.pdf",
@@ -5556,7 +5745,8 @@
    "size": 614757,
    "from": [
     "2000-F13-SCM-EL-10329_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10330": {
    "file": "SLDs/2000-F13-SCM-EL-10330.pdf",
@@ -5568,7 +5758,8 @@
    "size": 539544,
    "from": [
     "2000-F13-SCM-EL-10330_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10331": {
    "file": "SLDs/2000-F13-SCM-EL-10331.pdf",
@@ -5580,7 +5771,8 @@
    "size": 603829,
    "from": [
     "2000-F13-SCM-EL-10331_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10333": {
    "file": "SLDs/2000-F13-SCM-EL-10333.pdf",
@@ -5592,7 +5784,8 @@
    "size": 543632,
    "from": [
     "2000-F13-SCM-EL-10333_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10334": {
    "file": "SLDs/2000-F13-SCM-EL-10334.pdf",
@@ -5604,7 +5797,8 @@
    "size": 589305,
    "from": [
     "2000-F13-SCM-EL-10334_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10335": {
    "file": "SLDs/2000-F13-SCM-EL-10335.pdf",
@@ -5616,7 +5810,8 @@
    "size": 601818,
    "from": [
     "2000-F13-SCM-EL-10335_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10336": {
    "file": "SLDs/2000-F13-SCM-EL-10336.pdf",
@@ -5628,7 +5823,8 @@
    "size": 602649,
    "from": [
     "2000-F13-SCM-EL-10336_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10337": {
    "file": "SLDs/2000-F13-SCM-EL-10337.pdf",
@@ -5640,7 +5836,8 @@
    "size": 637474,
    "from": [
     "2000-F13-SCM-EL-10337_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10338": {
    "file": "SLDs/2000-F13-SCM-EL-10338.pdf",
@@ -5652,7 +5849,8 @@
    "size": 640098,
    "from": [
     "2000-F13-SCM-EL-10338_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10339": {
    "file": "SLDs/2000-F13-SCM-EL-10339.pdf",
@@ -5664,7 +5862,8 @@
    "size": 678895,
    "from": [
     "2000-F13-SCM-EL-10339_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10340": {
    "file": "SLDs/2000-F13-SCM-EL-10340.pdf",
@@ -5676,7 +5875,8 @@
    "size": 678715,
    "from": [
     "2000-F13-SCM-EL-10340_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10341": {
    "file": "SLDs/2000-F13-SCM-EL-10341.pdf",
@@ -5688,7 +5888,8 @@
    "size": 678400,
    "from": [
     "2000-F13-SCM-EL-10341_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10342": {
    "file": "SLDs/2000-F13-SCM-EL-10342.pdf",
@@ -5700,7 +5901,8 @@
    "size": 606395,
    "from": [
     "2000-F13-SCM-EL-10342_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10343": {
    "file": "SLDs/2000-F13-SCM-EL-10343.pdf",
@@ -5712,7 +5914,8 @@
    "size": 562673,
    "from": [
     "2000-F13-SCM-EL-10343_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10344": {
    "file": "SLDs/2000-F13-SCM-EL-10344.pdf",
@@ -5724,7 +5927,8 @@
    "size": 608848,
    "from": [
     "2000-F13-SCM-EL-10344_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10345": {
    "file": "SLDs/2000-F13-SCM-EL-10345.pdf",
@@ -5736,7 +5940,8 @@
    "size": 610406,
    "from": [
     "2000-F13-SCM-EL-10345_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10346": {
    "file": "SLDs/2000-F13-SCM-EL-10346.pdf",
@@ -5748,7 +5953,8 @@
    "size": 625661,
    "from": [
     "2000-F13-SCM-EL-10346_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10347": {
    "file": "SLDs/2000-F13-SCM-EL-10347.pdf",
@@ -5760,7 +5966,8 @@
    "size": 638075,
    "from": [
     "2000-F13-SCM-EL-10347_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10348": {
    "file": "SLDs/2000-F13-SCM-EL-10348.pdf",
@@ -5772,7 +5979,8 @@
    "size": 737212,
    "from": [
     "2000-F13-SCM-EL-10348_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10349": {
    "file": "SLDs/2000-F13-SCM-EL-10349.pdf",
@@ -5784,7 +5992,8 @@
    "size": 602199,
    "from": [
     "2000-F13-SCM-EL-10349_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10350": {
    "file": "SLDs/2000-F13-SCM-EL-10350.pdf",
@@ -5796,7 +6005,8 @@
    "size": 674274,
    "from": [
     "2000-F13-SCM-EL-10350_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10351": {
    "file": "SLDs/2000-F13-SCM-EL-10351.pdf",
@@ -5808,7 +6018,8 @@
    "size": 616498,
    "from": [
     "2000-F13-SCM-EL-10351_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10352": {
    "file": "SLDs/2000-F13-SCM-EL-10352.pdf",
@@ -5820,7 +6031,8 @@
    "size": 528541,
    "from": [
     "2000-F13-SCM-EL-10352_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10353": {
    "file": "SLDs/2000-F13-SCM-EL-10353.pdf",
@@ -5832,7 +6044,8 @@
    "size": 578129,
    "from": [
     "2000-F13-SCM-EL-10353_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10354": {
    "file": "SLDs/2000-F13-SCM-EL-10354.pdf",
@@ -5856,7 +6069,8 @@
    "size": 615569,
    "from": [
     "2000-F13-SCM-EL-10356_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10357": {
    "file": "SLDs/2000-F13-SCM-EL-10357.pdf",
@@ -5868,7 +6082,8 @@
    "size": 615840,
    "from": [
     "2000-F13-SCM-EL-10357_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10358": {
    "file": "SLDs/2000-F13-SCM-EL-10358.pdf",
@@ -5880,7 +6095,8 @@
    "size": 587865,
    "from": [
     "2000-F13-SCM-EL-10358_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10359": {
    "file": "SLDs/2000-F13-SCM-EL-10359.pdf",
@@ -5892,7 +6108,8 @@
    "size": 665794,
    "from": [
     "2000-F13-SCM-EL-10359_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10364": {
    "file": "SLDs/2000-F13-SCM-EL-10364.pdf",
@@ -5904,7 +6121,8 @@
    "size": 530928,
    "from": [
     "2000-F13-SCM-EL-10364_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10401": {
    "file": "SLDs/2000-F13-SCM-EL-10401.pdf",
@@ -5916,7 +6134,8 @@
    "size": 791077,
    "from": [
     "2000-F13-SCM-EL-10401_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10402": {
    "file": "SLDs/2000-F13-SCM-EL-10402.pdf",
@@ -5928,7 +6147,8 @@
    "size": 695625,
    "from": [
     "2000-F13-SCM-EL-10402_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10403": {
    "file": "SLDs/2000-F13-SCM-EL-10403.pdf",
@@ -5940,7 +6160,8 @@
    "size": 640555,
    "from": [
     "2000-F13-SCM-EL-10403_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10404": {
    "file": "SLDs/2000-F13-SCM-EL-10404.pdf",
@@ -5952,7 +6173,8 @@
    "size": 543581,
    "from": [
     "2000-F13-SCM-EL-10404_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10405": {
    "file": "SLDs/2000-F13-SCM-EL-10405.pdf",
@@ -5964,7 +6186,8 @@
    "size": 494761,
    "from": [
     "2000-F13-SCM-EL-10405_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10406": {
    "file": "SLDs/2000-F13-SCM-EL-10406.pdf",
@@ -5976,7 +6199,8 @@
    "size": 500473,
    "from": [
     "2000-F13-SCM-EL-10406_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10407": {
    "file": "SLDs/2000-F13-SCM-EL-10407.pdf",
@@ -5988,7 +6212,8 @@
    "size": 527310,
    "from": [
     "2000-F13-SCM-EL-10407_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10408": {
    "file": "SLDs/2000-F13-SCM-EL-10408.pdf",
@@ -6000,7 +6225,8 @@
    "size": 618735,
    "from": [
     "2000-F13-SCM-EL-10408_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10409": {
    "file": "SLDs/2000-F13-SCM-EL-10409.pdf",
@@ -6012,7 +6238,8 @@
    "size": 771118,
    "from": [
     "2000-F13-SCM-EL-10409_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10410": {
    "file": "SLDs/2000-F13-SCM-EL-10410.pdf",
@@ -6024,7 +6251,8 @@
    "size": 774578,
    "from": [
     "2000-F13-SCM-EL-10410_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10411": {
    "file": "SLDs/2000-F13-SCM-EL-10411.pdf",
@@ -6036,7 +6264,8 @@
    "size": 483597,
    "from": [
     "2000-F13-SCM-EL-10411_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10412": {
    "file": "SLDs/2000-F13-SCM-EL-10412.pdf",
@@ -6048,7 +6277,8 @@
    "size": 829206,
    "from": [
     "2000-F13-SCM-EL-10412_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10413": {
    "file": "SLDs/2000-F13-SCM-EL-10413.pdf",
@@ -6060,7 +6290,8 @@
    "size": 824304,
    "from": [
     "2000-F13-SCM-EL-10413_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10414": {
    "file": "SLDs/2000-F13-SCM-EL-10414.pdf",
@@ -6072,7 +6303,8 @@
    "size": 554558,
    "from": [
     "2000-F13-SCM-EL-10414_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10415": {
    "file": "SLDs/2000-F13-SCM-EL-10415.pdf",
@@ -6084,7 +6316,8 @@
    "size": 552444,
    "from": [
     "2000-F13-SCM-EL-10415_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10416": {
    "file": "SLDs/2000-F13-SCM-EL-10416.pdf",
@@ -6096,7 +6329,8 @@
    "size": 723503,
    "from": [
     "2000-F13-SCM-EL-10416_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10417": {
    "file": "SLDs/2000-F13-SCM-EL-10417.pdf",
@@ -6108,7 +6342,8 @@
    "size": 728761,
    "from": [
     "2000-F13-SCM-EL-10417_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10418": {
    "file": "SLDs/2000-F13-SCM-EL-10418.pdf",
@@ -6120,7 +6355,8 @@
    "size": 646811,
    "from": [
     "2000-F13-SCM-EL-10418_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10419": {
    "file": "SLDs/2000-F13-SCM-EL-10419.pdf",
@@ -6132,7 +6368,8 @@
    "size": 582869,
    "from": [
     "2000-F13-SCM-EL-10419_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10420": {
    "file": "SLDs/2000-F13-SCM-EL-10420.pdf",
@@ -6144,7 +6381,8 @@
    "size": 558054,
    "from": [
     "2000-F13-SCM-EL-10420_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10421": {
    "file": "SLDs/2000-F13-SCM-EL-10421.pdf",
@@ -6156,7 +6394,8 @@
    "size": 599319,
    "from": [
     "2000-F13-SCM-EL-10421_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10422": {
    "file": "SLDs/2000-F13-SCM-EL-10422.pdf",
@@ -6168,7 +6407,8 @@
    "size": 600359,
    "from": [
     "2000-F13-SCM-EL-10422_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10423": {
    "file": "SLDs/2000-F13-SCM-EL-10423.pdf",
@@ -6180,7 +6420,8 @@
    "size": 601828,
    "from": [
     "2000-F13-SCM-EL-10423_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10424": {
    "file": "SLDs/2000-F13-SCM-EL-10424.pdf",
@@ -6192,7 +6433,8 @@
    "size": 599783,
    "from": [
     "2000-F13-SCM-EL-10424_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10425": {
    "file": "SLDs/2000-F13-SCM-EL-10425.pdf",
@@ -6204,7 +6446,8 @@
    "size": 558165,
    "from": [
     "2000-F13-SCM-EL-10425_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10426": {
    "file": "SLDs/2000-F13-SCM-EL-10426.pdf",
@@ -6216,7 +6459,8 @@
    "size": 601675,
    "from": [
     "2000-F13-SCM-EL-10426_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10427": {
    "file": "SLDs/2000-F13-SCM-EL-10427.pdf",
@@ -6228,7 +6472,8 @@
    "size": 657734,
    "from": [
     "2000-F13-SCM-EL-10427_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10428": {
    "file": "SLDs/2000-F13-SCM-EL-10428.pdf",
@@ -6240,7 +6485,8 @@
    "size": 592467,
    "from": [
     "2000-F13-SCM-EL-10428_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10429": {
    "file": "SLDs/2000-F13-SCM-EL-10429.pdf",
@@ -6252,7 +6498,8 @@
    "size": 598666,
    "from": [
     "2000-F13-SCM-EL-10429_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10430": {
    "file": "SLDs/2000-F13-SCM-EL-10430.pdf",
@@ -6264,7 +6511,8 @@
    "size": 599315,
    "from": [
     "2000-F13-SCM-EL-10430_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10431": {
    "file": "SLDs/2000-F13-SCM-EL-10431.pdf",
@@ -6276,7 +6524,8 @@
    "size": 553616,
    "from": [
     "2000-F13-SCM-EL-10431_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10432": {
    "file": "SLDs/2000-F13-SCM-EL-10432.pdf",
@@ -6288,7 +6537,8 @@
    "size": 601507,
    "from": [
     "2000-F13-SCM-EL-10432_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10433": {
    "file": "SLDs/2000-F13-SCM-EL-10433.pdf",
@@ -6300,7 +6550,8 @@
    "size": 604834,
    "from": [
     "2000-F13-SCM-EL-10433_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10434": {
    "file": "SLDs/2000-F13-SCM-EL-10434.pdf",
@@ -6312,7 +6563,8 @@
    "size": 558015,
    "from": [
     "2000-F13-SCM-EL-10434_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10435": {
    "file": "SLDs/2000-F13-SCM-EL-10435.pdf",
@@ -6324,7 +6576,8 @@
    "size": 920138,
    "from": [
     "2000-F13-SCM-EL-10435_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10436": {
    "file": "SLDs/2000-F13-SCM-EL-10436.pdf",
@@ -6336,7 +6589,8 @@
    "size": 597428,
    "from": [
     "2000-F13-SCM-EL-10436_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10437": {
    "file": "SLDs/2000-F13-SCM-EL-10437.pdf",
@@ -6348,7 +6602,8 @@
    "size": 657574,
    "from": [
     "2000-F13-SCM-EL-10437_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10438": {
    "file": "SLDs/2000-F13-SCM-EL-10438.pdf",
@@ -6360,7 +6615,8 @@
    "size": 598418,
    "from": [
     "2000-F13-SCM-EL-10438_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10439": {
    "file": "SLDs/2000-F13-SCM-EL-10439.pdf",
@@ -6372,7 +6628,8 @@
    "size": 597333,
    "from": [
     "2000-F13-SCM-EL-10439_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10440": {
    "file": "SLDs/2000-F13-SCM-EL-10440.pdf",
@@ -6384,7 +6641,8 @@
    "size": 607025,
    "from": [
     "2000-F13-SCM-EL-10440_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10441": {
    "file": "SLDs/2000-F13-SCM-EL-10441.pdf",
@@ -6396,7 +6654,8 @@
    "size": 556308,
    "from": [
     "2000-F13-SCM-EL-10441_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10442": {
    "file": "SLDs/2000-F13-SCM-EL-10442.pdf",
@@ -6408,7 +6667,8 @@
    "size": 551652,
    "from": [
     "2000-F13-SCM-EL-10442_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10443": {
    "file": "SLDs/2000-F13-SCM-EL-10443.pdf",
@@ -6432,7 +6692,8 @@
    "size": 556886,
    "from": [
     "2000-F13-SCM-EL-10445_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10501": {
    "file": "SLDs/2000-F13-SCM-EL-10501.pdf",
@@ -6444,7 +6705,8 @@
    "size": 743594,
    "from": [
     "2000-F13-SCM-EL-10501_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10502": {
    "file": "SLDs/2000-F13-SCM-EL-10502.pdf",
@@ -6456,7 +6718,8 @@
    "size": 635999,
    "from": [
     "2000-F13-SCM-EL-10502_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10503": {
    "file": "SLDs/2000-F13-SCM-EL-10503.pdf",
@@ -6468,7 +6731,8 @@
    "size": 689778,
    "from": [
     "2000-F13-SCM-EL-10503_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10504": {
    "file": "SLDs/2000-F13-SCM-EL-10504.pdf",
@@ -6480,7 +6744,8 @@
    "size": 694214,
    "from": [
     "2000-F13-SCM-EL-10504_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10505": {
    "file": "SLDs/2000-F13-SCM-EL-10505.pdf",
@@ -6492,7 +6757,8 @@
    "size": 630266,
    "from": [
     "2000-F13-SCM-EL-10505_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10506": {
    "file": "SLDs/2000-F13-SCM-EL-10506.pdf",
@@ -6504,7 +6770,8 @@
    "size": 697642,
    "from": [
     "2000-F13-SCM-EL-10506_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10507": {
    "file": "SLDs/2000-F13-SCM-EL-10507.pdf",
@@ -6516,7 +6783,8 @@
    "size": 629369,
    "from": [
     "2000-F13-SCM-EL-10507_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10508": {
    "file": "SLDs/2000-F13-SCM-EL-10508.pdf",
@@ -6528,7 +6796,8 @@
    "size": 727216,
    "from": [
     "2000-F13-SCM-EL-10508_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10903": {
    "file": "SLDs/2000-F13-SCM-EL-10903.pdf",
@@ -6540,7 +6809,8 @@
    "size": 742777,
    "from": [
     "2000-F13-SCM-EL-10903_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10904": {
    "file": "SLDs/2000-F13-SCM-EL-10904.pdf",
@@ -6552,7 +6822,8 @@
    "size": 638694,
    "from": [
     "2000-F13-SCM-EL-10904_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10905": {
    "file": "SLDs/2000-F13-SCM-EL-10905.pdf",
@@ -6564,7 +6835,8 @@
    "size": 533858,
    "from": [
     "2000-F13-SCM-EL-10905_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10906": {
    "file": "SLDs/2000-F13-SCM-EL-10906.pdf",
@@ -6576,7 +6848,8 @@
    "size": 541887,
    "from": [
     "2000-F13-SCM-EL-10906_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10907": {
    "file": "SLDs/2000-F13-SCM-EL-10907.pdf",
@@ -6588,7 +6861,8 @@
    "size": 533896,
    "from": [
     "2000-F13-SCM-EL-10907_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10908": {
    "file": "SLDs/2000-F13-SCM-EL-10908.pdf",
@@ -6600,7 +6874,8 @@
    "size": 525048,
    "from": [
     "2000-F13-SCM-EL-10908_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10909": {
    "file": "SLDs/2000-F13-SCM-EL-10909.pdf",
@@ -6612,7 +6887,8 @@
    "size": 524225,
    "from": [
     "2000-F13-SCM-EL-10909_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10910": {
    "file": "SLDs/2000-F13-SCM-EL-10910.pdf",
@@ -6624,7 +6900,8 @@
    "size": 572680,
    "from": [
     "2000-F13-SCM-EL-10910_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10912": {
    "file": "SLDs/2000-F13-SCM-EL-10912.pdf",
@@ -6636,7 +6913,8 @@
    "size": 519949,
    "from": [
     "2000-F13-SCM-EL-10912_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10913": {
    "file": "SLDs/2000-F13-SCM-EL-10913.pdf",
@@ -6648,7 +6926,8 @@
    "size": 595344,
    "from": [
     "2000-F13-SCM-EL-10913_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10914": {
    "file": "SLDs/2000-F13-SCM-EL-10914.pdf",
@@ -6660,7 +6939,8 @@
    "size": 651312,
    "from": [
     "2000-F13-SCM-EL-10914_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10915": {
    "file": "SLDs/2000-F13-SCM-EL-10915.pdf",
@@ -6672,7 +6952,8 @@
    "size": 656757,
    "from": [
     "2000-F13-SCM-EL-10915_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10916": {
    "file": "SLDs/2000-F13-SCM-EL-10916.pdf",
@@ -6684,7 +6965,8 @@
    "size": 654152,
    "from": [
     "2000-F13-SCM-EL-10916_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10917": {
    "file": "SLDs/2000-F13-SCM-EL-10917.pdf",
@@ -6696,7 +6978,8 @@
    "size": 608599,
    "from": [
     "2000-F13-SCM-EL-10917_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10918": {
    "file": "SLDs/2000-F13-SCM-EL-10918.pdf",
@@ -6708,7 +6991,8 @@
    "size": 599593,
    "from": [
     "2000-F13-SCM-EL-10918_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10919": {
    "file": "SLDs/2000-F13-SCM-EL-10919.pdf",
@@ -6720,7 +7004,8 @@
    "size": 603918,
    "from": [
     "2000-F13-SCM-EL-10919_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10920": {
    "file": "SLDs/2000-F13-SCM-EL-10920.pdf",
@@ -6732,7 +7017,8 @@
    "size": 601382,
    "from": [
     "2000-F13-SCM-EL-10920_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10921": {
    "file": "SLDs/2000-F13-SCM-EL-10921.pdf",
@@ -6744,7 +7030,8 @@
    "size": 601604,
    "from": [
     "2000-F13-SCM-EL-10921_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10922": {
    "file": "SLDs/2000-F13-SCM-EL-10922.pdf",
@@ -6756,7 +7043,8 @@
    "size": 631175,
    "from": [
     "2000-F13-SCM-EL-10922_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10923": {
    "file": "SLDs/2000-F13-SCM-EL-10923.pdf",
@@ -6768,7 +7056,8 @@
    "size": 656407,
    "from": [
     "2000-F13-SCM-EL-10923_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10924": {
    "file": "SLDs/2000-F13-SCM-EL-10924.pdf",
@@ -6780,7 +7069,8 @@
    "size": 518222,
    "from": [
     "2000-F13-SCM-EL-10924_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10925": {
    "file": "SLDs/2000-F13-SCM-EL-10925.pdf",
@@ -6792,7 +7082,8 @@
    "size": 666546,
    "from": [
     "2000-F13-SCM-EL-10925_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10926": {
    "file": "SLDs/2000-F13-SCM-EL-10926.pdf",
@@ -6804,7 +7095,8 @@
    "size": 606094,
    "from": [
     "2000-F13-SCM-EL-10926_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10927": {
    "file": "SLDs/2000-F13-SCM-EL-10927.pdf",
@@ -6816,7 +7108,8 @@
    "size": 661672,
    "from": [
     "2000-F13-SCM-EL-10927_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10928": {
    "file": "SLDs/2000-F13-SCM-EL-10928.pdf",
@@ -6828,7 +7121,8 @@
    "size": 533929,
    "from": [
     "2000-F13-SCM-EL-10928_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10929": {
    "file": "SLDs/2000-F13-SCM-EL-10929.pdf",
@@ -6840,7 +7134,8 @@
    "size": 593801,
    "from": [
     "2000-F13-SCM-EL-10929_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10930": {
    "file": "SLDs/2000-F13-SCM-EL-10930.pdf",
@@ -6852,7 +7147,8 @@
    "size": 596173,
    "from": [
     "2000-F13-SCM-EL-10930_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10931": {
    "file": "SLDs/2000-F13-SCM-EL-10931.pdf",
@@ -6864,7 +7160,8 @@
    "size": 630768,
    "from": [
     "2000-F13-SCM-EL-10931_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10932": {
    "file": "SLDs/2000-F13-SCM-EL-10932.pdf",
@@ -6876,7 +7173,8 @@
    "size": 634585,
    "from": [
     "2000-F13-SCM-EL-10932_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10933": {
    "file": "SLDs/2000-F13-SCM-EL-10933.pdf",
@@ -6888,7 +7186,8 @@
    "size": 673120,
    "from": [
     "2000-F13-SCM-EL-10933_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10934": {
    "file": "SLDs/2000-F13-SCM-EL-10934.pdf",
@@ -6900,7 +7199,8 @@
    "size": 672800,
    "from": [
     "2000-F13-SCM-EL-10934_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10935": {
    "file": "SLDs/2000-F13-SCM-EL-10935.pdf",
@@ -6912,7 +7212,8 @@
    "size": 671729,
    "from": [
     "2000-F13-SCM-EL-10935_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10936": {
    "file": "SLDs/2000-F13-SCM-EL-10936.pdf",
@@ -6924,7 +7225,8 @@
    "size": 600407,
    "from": [
     "2000-F13-SCM-EL-10936_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10937": {
    "file": "SLDs/2000-F13-SCM-EL-10937.pdf",
@@ -6936,7 +7238,8 @@
    "size": 530696,
    "from": [
     "2000-F13-SCM-EL-10937_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10938": {
    "file": "SLDs/2000-F13-SCM-EL-10938.pdf",
@@ -6948,7 +7251,8 @@
    "size": 603916,
    "from": [
     "2000-F13-SCM-EL-10938_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10939": {
    "file": "SLDs/2000-F13-SCM-EL-10939.pdf",
@@ -6960,7 +7264,8 @@
    "size": 604311,
    "from": [
     "2000-F13-SCM-EL-10939_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10940": {
    "file": "SLDs/2000-F13-SCM-EL-10940.pdf",
@@ -6972,7 +7277,8 @@
    "size": 667026,
    "from": [
     "2000-F13-SCM-EL-10940_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10941": {
    "file": "SLDs/2000-F13-SCM-EL-10941.pdf",
@@ -6984,7 +7290,8 @@
    "size": 608276,
    "from": [
     "2000-F13-SCM-EL-10941_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10942": {
    "file": "SLDs/2000-F13-SCM-EL-10942.pdf",
@@ -6996,7 +7303,8 @@
    "size": 518013,
    "from": [
     "2000-F13-SCM-EL-10942_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10943": {
    "file": "SLDs/2000-F13-SCM-EL-10943.pdf",
@@ -7008,7 +7316,8 @@
    "size": 524923,
    "from": [
     "2000-F13-SCM-EL-10943_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10944": {
    "file": "SLDs/2000-F13-SCM-EL-10944.pdf",
@@ -7020,7 +7329,8 @@
    "size": 528480,
    "from": [
     "2000-F13-SCM-EL-10944_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10945": {
    "file": "SLDs/2000-F13-SCM-EL-10945.pdf",
@@ -7032,7 +7342,8 @@
    "size": 524743,
    "from": [
     "2000-F13-SCM-EL-10945_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10946": {
    "file": "SLDs/2000-F13-SCM-EL-10946.pdf",
@@ -7044,7 +7355,8 @@
    "size": 594621,
    "from": [
     "2000-F13-SCM-EL-10946_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10947": {
    "file": "SLDs/2000-F13-SCM-EL-10947.pdf",
@@ -7056,7 +7368,8 @@
    "size": 651760,
    "from": [
     "2000-F13-SCM-EL-10947_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10948": {
    "file": "SLDs/2000-F13-SCM-EL-10948.pdf",
@@ -7068,7 +7381,8 @@
    "size": 590647,
    "from": [
     "2000-F13-SCM-EL-10948_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10949": {
    "file": "SLDs/2000-F13-SCM-EL-10949.pdf",
@@ -7080,7 +7394,8 @@
    "size": 603764,
    "from": [
     "2000-F13-SCM-EL-10949_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10950": {
    "file": "SLDs/2000-F13-SCM-EL-10950.pdf",
@@ -7092,7 +7407,8 @@
    "size": 602621,
    "from": [
     "2000-F13-SCM-EL-10950_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10951": {
    "file": "SLDs/2000-F13-SCM-EL-10951.pdf",
@@ -7104,7 +7420,8 @@
    "size": 509048,
    "from": [
     "2000-F13-SCM-EL-10951_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10952": {
    "file": "SLDs/2000-F13-SCM-EL-10952.pdf",
@@ -7116,7 +7433,8 @@
    "size": 530259,
    "from": [
     "2000-F13-SCM-EL-10952_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10953": {
    "file": "SLDs/2000-F13-SCM-EL-10953.pdf",
@@ -7140,7 +7458,8 @@
    "size": 605070,
    "from": [
     "2000-F13-SCM-EL-10955_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10956": {
    "file": "SLDs/2000-F13-SCM-EL-10956.pdf",
@@ -7152,7 +7471,8 @@
    "size": 674017,
    "from": [
     "2000-F13-SCM-EL-10956_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10958": {
    "file": "SLDs/2000-F13-SCM-EL-10958.pdf",
@@ -7164,7 +7484,8 @@
    "size": 584377,
    "from": [
     "2000-F13-SCM-EL-10958_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10959": {
    "file": "SLDs/2000-F13-SCM-EL-10959.pdf",
@@ -7176,7 +7497,8 @@
    "size": 663605,
    "from": [
     "2000-F13-SCM-EL-10959_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10973": {
    "file": "SLDs/2000-F13-SCM-EL-10973.pdf",
@@ -7188,7 +7510,8 @@
    "size": 529865,
    "from": [
     "2000-F13-SCM-EL-10973_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10011": {
    "file": "SLDs/2000-F13-SCM-IC-10011.pdf",
@@ -7200,7 +7523,8 @@
    "size": 614830,
    "from": [
     "2000-F13-SCM-IC-10011_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10031": {
    "file": "SLDs/2000-F13-SCM-IC-10031.pdf",
@@ -7212,7 +7536,8 @@
    "size": 597433,
    "from": [
     "2000-F13-SCM-IC-10031_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10061": {
    "file": "SLDs/2000-F13-SCM-IC-10061.pdf",
@@ -7224,7 +7549,8 @@
    "size": 652398,
    "from": [
     "2000-F13-SCM-IC-10061_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10202": {
    "file": "SLDs/2000-F13-SCM-IC-10202.pdf",
@@ -7236,7 +7562,8 @@
    "size": 574762,
    "from": [
     "2000-F13-SCM-IC-10202_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10301": {
    "file": "SLDs/2000-F13-SCM-IC-10301.pdf",
@@ -7248,7 +7575,8 @@
    "size": 780980,
    "from": [
     "2000-F13-SCM-IC-10301_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10331": {
    "file": "SLDs/2000-F13-SCM-IC-10331.pdf",
@@ -7260,7 +7588,8 @@
    "size": 745483,
    "from": [
     "2000-F13-SCM-IC-10331_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10361": {
    "file": "SLDs/2000-F13-SCM-IC-10361.pdf",
@@ -7272,7 +7601,8 @@
    "size": 716867,
    "from": [
     "2000-F13-SCM-IC-10361_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10421": {
    "file": "SLDs/2000-F13-SCM-IC-10421.pdf",
@@ -7284,7 +7614,8 @@
    "size": 771865,
    "from": [
     "2000-F13-SCM-IC-10421_1A.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10441": {
    "file": "SLDs/2000-F13-SCM-IC-10441.pdf",
@@ -7296,7 +7627,8 @@
    "size": 701566,
    "from": [
     "2000-F13-SCM-IC-10441_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10601": {
    "file": "SLDs/2000-F13-SCM-IC-10601.pdf",
@@ -7308,7 +7640,8 @@
    "size": 593861,
    "from": [
     "2000-F13-SCM-IC-10601_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10631": {
    "file": "SLDs/2000-F13-SCM-IC-10631.pdf",
@@ -7320,7 +7653,8 @@
    "size": 672185,
    "from": [
     "2000-F13-SCM-IC-10631_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10901": {
    "file": "SLDs/2000-F13-SCM-IC-10901.pdf",
@@ -7332,7 +7666,8 @@
    "size": 579394,
    "from": [
     "2000-F13-SCM-IC-10901_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-IC-10931": {
    "file": "SLDs/2000-F13-SCM-IC-10931.pdf",
@@ -7344,7 +7679,8 @@
    "size": 616414,
    "from": [
     "2000-F13-SCM-IC-10931_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10201": {
    "file": "SLDs/2000-F14-SCM-EL-10201.pdf",
@@ -7356,7 +7692,8 @@
    "size": 599499,
    "from": [
     "2000-F14-SCM-EL-10201_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10202": {
    "file": "SLDs/2000-F14-SCM-EL-10202.pdf",
@@ -7368,7 +7705,8 @@
    "size": 766265,
    "from": [
     "2000-F14-SCM-EL-10202_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10203": {
    "file": "SLDs/2000-F14-SCM-EL-10203.pdf",
@@ -7380,7 +7718,8 @@
    "size": 765345,
    "from": [
     "2000-F14-SCM-EL-10203_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10206": {
    "file": "SLDs/2000-F14-SCM-EL-10206.pdf",
@@ -7392,7 +7731,8 @@
    "size": 756317,
    "from": [
     "2000-F14-SCM-EL-10206_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10207": {
    "file": "SLDs/2000-F14-SCM-EL-10207.pdf",
@@ -7404,7 +7744,8 @@
    "size": 607604,
    "from": [
     "2000-F14-SCM-EL-10207_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10208": {
    "file": "SLDs/2000-F14-SCM-EL-10208.pdf",
@@ -7416,7 +7757,8 @@
    "size": 610792,
    "from": [
     "2000-F14-SCM-EL-10208_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10209": {
    "file": "SLDs/2000-F14-SCM-EL-10209.pdf",
@@ -7428,7 +7770,8 @@
    "size": 671253,
    "from": [
     "2000-F14-SCM-EL-10209_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10211": {
    "file": "SLDs/2000-F14-SCM-EL-10211.pdf",
@@ -7440,7 +7783,8 @@
    "size": 691427,
    "from": [
     "2000-F14-SCM-EL-10211_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10212": {
    "file": "SLDs/2000-F14-SCM-EL-10212.pdf",
@@ -7452,7 +7796,8 @@
    "size": 688538,
    "from": [
     "2000-F14-SCM-EL-10212_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10213": {
    "file": "SLDs/2000-F14-SCM-EL-10213.pdf",
@@ -7464,7 +7809,8 @@
    "size": 634848,
    "from": [
     "2000-F14-SCM-EL-10213_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10214": {
    "file": "SLDs/2000-F14-SCM-EL-10214.pdf",
@@ -7476,7 +7822,8 @@
    "size": 596843,
    "from": [
     "2000-F14-SCM-EL-10214_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10215": {
    "file": "SLDs/2000-F14-SCM-EL-10215.pdf",
@@ -7488,7 +7835,8 @@
    "size": 736020,
    "from": [
     "2000-F14-SCM-EL-10215_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-EL-10216": {
    "file": "SLDs/2000-F14-SCM-EL-10216.pdf",
@@ -7500,7 +7848,8 @@
    "size": 735956,
    "from": [
     "2000-F14-SCM-EL-10216_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F14-SCM-IC-10201": {
    "file": "SLDs/2000-F14-SCM-IC-10201.pdf",
@@ -7512,7 +7861,8 @@
    "size": 892641,
    "from": [
     "2000-F14-SCM-IC-10201_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10101": {
    "file": "SLDs/2000-F16-SCM-EL-10101.pdf",
@@ -7524,7 +7874,8 @@
    "size": 494268,
    "from": [
     "2000-F16-SCM-EL-10101_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10103": {
    "file": "SLDs/2000-F16-SCM-EL-10103.pdf",
@@ -7536,7 +7887,8 @@
    "size": 1089693,
    "from": [
     "2000-F16-SCM-EL-10103_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10105": {
    "file": "SLDs/2000-F16-SCM-EL-10105.pdf",
@@ -7548,7 +7900,8 @@
    "size": 954599,
    "from": [
     "2000-F16-SCM-EL-10105_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10107": {
    "file": "SLDs/2000-F16-SCM-EL-10107.pdf",
@@ -7560,7 +7913,8 @@
    "size": 954045,
    "from": [
     "2000-F16-SCM-EL-10107_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10109": {
    "file": "SLDs/2000-F16-SCM-EL-10109.pdf",
@@ -7572,7 +7926,8 @@
    "size": 1092588,
    "from": [
     "2000-F16-SCM-EL-10109_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10111": {
    "file": "SLDs/2000-F16-SCM-EL-10111.pdf",
@@ -7584,7 +7939,8 @@
    "size": 1065339,
    "from": [
     "2000-F16-SCM-EL-10111_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10113": {
    "file": "SLDs/2000-F16-SCM-EL-10113.pdf",
@@ -7596,7 +7952,8 @@
    "size": 957891,
    "from": [
     "2000-F16-SCM-EL-10113_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10115": {
    "file": "SLDs/2000-F16-SCM-EL-10115.pdf",
@@ -7608,7 +7965,8 @@
    "size": 955303,
    "from": [
     "2000-F16-SCM-EL-10115_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10117": {
    "file": "SLDs/2000-F16-SCM-EL-10117.pdf",
@@ -7620,7 +7978,8 @@
    "size": 817915,
    "from": [
     "2000-F16-SCM-EL-10117_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10119": {
    "file": "SLDs/2000-F16-SCM-EL-10119.pdf",
@@ -7632,7 +7991,8 @@
    "size": 1059638,
    "from": [
     "2000-F16-SCM-EL-10119_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10121": {
    "file": "SLDs/2000-F16-SCM-EL-10121.pdf",
@@ -7644,7 +8004,8 @@
    "size": 1084140,
    "from": [
     "2000-F16-SCM-EL-10121_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10123": {
    "file": "SLDs/2000-F16-SCM-EL-10123.pdf",
@@ -7656,7 +8017,8 @@
    "size": 438270,
    "from": [
     "2000-F16-SCM-EL-10123_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10125": {
    "file": "SLDs/2000-F16-SCM-EL-10125.pdf",
@@ -7668,7 +8030,8 @@
    "size": 474260,
    "from": [
     "2000-F16-SCM-EL-10125_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10127": {
    "file": "SLDs/2000-F16-SCM-EL-10127.pdf",
@@ -7680,7 +8043,8 @@
    "size": 473687,
    "from": [
     "2000-F16-SCM-EL-10127_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10131": {
    "file": "SLDs/2000-F16-SCM-EL-10131.pdf",
@@ -7692,7 +8056,8 @@
    "size": 1091529,
    "from": [
     "2000-F16-SCM-EL-10131_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10133": {
    "file": "SLDs/2000-F16-SCM-EL-10133.pdf",
@@ -7704,7 +8069,8 @@
    "size": 1102123,
    "from": [
     "2000-F16-SCM-EL-10133_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10135": {
    "file": "SLDs/2000-F16-SCM-EL-10135.pdf",
@@ -7716,7 +8082,8 @@
    "size": 958757,
    "from": [
     "2000-F16-SCM-EL-10135_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10137": {
    "file": "SLDs/2000-F16-SCM-EL-10137.pdf",
@@ -7728,7 +8095,8 @@
    "size": 961836,
    "from": [
     "2000-F16-SCM-EL-10137_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10171": {
    "file": "SLDs/2000-F16-SCM-EL-10171.pdf",
@@ -7740,7 +8108,8 @@
    "size": 770542,
    "from": [
     "2000-F16-SCM-EL-10171_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10201": {
    "file": "SLDs/2000-F16-SCM-EL-10201.pdf",
@@ -7752,7 +8121,8 @@
    "size": 485733,
    "from": [
     "2000-F16-SCM-EL-10201_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10202": {
    "file": "SLDs/2000-F16-SCM-EL-10202.pdf",
@@ -7764,7 +8134,8 @@
    "size": 568763,
    "from": [
     "2000-F16-SCM-EL-10202_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10203": {
    "file": "SLDs/2000-F16-SCM-EL-10203.pdf",
@@ -7776,7 +8147,8 @@
    "size": 489062,
    "from": [
     "2000-F16-SCM-EL-10203_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10205": {
    "file": "SLDs/2000-F16-SCM-EL-10205.pdf",
@@ -7788,7 +8160,8 @@
    "size": 574700,
    "from": [
     "2000-F16-SCM-EL-10205_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10206": {
    "file": "SLDs/2000-F16-SCM-EL-10206.pdf",
@@ -7800,7 +8173,8 @@
    "size": 554612,
    "from": [
     "2000-F16-SCM-EL-10206_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10212": {
    "file": "SLDs/2000-F16-SCM-EL-10212.pdf",
@@ -7812,7 +8186,8 @@
    "size": 493387,
    "from": [
     "2000-F16-SCM-EL-10212_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10213": {
    "file": "SLDs/2000-F16-SCM-EL-10213.pdf",
@@ -7824,7 +8199,8 @@
    "size": 493193,
    "from": [
     "2000-F16-SCM-EL-10213_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10214": {
    "file": "SLDs/2000-F16-SCM-EL-10214.pdf",
@@ -7836,7 +8212,8 @@
    "size": 497391,
    "from": [
     "2000-F16-SCM-EL-10214_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10215": {
    "file": "SLDs/2000-F16-SCM-EL-10215.pdf",
@@ -7848,7 +8225,8 @@
    "size": 494995,
    "from": [
     "2000-F16-SCM-EL-10215_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10216": {
    "file": "SLDs/2000-F16-SCM-EL-10216.pdf",
@@ -7872,7 +8250,8 @@
    "size": 641174,
    "from": [
     "2000-F16-SCM-EL-10223_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10224": {
    "file": "SLDs/2000-F16-SCM-EL-10224.pdf",
@@ -7884,7 +8263,8 @@
    "size": 554469,
    "from": [
     "2000-F16-SCM-EL-10224_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10226": {
    "file": "SLDs/2000-F16-SCM-EL-10226.pdf",
@@ -7896,7 +8276,8 @@
    "size": 580474,
    "from": [
     "2000-F16-SCM-EL-10226_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10227": {
    "file": "SLDs/2000-F16-SCM-EL-10227.pdf",
@@ -7908,7 +8289,8 @@
    "size": 627321,
    "from": [
     "2000-F16-SCM-EL-10227_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10228": {
    "file": "SLDs/2000-F16-SCM-EL-10228.pdf",
@@ -7920,7 +8302,8 @@
    "size": 626888,
    "from": [
     "2000-F16-SCM-EL-10228_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10229": {
    "file": "SLDs/2000-F16-SCM-EL-10229.pdf",
@@ -7932,7 +8315,8 @@
    "size": 623033,
    "from": [
     "2000-F16-SCM-EL-10229_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10230": {
    "file": "SLDs/2000-F16-SCM-EL-10230.pdf",
@@ -7944,7 +8328,8 @@
    "size": 625924,
    "from": [
     "2000-F16-SCM-EL-10230_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10231": {
    "file": "SLDs/2000-F16-SCM-EL-10231.pdf",
@@ -7956,7 +8341,8 @@
    "size": 625437,
    "from": [
     "2000-F16-SCM-EL-10231_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10232": {
    "file": "SLDs/2000-F16-SCM-EL-10232.pdf",
@@ -7968,7 +8354,8 @@
    "size": 622973,
    "from": [
     "2000-F16-SCM-EL-10232_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10233": {
    "file": "SLDs/2000-F16-SCM-EL-10233.pdf",
@@ -7980,7 +8367,8 @@
    "size": 625108,
    "from": [
     "2000-F16-SCM-EL-10233_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10234": {
    "file": "SLDs/2000-F16-SCM-EL-10234.pdf",
@@ -7992,7 +8380,8 @@
    "size": 625007,
    "from": [
     "2000-F16-SCM-EL-10234_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10235": {
    "file": "SLDs/2000-F16-SCM-EL-10235.pdf",
@@ -8004,7 +8393,8 @@
    "size": 581398,
    "from": [
     "2000-F16-SCM-EL-10235_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10236": {
    "file": "SLDs/2000-F16-SCM-EL-10236.pdf",
@@ -8016,7 +8406,8 @@
    "size": 582937,
    "from": [
     "2000-F16-SCM-EL-10236_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10237": {
    "file": "SLDs/2000-F16-SCM-EL-10237.pdf",
@@ -8028,7 +8419,8 @@
    "size": 643695,
    "from": [
     "2000-F16-SCM-EL-10237_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10239": {
    "file": "SLDs/2000-F16-SCM-EL-10239.pdf",
@@ -8040,7 +8432,8 @@
    "size": 553257,
    "from": [
     "2000-F16-SCM-EL-10239_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10240": {
    "file": "SLDs/2000-F16-SCM-EL-10240.pdf",
@@ -8052,7 +8445,8 @@
    "size": 553134,
    "from": [
     "2000-F16-SCM-EL-10240_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10241": {
    "file": "SLDs/2000-F16-SCM-EL-10241.pdf",
@@ -8064,7 +8458,8 @@
    "size": 554773,
    "from": [
     "2000-F16-SCM-EL-10241_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10242": {
    "file": "SLDs/2000-F16-SCM-EL-10242.pdf",
@@ -8076,7 +8471,8 @@
    "size": 553386,
    "from": [
     "2000-F16-SCM-EL-10242_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10243": {
    "file": "SLDs/2000-F16-SCM-EL-10243.pdf",
@@ -8088,7 +8484,8 @@
    "size": 613069,
    "from": [
     "2000-F16-SCM-EL-10243_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10244": {
    "file": "SLDs/2000-F16-SCM-EL-10244.pdf",
@@ -8100,7 +8497,8 @@
    "size": 555707,
    "from": [
     "2000-F16-SCM-EL-10244_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10245": {
    "file": "SLDs/2000-F16-SCM-EL-10245.pdf",
@@ -8112,7 +8510,8 @@
    "size": 552538,
    "from": [
     "2000-F16-SCM-EL-10245_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10246": {
    "file": "SLDs/2000-F16-SCM-EL-10246.pdf",
@@ -8124,7 +8523,8 @@
    "size": 490266,
    "from": [
     "2000-F16-SCM-EL-10246_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10247": {
    "file": "SLDs/2000-F16-SCM-EL-10247.pdf",
@@ -8136,7 +8536,8 @@
    "size": 556035,
    "from": [
     "2000-F16-SCM-EL-10247_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10248": {
    "file": "SLDs/2000-F16-SCM-EL-10248.pdf",
@@ -8148,7 +8549,8 @@
    "size": 555395,
    "from": [
     "2000-F16-SCM-EL-10248_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10249": {
    "file": "SLDs/2000-F16-SCM-EL-10249.pdf",
@@ -8160,7 +8562,8 @@
    "size": 554987,
    "from": [
     "2000-F16-SCM-EL-10249_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10250": {
    "file": "SLDs/2000-F16-SCM-EL-10250.pdf",
@@ -8172,7 +8575,8 @@
    "size": 556956,
    "from": [
     "2000-F16-SCM-EL-10250_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10251": {
    "file": "SLDs/2000-F16-SCM-EL-10251.pdf",
@@ -8184,7 +8588,8 @@
    "size": 684607,
    "from": [
     "2000-F16-SCM-EL-10251_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10253": {
    "file": "SLDs/2000-F16-SCM-EL-10253.pdf",
@@ -8196,7 +8601,8 @@
    "size": 571187,
    "from": [
     "2000-F16-SCM-EL-10253_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10254": {
    "file": "SLDs/2000-F16-SCM-EL-10254.pdf",
@@ -8208,7 +8614,8 @@
    "size": 488922,
    "from": [
     "2000-F16-SCM-EL-10254_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10255": {
    "file": "SLDs/2000-F16-SCM-EL-10255.pdf",
@@ -8220,7 +8627,8 @@
    "size": 733776,
    "from": [
     "2000-F16-SCM-EL-10255_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10256": {
    "file": "SLDs/2000-F16-SCM-EL-10256.pdf",
@@ -8232,7 +8640,8 @@
    "size": 739662,
    "from": [
     "2000-F16-SCM-EL-10256_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10257": {
    "file": "SLDs/2000-F16-SCM-EL-10257.pdf",
@@ -8244,7 +8653,8 @@
    "size": 739555,
    "from": [
     "2000-F16-SCM-EL-10257_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10258": {
    "file": "SLDs/2000-F16-SCM-EL-10258.pdf",
@@ -8256,7 +8666,8 @@
    "size": 735862,
    "from": [
     "2000-F16-SCM-EL-10258_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10259": {
    "file": "SLDs/2000-F16-SCM-EL-10259.pdf",
@@ -8268,7 +8679,8 @@
    "size": 558282,
    "from": [
     "2000-F16-SCM-EL-10259_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10260": {
    "file": "SLDs/2000-F16-SCM-EL-10260.pdf",
@@ -8280,7 +8692,8 @@
    "size": 562283,
    "from": [
     "2000-F16-SCM-EL-10260_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10261": {
    "file": "SLDs/2000-F16-SCM-EL-10261.pdf",
@@ -8292,7 +8705,8 @@
    "size": 559481,
    "from": [
     "2000-F16-SCM-EL-10261_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10262": {
    "file": "SLDs/2000-F16-SCM-EL-10262.pdf",
@@ -8304,7 +8718,8 @@
    "size": 562693,
    "from": [
     "2000-F16-SCM-EL-10262_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10263": {
    "file": "SLDs/2000-F16-SCM-EL-10263.pdf",
@@ -8316,7 +8731,8 @@
    "size": 627043,
    "from": [
     "2000-F16-SCM-EL-10263_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10264": {
    "file": "SLDs/2000-F16-SCM-EL-10264.pdf",
@@ -8328,7 +8744,8 @@
    "size": 561796,
    "from": [
     "2000-F16-SCM-EL-10264_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10265": {
    "file": "SLDs/2000-F16-SCM-EL-10265.pdf",
@@ -8340,7 +8757,8 @@
    "size": 562027,
    "from": [
     "2000-F16-SCM-EL-10265_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10266": {
    "file": "SLDs/2000-F16-SCM-EL-10266.pdf",
@@ -8352,7 +8770,8 @@
    "size": 619897,
    "from": [
     "2000-F16-SCM-EL-10266_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10267": {
    "file": "SLDs/2000-F16-SCM-EL-10267.pdf",
@@ -8364,7 +8783,8 @@
    "size": 554902,
    "from": [
     "2000-F16-SCM-EL-10267_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10268": {
    "file": "SLDs/2000-F16-SCM-EL-10268.pdf",
@@ -8376,7 +8796,8 @@
    "size": 557195,
    "from": [
     "2000-F16-SCM-EL-10268_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10269": {
    "file": "SLDs/2000-F16-SCM-EL-10269.pdf",
@@ -8388,7 +8809,8 @@
    "size": 556823,
    "from": [
     "2000-F16-SCM-EL-10269_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10270": {
    "file": "SLDs/2000-F16-SCM-EL-10270.pdf",
@@ -8400,7 +8822,8 @@
    "size": 669588,
    "from": [
     "2000-F16-SCM-EL-10270_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10272": {
    "file": "SLDs/2000-F16-SCM-EL-10272.pdf",
@@ -8412,7 +8835,8 @@
    "size": 506946,
    "from": [
     "2000-F16-SCM-EL-10272_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10273": {
    "file": "SLDs/2000-F16-SCM-EL-10273.pdf",
@@ -8424,7 +8848,8 @@
    "size": 462012,
    "from": [
     "2000-F16-SCM-EL-10273_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-IC-10011": {
    "file": "SLDs/2000-F16-SCM-IC-10011.pdf",
@@ -8436,7 +8861,8 @@
    "size": 713593,
    "from": [
     "2000-F16-SCM-IC-10011_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-IC-10051": {
    "file": "SLDs/2000-F16-SCM-IC-10051.pdf",
@@ -8448,7 +8874,8 @@
    "size": 629874,
    "from": [
     "2000-F16-SCM-IC-10051_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-IC-10201": {
    "file": "SLDs/2000-F16-SCM-IC-10201.pdf",
@@ -8460,7 +8887,8 @@
    "size": 669541,
    "from": [
     "2000-F16-SCM-IC-10201_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-IC-10231": {
    "file": "SLDs/2000-F16-SCM-IC-10231.pdf",
@@ -8472,7 +8900,8 @@
    "size": 691807,
    "from": [
     "2000-F16-SCM-IC-10231_0_RNC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-EL-10201": {
    "file": "SLDs/2000-F17-SCM-EL-10201.pdf",
@@ -8484,7 +8913,8 @@
    "size": 527440,
    "from": [
     "2000-F17-SCM-EL-10201_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-EL-10202": {
    "file": "SLDs/2000-F17-SCM-EL-10202.pdf",
@@ -8496,7 +8926,8 @@
    "size": 623249,
    "from": [
     "2000-F17-SCM-EL-10202_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-EL-10203": {
    "file": "SLDs/2000-F17-SCM-EL-10203.pdf",
@@ -8508,7 +8939,8 @@
    "size": 661508,
    "from": [
     "2000-F17-SCM-EL-10203_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-EL-10204": {
    "file": "SLDs/2000-F17-SCM-EL-10204.pdf",
@@ -8520,7 +8952,8 @@
    "size": 592665,
    "from": [
     "2000-F17-SCM-EL-10204_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-EL-10205": {
    "file": "SLDs/2000-F17-SCM-EL-10205.pdf",
@@ -8532,7 +8965,8 @@
    "size": 551153,
    "from": [
     "2000-F17-SCM-EL-10205_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-EL-10206": {
    "file": "SLDs/2000-F17-SCM-EL-10206.pdf",
@@ -8544,7 +8978,8 @@
    "size": 488350,
    "from": [
     "2000-F17-SCM-EL-10206_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-EL-10209": {
    "file": "SLDs/2000-F17-SCM-EL-10209.pdf",
@@ -8556,7 +8991,8 @@
    "size": 573326,
    "from": [
     "2000-F17-SCM-EL-10209_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-EL-10210": {
    "file": "SLDs/2000-F17-SCM-EL-10210.pdf",
@@ -8568,7 +9004,8 @@
    "size": 579187,
    "from": [
     "2000-F17-SCM-EL-10210_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-EL-10211": {
    "file": "SLDs/2000-F17-SCM-EL-10211.pdf",
@@ -8580,7 +9017,8 @@
    "size": 572517,
    "from": [
     "2000-F17-SCM-EL-10211_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-EL-10212": {
    "file": "SLDs/2000-F17-SCM-EL-10212.pdf",
@@ -8592,7 +9030,8 @@
    "size": 490134,
    "from": [
     "2000-F17-SCM-EL-10212_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-IC-10201": {
    "file": "SLDs/2000-F17-SCM-IC-10201.pdf",
@@ -8604,7 +9043,8 @@
    "size": 607829,
    "from": [
     "2000-F17-SCM-IC-10201_0_RWC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F17-SCM-IC-10231": {
    "file": "SLDs/2000-F17-SCM-IC-10231.pdf",
@@ -8616,7 +9056,8 @@
    "size": 665988,
    "from": [
     "2000-F17-SCM-IC-10231_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F175-SCM-EL-40001": {
    "file": "SLDs/2000-F175-SCM-EL-40001.pdf",
@@ -8772,7 +9213,8 @@
    "size": 527444,
    "from": [
     "2000-F18-SCM-EL-10201_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-EL-10202": {
    "file": "SLDs/2000-F18-SCM-EL-10202.pdf",
@@ -8784,7 +9226,8 @@
    "size": 706812,
    "from": [
     "2000-F18-SCM-EL-10202_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-EL-10203": {
    "file": "SLDs/2000-F18-SCM-EL-10203.pdf",
@@ -8796,7 +9239,8 @@
    "size": 712857,
    "from": [
     "2000-F18-SCM-EL-10203_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-EL-10204": {
    "file": "SLDs/2000-F18-SCM-EL-10204.pdf",
@@ -8808,7 +9252,8 @@
    "size": 832166,
    "from": [
     "2000-F18-SCM-EL-10204_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-EL-10205": {
    "file": "SLDs/2000-F18-SCM-EL-10205.pdf",
@@ -8820,7 +9265,8 @@
    "size": 740393,
    "from": [
     "2000-F18-SCM-EL-10205_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-EL-10207": {
    "file": "SLDs/2000-F18-SCM-EL-10207.pdf",
@@ -8832,7 +9278,8 @@
    "size": 723882,
    "from": [
     "2000-F18-SCM-EL-10207_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-EL-10208": {
    "file": "SLDs/2000-F18-SCM-EL-10208.pdf",
@@ -8844,7 +9291,8 @@
    "size": 727384,
    "from": [
     "2000-F18-SCM-EL-10208_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-EL-10209": {
    "file": "SLDs/2000-F18-SCM-EL-10209.pdf",
@@ -8856,7 +9304,8 @@
    "size": 735627,
    "from": [
     "2000-F18-SCM-EL-10209_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-EL-10210": {
    "file": "SLDs/2000-F18-SCM-EL-10210.pdf",
@@ -8868,7 +9317,8 @@
    "size": 741367,
    "from": [
     "2000-F18-SCM-EL-10210_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-EL-10212": {
    "file": "SLDs/2000-F18-SCM-EL-10212.pdf",
@@ -8880,7 +9330,8 @@
    "size": 589822,
    "from": [
     "2000-F18-SCM-EL-10212_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-IC-10201": {
    "file": "SLDs/2000-F18-SCM-IC-10201.pdf",
@@ -8892,7 +9343,8 @@
    "size": 638242,
    "from": [
     "2000-F18-SCM-IC-10201_0_RNC.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F18-SCM-IC-10231": {
    "file": "SLDs/2000-F18-SCM-IC-10231.pdf",
@@ -8904,7 +9356,8 @@
    "size": 706794,
    "from": [
     "2000-F18-SCM-IC-10231_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F19-SCM-EL-10001": {
    "file": "SLDs/2000-F19-SCM-EL-10001.pdf",
@@ -8916,7 +9369,8 @@
    "size": 398197,
    "from": [
     "2000-F19-SCM-EL-10001_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10201": {
    "file": "SLDs/2000-F22-SCM-EL-10201.pdf",
@@ -8928,7 +9382,8 @@
    "size": 668793,
    "from": [
     "2000-F22-SCM-EL-10201_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10203": {
    "file": "SLDs/2000-F22-SCM-EL-10203.pdf",
@@ -8940,7 +9395,8 @@
    "size": 609908,
    "from": [
     "2000-F22-SCM-EL-10203_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10204": {
    "file": "SLDs/2000-F22-SCM-EL-10204.pdf",
@@ -8952,7 +9408,8 @@
    "size": 570350,
    "from": [
     "2000-F22-SCM-EL-10204_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10206": {
    "file": "SLDs/2000-F22-SCM-EL-10206.pdf",
@@ -8964,7 +9421,8 @@
    "size": 571366,
    "from": [
     "2000-F22-SCM-EL-10206_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10207": {
    "file": "SLDs/2000-F22-SCM-EL-10207.pdf",
@@ -8976,7 +9434,8 @@
    "size": 815660,
    "from": [
     "2000-F22-SCM-EL-10207_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10208": {
    "file": "SLDs/2000-F22-SCM-EL-10208.pdf",
@@ -8988,7 +9447,8 @@
    "size": 684033,
    "from": [
     "2000-F22-SCM-EL-10208_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10209": {
    "file": "SLDs/2000-F22-SCM-EL-10209.pdf",
@@ -9000,7 +9460,8 @@
    "size": 617676,
    "from": [
     "2000-F22-SCM-EL-10209_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10210": {
    "file": "SLDs/2000-F22-SCM-EL-10210.pdf",
@@ -9012,7 +9473,8 @@
    "size": 801718,
    "from": [
     "2000-F22-SCM-EL-10210_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10211": {
    "file": "SLDs/2000-F22-SCM-EL-10211.pdf",
@@ -9024,7 +9486,8 @@
    "size": 799000,
    "from": [
     "2000-F22-SCM-EL-10211_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10212": {
    "file": "SLDs/2000-F22-SCM-EL-10212.pdf",
@@ -9036,7 +9499,8 @@
    "size": 680944,
    "from": [
     "2000-F22-SCM-EL-10212_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10213": {
    "file": "SLDs/2000-F22-SCM-EL-10213.pdf",
@@ -9048,7 +9512,8 @@
    "size": 619180,
    "from": [
     "2000-F22-SCM-EL-10213_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10214": {
    "file": "SLDs/2000-F22-SCM-EL-10214.pdf",
@@ -9060,7 +9525,8 @@
    "size": 795439,
    "from": [
     "2000-F22-SCM-EL-10214_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10222": {
    "file": "SLDs/2000-F22-SCM-EL-10222.pdf",
@@ -9072,7 +9538,8 @@
    "size": 596342,
    "from": [
     "2000-F22-SCM-EL-10222_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10223": {
    "file": "SLDs/2000-F22-SCM-EL-10223.pdf",
@@ -9084,7 +9551,8 @@
    "size": 711863,
    "from": [
     "2000-F22-SCM-EL-10223_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10224": {
    "file": "SLDs/2000-F22-SCM-EL-10224.pdf",
@@ -9096,7 +9564,8 @@
    "size": 666459,
    "from": [
     "2000-F22-SCM-EL-10224_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10225": {
    "file": "SLDs/2000-F22-SCM-EL-10225.pdf",
@@ -9108,7 +9577,8 @@
    "size": 522578,
    "from": [
     "2000-F22-SCM-EL-10225_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10226": {
    "file": "SLDs/2000-F22-SCM-EL-10226.pdf",
@@ -9120,7 +9590,8 @@
    "size": 664240,
    "from": [
     "2000-F22-SCM-EL-10226_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10227": {
    "file": "SLDs/2000-F22-SCM-EL-10227.pdf",
@@ -9132,7 +9603,8 @@
    "size": 691731,
    "from": [
     "2000-F22-SCM-EL-10227_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10228": {
    "file": "SLDs/2000-F22-SCM-EL-10228.pdf",
@@ -9144,7 +9616,8 @@
    "size": 692989,
    "from": [
     "2000-F22-SCM-EL-10228_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10229": {
    "file": "SLDs/2000-F22-SCM-EL-10229.pdf",
@@ -9156,7 +9629,8 @@
    "size": 626431,
    "from": [
     "2000-F22-SCM-EL-10229_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10230": {
    "file": "SLDs/2000-F22-SCM-EL-10230.pdf",
@@ -9168,7 +9642,8 @@
    "size": 529856,
    "from": [
     "2000-F22-SCM-EL-10230_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10231": {
    "file": "SLDs/2000-F22-SCM-EL-10231.pdf",
@@ -9180,7 +9655,8 @@
    "size": 603257,
    "from": [
     "2000-F22-SCM-EL-10231_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10232": {
    "file": "SLDs/2000-F22-SCM-EL-10232.pdf",
@@ -9192,7 +9668,8 @@
    "size": 571106,
    "from": [
     "2000-F22-SCM-EL-10232_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10233": {
    "file": "SLDs/2000-F22-SCM-EL-10233.pdf",
@@ -9204,7 +9681,8 @@
    "size": 626183,
    "from": [
     "2000-F22-SCM-EL-10233_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10251": {
    "file": "SLDs/2000-F22-SCM-EL-10251.pdf",
@@ -9216,7 +9694,8 @@
    "size": 667955,
    "from": [
     "2000-F22-SCM-EL-10251_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10254": {
    "file": "SLDs/2000-F22-SCM-EL-10254.pdf",
@@ -9228,7 +9707,8 @@
    "size": 512587,
    "from": [
     "2000-F22-SCM-EL-10254_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10255": {
    "file": "SLDs/2000-F22-SCM-EL-10255.pdf",
@@ -9240,7 +9720,8 @@
    "size": 532385,
    "from": [
     "2000-F22-SCM-EL-10255_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10256": {
    "file": "SLDs/2000-F22-SCM-EL-10256.pdf",
@@ -9252,7 +9733,8 @@
    "size": 596753,
    "from": [
     "2000-F22-SCM-EL-10256_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10257": {
    "file": "SLDs/2000-F22-SCM-EL-10257.pdf",
@@ -9264,7 +9746,8 @@
    "size": 527287,
    "from": [
     "2000-F22-SCM-EL-10257_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10258": {
    "file": "SLDs/2000-F22-SCM-EL-10258.pdf",
@@ -9276,7 +9759,8 @@
    "size": 598138,
    "from": [
     "2000-F22-SCM-EL-10258_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10259": {
    "file": "SLDs/2000-F22-SCM-EL-10259.pdf",
@@ -9288,7 +9772,8 @@
    "size": 531420,
    "from": [
     "2000-F22-SCM-EL-10259_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10260": {
    "file": "SLDs/2000-F22-SCM-EL-10260.pdf",
@@ -9300,7 +9785,8 @@
    "size": 618336,
    "from": [
     "2000-F22-SCM-EL-10260_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10261": {
    "file": "SLDs/2000-F22-SCM-EL-10261.pdf",
@@ -9312,7 +9798,8 @@
    "size": 818000,
    "from": [
     "2000-F22-SCM-EL-10261_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10262": {
    "file": "SLDs/2000-F22-SCM-EL-10262.pdf",
@@ -9324,7 +9811,8 @@
    "size": 617366,
    "from": [
     "2000-F22-SCM-EL-10262_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10263": {
    "file": "SLDs/2000-F22-SCM-EL-10263.pdf",
@@ -9336,7 +9824,8 @@
    "size": 801744,
    "from": [
     "2000-F22-SCM-EL-10263_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10264": {
    "file": "SLDs/2000-F22-SCM-EL-10264.pdf",
@@ -9348,7 +9837,8 @@
    "size": 616609,
    "from": [
     "2000-F22-SCM-EL-10264_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10265": {
    "file": "SLDs/2000-F22-SCM-EL-10265.pdf",
@@ -9360,7 +9850,8 @@
    "size": 798203,
    "from": [
     "2000-F22-SCM-EL-10265_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10266": {
    "file": "SLDs/2000-F22-SCM-EL-10266.pdf",
@@ -9372,7 +9863,8 @@
    "size": 619443,
    "from": [
     "2000-F22-SCM-EL-10266_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10267": {
    "file": "SLDs/2000-F22-SCM-EL-10267.pdf",
@@ -9384,7 +9876,8 @@
    "size": 817509,
    "from": [
     "2000-F22-SCM-EL-10267_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10268": {
    "file": "SLDs/2000-F22-SCM-EL-10268.pdf",
@@ -9396,7 +9889,8 @@
    "size": 632451,
    "from": [
     "2000-F22-SCM-EL-10268_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10269": {
    "file": "SLDs/2000-F22-SCM-EL-10269.pdf",
@@ -9408,7 +9902,8 @@
    "size": 634337,
    "from": [
     "2000-F22-SCM-EL-10269_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10270": {
    "file": "SLDs/2000-F22-SCM-EL-10270.pdf",
@@ -9420,7 +9915,8 @@
    "size": 636177,
    "from": [
     "2000-F22-SCM-EL-10270_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10271": {
    "file": "SLDs/2000-F22-SCM-EL-10271.pdf",
@@ -9432,7 +9928,8 @@
    "size": 576087,
    "from": [
     "2000-F22-SCM-EL-10271_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10272": {
    "file": "SLDs/2000-F22-SCM-EL-10272.pdf",
@@ -9456,7 +9953,8 @@
    "size": 804301,
    "from": [
     "2000-F22-SCM-EL-10274_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10275": {
    "file": "SLDs/2000-F22-SCM-EL-10275.pdf",
@@ -9468,7 +9966,8 @@
    "size": 526277,
    "from": [
     "2000-F22-SCM-EL-10275_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-IC-10011": {
    "file": "SLDs/2000-F22-SCM-IC-10011.pdf",
@@ -9480,7 +9979,8 @@
    "size": 627012,
    "from": [
     "2000-F22-SCM-IC-10011_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-IC-10201": {
    "file": "SLDs/2000-F22-SCM-IC-10201.pdf",
@@ -9492,7 +9992,8 @@
    "size": 803701,
    "from": [
     "2000-F22-SCM-IC-10201_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-IC-10231": {
    "file": "SLDs/2000-F22-SCM-IC-10231.pdf",
@@ -9504,7 +10005,8 @@
    "size": 777219,
    "from": [
     "2000-F22-SCM-IC-10231_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10101": {
    "file": "SLDs/2000-F23-SCM-EL-10101.pdf",
@@ -9516,7 +10018,8 @@
    "size": 487907,
    "from": [
     "2000-F23-SCM-EL-10101_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10103": {
    "file": "SLDs/2000-F23-SCM-EL-10103.pdf",
@@ -9528,7 +10031,8 @@
    "size": 1104533,
    "from": [
     "2000-F23-SCM-EL-10103_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10105": {
    "file": "SLDs/2000-F23-SCM-EL-10105.pdf",
@@ -9540,7 +10044,8 @@
    "size": 1100330,
    "from": [
     "2000-F23-SCM-EL-10105_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10107": {
    "file": "SLDs/2000-F23-SCM-EL-10107.pdf",
@@ -9552,7 +10057,8 @@
    "size": 951065,
    "from": [
     "2000-F23-SCM-EL-10107_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10109": {
    "file": "SLDs/2000-F23-SCM-EL-10109.pdf",
@@ -9564,7 +10070,8 @@
    "size": 1103428,
    "from": [
     "2000-F23-SCM-EL-10109_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10111": {
    "file": "SLDs/2000-F23-SCM-EL-10111.pdf",
@@ -9576,7 +10083,8 @@
    "size": 946214,
    "from": [
     "2000-F23-SCM-EL-10111_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10113": {
    "file": "SLDs/2000-F23-SCM-EL-10113.pdf",
@@ -9588,7 +10096,8 @@
    "size": 445368,
    "from": [
     "2000-F23-SCM-EL-10113_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10115": {
    "file": "SLDs/2000-F23-SCM-EL-10115.pdf",
@@ -9600,7 +10109,8 @@
    "size": 478383,
    "from": [
     "2000-F23-SCM-EL-10115_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10117": {
    "file": "SLDs/2000-F23-SCM-EL-10117.pdf",
@@ -9612,7 +10122,8 @@
    "size": 483363,
    "from": [
     "2000-F23-SCM-EL-10117_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10119": {
    "file": "SLDs/2000-F23-SCM-EL-10119.pdf",
@@ -9624,7 +10135,8 @@
    "size": 445524,
    "from": [
     "2000-F23-SCM-EL-10119_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10171": {
    "file": "SLDs/2000-F23-SCM-EL-10171.pdf",
@@ -9636,7 +10148,8 @@
    "size": 772233,
    "from": [
     "2000-F23-SCM-EL-10171_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10201": {
    "file": "SLDs/2000-F23-SCM-EL-10201.pdf",
@@ -9648,7 +10161,8 @@
    "size": 674287,
    "from": [
     "2000-F23-SCM-EL-10201_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10202": {
    "file": "SLDs/2000-F23-SCM-EL-10202.pdf",
@@ -9660,7 +10174,8 @@
    "size": 708328,
    "from": [
     "2000-F23-SCM-EL-10202_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10204": {
    "file": "SLDs/2000-F23-SCM-EL-10204.pdf",
@@ -9672,7 +10187,8 @@
    "size": 561112,
    "from": [
     "2000-F23-SCM-EL-10204_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10205": {
    "file": "SLDs/2000-F23-SCM-EL-10205.pdf",
@@ -9684,7 +10200,8 @@
    "size": 582573,
    "from": [
     "2000-F23-SCM-EL-10205_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10206": {
    "file": "SLDs/2000-F23-SCM-EL-10206.pdf",
@@ -9696,7 +10213,8 @@
    "size": 537696,
    "from": [
     "2000-F23-SCM-EL-10206_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10207": {
    "file": "SLDs/2000-F23-SCM-EL-10207.pdf",
@@ -9708,7 +10226,8 @@
    "size": 523032,
    "from": [
     "2000-F23-SCM-EL-10207_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10208": {
    "file": "SLDs/2000-F23-SCM-EL-10208.pdf",
@@ -9720,7 +10239,8 @@
    "size": 694235,
    "from": [
     "2000-F23-SCM-EL-10208_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10209": {
    "file": "SLDs/2000-F23-SCM-EL-10209.pdf",
@@ -9732,7 +10252,8 @@
    "size": 525533,
    "from": [
     "2000-F23-SCM-EL-10209_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10210": {
    "file": "SLDs/2000-F23-SCM-EL-10210.pdf",
@@ -9744,7 +10265,8 @@
    "size": 592975,
    "from": [
     "2000-F23-SCM-EL-10210_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10211": {
    "file": "SLDs/2000-F23-SCM-EL-10211.pdf",
@@ -9756,7 +10278,8 @@
    "size": 592522,
    "from": [
     "2000-F23-SCM-EL-10211_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10212": {
    "file": "SLDs/2000-F23-SCM-EL-10212.pdf",
@@ -9768,7 +10291,8 @@
    "size": 593777,
    "from": [
     "2000-F23-SCM-EL-10212_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10213": {
    "file": "SLDs/2000-F23-SCM-EL-10213.pdf",
@@ -9780,7 +10304,8 @@
    "size": 594785,
    "from": [
     "2000-F23-SCM-EL-10213_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10218": {
    "file": "SLDs/2000-F23-SCM-EL-10218.pdf",
@@ -9792,7 +10317,8 @@
    "size": 594540,
    "from": [
     "2000-F23-SCM-EL-10218_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10219": {
    "file": "SLDs/2000-F23-SCM-EL-10219.pdf",
@@ -9804,7 +10330,8 @@
    "size": 593075,
    "from": [
     "2000-F23-SCM-EL-10219_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10220": {
    "file": "SLDs/2000-F23-SCM-EL-10220.pdf",
@@ -9816,7 +10343,8 @@
    "size": 593241,
    "from": [
     "2000-F23-SCM-EL-10220_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10221": {
    "file": "SLDs/2000-F23-SCM-EL-10221.pdf",
@@ -9828,7 +10356,8 @@
    "size": 657151,
    "from": [
     "2000-F23-SCM-EL-10221_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10222": {
    "file": "SLDs/2000-F23-SCM-EL-10222.pdf",
@@ -9852,7 +10381,8 @@
    "size": 535899,
    "from": [
     "2000-F23-SCM-EL-10224_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10225": {
    "file": "SLDs/2000-F23-SCM-EL-10225.pdf",
@@ -9864,7 +10394,8 @@
    "size": 532116,
    "from": [
     "2000-F23-SCM-EL-10225_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-40001": {
    "file": "SLDs/2000-F23-SCM-EL-40001.pdf",
@@ -10080,7 +10611,8 @@
    "size": 689023,
    "from": [
     "2000-F23-SCM-IC-10011_2A.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-IC-10201": {
    "file": "SLDs/2000-F23-SCM-IC-10201.pdf",
@@ -10092,7 +10624,8 @@
    "size": 858890,
    "from": [
     "2000-F23-SCM-IC-10201_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-IC-40001": {
    "file": "SLDs/2000-F23-SCM-IC-40001.pdf",
@@ -10140,7 +10673,8 @@
    "size": 597909,
    "from": [
     "2000-F24-SCM-EL-10203_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10204": {
    "file": "SLDs/2000-F24-SCM-EL-10204.pdf",
@@ -10152,7 +10686,8 @@
    "size": 599744,
    "from": [
     "2000-F24-SCM-EL-10204_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10301": {
    "file": "SLDs/2000-F24-SCM-EL-10301.pdf",
@@ -10164,7 +10699,8 @@
    "size": 589478,
    "from": [
     "2000-F24-SCM-EL-10301_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10302": {
    "file": "SLDs/2000-F24-SCM-EL-10302.pdf",
@@ -10176,7 +10712,8 @@
    "size": 648166,
    "from": [
     "2000-F24-SCM-EL-10302_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10303": {
    "file": "SLDs/2000-F24-SCM-EL-10303.pdf",
@@ -10188,7 +10725,8 @@
    "size": 647842,
    "from": [
     "2000-F24-SCM-EL-10303_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10304": {
    "file": "SLDs/2000-F24-SCM-EL-10304.pdf",
@@ -10200,7 +10738,8 @@
    "size": 725252,
    "from": [
     "2000-F24-SCM-EL-10304_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10401": {
    "file": "SLDs/2000-F24-SCM-EL-10401.pdf",
@@ -10212,7 +10751,8 @@
    "size": 659443,
    "from": [
     "2000-F24-SCM-EL-10401_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10402": {
    "file": "SLDs/2000-F24-SCM-EL-10402.pdf",
@@ -10224,7 +10764,8 @@
    "size": 729154,
    "from": [
     "2000-F24-SCM-EL-10402_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10403": {
    "file": "SLDs/2000-F24-SCM-EL-10403.pdf",
@@ -10236,7 +10777,8 @@
    "size": 616740,
    "from": [
     "2000-F24-SCM-EL-10403_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10404": {
    "file": "SLDs/2000-F24-SCM-EL-10404.pdf",
@@ -10248,7 +10790,8 @@
    "size": 617906,
    "from": [
     "2000-F24-SCM-EL-10404_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10501": {
    "file": "SLDs/2000-F24-SCM-EL-10501.pdf",
@@ -10260,7 +10803,8 @@
    "size": 764680,
    "from": [
     "2000-F24-SCM-EL-10501_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10502": {
    "file": "SLDs/2000-F24-SCM-EL-10502.pdf",
@@ -10272,7 +10816,8 @@
    "size": 639297,
    "from": [
     "2000-F24-SCM-EL-10502_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10503": {
    "file": "SLDs/2000-F24-SCM-EL-10503.pdf",
@@ -10284,7 +10829,8 @@
    "size": 532968,
    "from": [
     "2000-F24-SCM-EL-10503_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10504": {
    "file": "SLDs/2000-F24-SCM-EL-10504.pdf",
@@ -10296,7 +10842,8 @@
    "size": 519848,
    "from": [
     "2000-F24-SCM-EL-10504_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10505": {
    "file": "SLDs/2000-F24-SCM-EL-10505.pdf",
@@ -10308,7 +10855,8 @@
    "size": 673305,
    "from": [
     "2000-F24-SCM-EL-10505_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10506": {
    "file": "SLDs/2000-F24-SCM-EL-10506.pdf",
@@ -10320,7 +10868,8 @@
    "size": 753891,
    "from": [
     "2000-F24-SCM-EL-10506_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10507": {
    "file": "SLDs/2000-F24-SCM-EL-10507.pdf",
@@ -10332,7 +10881,8 @@
    "size": 670183,
    "from": [
     "2000-F24-SCM-EL-10507_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10508": {
    "file": "SLDs/2000-F24-SCM-EL-10508.pdf",
@@ -10344,7 +10894,8 @@
    "size": 651214,
    "from": [
     "2000-F24-SCM-EL-10508_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10601": {
    "file": "SLDs/2000-F24-SCM-EL-10601.pdf",
@@ -10356,7 +10907,8 @@
    "size": 495009,
    "from": [
     "2000-F24-SCM-EL-10601_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10602": {
    "file": "SLDs/2000-F24-SCM-EL-10602.pdf",
@@ -10368,7 +10920,8 @@
    "size": 494621,
    "from": [
     "2000-F24-SCM-EL-10602_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-EL-10603": {
    "file": "SLDs/2000-F24-SCM-EL-10603.pdf",
@@ -10380,7 +10933,8 @@
    "size": 489326,
    "from": [
     "2000-F24-SCM-EL-10603_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-IC-10201": {
    "file": "SLDs/2000-F24-SCM-IC-10201.pdf",
@@ -10392,7 +10946,8 @@
    "size": 755137,
    "from": [
     "2000-F24-SCM-IC-10201_0A.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-IC-10501": {
    "file": "SLDs/2000-F24-SCM-IC-10501.pdf",
@@ -10404,7 +10959,8 @@
    "size": 794982,
    "from": [
     "2000-F24-SCM-IC-10501_2A.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F24-SCM-IC-10601": {
    "file": "SLDs/2000-F24-SCM-IC-10601.pdf",
@@ -10416,7 +10972,8 @@
    "size": 787186,
    "from": [
     "2000-F24-SCM-IC-10601_0A.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10103": {
    "file": "SLDs/2000-F28-SCM-EL-10103.pdf",
@@ -10428,7 +10985,8 @@
    "size": 788523,
    "from": [
     "2000-F28-SCM-EL-10103_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10107": {
    "file": "SLDs/2000-F28-SCM-EL-10107.pdf",
@@ -10440,7 +10998,8 @@
    "size": 797949,
    "from": [
     "2000-F28-SCM-EL-10107_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10171": {
    "file": "SLDs/2000-F28-SCM-EL-10171.pdf",
@@ -10452,7 +11011,8 @@
    "size": 740656,
    "from": [
     "2000-F28-SCM-EL-10171_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10201": {
    "file": "SLDs/2000-F28-SCM-EL-10201.pdf",
@@ -10464,7 +11024,8 @@
    "size": 643051,
    "from": [
     "2000-F28-SCM-EL-10201_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10202": {
    "file": "SLDs/2000-F28-SCM-EL-10202.pdf",
@@ -10476,7 +11037,8 @@
    "size": 658938,
    "from": [
     "2000-F28-SCM-EL-10202_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10204": {
    "file": "SLDs/2000-F28-SCM-EL-10204.pdf",
@@ -10488,7 +11050,8 @@
    "size": 536708,
    "from": [
     "2000-F28-SCM-EL-10204_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10205": {
    "file": "SLDs/2000-F28-SCM-EL-10205.pdf",
@@ -10500,7 +11063,8 @@
    "size": 494316,
    "from": [
     "2000-F28-SCM-EL-10205_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10206": {
    "file": "SLDs/2000-F28-SCM-EL-10206.pdf",
@@ -10512,7 +11076,8 @@
    "size": 502032,
    "from": [
     "2000-F28-SCM-EL-10206_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10207": {
    "file": "SLDs/2000-F28-SCM-EL-10207.pdf",
@@ -10524,7 +11089,8 @@
    "size": 488861,
    "from": [
     "2000-F28-SCM-EL-10207_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10208": {
    "file": "SLDs/2000-F28-SCM-EL-10208.pdf",
@@ -10536,7 +11102,8 @@
    "size": 501564,
    "from": [
     "2000-F28-SCM-EL-10208_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10209": {
    "file": "SLDs/2000-F28-SCM-EL-10209.pdf",
@@ -10548,7 +11115,8 @@
    "size": 493719,
    "from": [
     "2000-F28-SCM-EL-10209_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10210": {
    "file": "SLDs/2000-F28-SCM-EL-10210.pdf",
@@ -10560,7 +11128,8 @@
    "size": 556949,
    "from": [
     "2000-F28-SCM-EL-10210_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10211": {
    "file": "SLDs/2000-F28-SCM-EL-10211.pdf",
@@ -10572,7 +11141,8 @@
    "size": 556285,
    "from": [
     "2000-F28-SCM-EL-10211_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10212": {
    "file": "SLDs/2000-F28-SCM-EL-10212.pdf",
@@ -10584,7 +11154,8 @@
    "size": 558056,
    "from": [
     "2000-F28-SCM-EL-10212_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10213": {
    "file": "SLDs/2000-F28-SCM-EL-10213.pdf",
@@ -10596,7 +11167,8 @@
    "size": 556166,
    "from": [
     "2000-F28-SCM-EL-10213_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10214": {
    "file": "SLDs/2000-F28-SCM-EL-10214.pdf",
@@ -10608,7 +11180,8 @@
    "size": 556814,
    "from": [
     "2000-F28-SCM-EL-10214_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10215": {
    "file": "SLDs/2000-F28-SCM-EL-10215.pdf",
@@ -10620,7 +11193,8 @@
    "size": 557906,
    "from": [
     "2000-F28-SCM-EL-10215_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10216": {
    "file": "SLDs/2000-F28-SCM-EL-10216.pdf",
@@ -10632,7 +11206,8 @@
    "size": 535784,
    "from": [
     "2000-F28-SCM-EL-10216_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10217": {
    "file": "SLDs/2000-F28-SCM-EL-10217.pdf",
@@ -10644,7 +11219,8 @@
    "size": 536198,
    "from": [
     "2000-F28-SCM-EL-10217_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10218": {
    "file": "SLDs/2000-F28-SCM-EL-10218.pdf",
@@ -10656,7 +11232,8 @@
    "size": 536218,
    "from": [
     "2000-F28-SCM-EL-10218_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10219": {
    "file": "SLDs/2000-F28-SCM-EL-10219.pdf",
@@ -10668,7 +11245,8 @@
    "size": 535917,
    "from": [
     "2000-F28-SCM-EL-10219_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10220": {
    "file": "SLDs/2000-F28-SCM-EL-10220.pdf",
@@ -10692,7 +11270,8 @@
    "size": 489034,
    "from": [
     "2000-F28-SCM-EL-10222_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10223": {
    "file": "SLDs/2000-F28-SCM-EL-10223.pdf",
@@ -10704,7 +11283,8 @@
    "size": 489354,
    "from": [
     "2000-F28-SCM-EL-10223_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10224": {
    "file": "SLDs/2000-F28-SCM-EL-10224.pdf",
@@ -10716,7 +11296,8 @@
    "size": 561171,
    "from": [
     "2000-F28-SCM-EL-10224_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10225": {
    "file": "SLDs/2000-F28-SCM-EL-10225.pdf",
@@ -10728,7 +11309,8 @@
    "size": 568712,
    "from": [
     "2000-F28-SCM-EL-10225_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10226": {
    "file": "SLDs/2000-F28-SCM-EL-10226.pdf",
@@ -10740,7 +11322,8 @@
    "size": 564865,
    "from": [
     "2000-F28-SCM-EL-10226_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10227": {
    "file": "SLDs/2000-F28-SCM-EL-10227.pdf",
@@ -10752,7 +11335,8 @@
    "size": 559955,
    "from": [
     "2000-F28-SCM-EL-10227_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10231": {
    "file": "SLDs/2000-F28-SCM-EL-10231.pdf",
@@ -10764,7 +11348,8 @@
    "size": 561251,
    "from": [
     "2000-F28-SCM-EL-10231_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10232": {
    "file": "SLDs/2000-F28-SCM-EL-10232.pdf",
@@ -10776,7 +11361,8 @@
    "size": 562383,
    "from": [
     "2000-F28-SCM-EL-10232_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10233": {
    "file": "SLDs/2000-F28-SCM-EL-10233.pdf",
@@ -10788,7 +11374,8 @@
    "size": 562038,
    "from": [
     "2000-F28-SCM-EL-10233_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10234": {
    "file": "SLDs/2000-F28-SCM-EL-10234.pdf",
@@ -10800,7 +11387,8 @@
    "size": 559739,
    "from": [
     "2000-F28-SCM-EL-10234_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10238": {
    "file": "SLDs/2000-F28-SCM-EL-10238.pdf",
@@ -10812,7 +11400,8 @@
    "size": 718905,
    "from": [
     "2000-F28-SCM-EL-10238_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10239": {
    "file": "SLDs/2000-F28-SCM-EL-10239.pdf",
@@ -10824,7 +11413,8 @@
    "size": 718755,
    "from": [
     "2000-F28-SCM-EL-10239_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10240": {
    "file": "SLDs/2000-F28-SCM-EL-10240.pdf",
@@ -10836,7 +11426,8 @@
    "size": 657973,
    "from": [
     "2000-F28-SCM-EL-10240_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10241": {
    "file": "SLDs/2000-F28-SCM-EL-10241.pdf",
@@ -10848,7 +11439,8 @@
    "size": 718766,
    "from": [
     "2000-F28-SCM-EL-10241_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10242": {
    "file": "SLDs/2000-F28-SCM-EL-10242.pdf",
@@ -10860,7 +11452,8 @@
    "size": 665659,
    "from": [
     "2000-F28-SCM-EL-10242_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10243": {
    "file": "SLDs/2000-F28-SCM-EL-10243.pdf",
@@ -10872,7 +11465,8 @@
    "size": 720893,
    "from": [
     "2000-F28-SCM-EL-10243_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10244": {
    "file": "SLDs/2000-F28-SCM-EL-10244.pdf",
@@ -10884,7 +11478,8 @@
    "size": 722730,
    "from": [
     "2000-F28-SCM-EL-10244_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10245": {
    "file": "SLDs/2000-F28-SCM-EL-10245.pdf",
@@ -10896,7 +11491,8 @@
    "size": 646161,
    "from": [
     "2000-F28-SCM-EL-10245_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10246": {
    "file": "SLDs/2000-F28-SCM-EL-10246.pdf",
@@ -10908,7 +11504,8 @@
    "size": 591255,
    "from": [
     "2000-F28-SCM-EL-10246_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10247": {
    "file": "SLDs/2000-F28-SCM-EL-10247.pdf",
@@ -10920,7 +11517,8 @@
    "size": 627427,
    "from": [
     "2000-F28-SCM-EL-10247_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10248": {
    "file": "SLDs/2000-F28-SCM-EL-10248.pdf",
@@ -10932,7 +11530,8 @@
    "size": 559614,
    "from": [
     "2000-F28-SCM-EL-10248_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10249": {
    "file": "SLDs/2000-F28-SCM-EL-10249.pdf",
@@ -10944,7 +11543,8 @@
    "size": 556862,
    "from": [
     "2000-F28-SCM-EL-10249_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10250": {
    "file": "SLDs/2000-F28-SCM-EL-10250.pdf",
@@ -10956,7 +11556,8 @@
    "size": 555834,
    "from": [
     "2000-F28-SCM-EL-10250_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-EL-10251": {
    "file": "SLDs/2000-F28-SCM-EL-10251.pdf",
@@ -10968,7 +11569,8 @@
    "size": 563384,
    "from": [
     "2000-F28-SCM-EL-10251_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-IC-10201": {
    "file": "SLDs/2000-F28-SCM-IC-10201.pdf",
@@ -10980,7 +11582,8 @@
    "size": 969145,
    "from": [
     "2000-F28-SCM-IC-10201_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-IC-10221": {
    "file": "SLDs/2000-F28-SCM-IC-10221.pdf",
@@ -10992,7 +11595,8 @@
    "size": 593253,
    "from": [
     "2000-F28-SCM-IC-10221_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-IC-10241": {
    "file": "SLDs/2000-F28-SCM-IC-10241.pdf",
@@ -11004,7 +11608,8 @@
    "size": 805535,
    "from": [
     "2000-F28-SCM-IC-10241_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F28-SCM-IC-10261": {
    "file": "SLDs/2000-F28-SCM-IC-10261.pdf",
@@ -11016,7 +11621,8 @@
    "size": 515895,
    "from": [
     "2000-F28-SCM-IC-10261_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10001": {
    "file": "SLDs/2000-F30-SCM-EL-10001.pdf",
@@ -11028,7 +11634,8 @@
    "size": 675746,
    "from": [
     "2000-F30-SCM-EL-10001_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10002": {
    "file": "SLDs/2000-F30-SCM-EL-10002.pdf",
@@ -11040,7 +11647,8 @@
    "size": 676889,
    "from": [
     "2000-F30-SCM-EL-10002_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10003": {
    "file": "SLDs/2000-F30-SCM-EL-10003.pdf",
@@ -11052,7 +11660,8 @@
    "size": 701818,
    "from": [
     "2000-F30-SCM-EL-10003_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10004": {
    "file": "SLDs/2000-F30-SCM-EL-10004.pdf",
@@ -11064,7 +11673,8 @@
    "size": 698413,
    "from": [
     "2000-F30-SCM-EL-10004_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10005": {
    "file": "SLDs/2000-F30-SCM-EL-10005.pdf",
@@ -11076,7 +11686,8 @@
    "size": 694456,
    "from": [
     "2000-F30-SCM-EL-10005_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10006": {
    "file": "SLDs/2000-F30-SCM-EL-10006.pdf",
@@ -11088,7 +11699,8 @@
    "size": 695054,
    "from": [
     "2000-F30-SCM-EL-10006_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10009": {
    "file": "SLDs/2000-F30-SCM-EL-10009.pdf",
@@ -11100,7 +11712,8 @@
    "size": 671282,
    "from": [
     "2000-F30-SCM-EL-10009_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10010": {
    "file": "SLDs/2000-F30-SCM-EL-10010.pdf",
@@ -11112,7 +11725,8 @@
    "size": 699404,
    "from": [
     "2000-F30-SCM-EL-10010_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10015": {
    "file": "SLDs/2000-F30-SCM-EL-10015.pdf",
@@ -11124,7 +11738,8 @@
    "size": 629991,
    "from": [
     "2000-F30-SCM-EL-10015_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10017": {
    "file": "SLDs/2000-F30-SCM-EL-10017.pdf",
@@ -11136,7 +11751,8 @@
    "size": 680207,
    "from": [
     "2000-F30-SCM-EL-10017_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10018": {
    "file": "SLDs/2000-F30-SCM-EL-10018.pdf",
@@ -11148,7 +11764,8 @@
    "size": 683501,
    "from": [
     "2000-F30-SCM-EL-10018_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10020": {
    "file": "SLDs/2000-F30-SCM-EL-10020.pdf",
@@ -11160,7 +11777,8 @@
    "size": 692444,
    "from": [
     "2000-F30-SCM-EL-10020_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10021": {
    "file": "SLDs/2000-F30-SCM-EL-10021.pdf",
@@ -11172,7 +11790,8 @@
    "size": 581721,
    "from": [
     "2000-F30-SCM-EL-10021_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10029": {
    "file": "SLDs/2000-F30-SCM-EL-10029.pdf",
@@ -11184,7 +11803,8 @@
    "size": 787576,
    "from": [
     "2000-F30-SCM-EL-10029_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10030": {
    "file": "SLDs/2000-F30-SCM-EL-10030.pdf",
@@ -11196,7 +11816,8 @@
    "size": 635141,
    "from": [
     "2000-F30-SCM-EL-10030_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10031": {
    "file": "SLDs/2000-F30-SCM-EL-10031.pdf",
@@ -11208,7 +11829,8 @@
    "size": 683009,
    "from": [
     "2000-F30-SCM-EL-10031_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10032": {
    "file": "SLDs/2000-F30-SCM-EL-10032.pdf",
@@ -11220,7 +11842,8 @@
    "size": 695331,
    "from": [
     "2000-F30-SCM-EL-10032_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10034": {
    "file": "SLDs/2000-F30-SCM-EL-10034.pdf",
@@ -11232,7 +11855,8 @@
    "size": 500873,
    "from": [
     "2000-F30-SCM-EL-10034_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10045": {
    "file": "SLDs/2000-F30-SCM-EL-10045.pdf",
@@ -11244,7 +11868,8 @@
    "size": 432060,
    "from": [
     "2000-F30-SCM-EL-10045_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10052": {
    "file": "SLDs/2000-F30-SCM-EL-10052.pdf",
@@ -11256,7 +11881,8 @@
    "size": 289162,
    "from": [
     "2000-F30-SCM-EL-10052_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10054": {
    "file": "SLDs/2000-F30-SCM-EL-10054.pdf",
@@ -11268,7 +11894,8 @@
    "size": 602217,
    "from": [
     "2000-F30-SCM-EL-10054_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10055": {
    "file": "SLDs/2000-F30-SCM-EL-10055.pdf",
@@ -11280,7 +11907,8 @@
    "size": 486147,
    "from": [
     "2000-F30-SCM-EL-10055_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10058": {
    "file": "SLDs/2000-F30-SCM-EL-10058.pdf",
@@ -11292,7 +11920,8 @@
    "size": 707627,
    "from": [
     "2000-F30-SCM-EL-10058_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10059": {
    "file": "SLDs/2000-F30-SCM-EL-10059.pdf",
@@ -11304,7 +11933,8 @@
    "size": 390890,
    "from": [
     "2000-F30-SCM-EL-10059_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10065": {
    "file": "SLDs/2000-F30-SCM-EL-10065.pdf",
@@ -11316,7 +11946,8 @@
    "size": 678032,
    "from": [
     "2000-F30-SCM-EL-10065_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-EL-10202": {
    "file": "SLDs/2000-F30-SCM-EL-10202.pdf",
@@ -11328,7 +11959,8 @@
    "size": 682734,
    "from": [
     "2000-F30-SCM-EL-10202_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-IC-10401": {
    "file": "SLDs/2000-F30-SCM-IC-10401.pdf",
@@ -11340,7 +11972,8 @@
    "size": 1333215,
    "from": [
     "2000-F30-SCM-IC-10401_1A.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-IC-10421": {
    "file": "SLDs/2000-F30-SCM-IC-10421.pdf",
@@ -11352,7 +11985,8 @@
    "size": 739475,
    "from": [
     "2000-F30-SCM-IC-10421_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F30-SCM-IC-10441": {
    "file": "SLDs/2000-F30-SCM-IC-10441.pdf",
@@ -11364,7 +11998,8 @@
    "size": 839935,
    "from": [
     "2000-F30-SCM-IC-10441_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F34-SCM-EL-10001": {
    "file": "SLDs/2000-F34-SCM-EL-10001.pdf",
@@ -11376,7 +12011,8 @@
    "size": 667016,
    "from": [
     "2000-F34-SCM-EL-10001_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F34-SCM-EL-10002": {
    "file": "SLDs/2000-F34-SCM-EL-10002.pdf",
@@ -11388,7 +12024,8 @@
    "size": 764705,
    "from": [
     "2000-F34-SCM-EL-10002_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F34-SCM-EL-10003": {
    "file": "SLDs/2000-F34-SCM-EL-10003.pdf",
@@ -11400,7 +12037,8 @@
    "size": 691873,
    "from": [
     "2000-F34-SCM-EL-10003_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F34-SCM-EL-10004": {
    "file": "SLDs/2000-F34-SCM-EL-10004.pdf",
@@ -11412,7 +12050,8 @@
    "size": 668902,
    "from": [
     "2000-F34-SCM-EL-10004_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F34-SCM-EL-10005": {
    "file": "SLDs/2000-F34-SCM-EL-10005.pdf",
@@ -11424,7 +12063,8 @@
    "size": 981485,
    "from": [
     "2000-F34-SCM-EL-10005_0.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F35-SCM-EL-10161": {
    "file": "SLDs/2000-F35-SCM-EL-10161.pdf",
@@ -11436,7 +12076,8 @@
    "size": 625952,
    "from": [
     "2000-F35-SCM-EL-10161_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F35-SCM-EL-10162": {
    "file": "SLDs/2000-F35-SCM-EL-10162.pdf",
@@ -11448,7 +12089,8 @@
    "size": 784744,
    "from": [
     "2000-F35-SCM-EL-10162_4.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F66-SCM-EL-10201": {
    "file": "SLDs/2000-F66-SCM-EL-10201.pdf",
@@ -11460,7 +12102,8 @@
    "size": 528576,
    "from": [
     "2000-F66-SCM-EL-10201_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F66-SCM-EL-10202": {
    "file": "SLDs/2000-F66-SCM-EL-10202.pdf",
@@ -11472,7 +12115,8 @@
    "size": 531222,
    "from": [
     "2000-F66-SCM-EL-10202_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F66-SCM-EL-10203": {
    "file": "SLDs/2000-F66-SCM-EL-10203.pdf",
@@ -11484,7 +12128,8 @@
    "size": 593715,
    "from": [
     "2000-F66-SCM-EL-10203_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F66-SCM-EL-10204": {
    "file": "SLDs/2000-F66-SCM-EL-10204.pdf",
@@ -11496,7 +12141,8 @@
    "size": 594332,
    "from": [
     "2000-F66-SCM-EL-10204_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F66-SCM-EL-10206": {
    "file": "SLDs/2000-F66-SCM-EL-10206.pdf",
@@ -11508,7 +12154,8 @@
    "size": 530304,
    "from": [
     "2000-F66-SCM-EL-10206_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F66-SCM-EL-10207": {
    "file": "SLDs/2000-F66-SCM-EL-10207.pdf",
@@ -11520,7 +12167,8 @@
    "size": 575090,
    "from": [
     "2000-F66-SCM-EL-10207_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F66-SCM-EL-10208": {
    "file": "SLDs/2000-F66-SCM-EL-10208.pdf",
@@ -11532,7 +12180,8 @@
    "size": 596071,
    "from": [
     "2000-F66-SCM-EL-10208_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F66-SCM-EL-10209": {
    "file": "SLDs/2000-F66-SCM-EL-10209.pdf",
@@ -11544,7 +12193,8 @@
    "size": 638534,
    "from": [
     "2000-F66-SCM-EL-10209_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F66-SCM-EL-10210": {
    "file": "SLDs/2000-F66-SCM-EL-10210.pdf",
@@ -11556,7 +12206,8 @@
    "size": 583371,
    "from": [
     "2000-F66-SCM-EL-10210_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F66-SCM-EL-10211": {
    "file": "SLDs/2000-F66-SCM-EL-10211.pdf",
@@ -11568,7 +12219,8 @@
    "size": 530511,
    "from": [
     "2000-F66-SCM-EL-10211_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10122": {
    "file": "SLDs/2000-F72-SCM-EL-10122.pdf",
@@ -11580,7 +12232,8 @@
    "size": 672750,
    "from": [
     "2000-F72-SCM-EL-10122_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10123": {
    "file": "SLDs/2000-F72-SCM-EL-10123.pdf",
@@ -11592,7 +12245,8 @@
    "size": 673030,
    "from": [
     "2000-F72-SCM-EL-10123_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10124": {
    "file": "SLDs/2000-F72-SCM-EL-10124.pdf",
@@ -11604,7 +12258,8 @@
    "size": 676946,
    "from": [
     "2000-F72-SCM-EL-10124_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10125": {
    "file": "SLDs/2000-F72-SCM-EL-10125.pdf",
@@ -11616,7 +12271,8 @@
    "size": 663091,
    "from": [
     "2000-F72-SCM-EL-10125_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10211": {
    "file": "SLDs/2000-F72-SCM-EL-10211.pdf",
@@ -11628,7 +12284,8 @@
    "size": 591781,
    "from": [
     "2000-F72-SCM-EL-10211_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10233": {
    "file": "SLDs/2000-F72-SCM-EL-10233.pdf",
@@ -11640,7 +12297,8 @@
    "size": 531667,
    "from": [
     "2000-F72-SCM-EL-10233_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10234": {
    "file": "SLDs/2000-F72-SCM-EL-10234.pdf",
@@ -11652,7 +12310,8 @@
    "size": 532027,
    "from": [
     "2000-F72-SCM-EL-10234_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10401": {
    "file": "SLDs/2000-F72-SCM-EL-10401.pdf",
@@ -11664,7 +12323,8 @@
    "size": 593495,
    "from": [
     "2000-F72-SCM-EL-10401_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10402": {
    "file": "SLDs/2000-F72-SCM-EL-10402.pdf",
@@ -11676,7 +12336,8 @@
    "size": 589687,
    "from": [
     "2000-F72-SCM-EL-10402_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10403": {
    "file": "SLDs/2000-F72-SCM-EL-10403.pdf",
@@ -11688,7 +12349,8 @@
    "size": 614817,
    "from": [
     "2000-F72-SCM-EL-10403_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10405": {
    "file": "SLDs/2000-F72-SCM-EL-10405.pdf",
@@ -11700,7 +12362,8 @@
    "size": 636312,
    "from": [
     "2000-F72-SCM-EL-10405_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10406": {
    "file": "SLDs/2000-F72-SCM-EL-10406.pdf",
@@ -11712,7 +12375,8 @@
    "size": 572254,
    "from": [
     "2000-F72-SCM-EL-10406_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10450": {
    "file": "SLDs/2000-F72-SCM-EL-10450.pdf",
@@ -11724,7 +12388,8 @@
    "size": 589916,
    "from": [
     "2000-F72-SCM-EL-10450_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10451": {
    "file": "SLDs/2000-F72-SCM-EL-10451.pdf",
@@ -11736,7 +12401,8 @@
    "size": 592272,
    "from": [
     "2000-F72-SCM-EL-10451_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10452": {
    "file": "SLDs/2000-F72-SCM-EL-10452.pdf",
@@ -11748,7 +12414,8 @@
    "size": 651977,
    "from": [
     "2000-F72-SCM-EL-10452_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10501": {
    "file": "SLDs/2000-F72-SCM-EL-10501.pdf",
@@ -11760,7 +12427,8 @@
    "size": 592820,
    "from": [
     "2000-F72-SCM-EL-10501_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10502": {
    "file": "SLDs/2000-F72-SCM-EL-10502.pdf",
@@ -11772,7 +12440,8 @@
    "size": 593846,
    "from": [
     "2000-F72-SCM-EL-10502_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10503": {
    "file": "SLDs/2000-F72-SCM-EL-10503.pdf",
@@ -11784,7 +12453,8 @@
    "size": 614900,
    "from": [
     "2000-F72-SCM-EL-10503_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10551": {
    "file": "SLDs/2000-F72-SCM-EL-10551.pdf",
@@ -11796,7 +12466,8 @@
    "size": 670644,
    "from": [
     "2000-F72-SCM-EL-10551_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10552": {
    "file": "SLDs/2000-F72-SCM-EL-10552.pdf",
@@ -11808,7 +12479,8 @@
    "size": 674258,
    "from": [
     "2000-F72-SCM-EL-10552_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10651": {
    "file": "SLDs/2000-F72-SCM-EL-10651.pdf",
@@ -11820,7 +12492,8 @@
    "size": 587176,
    "from": [
     "2000-F72-SCM-EL-10651_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10652": {
    "file": "SLDs/2000-F72-SCM-EL-10652.pdf",
@@ -11832,7 +12505,8 @@
    "size": 581804,
    "from": [
     "2000-F72-SCM-EL-10652_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10654": {
    "file": "SLDs/2000-F72-SCM-EL-10654.pdf",
@@ -11844,7 +12518,8 @@
    "size": 593436,
    "from": [
     "2000-F72-SCM-EL-10654_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10655": {
    "file": "SLDs/2000-F72-SCM-EL-10655.pdf",
@@ -11856,7 +12531,8 @@
    "size": 616735,
    "from": [
     "2000-F72-SCM-EL-10655_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10656": {
    "file": "SLDs/2000-F72-SCM-EL-10656.pdf",
@@ -11868,7 +12544,8 @@
    "size": 592306,
    "from": [
     "2000-F72-SCM-EL-10656_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10657": {
    "file": "SLDs/2000-F72-SCM-EL-10657.pdf",
@@ -11880,7 +12557,8 @@
    "size": 655085,
    "from": [
     "2000-F72-SCM-EL-10657_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10658": {
    "file": "SLDs/2000-F72-SCM-EL-10658.pdf",
@@ -11892,7 +12570,8 @@
    "size": 733608,
    "from": [
     "2000-F72-SCM-EL-10658_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10659": {
    "file": "SLDs/2000-F72-SCM-EL-10659.pdf",
@@ -11904,7 +12583,8 @@
    "size": 615821,
    "from": [
     "2000-F72-SCM-EL-10659_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10660": {
    "file": "SLDs/2000-F72-SCM-EL-10660.pdf",
@@ -11916,7 +12596,8 @@
    "size": 589167,
    "from": [
     "2000-F72-SCM-EL-10660_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10661": {
    "file": "SLDs/2000-F72-SCM-EL-10661.pdf",
@@ -11928,7 +12609,8 @@
    "size": 669872,
    "from": [
     "2000-F72-SCM-EL-10661_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10662": {
    "file": "SLDs/2000-F72-SCM-EL-10662.pdf",
@@ -11940,7 +12622,8 @@
    "size": 670313,
    "from": [
     "2000-F72-SCM-EL-10662_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10663": {
    "file": "SLDs/2000-F72-SCM-EL-10663.pdf",
@@ -11952,7 +12635,8 @@
    "size": 612968,
    "from": [
     "2000-F72-SCM-EL-10663_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10664": {
    "file": "SLDs/2000-F72-SCM-EL-10664.pdf",
@@ -11964,7 +12648,8 @@
    "size": 514050,
    "from": [
     "2000-F72-SCM-EL-10664_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10665": {
    "file": "SLDs/2000-F72-SCM-EL-10665.pdf",
@@ -11976,7 +12661,8 @@
    "size": 696679,
    "from": [
     "2000-F72-SCM-EL-10665_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10666": {
    "file": "SLDs/2000-F72-SCM-EL-10666.pdf",
@@ -11988,7 +12674,8 @@
    "size": 608521,
    "from": [
     "2000-F72-SCM-EL-10666_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10667": {
    "file": "SLDs/2000-F72-SCM-EL-10667.pdf",
@@ -12000,7 +12687,8 @@
    "size": 606501,
    "from": [
     "2000-F72-SCM-EL-10667_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10668": {
    "file": "SLDs/2000-F72-SCM-EL-10668.pdf",
@@ -12012,7 +12700,8 @@
    "size": 589012,
    "from": [
     "2000-F72-SCM-EL-10668_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10669": {
    "file": "SLDs/2000-F72-SCM-EL-10669.pdf",
@@ -12024,7 +12713,8 @@
    "size": 589037,
    "from": [
     "2000-F72-SCM-EL-10669_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10670": {
    "file": "SLDs/2000-F72-SCM-EL-10670.pdf",
@@ -12036,7 +12726,8 @@
    "size": 716536,
    "from": [
     "2000-F72-SCM-EL-10670_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10671": {
    "file": "SLDs/2000-F72-SCM-EL-10671.pdf",
@@ -12048,7 +12739,8 @@
    "size": 713570,
    "from": [
     "2000-F72-SCM-EL-10671_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10672": {
    "file": "SLDs/2000-F72-SCM-EL-10672.pdf",
@@ -12060,7 +12752,8 @@
    "size": 713088,
    "from": [
     "2000-F72-SCM-EL-10672_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10673": {
    "file": "SLDs/2000-F72-SCM-EL-10673.pdf",
@@ -12072,7 +12765,8 @@
    "size": 714098,
    "from": [
     "2000-F72-SCM-EL-10673_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10674": {
    "file": "SLDs/2000-F72-SCM-EL-10674.pdf",
@@ -12084,7 +12778,8 @@
    "size": 713311,
    "from": [
     "2000-F72-SCM-EL-10674_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10675": {
    "file": "SLDs/2000-F72-SCM-EL-10675.pdf",
@@ -12096,7 +12791,8 @@
    "size": 712077,
    "from": [
     "2000-F72-SCM-EL-10675_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10676": {
    "file": "SLDs/2000-F72-SCM-EL-10676.pdf",
@@ -12108,7 +12804,8 @@
    "size": 719984,
    "from": [
     "2000-F72-SCM-EL-10676_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10677": {
    "file": "SLDs/2000-F72-SCM-EL-10677.pdf",
@@ -12120,7 +12817,8 @@
    "size": 717209,
    "from": [
     "2000-F72-SCM-EL-10677_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10678": {
    "file": "SLDs/2000-F72-SCM-EL-10678.pdf",
@@ -12132,7 +12830,8 @@
    "size": 717883,
    "from": [
     "2000-F72-SCM-EL-10678_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10679": {
    "file": "SLDs/2000-F72-SCM-EL-10679.pdf",
@@ -12144,7 +12843,8 @@
    "size": 717073,
    "from": [
     "2000-F72-SCM-EL-10679_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10680": {
    "file": "SLDs/2000-F72-SCM-EL-10680.pdf",
@@ -12156,7 +12856,8 @@
    "size": 716312,
    "from": [
     "2000-F72-SCM-EL-10680_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10681": {
    "file": "SLDs/2000-F72-SCM-EL-10681.pdf",
@@ -12168,7 +12869,8 @@
    "size": 715703,
    "from": [
     "2000-F72-SCM-EL-10681_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10682": {
    "file": "SLDs/2000-F72-SCM-EL-10682.pdf",
@@ -12180,7 +12882,8 @@
    "size": 669535,
    "from": [
     "2000-F72-SCM-EL-10682_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10683": {
    "file": "SLDs/2000-F72-SCM-EL-10683.pdf",
@@ -12192,7 +12895,8 @@
    "size": 670575,
    "from": [
     "2000-F72-SCM-EL-10683_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10684": {
    "file": "SLDs/2000-F72-SCM-EL-10684.pdf",
@@ -12204,7 +12908,8 @@
    "size": 586398,
    "from": [
     "2000-F72-SCM-EL-10684_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-IC-10011": {
    "file": "SLDs/2000-F72-SCM-IC-10011.pdf",
@@ -12216,7 +12921,8 @@
    "size": 683978,
    "from": [
     "2000-F72-SCM-IC-10011_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-IC-10501": {
    "file": "SLDs/2000-F72-SCM-IC-10501.pdf",
@@ -12228,7 +12934,8 @@
    "size": 790963,
    "from": [
     "2000-F72-SCM-IC-10501_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-IC-10601": {
    "file": "SLDs/2000-F72-SCM-IC-10601.pdf",
@@ -12240,7 +12947,8 @@
    "size": 736020,
    "from": [
     "2000-F72-SCM-IC-10601_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-IC-10701": {
    "file": "SLDs/2000-F72-SCM-IC-10701.pdf",
@@ -12252,7 +12960,8 @@
    "size": 645168,
    "from": [
     "2000-F72-SCM-IC-10701_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F75-SCM-EL-40004": {
    "file": "SLDs/2000-F75-SCM-EL-40004.pdf",
@@ -12540,7 +13249,8 @@
    "size": 675334,
    "from": [
     "2000-F13-SCM-EL-10301_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10302": {
    "file": "SLDs/2000-F13-SCM-EL-10302.pdf",
@@ -12552,7 +13262,8 @@
    "size": 687073,
    "from": [
     "2000-F13-SCM-EL-10302_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10901": {
    "file": "SLDs/2000-F13-SCM-EL-10901.pdf",
@@ -12564,7 +13275,8 @@
    "size": 761808,
    "from": [
     "2000-F13-SCM-EL-10901_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F13-SCM-EL-10902": {
    "file": "SLDs/2000-F13-SCM-EL-10902.pdf",
@@ -12576,7 +13288,8 @@
    "size": 698837,
    "from": [
     "2000-F13-SCM-EL-10902_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10221": {
    "file": "SLDs/2000-F16-SCM-EL-10221.pdf",
@@ -12588,7 +13301,8 @@
    "size": 657056,
    "from": [
     "2000-F16-SCM-EL-10221_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F16-SCM-EL-10222": {
    "file": "SLDs/2000-F16-SCM-EL-10222.pdf",
@@ -12600,7 +13314,8 @@
    "size": 654901,
    "from": [
     "2000-F16-SCM-EL-10222_3.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F22-SCM-EL-10253": {
    "file": "SLDs/2000-F22-SCM-EL-10253.pdf",
@@ -12612,7 +13327,8 @@
    "size": 661126,
    "from": [
     "2000-F22-SCM-EL-10253_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-10203": {
    "file": "SLDs/2000-F23-SCM-EL-10203.pdf",
@@ -12624,7 +13340,8 @@
    "size": 664109,
    "from": [
     "2000-F23-SCM-EL-10203_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F23-SCM-EL-40020": {
    "file": "SLDs/2000-F23-SCM-EL-40020.pdf",
@@ -12696,7 +13413,8 @@
    "size": 630768,
    "from": [
     "2000-F28-SCM-EL-10203_2.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10224": {
    "file": "SLDs/2000-F72-SCM-EL-10224.pdf",
@@ -12708,7 +13426,8 @@
    "size": 672890,
    "from": [
     "2000-F72-SCM-EL-10224_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10225": {
    "file": "SLDs/2000-F72-SCM-EL-10225.pdf",
@@ -12720,7 +13439,8 @@
    "size": 565575,
    "from": [
     "2000-F72-SCM-EL-10225_1.pdf"
-   ]
+   ],
+   "tb": 1
   },
   "2000-F72-SCM-EL-10231": {
    "file": "SLDs/2000-F72-SCM-EL-10231.pdf",

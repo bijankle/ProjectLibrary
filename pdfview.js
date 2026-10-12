@@ -248,7 +248,8 @@ window.PdfView = (() => {
     { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } } V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
     // (in the sheet's bottom right corner, the drawing's short title under it: cur.sub)
-    V.el.querySelector(".sp-dn").innerHTML = cur.label || cur.number ? esc(cur.label || cur.number) + (cur.sub ? `<small>${esc(cur.sub)}</small>` : "") : "";
+    // (cur.nodn: a cleared title block has the number and title printed in its corner box, so no label of the app's own)
+    V.el.querySelector(".sp-dn").innerHTML = !cur.nodn && (cur.label || cur.number) ? esc(cur.label || cur.number) + (cur.sub ? `<small>${esc(cur.sub)}</small>` : "") : "";
     if (cur.number && document.documentElement.classList.contains("phone")) V.el.querySelector(".sp-tt").textContent = (cur.title || "").replace(cur.label || cur.number, "").replace(/^\s*·\s*/, "").trim() || cur.number;
     const dl = V.el.querySelector(".sp-dl"); dl.href = cur.url; dl.download = cur.download || cur.url.split("/").pop();
     // a new view entry, unless this open is a step back / forward through the history
