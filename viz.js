@@ -107,7 +107,9 @@ window.AssetViz = (() => {
       r = Math.max(...bs.map(b => b[0] + b[2])) / 1e4 * W, b = Math.max(...bs.map(q => q[1] + q[3])) / 1e4 * H, vw = box.clientWidth || W, vh = box.clientHeight || H;
       z = Math.max(1, Math.min(2, .8 * Math.min(vw / Math.max(1, r - l), vh / Math.max(1, b - t)))); tx = vw / 2 - (l + r) / 2 * z; ty = vh / 2 - (t + b) / 2 * z; apply(); };
     const zoomAt = (f, x, y) => { const z0 = z; z = Math.max(1, Math.min(10, z * f)); tx = x - (x - tx) * z / z0; ty = y - (y - ty) * z / z0; apply(); };
-    async function sharp(){ if (!page) return; const q = Math.min(4, Math.ceil(z)), dpr = devicePixelRatio || 1; if (q === rz) return; rz = q;
+    // drawn at twice the size it shows at least (a scanned sheet drawn at its own size comes out soft; drawn larger and
+    // shown smaller it is crisp), after a first quick pass at its size so the sheet is up at once (sharp(1))
+    async function sharp(first){ if (!page) return; const q = first || Math.min(4, Math.max(2, Math.ceil(z))), dpr = devicePixelRatio || 1; if (q === rz) return; rz = q;
       const vp = page.getViewport({ scale: sc * q * dpr }), off = document.createElement("canvas"); off.width = Math.round(vp.width); off.height = Math.round(vp.height);
       await page.render({ canvasContext: off.getContext("2d"), viewport: vp }).promise; if (g !== gen || rz !== q) return;
       cv.width = off.width; cv.height = off.height; cv.getContext("2d").drawImage(off, 0, 0); }
@@ -158,7 +160,7 @@ window.AssetViz = (() => {
       sc = Math.min(bw / cw, bh / ch); const vp = pg.getViewport({ scale: sc }); W = vp.width; H = vp.height;
       vw0 = bw; vh0 = Math.round(ch * sc); box.style.height = vh0 + "px"; stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
       const tap = held && held.n === n ? held.tap : null; tapNow = tap; if (held && held.n === n && held.z){ z = held.z; tx = held.tx; ty = held.ty; } else { tx = ty = -1e9; } apply(); held = null;
-      rz = 0; await sharp(); if (g !== gen) return; const nt = box.querySelector(".vz-note"); if (nt) nt.remove();
+      rz = 0; await sharp(1); if (g !== gen) return; setTimeout(() => { if (g === gen) sharp(); }, 250);   // (then sharpened in the background) const nt = box.querySelector(".vz-note"); if (nt) nt.remove();
       const txl = box.querySelector(".vz-tx"); txl.style.setProperty("--scale-factor", sc);
       pg.getTextContent().then(tc => { if (g !== gen || !window.pdfjsLib || !pdfjsLib.renderTextLayer) return;
         return pdfjsLib.renderTextLayer({ textContentSource: tc, container: txl, viewport: pg.getViewport({ scale: 1 }), textDivs: [] }).promise; }).then(() => { if (g === gen) findNow(); }).catch(() => {});
