@@ -48,7 +48,7 @@ window.Pid = (() => {
       const tl = `<div class="sp-cxn"><i>This drawing</i><b>${h(num.replace(/^2000-/, ""))}</b>${me && me.title ? `<span title="${h(me.title)}">${h(short(num))}</span>` : ""}</div>`;
       const seen = new Set([num]), list = [], leg = LEGEND().includes(num);
       // (the drawing you came from first, marked: blue outline and "↩ Back to")
-      // (on a legend sheet: all the sheets in order, this one marked as the one in view, no "Back to")
+      // (on a legend sheet: all the sheets in order, the one in view outlined (no label, so the numbers line up), no "Back to")
       const was = !leg && window.PdfView && PdfView.came && key(PdfView.came() || "");
       const add = n => { const k = key(n); if (k && !seen.has(k) && PICS(k)){ seen.add(k); list.push(k); } };
       // (a legend sheet: the other legend sheets, in order, in place of its connected drawings)
@@ -58,7 +58,7 @@ window.Pid = (() => {
         ((C[num] || {}).r || []).filter(n => /-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(n)).forEach(add); }
       if (!list.length){ el.innerHTML = tl + `<div class="sp-cxt">Connected drawings</div><div class="lk-ns">No other drawings are named on this sheet.</div>`; return; }
       el.innerHTML = tl + `<div class="sp-cxt">${leg ? `P&amp;ID legend · ${list.length} sheets` : `Connected drawings · ${list.length}`}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
-        return `<button type="button" class="sp-cxd${n === was ? " prev" : ""}${n === num ? " cur" : ""}" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n === was ? '<i>↩ Back to</i> ' : n === num ? '<i>Viewing</i> ' : ""}${n.replace(/^2000-/, "")}</b><span>${short(n) || kind(n)}</span></button>`; }).join("") + `</div>`;
+        return `<button type="button" class="sp-cxd${n === was ? " prev" : ""}${n === num ? " cur" : ""}" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n === was ? '<i>↩ Back to</i> ' : ""}${n.replace(/^2000-/, "")}</b><span>${short(n) || kind(n)}</span></button>`; }).join("") + `</div>`;
       // (the ribbons on it leading back here are marked, as when a ribbon is tapped; with none, this drawing's number found)
       { const c = el.querySelector(".sp-cxd.cur"), sc = el.querySelector(".sp-cxs"); if (c && sc) sc.scrollLeft = Math.max(0, c.offsetLeft - sc.offsetLeft - (sc.clientWidth - c.offsetWidth) / 2); }
       el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => { const n = b.dataset.n, back = []; if (n === num) return;
