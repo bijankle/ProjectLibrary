@@ -33,6 +33,7 @@ window.AssetViz = (() => {
   // the whole sheet fits the space with the item marked; drawing number tabs above when there are several; a click on
   // the sheet opens it full screen in the drawing viewer
   let cur = null, shown = null, hist = [], gen = 0, arrival = null, keepView = null, held = null;
+  const bboxP = fetch("sheet-bbox.json").then(r => r.ok ? r.json() : {}).catch(() => ({}));
   const ORD = new Intl.Collator(undefined, { numeric: true });
   const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   // A drawing on show stays while you search (you may be reading tags off it): it changes only when an item with a
@@ -87,6 +88,8 @@ window.AssetViz = (() => {
     el.querySelectorAll(".vz-tab[data-n]").forEach(b => b.onclick = () => { if (b.dataset.n) go(b.dataset.n); });
     const box = el.querySelector(".vz-sheet"), stage = box.querySelector(".vz-stage"), cv = box.querySelector("canvas"), key = cur.key;
     let z = 1, tx = 0, ty = 0, W = 0, H = 0, page = null, sc = 1, rz = 0, rt = null;
+    // the drawing's own box on the page (sheet-bbox.json, fractions): the view fits that, not the page's empty margin
+    let bb = [0, 0, 1, 1], vw0 = 0, vh0 = 0;
     // the place tapped or found: a highlighted box on it (no arrow), in 1/10000 of the sheet, grown a little as in the full screen viewer
     // turn the click boxes passing test(i, ref) blue; how many
     const pick = test => { const rf = box.querySelector(".vz-rf"); let n = 0; [...rf.children].forEach((e, i) => { const on = !!(refsNow[i] && test(i, refsNow[i])); e.classList.toggle("pick", on); n += on; }); report(); return n; };
@@ -95,7 +98,9 @@ window.AssetViz = (() => {
       kcgmDv({ key: cur.key, n, z, tx, ty, tap: pi >= 0 && boxes[pi] ? boxes[pi] : (tapNow || null) }); }, 350); };
     let tapNow = null;
     const hbox = (l, t, w, h) => { const [a, b, c, d] = PdfView.grow(l, t, w, h, W / H); return `<i class="sp-hb sp-hbon" style="left:${a / 1e4 * W}px;top:${b / 1e4 * H}px;width:${c / 1e4 * W}px;height:${d / 1e4 * H}px"></i>`; };
-    const apply = () => { z = Math.max(1, Math.min(10, z)); tx = Math.min(0, Math.max(W - W * z, tx)); ty = Math.min(0, Math.max(H - H * z, ty));
+    // (the drawing kept in the window: centred while smaller than it, else no further than its edges)
+    const fitAx = (t, a, b, page, view) => { const lo = a * page * z, hi = b * page * z; return hi - lo <= view ? (view - (hi - lo)) / 2 - lo : Math.min(-lo, Math.max(view - hi, t)); };
+    const apply = () => { z = Math.max(1, Math.min(10, z)); tx = fitAx(tx, bb[0], bb[2], W, vw0 || W); ty = fitAx(ty, bb[1], bb[3], H, vh0 || H);
       stage.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; stage.style.setProperty("--iz", (1 / z).toFixed(4)); stage.style.setProperty("--rbw", (1.5 / z).toFixed(3) + "px"); clearTimeout(rt); rt = setTimeout(sharp, 180); report(); };
     // zoom onto boxes ([l, t, w, h] in 1/10000 of the sheet): all of them in view, but never closer than 4x
     const focus = bs => { if (!bs.length) return; const l = Math.min(...bs.map(b => b[0])) / 1e4 * W, t = Math.min(...bs.map(b => b[1])) / 1e4 * H,
@@ -109,7 +114,7 @@ window.AssetViz = (() => {
     const zbClick = e => { const b = e.target.closest("button"); if (!b) return; e.stopPropagation();
       if (b.dataset.z === "full") return Pid.open(n, cur.t === "pid" ? null : key);
       if (b.dataset.z === "hand" || b.dataset.z === "sel"){ try { localStorage.setItem("kcgm_spm", b.dataset.z); } catch (x) {} mode(); return; }
-      if (b.dataset.z === "fit"){ z = 1; tx = ty = 0; apply(); return; }
+      if (b.dataset.z === "fit"){ z = 1; tx = -1e9; ty = -1e9; apply(); return; }
       zoomAt(b.dataset.z === "in" ? 1.6 : 1 / 1.6, W / 2, H / 2); };
     box.querySelector(".vz-zb").onclick = zbClick; el.querySelector(".vz-tg").onclick = zbClick;
     box.addEventListener("wheel", e => { e.preventDefault(); const r = box.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * .001), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
@@ -148,9 +153,11 @@ window.AssetViz = (() => {
     PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
       if (g !== gen) return; page = pg;
       const v1 = pg.getViewport({ scale: 1 }), bw = box.clientWidth, bh = Math.max(200, innerHeight - box.getBoundingClientRect().top - 24);
-      sc = Math.min(bw / v1.width, bh / v1.height); const vp = pg.getViewport({ scale: sc }); W = vp.width; H = vp.height;
-      box.style.height = H + "px"; stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
-      const tap = held && held.n === n ? held.tap : null; tapNow = tap; if (held && held.n === n && held.z){ z = held.z; tx = held.tx; ty = held.ty; apply(); } held = null;
+      bb = (await bboxP)[d.file] || [0, 0, 1, 1]; if (g !== gen) return;
+      const cw = (bb[2] - bb[0]) * v1.width, ch = (bb[3] - bb[1]) * v1.height;
+      sc = Math.min(bw / cw, bh / ch); const vp = pg.getViewport({ scale: sc }); W = vp.width; H = vp.height;
+      vw0 = bw; vh0 = Math.round(ch * sc); box.style.height = vh0 + "px"; stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
+      const tap = held && held.n === n ? held.tap : null; tapNow = tap; if (held && held.n === n && held.z){ z = held.z; tx = held.tx; ty = held.ty; } else { tx = ty = -1e9; } apply(); held = null;
       rz = 0; await sharp(); if (g !== gen) return; const nt = box.querySelector(".vz-note"); if (nt) nt.remove();
       const txl = box.querySelector(".vz-tx"); txl.style.setProperty("--scale-factor", sc);
       pg.getTextContent().then(tc => { if (g !== gen || !window.pdfjsLib || !pdfjsLib.renderTextLayer) return;
