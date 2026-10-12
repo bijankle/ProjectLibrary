@@ -48,18 +48,20 @@ window.Pid = (() => {
       const tl = `<div class="sp-cxn"><i>This drawing</i><b>${h(num.replace(/^2000-/, ""))}</b>${me && me.title ? `<span title="${h(me.title)}">${h(short(num))}</span>` : ""}</div>`;
       const seen = new Set([num]), list = [], leg = LEGEND().includes(num);
       // (the drawing you came from first, marked: blue outline and "↩ Back to")
-      const was = window.PdfView && PdfView.came && key(PdfView.came() || "");
+      // (on a legend sheet: all the sheets in order, this one marked as the one in view, no "Back to")
+      const was = !leg && window.PdfView && PdfView.came && key(PdfView.came() || "");
       const add = n => { const k = key(n); if (k && !seen.has(k) && PICS(k)){ seen.add(k); list.push(k); } };
       // (a legend sheet: the other legend sheets, in order, in place of its connected drawings)
       if (was && was !== num) add(was);
-      if (leg) LEGEND().forEach(add);
+      if (leg){ seen.delete(num); LEGEND().forEach(add); }
       else { (R[num] || []).forEach(r => { if (r[6] === "d") String(r[5]).split("|").forEach(add); });
         ((C[num] || {}).r || []).filter(n => /-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(n)).forEach(add); }
       if (!list.length){ el.innerHTML = tl + `<div class="sp-cxt">Connected drawings</div><div class="lk-ns">No other drawings are named on this sheet.</div>`; return; }
-      el.innerHTML = tl + `<div class="sp-cxt">${leg ? `P&amp;ID legend · ${list.length + 1} sheets` : `Connected drawings · ${list.length}`}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
-        return `<button type="button" class="sp-cxd${n === was ? " prev" : ""}" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n === was ? '<i>↩ Back to</i> ' : ""}${n.replace(/^2000-/, "")}</b><span>${short(n) || kind(n)}</span></button>`; }).join("") + `</div>`;
+      el.innerHTML = tl + `<div class="sp-cxt">${leg ? `P&amp;ID legend · ${list.length} sheets` : `Connected drawings · ${list.length}`}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
+        return `<button type="button" class="sp-cxd${n === was ? " prev" : ""}${n === num ? " cur" : ""}" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png"><b>${n === was ? '<i>↩ Back to</i> ' : n === num ? '<i>Viewing</i> ' : ""}${n.replace(/^2000-/, "")}</b><span>${short(n) || kind(n)}</span></button>`; }).join("") + `</div>`;
       // (the ribbons on it leading back here are marked, as when a ribbon is tapped; with none, this drawing's number found)
-      el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => { const n = b.dataset.n, back = [];
+      { const c = el.querySelector(".sp-cxd.cur"), sc = el.querySelector(".sp-cxs"); if (c && sc) sc.scrollLeft = Math.max(0, c.offsetLeft - sc.offsetLeft - (sc.clientWidth - c.offsetWidth) / 2); }
+      el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => { const n = b.dataset.n, back = []; if (n === num) return;
         (R[n] || []).forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").some(t => key(t) === num)) back.push(j); });
         open(n, back.length || leg ? null : num, { keep: true, extent: true, back: back.length ? back : undefined, legendFrom: leg ? legendFrom : undefined }); });
     });
