@@ -42,6 +42,12 @@ window.Pid = (() => {
   const LEGEND = () => IX ? Object.keys(IX.pids).filter(k => /-PID-/.test(k) && /legend/i.test(IX.pids[k].title || "")).sort() : [];
   const LGI = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="9" cy="8.5" r="1.6"/><path d="M13 8.5h4M7.5 13.5h3M13 13.5h4M7.5 17.5h3M13 17.5h4"/></svg>';
   let SW = null;
+  // the drawings of one kind (P&IDs, PFDs, SLDs, TLDs, schematics, block diagrams, layouts) in number order; the one
+  // after / before a drawing in that row (none past either end)
+  const KINDX = /-(PID|PFD|SLD|TLD|SCM|BLK|DRG)-/, ROWS = {};
+  const inRow = (n, dir) => { const k = (n.match(KINDX) || [])[1]; if (!k || !IX) return null;
+    const row = ROWS[k] || (ROWS[k] = Object.keys(IX.pids).filter(x => (x.match(KINDX) || [])[1] === k && PICS(x)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })));
+    const i = row.indexOf(n); return i < 0 ? null : row[i + dir] || null; };
   function panel(el, num, legendFrom){
     Promise.all([refs(), ct()]).then(([R, C]) => {
       // (the drawing itself heads it, number and title, as the tiles under it: the phone shows no title bar over the app's header)
@@ -66,9 +72,9 @@ window.Pid = (() => {
         (R[n] || []).forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").some(t => key(t) === num)) back.push(j); });
         open(n, back.length || leg ? null : num, { keep: true, extent: true, back: back.length ? back : undefined, legendFrom: leg ? legendFrom : undefined }); };
       el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => go(b.dataset.n));
-      // a swipe across the whole sheet (pdfview.js): on the legend, the next / previous sheet in order; elsewhere, to the
-      // left the first connected drawing (not the one you came from), to the right back to the one you came from
-      SW = { num, target: dir => leg ? list[list.indexOf(num) + dir] : dir > 0 ? list.find(x => x !== was) || list[0] : was || null, go };
+      // a swipe across the whole sheet (pdfview.js): on the legend, the next / previous sheet in order; elsewhere the
+      // next / previous drawing number of the same kind (2000-F00-PID-PR-10001, then …-10002)
+      SW = { num, target: dir => leg ? list[list.indexOf(num) + dir] : inRow(num, dir), go };
     });
   }
   // (only drawings with a ready-made picture: the row is pictures)
