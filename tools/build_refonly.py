@@ -73,6 +73,14 @@ for n, (t, rev, kind, url) in IOMD.items():
     if n in byn: byn[n]['iom'] = 1; continue
     r = REG.get(n)
     out.append({'n': n, 'g': grp(n), 't': t, 'ts': 'reg', 'rev': rev, 'st': r[5] if r else '', 'url': url, 'in': {}, 'x': 0, 'xr': 0, 'inbox': False, 'iom': 1})
+# every project Process Control Table (2000-Fxx-LST-PR-…, register title "PROCESS CONTROL TABLES …") the app doesn't hold
+# is listed too, mentioned or not ("pct" marks them), so they can be downloaded and dropped back for tools/build_pct.py
+# (the vendors' control tables, 2000-AA001-…, are left out)
+for n, r in REG.items():
+    if not re.fullmatch(r'2000-F\d{2}-LST-PR-\d{5}', n) or not str(r[6] or '').upper().startswith('PROCESS CONTROL TABLES') or n in held or n in inbox: continue
+    if n in byn: byn[n]['pct'] = 1; continue
+    o = {'n': n, 'g': grp(n), 't': r[6], 'ts': 'reg', 'rev': r[4], 'st': r[5], 'url': r[1], 'in': {}, 'x': 0, 'xr': 0, 'inbox': False, 'pct': 1}
+    out.append(o); byn[n] = o
 out.sort(key=lambda o: (-o['x'], -o['xr']))
 hd = {}
 for n in sorted(held):

@@ -295,7 +295,7 @@ window.SourcesList = (() => {
     const ROG = [["", "All"], ["project", "Project 2000"], ["vendor", "Vendor"], ["legacy", "Legacy KCGM"], ["other", "Other"]];
     // the left side bar serves both tabs: on Ref Only it shows All, the families and the document types (one picked
     // at a time: roG "" | "project" … | "t:SCM"), each with its count; the search box above filters both
-    const roType = o => { if (o.iom) return "IOM"; const m = /^\d{4}-[A-Z]\d+-([A-Z]{3})-/.exec(o.n); return m ? m[1] : ""; };
+    const roType = o => { if (o.iom) return "IOM"; if (o.pct) return "PCT"; const m = /^\d{4}-[A-Z]\d+-([A-Z]{3})-/.exec(o.n); return m ? m[1] : ""; };
     async function setTab(v){ tab = v; el.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
       const R2 = v !== "att";   // (Ref Only and Old Revs share the table, the side bar filters and the buttons; Old Revs has no Excel)
       $(".sl-tree").hidden = R2; $(".sl-ro").hidden = !R2; $(".sl-sa").hidden = R2; $(".sl-sr").hidden = !R2; el.querySelectorAll(".sl-roc").forEach(x => x.hidden = !R2 || (v === "old" && !x.matches(".sl-rou,.sl-rod")));
@@ -335,7 +335,7 @@ window.SourcesList = (() => {
       const tb = $(".sl-rtb"); if (tb && window.TSort) TSort.keep(tb, "oldrevs"); }
     // the Excel download: the rows as shown (pill, search and sort), one tidy table with columns to sort and filter by,
     // the doc number a link to its SharePoint copy; a second sheet counts them by family and type
-    const DT = { DRG: "Drawing", SCM: "Schematic", SLD: "Single line diagram", TER: "Termination diagram", TLD: "Three line diagram", STD: "Standard drawing", LST: "List", PID: "P&ID", STS: "Specification", DSH: "Datasheet", REP: "Report", BLK: "Block diagram", TQY: "Technical query", PFD: "PFD", IOM: "IOM manual", SKT: "Sketch", SOW: "Scope of work", PHL: "Philosophy", DCR: "Design criteria", CAL: "Calculation", GAD: "General arrangement", LAY: "Layout" };
+    const DT = { PCT: "Process control tables", DRG: "Drawing", SCM: "Schematic", SLD: "Single line diagram", TER: "Termination diagram", TLD: "Three line diagram", STD: "Standard drawing", LST: "List", PID: "P&ID", STS: "Specification", DSH: "Datasheet", REP: "Report", BLK: "Block diagram", TQY: "Technical query", PFD: "PFD", IOM: "IOM manual", SKT: "Sketch", SOW: "Scope of work", PHL: "Philosophy", DCR: "Design criteria", CAL: "Calculation", GAD: "General arrangement", LAY: "Layout" };
     const DI = { EL: "Electrical", PP: "Piping", IC: "Instrumentation & control", ME: "Mechanical", PR: "Process", GE: "General", CV: "Civil", ST: "Structural", CC: "Concrete", PM: "Project management" };
     const FAM = Object.fromEntries(ROG);
     function roXlsx(){ if (!RO || !window.XLSX) return;
