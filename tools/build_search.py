@@ -159,3 +159,6 @@ except (OSError, ValueError, KeyError): pass
 out = {"built": "tools/build_search.py", "types": TYPES, "data": DATA}
 json.dump(out, open(OUT, "w"), ensure_ascii=False, separators=(",", ":"))
 print({k: len(v) for k, v in DATA.items()}, round(os.path.getsize(OUT) / 1e6, 2), "MB")
+
+# the same tag spelt the same way in every list (XV 12551 -> XV12551; number-only valve tags get their letters)
+import subprocess, sys; subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "unify_tags.py")], check=True)

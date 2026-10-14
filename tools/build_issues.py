@@ -132,6 +132,12 @@ if os.path.exists(PR):
             add("Instrument", "Missing", src, f"Controlled in the process control tables ({c['s'].lower()} {c['t']}" + (f", {c['pid']}" if c.get("pid") else "") + ")", pk(d0),
                 "Not in the instrument list", INS, "In the process control tables only. Kept as a control tag (searchable); raise with the instrument list owner.")
 
+# ---------- control valve list tags given as a number only (tools/unify_tags.py read the letters off the P&ID) ----------
+FXP = os.path.join(HERE, "tag_fixes.json")
+for x in (json.load(open(FXP)) if os.path.exists(FXP) else []):
+    add("Valve", "Check", x["new"], f"Tagged {x['old']} (number only, no letters)", CV, f"Drawn as {x['new'][:-len(x['old'])]} {x['old']}", x["pid"],
+        f"The app names it {x['new']} from the letters in its bubble on {x['pid']}. Raise with the control valve list owner to add the letters.")
+
 meta = {"rule": "Where two documents clash, the one with the more recent revision date is taken as true unless the comment says why not.",
         "sources": {v["title"]: {"doc": doc(k), "date": v["date"], "status": v["status"]} for k, v in REV.items()},
         "docs": REV}

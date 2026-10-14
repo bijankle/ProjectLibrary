@@ -58,6 +58,10 @@
         else if (!byKey.has(k)) return m;
         let a = refs.get(k); if (!a) refs.set(k, a = []); if (a[a.length - 1] !== it) a.push(it); return m; }); }); });
     pids.forEach((m, k) => { const it = { t: "pid", key: m, k, name: "P&ID drawing: everything shown on it", r: null, p: dwgProj(k) }; items.push(it); addKey(k, it); });
+    // one tag in two lists is one asset (XV12551 in the instrument list and the control valve list; a hose special in the
+    // SPI list and the hose list): the second list's entry opens the first's page and leaves the search results, and the
+    // asset is counted and filtered under both lists ("also")
+    items.forEach(it => { const p = PAIR[it.t] && (byKey.get(it.k) || []).find(x => x.t === PAIR[it.t]); if (p){ it.dupOf = p; (p.also = p.also || []).includes(it.t) || p.also.push(it.t); } });
     indexExtras(extras);
   }
   function nameOf(t, r){
@@ -72,6 +76,9 @@
     if (t === "cable") return [g("From") && "from " + g("From"), g("To") && "to " + g("To")].filter(Boolean).join(" ");
     return r[1] || "";
   }
+  const PAIR = { cv: "ins", hose: "spi" };   // (a second list's entry: the list whose entry is the asset)
+  L.kindOf = it => [it.t, ...(it.also || [])].map(t => typeName(t)).join(" · ");
+  L.isType = (it, t) => it.t === t || !!(it.also && it.also.includes(t));
   const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "Drawing" : t === "spec" ? "Pipe & valve spec" : t === "otag" ? "Read on drawings" : DB.types[t].n;
   const textOf = it => it.txt || (it.txt = (it.r ? it.r.join(" ") : it.key + " " + it.name).toLowerCase());
 
@@ -82,6 +89,7 @@
     const out = [];
     for (const it of items){
       if (it.p && !PJ[it.p]) continue;
+      if (it.dupOf) continue;   // (one result per asset: the second list's entry is on the first's page)
       let s = 0;
       if (it.k === nq) s = 100; else if (it.k.startsWith(nq)) s = 80 - Math.min(10, it.k.length - nq.length) / 2; else if (nq.length >= 3 && it.k.includes(nq)) s = 60 - Math.min(10, it.k.length - nq.length) / 2;
       if (!s && words.length && words.every(w => textOf(it).includes(w))) s = 30 + (words.every(w => String(it.name).toLowerCase().includes(w)) ? 8 : 0);
@@ -106,7 +114,7 @@
     if (!hits.length) return `<div class="lk-empty">No match for “${esc(q)}”. Try fewer characters, e.g. the number only.</div>`;
     // one line per result: icon, code, description (the pill shows the list it comes from)
     const codey = k => !/\s\S+\s/.test(k) || k.length < 16;   // a tag or number, not a sentence (PFD stream names)
-    return hits.map((it, i) => `<button class="lk-row1 lk-1l${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(typeName(it.t))}">${L.row1(it.key, L.listName(it), L.tsfTag(it))}</button>`).join("");
+    return hits.map((it, i) => `<button class="lk-row1 lk-1l${codey(it.key) ? "" : " txt"}" data-i="${i}" title="${esc(L.kindOf(it))}">${L.row1(it.key, L.listName(it), L.tsfTag(it))}</button>`).join("");
   };
   const PILLN = { otag: "Read on drawings", ctl: "Control tags", mel: "Equipment", elec: "Electrical equipment", cable: "Cables", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", pid: "Drawings", spec: "Spec", pfd: "PFD", gloss: "Glossary" };
   const KEYF = {
@@ -271,7 +279,7 @@
   L.listName = it => it.t === "line" ? L.lineText(it) : headName(it);
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
-    let h = `<div class="lk-head"><div class="lk-hs"><div class="lk-kind">${esc(typeName(it.t))}</div><span class="lk-slot"></span></div><div class="lk-hb">` +
+    let h = `<div class="lk-head"><div class="lk-hs"><div class="lk-kind">${esc(L.kindOf(it))}</div><span class="lk-slot"></span></div><div class="lk-hb">` +
       `<div class="lk-kr">` + (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + `<span class="lk-vslot"></span></div>` + (it.t === "pid" ? (PHONE() && dwg && dwg.title ? `<div class="lk-name">${esc(dwg.title)}</div>` : "") : it.r && !PHONE() || it.t === "spec" || it.t === "line" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
       `</div></div>`;
     // a drawing: no summary lines (the preview beside it shows the number and title); the phone has no preview, so the title stays there
@@ -573,9 +581,9 @@
       if (q.trim().length < 2){ status(""); body.innerHTML = opts.intro || ""; return; }
       if (!keepN) shownN = 80;
       const all = L.search(q, 100000), counts = {};
-      all.forEach(it => counts[it.t] = (counts[it.t] || 0) + 1);
+      all.forEach(it => [it.t, ...(it.also || [])].forEach(t => counts[t] = (counts[t] || 0) + 1));
       if (only && !counts[only]) only = "";
-      const list = only ? all.filter(it => it.t === only) : all;
+      const list = only ? all.filter(it => L.isType(it, only)) : all;
       hits = list; lastList = list;
       status(all.length ? `Results <b>${(only ? list.length : all.length).toLocaleString()}</b>` : "");
       const types = TYPE_ORDER.filter(t => counts[t]);
@@ -597,6 +605,7 @@
     const stepList = it => { if (ctx && ctx.includes(it)) return ctx;
       const all = items.filter(x => x.t === it.t && x.r !== undefined).sort((a, b) => ORD.compare(a.key, b.key)); ctx = all; return all; };
     const open = (it, push, how) => {
+      if (it && it.dupOf) it = it.dupOf;   // (the asset's page, whichever list it was picked from)
       if (!it) return; remember(it); showingRecent = false; if (it.go){ it.go(); return; }
       // phone: a drawing opens straight on the sheet (its properties page is for the desktop), the item you came from marked
       if (PHONE() && it.t === "pid" && window.Pid && Pid.has(it.key)){ Pid.open(it.key, cur && cur.t !== "pid" ? cur.key : null); return; }
