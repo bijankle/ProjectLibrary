@@ -72,18 +72,33 @@ window.Pid = (() => {
       if (leg){ seen.delete(num); LEGEND().forEach(add); }
       else { (R[num] || []).forEach(r => { if (r[6] === "d") String(r[5]).split("|").forEach(add); });
         ((C[num] || {}).r || []).filter(n => /-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(n)).forEach(add); }
+      const go = n => { const back = []; if (!n || n === num) return;
+        (R[n] || []).forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").some(t => key(t) === num)) back.push(j); });
+        open(n, back.length || leg ? null : num, { keep: true, extent: true, back: back.length ? back : undefined, legendFrom: leg ? legendFrom : undefined }); };
+      // a swipe across the whole sheet, or its ‹ › arrows (pdfview.js): on the legend, the next / previous sheet in
+      // order; elsewhere the next / previous drawing number of the same kind (2000-F00-PID-PR-10001, then …-10002)
+      SW = { num, target: dir => leg ? list[list.indexOf(num) + dir] : inRow(num, dir), go };
+      if (window.PdfView && PdfView.arrows) PdfView.arrows();
+      // under the sheet: what is on it, a pill per kind with its count (All first), then the tags, one line each; a tag
+      // tapped zooms the sheet to it (tap it there to open its page)
+      if (window.Lookup && Lookup.find){
+        const nm = s => String(s || "").toUpperCase().replace(/[\s\-_/.]+/g, ""), PN = { mel: "Equipment", elec: "Electrical", cable: "Cables", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spi: "Specials", hose: "Hoses", ctl: "Control tags", otag: "Read on drawing" };
+        const its = [...new Set(((C[num] || {}).k || []).map(t => { const f = Lookup.find(nm(t)); return f && f.dupOf ? f.dupOf : f; }).filter(x => x && x.t !== "pid"))];
+        const ord = Object.keys(PN); its.sort((a, b) => ord.indexOf(a.t) - ord.indexOf(b.t) || String(a.key).localeCompare(String(b.key), undefined, { numeric: true }));
+        const cnt = {}; its.forEach(it => [it.t, ...(it.also || [])].forEach(t => cnt[t] = (cnt[t] || 0) + 1));
+        const types = ord.filter(t => cnt[t]); let only = "";
+        const rows = () => its.filter(it => !only || it.t === only || (it.also || []).includes(only)).map(it => `<button type="button" class="sp-cxr" data-k="${h(it.key)}"><b>${h(it.key)}</b><span>${h(Lookup.listName ? Lookup.listName(it) : it.name)}</span></button>`).join("");
+        const draw = () => { el.innerHTML = !its.length ? `<div class="lk-ns">No tags read on this sheet.</div>` : `<div class="sp-cxp"><button type="button" class="sp-cxpl${only ? "" : " on"}" data-t="">All <i>${its.length}</i></button>${types.map(t => `<button type="button" class="sp-cxpl${only === t ? " on" : ""}" data-t="${t}">${PN[t]} <i>${cnt[t]}</i></button>`).join("")}</div><div class="sp-cxl">${rows()}</div>`;
+          el.querySelectorAll(".sp-cxpl").forEach(b => b.onclick = () => { only = b.dataset.t; draw(); });
+          el.querySelectorAll(".sp-cxr").forEach(b => b.onclick = () => PdfView.find && PdfView.find(b.dataset.k)); };
+        draw(); return;
+      }
       if (!list.length){ el.innerHTML = tl + `<div class="sp-cxt">Connected drawings</div><div class="lk-ns">No other drawings are named on this sheet.</div>`; return; }
       el.innerHTML = tl + `<div class="sp-cxt">${leg ? `P&amp;ID legend · ${list.length} sheets` : `Connected drawings · ${list.length}`}</div><div class="sp-cxs">` + list.map(n => { const d = info(n);
         return `<button type="button" class="sp-cxd${n === was ? " prev" : ""}${n === num ? " cur" : ""}" data-n="${n}" title="${(d.title || "").replace(/"/g, "&quot;")}"><img loading="lazy" decoding="async" alt="" src="${d.file}.p1.png">${n === was ? '<i class="sp-cxb" title="Back to this drawing">↩</i>' : ""}<b>${n.replace(/^2000-/, "")}</b><span>${short(n) || kind(n)}</span></button>`; }).join("") + `</div>`;
       // (the ribbons on it leading back here are marked, as when a ribbon is tapped; with none, this drawing's number found)
       { const c = el.querySelector(".sp-cxd.cur"), sc = el.querySelector(".sp-cxs"); if (c && sc) sc.scrollLeft = Math.max(0, c.offsetLeft - sc.offsetLeft - (sc.clientWidth - c.offsetWidth) / 2); }
-      const go = n => { const back = []; if (!n || n === num) return;
-        (R[n] || []).forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").some(t => key(t) === num)) back.push(j); });
-        open(n, back.length || leg ? null : num, { keep: true, extent: true, back: back.length ? back : undefined, legendFrom: leg ? legendFrom : undefined }); };
       el.querySelectorAll(".sp-cxd").forEach(b => b.onclick = () => go(b.dataset.n));
-      // a swipe across the whole sheet (pdfview.js): on the legend, the next / previous sheet in order; elsewhere the
-      // next / previous drawing number of the same kind (2000-F00-PID-PR-10001, then …-10002)
-      SW = { num, target: dir => leg ? list[list.indexOf(num) + dir] : inRow(num, dir), go };
     });
   }
   // (only drawings with a ready-made picture: the row is pictures)

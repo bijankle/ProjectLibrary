@@ -33,6 +33,9 @@ window.PdfView = (() => {
       <button class="sp-ze" data-a="fit" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>`;
     // phone, sheet at fit: the room left under the sheet holds a panel (cur.panel fills it: the connected drawings, pid.js)
     const cx = document.createElement("div"); cx.className = "sp-cx"; cx.hidden = true; el.appendChild(cx);
+    // phone, the whole sheet in view: ‹ › on its left and right edges, the drawing before / after (as a swipe)
+    ["l", "r"].forEach(sd => { const a = document.createElement("button"); a.type = "button"; a.className = "sp-arw " + sd; a.hidden = true; a.textContent = sd === "l" ? "‹" : "›";
+      a.title = sd === "l" ? "The drawing before" : "The drawing after"; a.onclick = e => { e.stopPropagation(); if (cur && cur.swipe) cur.swipe(sd === "l" ? -1 : 1, true); }; el.appendChild(a); });
     // a button in the top right corner over the sheet, set by the opener (cur.corner: { html, title, go }): P&IDs' Drawing legend
     const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
     cb.onclick = () => cur && cur.corner && cur.corner.go();
@@ -495,15 +498,20 @@ window.PdfView = (() => {
   }
   // the panel under the sheet: shown on a phone while the whole sheet is in view and leaves room under it (upright, not
   // typing in the find box), from the sheet's foot down to the buttons; zooming in gives the screen back to the sheet
+  // the ‹ › arrows: halfway down the sheet's sides, each only when there is a drawing that way (set again once the
+  // panel has worked out the row, pid.js)
+  function arrows(){ if (!V) return; const on = V.el.classList.contains("cx-on") && cur && cur.swipe, e = V.el.getBoundingClientRect(), s = V.sheet.getBoundingClientRect();
+    V.el.querySelectorAll(".sp-arw").forEach(a => { const dir = a.classList.contains("l") ? -1 : 1, ok = !!(on && cur.swipe(dir)); a.hidden = !ok; if (!ok) return;
+      a.style.top = Math.round(s.top - e.top + s.height / 2 - a.offsetHeight / 2) + "px"; a.style.left = Math.round((dir < 0 ? s.left + 6 : s.right - 6 - a.offsetWidth) - e.left) + "px"; }); }
   function cxFit(){
-    if (!V || !V.cx) return; const c = V.cx; V.el.classList.toggle("cx-on", false);
+    if (!V || !V.cx) return; const c = V.cx; V.el.classList.toggle("cx-on", false); V.el.querySelectorAll(".sp-arw").forEach(a => a.hidden = true);
     if (!cur || !cur.panel || desk() || V.el.hidden || V.zoom > 1.001 || V.rot || V.el.classList.contains("typing")){ c.hidden = true; return; }
     const e = V.el.getBoundingClientRect(), sb = V.sheet.getBoundingClientRect().bottom; let lim = V.body.getBoundingClientRect().bottom;
     V.el.querySelectorAll(".sp-top").forEach(t => { const r = t.getBoundingClientRect(); if (r.height && r.top > e.top + e.height / 2) lim = Math.min(lim, r.top); });
     const room = lim - sb - 14; if (room < 120){ c.hidden = true; return; }
     c.style.top = Math.round(sb - e.top + 6) + "px"; c.style.height = Math.round(room) + "px";
     if (V.cxFor !== cur){ V.cxFor = cur; c.innerHTML = ""; cur.panel(c); }
-    c.hidden = false; V.el.classList.add("cx-on");
+    c.hidden = false; V.el.classList.add("cx-on"); arrows();
   }
   // Both layers draw off screen and are swapped in whole when finished, so nothing blanks or jumps while panning.
   let bgTask = null, hiTask = null, bgGen = 0, hiGen = 0;
@@ -665,5 +673,7 @@ window.PdfView = (() => {
   // (whichever way you left it: the strip, a ribbon, ← or →; the visit's first drawing has none)
   let lastNum = null;
   const came = () => lastNum && cur && lastNum !== cur.number ? lastNum : null;
-  return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, panelOn: () => !!(V && V.cx && !V.cx.hidden && !V.el.hidden), clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
+  return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, arrows,
+    // a tag picked from the list under the sheet: zoomed to and marked by its box (pid-refs.json), else found in the text
+    find: t => { if (!V || !cur) return; fitFilter(t, true); if (V.fmatch.length){ V.fstep = -1; fitStep(1); return; } fitFilter(""); findText(t, true); }, panelOn: () => !!(V && V.cx && !V.cx.hidden && !V.el.hidden), clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
 })();
