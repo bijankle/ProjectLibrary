@@ -12,7 +12,7 @@ R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RP = os.environ.get("KCGM_PRIVATE") or os.path.join(os.path.dirname(R), "projectlibraryprivate")
 nk = lambda s: re.sub(r"[^A-Z0-9]", "", str(s or "").upper())
 rf = max(glob.glob(os.path.join(RP, "sources", "register", "*.xls[xm]")), key=os.path.getmtime)
-REG = {}
+REG = {}; TT = {}   # (TT: each number's title in the register, for the ⓘ beside its link, sp-titles.json)
 def rk(rev, url):
     r = str(rev or "").strip().upper(); pdf = url.lower().endswith(".pdf")
     return (pdf, r.isdigit(), int(r) if r.isdigit() else 0, r)
@@ -22,6 +22,7 @@ for row in openpyxl.load_workbook(rf, read_only=True, data_only=True).worksheets
     k = nk(num)
     if len(k) < 7: continue
     if k not in REG or rk(rev, url) > rk(REG[k][2], REG[k][1]): REG[k] = (str(num).strip(), str(url), rev)
+    if row[6] and k not in TT: TT[k] = re.sub(r"\s+", " ", str(row[6])).strip()
 # the latest revision on SharePoint (tools/doclist.py, the library's file list) replaces the register's link, and
 # numbers missing from the register get one too
 import sys; sys.path.insert(0, os.path.join(R, "tools")); from doclist import latest
@@ -59,6 +60,8 @@ sp = {REG[k][0]: REG[k][1] for k in sorted(found)}
 json.dump(sp, open(os.path.join(R, "sp.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 # the documents the app holds: their SharePoint address too, kept apart (sp-held.json) so text links to them still
 # open in the app; the Sources list puts it on the document number
+# the title and latest revision of every document the app links to (the ⓘ beside a link shows them, lookup.js)
+json.dump({REG[k][0]: [TT.get(k, ""), str(REG[k][2] or "")] for k in sorted(found | held) if k in REG}, open(os.path.join(R, "sp-titles.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 hsp = {REG[k][0]: REG[k][1] for k in sorted(held) if k in REG}
 json.dump(hsp, open(os.path.join(R, "sp-held.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 print(len(hsp), "of", len(held), "held documents have a SharePoint link;", "none for", sorted(k for k in held if k and k not in REG)[:15])

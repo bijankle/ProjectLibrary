@@ -103,12 +103,36 @@
   // ---------- rendering ----------
   // a drawing in the app: its number links straight to the drawing; any other known code links to its page
   // a document the app doesn't hold opens SharePoint (sp.js); a list held in the app opens in Sources
+  // ⓘ beside a document link: a tap shows the document's title and revision in a small callout under it (so the right
+  // one of several, say ten IOMs on one pump, is picked before anything opens). Titles: the drawing index, the IOM list,
+  // the documents held in Sources, else the project register (sp-titles.json, loaded on the first tap)
+  const DI = n => `<button type="button" class="lk-di" data-n="${esc(n)}" aria-label="Title of ${esc(n)}" title="Title">i</button>`;
+  let SPT = null, DOCT = null;
+  const docInfo = async n => {
+    if (window.Pid && Pid.has(n)){ const d = Pid.info(n) || {}; return { t: d.title || "", r: d.rev || "" }; }
+    if (IOM && IOM.d[n]) return { t: IOM.d[n][0], r: IOM.d[n][1] };
+    if (!DOCT) DOCT = fetch("issues.json").then(r => r.json()).then(d => { const m = new Map(); Object.values((d.meta && d.meta.docs) || {}).forEach(x => x.number && m.set(norm(x.number), { t: x.full || x.title, r: x.rev })); return m; }).catch(() => new Map());
+    const h = (await DOCT).get(norm(n)); if (h) return h;
+    if (!SPT) SPT = fetch("sp-titles.json").then(r => r.json()).then(d => new Map(Object.entries(d).map(([k, v]) => [norm(k), { t: v[0], r: v[1] }]))).catch(() => new Map());
+    return (await SPT).get(norm(n)) || { t: "", r: "" }; };
+  let popEl = null;
+  const popClose = () => { if (popEl){ popEl.remove(); popEl = null; } };
+  document.addEventListener("click", async e => { const b = e.target.closest && e.target.closest(".lk-di");
+    if (!b){ if (popEl && !e.target.closest(".lk-dip")) popClose(); return; }
+    e.preventDefault(); e.stopPropagation(); const n = b.dataset.n; if (popEl && popEl.dataset.n === n){ popClose(); return; } popClose();
+    const el = popEl = document.createElement("div"); el.className = "lk-dip"; el.dataset.n = n; el.innerHTML = `<b>${esc(n)}</b><span>Loading…</span>`; document.body.appendChild(el);
+    const place = () => { const r = b.getBoundingClientRect(), w = el.offsetWidth, vw = document.documentElement.clientWidth;
+      el.style.left = Math.max(8, Math.min(vw - w - 8, r.left + r.width / 2 - w / 2)) + scrollX + "px"; el.style.top = r.bottom + 6 + scrollY + "px";
+      el.style.setProperty("--ax", Math.round(r.left + r.width / 2 - (parseFloat(el.style.left) - scrollX)) + "px"); };
+    place(); const d = await docInfo(n); if (popEl !== el) return;
+    el.innerHTML = `<b>${esc(n)}${d.r ? ` <i>Rev ${esc(d.r)}</i>` : ""}</b><span>${d.t ? esc(d.t) : "No title on record."}</span>`; place(); }, true);
+  addEventListener("resize", popClose);   // (it scrolls with the page)
   let LINKRE = null;
   const linkify = v => esc(v).replace(LINKRE || (LINKRE = new RegExp(TAG_RE.source + (window.SP ? "|" + SP.DOC.source : ""), "g")), m => { const k = norm(m);
-    if (/-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>`;
+    if (/-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>` + DI(m);
     if (byKey.has(k)) return `<a class="lk-a" data-k="${k}">${m}</a>`;
-    if (window.SP && SP.url(m)) return SP.a(m);
-    if (/^2000-/.test(m) && DOCN.has(k)) return `<a class="lk-a lk-doc" href="issues.html#sources" title="Open in Sources">${m}</a>`;
+    if (window.SP && SP.url(m)) return SP.a(m) + DI(m);
+    if (/^2000-/.test(m) && DOCN.has(k)) return `<a class="lk-a lk-doc" href="issues.html#sources" title="Open in Sources">${m}</a>` + DI(m);
     return m; });
   L.resultsHTML = (hits, q) => {
     if (!hits.length) return `<div class="lk-empty">No match for “${esc(q)}”. Try fewer characters, e.g. the number only.</div>`;
@@ -467,12 +491,12 @@
     const score = n => (IOM.t[it.key] || []).includes(n) ? 2 : words.some(w => IOM.d[n][0].toUpperCase().includes(w)) ? 1 : 0;
     const a = [...ns].filter(n => IOM.d[n]).sort((x, y) => score(y) - score(x) || x.localeCompare(y));
     // (the number only, linked to SharePoint: the manual's title is one tap away)
-    const one = n => { const u = IOM.d[n][3]; return u ? `<a class="sp-a" href="${esc(encodeURI(decodeURI(u)))}" target="_blank" rel="noopener" title="Open in SharePoint">${esc(n)}</a>` : esc(n); };
+    const one = n => { const u = IOM.d[n][3]; return (u ? `<a class="sp-a" href="${esc(encodeURI(decodeURI(u)))}" target="_blank" rel="noopener" title="Open in SharePoint">${esc(n)}</a>` : esc(n)) + DI(n); };
     const SHOW = 4, h = a.slice(0, SHOW).map(one).join("<br>") + (a.length > SHOW ? `<details class="lk-iomm"><summary>${a.length - SHOW} more in package ${esc(pk.join(", "))}</summary>${a.slice(SHOW).map(one).join("<br>")}</details>` : "");
     const i = rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l)); let j = i; if (i >= 0) while (j + 1 < rows.length && /^(P&IDs?|PFD)$/.test(rows[j + 1].l)) j++;
     rows.splice(j + 1, 0, { l: a.length > 1 ? "IOMs" : "IOM", v: a.join(", "), h });
   }
-  const dwgA = (n, pg) => window.Pid && Pid.has(n) ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="${pg || 1}" href="#">${esc(Pid.label(n))}</a>` : esc(n);
+  const dwgA = (n, pg) => window.Pid && Pid.has(n) ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="${pg || 1}" href="#">${esc(Pid.label(n))}</a>` + DI(n) : esc(n);
   function docRows(it, rows){
     const seen = (DT && DT[it.key]) || [];
     const at = () => { const i = rows.findIndex(r => /^P&IDs?$/.test(r.l)); return i < 0 ? rows.length : i; };
@@ -803,7 +827,7 @@
 .lk-spec .sp-t{font-size:var(--fb,15px);line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:var(--fb,15px);margin-left:4px}
 .lk-t td:last-child{overflow-wrap:anywhere}
 .lk-iomt{color:var(--mute)}.lk-otd{border-bottom:1px solid var(--lk-l,rgba(0,0,0,.08))}.lk-otd>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:7px 4px}.lk-otd>summary::-webkit-details-marker{display:none}.lk-otn{color:var(--mute);font-size:.9em;margin-left:auto;background:var(--card2,rgba(120,130,145,.14));border-radius:10px;padding:1px 8px;white-space:nowrap}.lk-otd>summary::after{content:"▾";color:var(--mute);transition:transform .15s}.lk-otd[open]>summary::after{transform:rotate(180deg)}.lk-otl{display:flex;flex-wrap:wrap;gap:4px 12px;padding:0 4px 8px 22px}.lk-iomm summary{cursor:pointer;color:var(--doc-a,#0b63c5);margin-top:3px}.lk-iomm[open] summary{margin-bottom:3px}
-.lk-ctw{overflow-x:auto;margin:2px 0 6px}.lk-ct{border-collapse:collapse;font-size:var(--fl,13px);min-width:100%}.lk-ct th{text-align:left;font-weight:700;color:var(--mute);border-bottom:1px solid var(--line,#ddd);padding:3px 6px;white-space:nowrap}.lk-ct td{border-bottom:1px solid var(--line,#eee);padding:3px 6px;vertical-align:top}.lk-ctl .lk-band:first-child{margin-top:2px}.lk-cu{padding:5px 2px;border-bottom:1px solid var(--line,#eee)}.lk-cu em{font-style:normal;color:var(--mute);font-size:var(--fl,13px);margin-left:4px}.lk-cuv{font-size:var(--fl,13px);margin-top:2px;color:var(--ink)}.lk-cuv b{color:var(--mute);font-weight:600}.lk-bandr td{padding:0!important;border:0!important}.lk-band{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2);margin:10px 0 2px}.lk-band small{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute);text-align:right}.lk-band span{white-space:nowrap}:root.phone .lk-band small{display:none}
+.lk-ctw{overflow-x:auto;margin:2px 0 6px}.lk-ct{border-collapse:collapse;font-size:var(--fl,13px);min-width:100%}.lk-ct th{text-align:left;font-weight:700;color:var(--mute);border-bottom:1px solid var(--line,#ddd);padding:3px 6px;white-space:nowrap}.lk-ct td{border-bottom:1px solid var(--line,#eee);padding:3px 6px;vertical-align:top}.lk-ctl .lk-band:first-child{margin-top:2px}.lk-cu{padding:5px 2px;border-bottom:1px solid var(--line,#eee)}.lk-cu em{font-style:normal;color:var(--mute);font-size:var(--fl,13px);margin-left:4px}.lk-cuv{font-size:var(--fl,13px);margin-top:2px;color:var(--ink)}.lk-cuv b{color:var(--mute);font-weight:600}.lk-di{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;margin:0 0 0 5px;padding:0;border-radius:50%;border:1.5px solid var(--doc-a,#0b63c5);background:transparent;color:var(--doc-a,#0b63c5);font:italic 800 11px/1 Georgia,serif;vertical-align:1px;cursor:pointer}.lk-dip{position:absolute;z-index:3000;max-width:min(340px,calc(100vw - 16px));background:var(--card,#fff);color:var(--ink,#111);border:1px solid var(--line,#ccd);border-radius:10px;box-shadow:0 6px 20px #0003;padding:8px 11px;font-size:var(--fl,13px);line-height:1.35}.lk-dip:before{content:"";position:absolute;top:-6px;left:calc(var(--ax,50%) - 6px);width:10px;height:10px;background:inherit;border-left:1px solid var(--line,#ccd);border-top:1px solid var(--line,#ccd);transform:rotate(45deg)}.lk-dip b{display:block;margin-bottom:2px}.lk-dip b i{font-style:normal;font-weight:600;color:var(--mute,#667)}.lk-dip span{display:block}.lk-bandr td{padding:0!important;border:0!important}.lk-band{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2);margin:10px 0 2px}.lk-band small{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute);text-align:right}.lk-band span{white-space:nowrap}:root.phone .lk-band small{display:none}
 .lk-red,.lk-red a{color:#d11!important}.lk-clash{color:#d11;font-size:12px;font-weight:800;margin-top:2px}.lk-clash a{color:#d11;text-decoration:underline;font-weight:600;margin-left:4px}.lk-rsw{font-size:12px;color:var(--mute)}
 .lk-t td.lk-sub{color:var(--lk-a);font-size:var(--fl,13px);font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding-top:10px;width:auto}
 .sp-self .sp-head{display:none}
