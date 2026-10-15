@@ -38,13 +38,8 @@ before = json.load(open(os.path.join(R, "pid-refs.json"))); dt0 = json.load(open
 run("tools/build_pid_refs.py")
 new = json.load(open(os.path.join(R, "pid-refs.json"))); out = dict(before); sw = set(done)
 for n in sw: out[n] = new.get(n, [])
-for k, a in out.items():
-    if k in sw: continue
-    for r in a:
-        if r[6] == "d" and str(r[5]) in sw and len(r) > 7:
-            mm = [x for x in new.get(k, []) if x[6] == "d" and x[5] == r[5] and x[0] == r[0] and abs(x[1] - r[1]) < 60 and abs(x[2] - r[2]) < 60]
-            r[7] = mm[0][7] if mm and len(mm[0]) > 7 else None
 json.dump(out, open(os.path.join(R, "pid-refs.json"), "w"), separators=(",", ":"))
+run("tools/fix_backrefs.py")   # (the ways back into the swapped sheets: their ribbons were renumbered)
 dt1 = json.load(open(os.path.join(R, "doc-tags.json"))); dt0.update({k: v for k, v in dt1.items() if k not in dt0})
 json.dump(dt0, open(os.path.join(R, "doc-tags.json"), "w"), separators=(",", ":"))
 for t in ("build_pics.py", "build_bbox.py", "build_contents.py", "build_refonly.py", "build_offline.py"): run("tools/" + t)
