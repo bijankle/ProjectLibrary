@@ -109,7 +109,7 @@ window.Pid = (() => {
     PdfView.open({ url: d.file, page: r ? r.page : o.page || 1, fit: d.doc && !d.layout ? "width" : "page", find: find || null, download: label(d.number) + ".pdf", restore: r || null,
       number: d.number, label: label(d.number), sub: short(d.number), nodn: !!d.tb, title: label(d.number) + (d.title ? " · " + d.title : ""),
       refs: refs().then(R => R[d.number] || []),
-      back: o.back, extent: !!o.extent,
+      back: o.back, extent: !!o.extent, revive: o.revive || null,
       panel: el => panel(el, d.number, o.legendFrom),
       // (true when there is a drawing that way: the sheet then slides out)
       swipe: (dir, run) => { const t = SW && SW.num === d.number && SW.target(dir); if (t && run) SW.go(t); return !!t; },

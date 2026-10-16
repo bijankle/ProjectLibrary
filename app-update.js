@@ -33,7 +33,8 @@
     barEl.firstChild.style.width = Math.max(2, f * 100).toFixed(1) + "%"; barEl.classList.toggle("done", f >= 1); };
   let pending = false;
   function applyWhenIdle(){ pending = true; let t;
-    const go = () => { if (document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return arm(); location.reload(); };
+    // (never while typing or with a drawing open: those wait for the next pause after; a reload also keeps the view, PdfView.saved)
+    const go = () => { if ((document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) || document.querySelector(".sp-view:not([hidden])")) return arm(); location.reload(); };
     const arm = () => { clearTimeout(t); t = setTimeout(go, 4000); };
     ["pointerdown", "keydown", "wheel", "touchstart"].forEach(ev => addEventListener(ev, arm, { passive: true })); arm();
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") location.reload(); }); }

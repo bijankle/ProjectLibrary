@@ -566,7 +566,12 @@ body.searching #homeMain{display:none}
   // the drawing beside the item, as you have it (sheet, zoom, place, the box picked): kept with this history step so Back returns to it
   window.kcgmDv = dv => { const h = history.state; if (restoring || !h || !h.item || !dv || String(h.item.k).toUpperCase().replace(/[^A-Z0-9]/g, "") !== String(dv.key).toUpperCase().replace(/[^A-Z0-9]/g, "")) return; history.replaceState(Object.assign({}, h, { dv }), ""); };
   function restore(st){
-    if (st && st.sp && !st.s) return;   // (a drawing viewer step: pdfview.js reopens that view over the page)
+    if (st && st.sp && !st.s){   // (a drawing viewer step: pdfview.js reopens that view over the page)
+      // (after a reload the viewer has forgotten it: the page it was opened from, then the drawing again where it was)
+      const sv = window.PdfView && PdfView.saved && PdfView.saved();
+      if (sv && sv.n && sv.id === st.id && !document.querySelector(".sp-view:not([hidden])")){ if (sv.base && sv.base.s) restore(sv.base);
+        Promise.resolve(window.Pid && Pid.load && Pid.load()).then(() => setTimeout(() => window.Pid && Pid.open(sv.n, null, { restore: sv.snap, revive: sv.base || { s: "home" } }), 400)); }
+      return; }
     restoring = true;
     const done = () => { restoring = false; lastSig = sigOf(st); };
     const sc = st.s || "home";
@@ -1112,7 +1117,7 @@ body.searching #homeMain{display:none}
   Lookup.onProj(() => { const v = lk.input.value.trim(); if (v && !lk.current() && !(window.Browse && Browse.query(v))) lk.search(v); });
   const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#home"){ assetsHome(); history.replaceState(history.state, "", "#assets"); } else if (location.hash === "#gloss") openGloss(); else if (location.hash === "#settings") openSettings(); };
   // back here from another page: the view this entry was left on; else the address (#quiz, #settings…)
-  if (history.state && history.state.s) restore(history.state); else { restoring = true; openHash(); restoring = false; nav(false); }
+  if (history.state && (history.state.s || history.state.sp)) restore(history.state); else { restoring = true; openHash(); restoring = false; nav(false); }
   window.addEventListener("hashchange", openHash);
 })();
 </script>
