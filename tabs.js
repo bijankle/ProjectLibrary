@@ -6,6 +6,20 @@
 // File: Print, Export to Excel, Copy link. View: text size and theme.
 // Help: a search over everything app wide (settings, features, how-to notes), How to use, API keys (Google AI, GitHub),
 // Update app, About. Tabs.keys() opens the API keys window, Tabs.toast(text) a short note at the bottom.
+// phone: a back swipe (or the phone's Back) while the keyboard is up only puts the keyboard away; the next one goes back.
+// The step back has already happened when the browser says so, so the page is taken forward again before anything
+// else hears of it (a capture listener runs ahead of the others, and they are stopped).
+(() => {
+  let swallow = 0;
+  const kbUp = () => { const a = document.activeElement;
+    if (!a || !(a.isContentEditable || a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && !/^(checkbox|radio|range|button|submit|reset|file|color|image)$/i.test(a.type || "")))) return false;
+    const vv = window.visualViewport; return !vv || innerHeight - vv.height > 120; };   // (an input can keep focus after the keyboard was put away)
+  addEventListener("popstate", e => {
+    if (swallow && Date.now() - swallow < 1500){ swallow = 0; e.stopImmediatePropagation(); return; }   // (the step forward again)
+    if (!matchMedia("(pointer: coarse)").matches || !kbUp()) return;
+    e.stopImmediatePropagation(); document.activeElement.blur(); swallow = Date.now(); history.forward();
+  }, true);
+})();
 window.Tabs = (() => {
   const TABS = [["assets", "Assets", "index.html?cards#assets"], ["pfd", "PFD", "pfd.html#pfd"],
     ["layout", "Layout", "pfd.html#layout"], ["quiz", "Learn", "index.html?cards#quiz"]];
