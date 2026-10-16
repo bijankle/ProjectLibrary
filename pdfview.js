@@ -40,10 +40,10 @@ window.PdfView = (() => {
     // phone, a line traced (trace below): its number, how far along, open its page, ✕; the zoom and along the line sliders
     const tb = document.createElement("div"); tb.className = "sp-trb"; tb.hidden = true;
     tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><button type="button" class="sp-tro">Go to asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
-      <div class="sp-trtk"><input type="range" class="sp-tra" min="0" max="1000" step="1" aria-label="Along the line"><div class="sp-trc"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
+      <div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="1" aria-label="Along the line"><div class="sp-trc"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
     // (the zoom: an upright slider on the right of the sheet, + at the top, − at the foot)
     const tz = document.createElement("div"); tz.className = "sp-trv"; tz.hidden = true;
-    tz.innerHTML = `<button type="button" data-z="10" aria-label="Closer">+</button><input type="range" class="sp-trz" min="0" max="100" step="1" aria-label="Zoom"><button type="button" data-z="-10" aria-label="Further">−</button>`;
+    tz.innerHTML = `<button type="button" data-z="10" aria-label="Closer">+</button><span class="sp-trzb"><input type="range" class="sp-trz sp-rg" min="0" max="100" step="1" aria-label="Zoom"></span><button type="button" data-z="-10" aria-label="Further">−</button>`;
     tz.addEventListener("click", e => e.stopPropagation()); el.appendChild(tz);
     tb.addEventListener("click", e => e.stopPropagation()); el.appendChild(tb);
     const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
@@ -332,8 +332,7 @@ window.PdfView = (() => {
       a.classList.toggle("tp", on.some(h => h.l < l + w && h.l + h.w > l && h.t < t + hh && h.t + h.h > t)); });
  }
   // ---------- line trace (phone) ----------
-  // A tapped line number lights up its whole line faintly (lines/<number>.json, tools/build_line_paths.py), in the app's
-  // theme colour. A panel comes up under the sheet with the line slider, which runs the view along the line from one end
+  // A tapped line number traces its line (lines/<number>.json, tools/build_line_paths.py), in the app's theme colour. A panel comes up under the sheet with the line slider, which runs the view along the line from one end
   // to the other (a dot where you are, a stronger trail left behind like a pen's), the milestones along it (tees, valves,
   // equipment, ribbons) and Go to asset; the zoom (remembered) is an upright slider on the right. Tapping the line or its
   // number again also opens the line's page. A ribbon tapped takes the
@@ -356,7 +355,7 @@ window.PdfView = (() => {
         for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
           const t = Math.max(0, Math.min(1, ((cx - x0) * A * dx + (cy - y0) * dy) / ll)), e = ((x0 + t * (x1 - x0) - cx) * A) ** 2 + (y0 + t * (y1 - y0) - cy) ** 2;
           if (e < best){ best = e; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
-      TR.lo = TR.hi = f;
+      TR.f0 = f;
       const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; V.tz.querySelector(".sp-trz").value = trZ(); tb.querySelector(".sp-tra").value = Math.round(f * 1000);
       tb.hidden = false; V.tz.hidden = false; V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
     });
@@ -381,23 +380,25 @@ window.PdfView = (() => {
     c.innerHTML = mid.map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
       + named.map(([m, row, nm]) => `<b class="k-${m[1]} r${row}" style="left:${(m[0] * 100).toFixed(1)}%">${esc(nm)}</b>`).join("");
     V.tb.classList.toggle("two", rows[1].length > 0); }
+  function trFill(){ [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz")].forEach(i => i.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
   function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
     const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; }
   // the part of the path between two fractions along it
   function trSub(a, b){ const [xa, ya, ia] = trAt(a), [xb, yb, ib] = trAt(b); return [[xa, ya], ...TR.P.slice(ia, ib), [xb, yb]]; }
   function trView(){ if (!TR) return; const tb = V.tb, f = trF();
-    tb.querySelector(".sp-trp").textContent = Math.round(f * 100) + "%"; TR.lo = Math.min(TR.lo, f); TR.hi = Math.max(TR.hi, f);
+    tb.querySelector(".sp-trp").textContent = Math.round(f * 100) + "%"; trFill();
     V.zoom = Math.max(1, Math.min(10, zOf(+V.tz.querySelector(".sp-trz").value))); V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false);
     const [x, y] = trPt(...trAt(f)); centreOn(x / 1e4, y / 1e4); sharp(); drawTrace(); settleSoon(); }
-  // the line, faint; the trail, strong; the dot (twice the trail's width across). In the sheet's own
+  // the trail: only the part of the line between where the trace started (the line number, or the ribbon arrived
+  // through) and where you are now, like a pen's; the dot where you are (twice the trail's width across). In the sheet's own
   // points, so the dot stays round; the line widths are screen pixels, thin when the whole sheet shows, a little more close up
   function drawTrace(){ if (!V || !V.trl) return; const on = TR && cur && TR.n === cur.number && TR.page === V.page && V.pg;
     if (!on){ V.trl.innerHTML = ""; return; }
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, s = V.base * V.zoom, w = Math.max(1, Math.min(2.25, .8 * s)), tw = w * 1.35;
     const pts = P => P.map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
-    const [dx, dy] = trPt(...trAt(trF())).map((v, i) => v / 1e4 * (i ? H : W));
+    const f = trF(), [dx, dy] = trPt(...trAt(f)).map((v, i) => v / 1e4 * (i ? H : W));
     V.trl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.trl.style.setProperty("--trw", w + "px");
-    V.trl.innerHTML = `<polyline class="all" points="${pts(TR.P)}"/><polyline class="tr" points="${pts(trSub(TR.lo, TR.hi))}"/><circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(tw / s).toFixed(2)}"/>`; }
+    V.trl.innerHTML = `${Math.abs(f - TR.f0) > 1e-4 ? `<polyline class="tr" points="${pts(trSub(Math.min(f, TR.f0), Math.max(f, TR.f0)))}"/>` : ""}<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(tw / s).toFixed(2)}"/>`; }
   // a tap on the traced line itself (within 12 px of it)
   function trNear(x, y){ if (!TR || TR.page !== V.page) return false; const q = V.sheet.getBoundingClientRect(); if (!q.width) return false;
     const P = TR.P.map(p => { const [a, b] = trPt(p[0], p[1]); return [q.left + a / 1e4 * q.width, q.top + b / 1e4 * q.height]; });
