@@ -238,6 +238,10 @@ window.PdfView = (() => {
       const sel = getSelection(); if (sel && !sel.isCollapsed && String(sel).trim() && V.body.contains(sel.anchorNode)) return;   // (finishing a text selection on the sheet, not a tap; one elsewhere doesn't count)
       const a = refAt(e.clientX, e.clientY);
       if (!a && TR && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8) && trNear(e.clientX, e.clientY)){ trOpen(); return; }
+      // (the pipe itself, as its number: the fly through along that line, from the spot tapped)
+      if (!a && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8) && /-(PID|SLD)-/.test(cur.number || "")){ const hit = lineAt(e.clientX, e.clientY);
+        if (hit){ if (FL.pick) pickEnd(); const r = V.refs[hit.k], b = boxOf(r), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap();
+          trace(hit.k, hit.at, [bx.l, bx.t, bx.w, bx.h]); return; } }
       if (!a && FL.pick && !TR && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8)){ const t0 = performance.now();
         setTimeout(() => { if (FL.pick && downAt <= t0) pickEnd("x"); }, desk() ? 0 : 330); return; }
       // (a tap on the bare sheet leaves the fly through, back to the drawing as it is; not the first tap of a double tap)
@@ -375,7 +379,15 @@ window.PdfView = (() => {
   // number again also opens the line's page. A ribbon tapped takes the
   // trace on to the next sheet: the line that ribbon carries on lights up, the slider at the ribbon's end.
   const LN = {}; let TR = null, trPend = null;
-  const linesFor = n => LN[n] || (LN[n] = fetch("lines/" + n + ".json").then(r => r.ok ? r.json() : {}).catch(() => { delete LN[n]; return {}; }));
+  const LNR = {}, linesFor = n => LN[n] || (LN[n] = fetch("lines/" + n + ".json").then(r => r.ok ? r.json() : {}).then(d => LNR[n] = d).catch(() => { delete LN[n]; return {}; }));
+  // the traced line under a tap on the sheet (within 10 px of its path), and the spot on the sheet tapped
+  function lineAt(x, y){ const D = cur && LNR[cur.number]; if (!D || !V.refs || !V.refs.length) return null; const q = V.sheet.getBoundingClientRect(); if (!q.width) return null;
+    let best = null;
+    for (const k of Object.keys(D)){ if (!/^\d+$/.test(k)) continue; const r = V.refs[+k]; if (!r || r[0] !== V.page) continue;
+      const P = D[k].map(p => { const [a, b] = trPt(p[0], p[1]); return [q.left + a / 1e4 * q.width, q.top + b / 1e4 * q.height]; });
+      for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = x1 - x0, dy = y1 - y0, ll = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ll)), d = Math.hypot(x0 + t * dx - x, y0 + t * dy - y);
+        if (d < 10 && (!best || d < best.d)) best = { k: +k, d }; } }
+    return best && Object.assign(best, { at: V.rot ? null : [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }); }
   const trZ = () => { let v = 55; try { const x = localStorage.getItem("kcgm_trz"); if (x != null) v = +x; } catch (e) {} return v; };
   const zOf = v => Math.pow(10, v / 100);   // (slider 0 to 100: the whole sheet to ten times)
   const trPt = (x, y) => V.rot ? [1e4 - y, x] : [x, y];
@@ -680,7 +692,7 @@ window.PdfView = (() => {
       const cls = V.fit ? " fit" + (shape(r) === "o" ? " o" : "") + (V.fq && !V.fset.has(r) ? " off" : "") : r[6] === "d" ? " d" : "";
       const rb = r[6] === "d" && Array.isArray(r[8]) && !V.rot;
       return `<a class="sp-ref${cls}${rb ? " rb" : ""}" data-i="${i}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%" title="${esc(r[5].replace(/\|/g, ", "))}">${rb ? ribbon(r[8]) : ""}</a>`; }).join("");
-    hideOwnHits(); drawTap(); drawTrace(); drawFl();
+    hideOwnHits(); drawTap(); drawTrace(); drawFl(); if (/-(PID|SLD)-/.test(cur.number || "")) linesFor(cur.number);   // (the paths ready for a tap on a pipe)
   }
   // how a ref was fitted to the print on a checked sheet: "o" bubble, "b" drawn box (both exact), "t" text (a margin added)
   const shape = r => typeof r[7] === "string" ? r[7] : V.fit && r[6] === "d" ? "t" : null;
