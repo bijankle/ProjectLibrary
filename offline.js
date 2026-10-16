@@ -84,7 +84,8 @@ window.Offline = (() => {
   // download is checked first. What's held and the room left on the device are shown under the buttons.
   const SETS = [["ess", "Essentials", "Every drawing except the electrical schematics, the pipe spec and the lists"], ["all", "Everything", "Essentials and all the electrical schematics"]];
   const inSet = (g, k) => g.set === "core" || g.set === "ess" || (k === "all" && g.set === "all");
-  const cellular = () => { const c = navigator.connection; return !!(c && (c.type === "cellular" || c.saveData)); };
+  // (not on Wi-Fi: the phone says it's on something else, mobile data mostly; a phone that doesn't say isn't asked)
+  const cellular = () => { const c = navigator.connection; return !!(c && ((c.type && !/wifi|ethernet|unknown/.test(c.type)) || c.saveData)); };
   async function card(el){
     if (!("caches" in window)) return;
     try { await load(); } catch (e){ return; }
@@ -104,7 +105,7 @@ window.Offline = (() => {
       if (busy) return;
       const fs = files(b.dataset.k), st = await check(fs), need = fs.filter(f => st[f] !== "ok"), size = tot(need);
       if (!need.length) return paint();
-      if (cellular() && !confirm(`You seem to be on mobile data. Download ${mb(size)} now?`)) return;
+      if (cellular() && !confirm(`You're not on Wi-Fi. Download ${mb(size)} over mobile data now?`)) return;
       if (navigator.storage && navigator.storage.persist) await navigator.storage.persist().catch(() => {});
       busy = true; stop.x = false; b.classList.add("busy"); el.querySelectorAll(".oc-b").forEach(x => x.disabled = x !== b);
       const s0 = tot(fs) - size, all = tot(fs), bar = b.querySelector(".oc-bar i");
