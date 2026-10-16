@@ -367,10 +367,10 @@ window.PdfView = (() => {
   // there is room (two rows); what is at each end named under the ends
   const TK = { t: "tee", v: "valve", i: "instrument", e: "equipment", r: "continues", l: "next line", s: "end" };
   const short = t => String(t || "").replace(/^\d+-(?=\d{4}-)/, "");
-  // milestone names kept short (a long line has many): T a tee, a valve or instrument by its number, equipment without
+  // milestone names kept short (a long line has many): a tee by the sequence number of the line leaving it, a valve or instrument by its number, equipment without
   // its area (PW-417), a ribbon by the sheet it goes to (F75-10002), the next line by the spec change (PE8|SS1)
   function trName(m){ const t = String(m[2] || "").replace(/\s+/g, "");
-    if (m[1] === "t") return "T" + (TR.tn.get(m) || "");
+    if (m[1] === "t") return (String(m[2] || "").split("-")[1]) || "T" + (TR.tn.get(m) || "");   // (the branch line's sequence number, 0967; T1, T2 … where it isn't known)
     if (m[1] === "r") return t.replace(/^2000-/, "").replace(/-PID-PR-/, "-");
     if (m[1] === "l"){ const sp = n => (String(n || "").split("-")[3] || "?"), me = sp(TR.label), nx = sp(t); return m[0] < .5 ? nx + "|" + me : me + "|" + nx; }
     if (m[1] === "s") return "end";

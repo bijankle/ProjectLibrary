@@ -140,7 +140,7 @@ def trace(S, LBL, r, label, gap=30, tol=1.6):
 
 def build(num):
     v = IX[num]; doc = pymupdf.open(os.path.join(R, v["file"])); refs = REFS.get(num, [])
-    out = {}; rb = {}; pages = {}; marks = {}; fl = {}
+    out = {}; rb = {}; pages = {}; marks = {}; fl = {}; ptp = {}; teep = {}
     for k, r in enumerate(refs):
         if r[6] != "line": continue
         pg = r[0] - 1
@@ -164,6 +164,11 @@ def build(num):
         # what the line passes (commentary along the phone's Line slider): [fraction along, kind, text]
         # kinds: t tee, v valve, i instrument, e equipment, r ribbon (set below), l the next line, s the line's end
         M = [[round(d / tot, 3), "t", o] for d, o in tees]
+        def at(d):
+            for i in range(1, len(Lc)):
+                if Lc[i] >= d or i == len(Lc) - 1:
+                    u = (d - Lc[i - 1]) / ((Lc[i] - Lc[i - 1]) or 1); return (P[i - 1][0] + u * (P[i][0] - P[i - 1][0]), P[i - 1][1] + u * (P[i][1] - P[i - 1][1]))
+        ptp[str(k)] = (r[0], P); teep[str(k)] = [(m, at(d)) for m, (d, o) in zip(M, tees)]
         for f, (kd, tx) in zip((0, 1), why):
             if kd in "tl": M.append([f, kd, tx])
         for q in refs:
@@ -177,6 +182,16 @@ def build(num):
             lim = {"mel": 60, "mv": 36, "cv": 36, "spi": 24, "ins": 18}[q[6]]
             if bd and bd[0] < lim: M.append([round(bd[1], 3), {"mel": "e", "mv": "v", "cv": "v", "spi": "v", "ins": "i"}[q[6]], str(q[5]).split("|")[0]])
         marks[str(k)] = M
+    # each tee named by the line that leaves it: the traced line whose end is at the tee (within 4 pt)
+    for k, T in teep.items():
+        for m, (tx, ty) in T:
+            best = None
+            for j, (pg, Q) in ptp.items():
+                if j == k or pg != ptp[k][0]: continue
+                for e in (Q[0], Q[-1]):
+                    dd = math.hypot(e[0] - tx, e[1] - ty)
+                    if dd < 4 and (best is None or dd < best[0]): best = (dd, j)
+            if best: m[2] = str(refs[int(best[1])][5]).split("|")[0]
     # a continuation ribbon carries on the line whose path ends nearest it (within 300 units, about 7 cm at A1)
     for k, r in enumerate(refs):
         if r[6] != "d": continue
