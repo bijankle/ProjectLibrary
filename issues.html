@@ -361,6 +361,8 @@ body.splitting{cursor:col-resize;user-select:none}
     if (!PHONE && window.Tabs && Tabs.set) Tabs.set(docs ? "sources" : "checks");
     if (PHONE){ Tabs.title(docs ? "Sources" : "Checks"); $("q").placeholder = docs ? "Filter the sources" : "Filter the checks"; }
   }
+  // (the one-tap offline bar over the list, offline.js: Essentials | Everything)
+  if (window.Offline && Offline.card){ const oc = document.createElement("div"); $("slRoot").before(oc); Offline.card(oc); }
   const SL = SourcesList.mount($("slRoot"), PHONE ? { phone: true, input: $("q") } : {});
   $("tabChecks").onclick = () => tab("checks"); $("tabDocs").onclick = () => tab("docs");
   // Back between Checks and Sources (phone, More → the other one); a link to #sources on this page switches too

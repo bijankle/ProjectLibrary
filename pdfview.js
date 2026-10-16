@@ -219,16 +219,16 @@ window.PdfView = (() => {
       if (!e.target.closest || !e.target.closest(".sp-pick")) pickClose(); else return;
       const sel = getSelection(); if (sel && !sel.isCollapsed && String(sel).trim() && V.body.contains(sel.anchorNode)) return;   // (finishing a text selection on the sheet, not a tap; one elsewhere doesn't count)
       const a = refAt(e.clientX, e.clientY);
-      if (!a && TR && !desk() && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8) && trNear(e.clientX, e.clientY)){ trOpen(); return; }
+      if (!a && TR && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8) && trNear(e.clientX, e.clientY)){ trOpen(); return; }
       if (!a || (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8)) return;
       const r = V.pageRefs[+a.dataset.i]; if (!r || !cur.onRef) return;
       a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
       // the red arrow on what was tapped, kept with this view (back here shows where you were)
       const bx = V.boxes[+a.dataset.i]; if (bx){ V.tap = { page: V.page, l: bx[0] / 1e4, t: bx[1] / 1e4, w: bx[2] / 1e4, h: bx[3] / 1e4 }; drawTap(); const me = REG.get(curId); if (me){ me.snap = state(); me.tap = V.tap; } }
-      if (!desk() && r[6] === "line" && /-PID-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
+      if (r[6] === "line" && /-PID-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
         if (TR && TR.k === gi && TR.n === cur.number){ trOpen(); return; }
         linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
-      if (!desk() && r[6] === "d") trPend = { at: Date.now(), label: TR && TR.label, dir: 1 };
+      if (r[6] === "d") trPend = { at: Date.now(), label: TR && TR.label, dir: 1 };
       if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : r[6] === "s" ? "sp" : "tag", r[7], bx || null);
     });
     tb.querySelector(".sp-trx").onclick = () => trEnd("x");
@@ -394,24 +394,36 @@ window.PdfView = (() => {
   // a 45° callout from the mark, read bottom to top: TEE / 0588, VALVE / 11318; callouts lean a little further where names would touch, and
   // where they are packed too tight only the mark shows)
   const TT = { t: "TEE", v: "VALVE", p: "SP", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END" };
-  // desktop (wide): the names read across, "VALVE 11318", snug under the bar on rows of their own: each on the row nearest
-  // the bar where it fits beside the names already there, its callout straight down from its mark, and never across
-  // another name (a name never covers a callout going past it to a lower row); the most important placed first
-  function trMarksDesk(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 400, sl = V.tb.querySelector(".sp-tra"), BB = Math.round(sl.offsetTop + sl.offsetHeight / 2 + 4) || 20, RH = 16, R0 = BB + 12, NR = 6, G = 6;
+  // desktop (wide): the names read across, "VALVE 11318", snug under the bar on rows of their own. Each goes where it costs
+  // least: the row nearest the bar, its callout straight down from its mark; failing that a callout that dog-legs (down,
+  // sideways in the gap under the bar, down again) to a place further along. Never a callout through a name, never a
+  // name over a callout, never two callouts crossing; the most important names placed first
+  function trMarksDesk(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 400, sl = V.tb.querySelector(".sp-tra"), BB = Math.round(sl.offsetTop + sl.offsetHeight / 2 + 4) || 20,
+      J = BB + 9, RH = 16, R0 = BB + 14, NR = 6, G = 6;
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, rows = [...Array(NR)].map(() => []), legs = [], put = [];
     const wid = m => (TT[m[1]] || "").length * 5.4 + trName(m).length * 6.9 + 8;
-    [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = m[0] * W, w = wid(m);
-      for (let r = 0; r < NR; r++){
-        // (the name to the right of its callout, or to its left near the right hand end)
-        for (const a of [x + 3, x - 3 - w]){ const b = a + w; if (a < 0 || b > W) continue;
-          if (rows[r].some(q => q[0] < b + G && a < q[1] + G)) continue;                       // (a name on this row in the way)
-          if (rows.slice(0, r).some(R => R.some(q => q[0] - 2 < x && x < q[1] + 2))) continue;   // (its callout through a name above)
-          if (legs.some(l => l.r > r && a - 2 < l.x && l.x < b + 2)) continue;                    // (it over another's callout)
-          rows[r].push([a, b]); legs.push({ x, r }); put.push([m, x, a, r]); return; } } });
+    const ok = (x, xv, r, a, b) => {
+      if (a < 0 || b > W) return false;
+      if (rows[r].some(q => q[0] < b + G && a < q[1] + G)) return false;                                  // (a name on its row)
+      if (rows.slice(0, r).some(R => R.some(q => q[0] - 2 < xv && xv < q[1] + 2))) return false;          // (its callout through a name)
+      if (legs.some(l => l.r > r && a - 2 < l.xv && l.xv < b + 2)) return false;                           // (it over a callout)
+      const lo = Math.min(x, xv), hi = Math.max(x, xv);
+      for (const l of legs){ const lo2 = Math.min(l.x, l.xv), hi2 = Math.max(l.x, l.xv);
+        if (hi - lo > .5 && (lo - 2 < l.x && l.x < hi + 2 || lo - 2 < l.xv && l.xv < hi + 2)) return false;  // (its dog-leg across a callout)
+        if (hi2 - lo2 > .5 && (lo2 - 2 < x && x < hi2 + 2 || lo2 - 2 < xv && xv < hi2 + 2)) return false; }   // (a callout across another's dog-leg)
+      return true; };
+    [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = m[0] * W, w = wid(m); let best = null;
+      for (let d = 0; d <= 150; d += 6) for (const sg of d ? [1, -1] : [1]){ const xv = x + sg * d;
+        for (let r = 0; r < NR; r++) for (const [a, b] of [[xv + 3, xv + 3 + w], [xv - 3 - w, xv - 3]]){
+          const cost = r * 22 + d + (a < xv ? 4 : 0); if (best && cost >= best.cost) continue;
+          if (ok(x, xv, r, a, b)) best = { cost, xv, r, a, b }; } }
+      if (!best) return;
+      rows[best.r].push([best.a, best.b]); legs.push({ x, xv: best.xv, r: best.r }); put.push([m, x, best.a, best.r, best.xv]); });
     const used = put.reduce((n, p) => Math.max(n, p[3] + 1), 0);
-    V.tb.querySelector(".sp-trtk").style.paddingBottom = (used * RH + 12) + "px";
+    V.tb.querySelector(".sp-trtk").style.paddingBottom = (used * RH + 16) + "px";
     c.innerHTML = TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%;top:${BB + 1}px" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
-      + `<svg class="sp-trco" width="${W}" height="${R0 + NR * RH}">${put.map(([m, x, a, r]) => { const y = R0 + r * RH + 7; return `<polyline points="${x.toFixed(1)},${BB + 6} ${x.toFixed(1)},${y} ${(a > x ? a - 1 : a + wid(m) + 1).toFixed(1)},${y}"/>`; }).join("")}</svg>`
+      + `<svg class="sp-trco" width="${W}" height="${R0 + NR * RH}">${put.map(([m, x, a, r, xv]) => { const y = R0 + r * RH + 7, e = a > xv ? a - 1 : a + wid(m) + 1;
+          return `<polyline points="${x.toFixed(1)},${BB + 6} ${x.toFixed(1)},${J} ${xv.toFixed(1)},${J} ${xv.toFixed(1)},${y} ${e.toFixed(1)},${y}"/>`; }).join("")}</svg>`
       + put.map(([m, x, a, r]) => `<b class="h k-${m[1]}" style="left:${a.toFixed(1)}px;top:${R0 + r * RH}px"><em>${TT[m[1]] || ""}</em> ${esc(trName(m))}</b>`).join(""); }
   function trMarks(){ if (desk()) return trMarksDesk(); V.tb.querySelector(".sp-trtk").style.paddingBottom = ""; const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 66, BT = OT + 9, BB = OT + 45, D0 = 8, DM = 22, placed = [];
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, named = [];
@@ -471,7 +483,7 @@ window.PdfView = (() => {
     try { sessionStorage.setItem(TRK, JSON.stringify(keep)); } catch (e) {}
     trEnd(); cur.onRef(r[5], "tag", r[7], b || null); }
   async function trResume(me){ let t = null; try { t = JSON.parse(sessionStorage.getItem(TRK) || "null"); } catch (e) {}
-    if (!t || t.n !== me.number || Date.now() - t.at > 12 * 3600e3 || desk()) return;
+    if (!t || t.n !== me.number || Date.now() - t.at > 12 * 3600e3) return;
     try { sessionStorage.removeItem(TRK); } catch (e) {}
     const D = await linesFor(me.number); if (!D[t.k]) return;
     for (let n = 0; n < 60 && cur === me && !(V.pgFor === me && V.refs && V.refs.length); n++) await new Promise(ok => setTimeout(ok, 150));
@@ -499,7 +511,26 @@ window.PdfView = (() => {
     if (wAcc){ const a = V.tb.querySelector(".sp-tra"), H = V.pg.getViewport({ scale: 1 }).height, len = TR.L[TR.L.length - 1] * H / 1e4 || 1, s = V.base * V.zoom;
       a.value = Math.max(0, Math.min(1000, +a.value + wAcc / s / len * 1000)); wAcc = 0; }
     trView(); }
-  function trWheelOn(){ if (V.trWheel) return; V.trWheel = true;
+  // desktop keys while tracing: ← → a tenth of the line each press, held down a smooth run at a fifth of the line a second;
+  // ↑ the line downstream, ↓ the line upstream (the first of two at a tee); Esc leaves the trace
+  let kHold = null;
+  function trKeysOn(){ if (V.trKeys) return; V.trKeys = true;
+    addEventListener("keydown", e => { if (!TR || V.el.hidden || e.ctrlKey || e.altKey || e.metaKey) return;
+      const t = e.target; if (t && (/INPUT|TEXTAREA|SELECT/.test(t.tagName) && t.type !== "range" || t.isContentEditable)) return;
+      const k = e.key, dir = k === "ArrowRight" ? 1 : k === "ArrowLeft" ? -1 : 0;
+      if (dir){ e.preventDefault(); e.stopPropagation(); if (e.repeat || kHold) return; const a = V.tb.querySelector(".sp-tra");
+        a.value = Math.max(0, Math.min(1000, +a.value + dir * 100)); trView();
+        kHold = { dir, t0: performance.now() + 300, last: 0, raf: 0 };
+        const run = now => { if (!kHold || !TR) return; if (now > kHold.t0){ const dt = kHold.last ? now - kHold.last : 0; kHold.last = now;
+            if (dt){ a.value = Math.max(0, Math.min(1000, +a.value + kHold.dir * .2 * dt)); trView(); } }   // (20% a second: 0.2 of 1000 per ms)
+          kHold.raf = requestAnimationFrame(run); };
+        kHold.raf = requestAnimationFrame(run); return; }
+      if (k === "ArrowUp" || k === "ArrowDown"){ e.preventDefault(); e.stopPropagation();
+        const pick = k === "ArrowUp" ? TR.nbR : TR.nbL; if (pick && pick[0]) trGo(pick[0]); return; }
+      if (k === "Escape"){ e.preventDefault(); e.stopPropagation(); trEnd("x"); } }, true);
+    addEventListener("keyup", e => { if ((e.key === "ArrowRight" || e.key === "ArrowLeft") && kHold){ cancelAnimationFrame(kHold.raf); kHold = null; } });
+    addEventListener("blur", () => { if (kHold){ cancelAnimationFrame(kHold.raf); kHold = null; } }); }
+  function trWheelOn(){ trKeysOn(); if (V.trWheel) return; V.trWheel = true;
     V.el.addEventListener("wheel", e => { if (!TR || !desk() || !e.target.closest(".sp-body, .sp-trb")) return; e.preventDefault(); e.stopPropagation();
       const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1, d = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * k;
       if (e.ctrlKey) zAcc += d; else wAcc += d;
@@ -521,7 +552,7 @@ window.PdfView = (() => {
     if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(TR.k) || !V.refs[+j]) return; const r = V.refs[+j], d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
       if (d < 300) out.push({ rb: +j, d, dir, seq: String(r[5]).split("|")[0].replace(/^2000-/, "").replace(/-PID-PR-/, "-") }); });
     return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb) === i).slice(0, 2); }
-  function trNx(){ TR.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = V.tb.querySelector(".sp-trnx." + side), L = trNbs(dir);
+  function trNx(){ TR.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = V.tb.querySelector(".sp-trnx." + side), L = trNbs(dir); TR[dir < 0 ? "nbL" : "nbR"] = L;
     c.classList.toggle("two", L.length > 1);
     c.innerHTML = L.map(o => { TR.nb.push(o); return `<button type="button" data-i="${TR.nb.length - 1}" class="${o.rb != null ? "sh" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(V.refs[o.k][5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
   function trGo(nb){ if (!nb) return;
@@ -532,7 +563,7 @@ window.PdfView = (() => {
   // arrived through a ribbon (tapped, or the arrow at the end of the line slider) on the phone: the line carried on
   // traced on the new sheet: the one that ribbon leads to, else the line with the same number there; from the ribbon's
   // end, else from the end the way you were going (upstream end when going downstream, so 100% here is 0% there)
-  async function trArrive(me, back){ const tp = trPend; if (!tp || Date.now() - tp.at > 15000 || desk()) return; trPend = null;
+  async function trArrive(me, back){ const tp = trPend; if (!tp || Date.now() - tp.at > 15000) return; trPend = null;
     const D = await linesFor(me.number);
     for (let n = 0; n < 60 && cur === me && !(V.pgFor === me && V.refs && V.refs.length); n++) await new Promise(ok => setTimeout(ok, 150));
     if (cur !== me || !V.refs.length) return;
@@ -893,6 +924,7 @@ window.PdfView = (() => {
   // scroll so a sheet point (fractions) sits in the middle of what can be seen: above the phone's find box and buttons
   function centreOn(fx, fy){
     let bottom = V.body.getBoundingClientRect().bottom; const r0 = V.body.getBoundingClientRect();
+    { const tb = V.tb; if (tb && !tb.hidden && desk()){ const r = tb.getBoundingClientRect(); if (r.height) bottom = Math.min(bottom, r.top); } }   // (desktop: above the trace strip)
     if (document.documentElement.classList.contains("phone")) V.el.querySelectorAll(".sp-q, .sp-top, .sp-trb").forEach(e => { const r = e.getBoundingClientRect(); if (r.height && getComputedStyle(e).display !== "none" && r.top > r0.top + r0.height / 3) bottom = Math.min(bottom, r.top); });
     V.body.scrollLeft = fx * V.sheet.offsetWidth - V.body.clientWidth / 2; V.body.scrollTop = fy * V.sheet.offsetHeight - (bottom - r0.top) / 2;
   }
