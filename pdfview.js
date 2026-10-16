@@ -397,7 +397,7 @@ window.PdfView = (() => {
   // points, so the dot stays round; the line widths are screen pixels, thin when the whole sheet shows, a little more close up
   function drawTrace(){ if (!V || !V.trl) return; const on = TR && cur && TR.n === cur.number && TR.page === V.page && V.pg;
     if (!on){ V.trl.innerHTML = ""; return; }
-    const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, s = V.base * V.zoom, w = Math.max(1, Math.min(2.25, .8 * s)), tw = w * 1.35;
+    const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, s = V.base * V.zoom, w = Math.max(4, Math.min(9, 3.2 * s)), tw = w * 1.35;
     const pts = P => P.map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
     const f = trF(), [dx, dy] = trPt(...trAt(f)).map((v, i) => v / 1e4 * (i ? H : W));
     V.trl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.trl.style.setProperty("--trw", w + "px");
