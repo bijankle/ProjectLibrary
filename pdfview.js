@@ -369,16 +369,17 @@ window.PdfView = (() => {
   // there is room (two rows); what is at each end named under the ends
   const TK = { t: "tee", v: "valve", i: "instrument", e: "equipment", r: "continues", l: "next line", s: "end" };
   const short = t => String(t || "").replace(/^\d+-(?=\d{4}-)/, "");
-  function trName(m, end){ const t = m[2] || "";
-    if (m[1] === "t") return t ? "tee " + short(t) : "tee";
-    if (m[1] === "r") return (end ? (m[0] < .5 ? "from " : "to ") : "") + t.replace(/^2000-/, "").replace(/-PID-PR-/, " ");
-    // (where the line meets the next one: the spec change, this line's | the next's, in the slider's left to right order)
-    if (m[1] === "l"){ const sp = n => (String(n || "").split("-")[3] || "?"), me = sp(TR.label), nx = sp(t); return m[0] < .5 ? nx + " | " + me : me + " | " + nx; }
+  // milestone names kept short (a long line has many): T a tee, a valve or instrument by its number, equipment without
+  // its area (PW-417), a ribbon by the sheet it goes to (F75-10002), the next line by the spec change (PE8|SS1)
+  function trName(m){ const t = String(m[2] || "").replace(/\s+/g, "");
+    if (m[1] === "t") return "T";
+    if (m[1] === "r") return t.replace(/^2000-/, "").replace(/-PID-PR-/, "-");
+    if (m[1] === "l"){ const sp = n => (String(n || "").split("-")[3] || "?"), me = sp(TR.label), nx = sp(t); return m[0] < .5 ? nx + "|" + me : me + "|" + nx; }
     if (m[1] === "s") return "end";
-    return t.replace(/\s+/g, ""); }
+    return t.replace(/^F\d\d-(?=\d)/, "").replace(/^F\d\d-(?=[A-Z])/, ""); }
   function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, rows = [[], []], cw = 6.1;
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, v: 4, i: 5, s: 6 })[m[1]] ?? 7;
-    const endOf = lo => { const E = TR.m.filter(m => lo ? m[0] <= .02 : m[0] >= .98).sort((a, b) => pr(a) - pr(b)); return E[0] ? trName(E[0], true) : "end"; };
+    const endOf = lo => { const E = TR.m.filter(m => lo ? m[0] <= .02 : m[0] >= .98).sort((a, b) => pr(a) - pr(b)); return E[0] ? trName(E[0]) : "end"; };
     V.tb.querySelector(".sp-tre .s").textContent = endOf(true); V.tb.querySelector(".sp-tre .e").textContent = endOf(false);
     const mid = TR.m.filter(m => m[0] > .02 && m[0] < .98), named = [];
     [...mid].sort((a, b) => pr(a) - pr(b)).forEach(m => { const nm = trName(m), w = nm.length * cw + 4, x = m[0] * W, rr = [x - w / 2, x + w / 2];
