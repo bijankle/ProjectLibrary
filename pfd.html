@@ -1178,6 +1178,9 @@ body.fx-on #search,body.fx-on #camBtn{display:none!important}
     onTab: t => { if (t !== "pfd" && t !== "layout") return false; setView(t === "layout" ? "map" : "pfd"); return true; } });
   if (Tabs.slot($("search"), { cam: true })) $("search").placeholder = "Search the PFD";
   if (Tabs.replace && !(history.state && history.state.s)) Tabs.replace({ s: curView });
+  // a drawing that was open when the page reloaded (the app updating itself, or the phone reloading it) opens again where it was
+  { const st = history.state, sv = window.PdfView && PdfView.saved && PdfView.saved();
+    if (st && st.sp && sv && sv.n && sv.id === st.id) Promise.resolve(window.Pid && Pid.load && Pid.load()).then(() => setTimeout(() => Pid.open(sv.n, null, { restore: sv.snap, revive: sv.base || { s: curView } }), 600)); }
   caseHome(curView === "layout" ? "map" : "pfd");
   const openHash = () => { if (location.hash === "#layout") setView("map"); else if (location.hash === "#pfd" && PFDLayout.active()) setView("pfd"); };
   window.addEventListener("hashchange", openHash); if (curView === "layout") setTimeout(() => setView("map", true), 0); else if (location.hash === "#layout") setHash("pfd");
