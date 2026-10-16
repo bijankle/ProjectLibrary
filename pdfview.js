@@ -29,7 +29,7 @@ window.PdfView = (() => {
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="in" title="Zoom in">+</button></div>
       <button class="sp-fb" data-a="find" title="Find in this drawing">⌕</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
-      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-text textLayer"></div><div class="sp-dn"></div></div></div><div class="sp-msg"></div>
+      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><svg class="sp-trl" viewBox="0 0 10000 10000" preserveAspectRatio="none"></svg><div class="sp-text textLayer"></div><div class="sp-dn"></div></div></div><div class="sp-msg"></div>
       <button class="sp-ze" data-a="fit" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>`;
     // phone, sheet at fit: the room left under the sheet holds a panel (cur.panel fills it: the connected drawings, pid.js)
     const cx = document.createElement("div"); cx.className = "sp-cx"; cx.hidden = true; el.appendChild(cx);
@@ -37,10 +37,15 @@ window.PdfView = (() => {
     ["l", "r"].forEach(sd => { const a = document.createElement("button"); a.type = "button"; a.className = "sp-arw " + sd; a.hidden = true; a.textContent = sd === "l" ? "‹" : "›";
       a.title = sd === "l" ? "The drawing before" : "The drawing after"; a.onclick = e => { e.stopPropagation(); if (cur && cur.swipe) cur.swipe(sd === "l" ? -1 : 1, true); }; el.appendChild(a); });
     // a button in the top right corner over the sheet, set by the opener (cur.corner: { html, title, go }): P&IDs' Drawing legend
+    // phone, a line traced (trace below): its number, how far along, open its page, ✕; the zoom and along the line sliders
+    const tb = document.createElement("div"); tb.className = "sp-trb"; tb.hidden = true;
+    tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><button type="button" class="sp-tro" title="Open this line's page">Open</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
+      <label><span>Zoom</span><input type="range" class="sp-trz" min="0" max="100" step="1"></label><label><span>Line</span><input type="range" class="sp-tra" min="0" max="1000" step="1"><span class="sp-trp"></span></label>`;
+    tb.addEventListener("click", e => e.stopPropagation()); el.appendChild(tb);
     const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
     cb.onclick = () => cur && cur.corner && cur.corner.go();
     document.body.appendChild(el);
-    V = { cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
+    V = { tb, trl: el.querySelector(".sp-trl"), cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), textEl: el.querySelector(".sp-text"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
       fprev: () => V.fit ? fitStep(-1) : showHit(V.fi - 1, -1), fnext: () => V.fit ? fitStep(1) : showHit(V.fi + 1, 1), rot, close,
@@ -213,8 +218,15 @@ window.PdfView = (() => {
       a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
       // the red arrow on what was tapped, kept with this view (back here shows where you were)
       const bx = V.boxes[+a.dataset.i]; if (bx){ V.tap = { page: V.page, l: bx[0] / 1e4, t: bx[1] / 1e4, w: bx[2] / 1e4, h: bx[3] / 1e4 }; drawTap(); const me = REG.get(curId); if (me){ me.snap = state(); me.tap = V.tap; } }
+      if (!desk() && r[6] === "line" && /-PID-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
+        linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
+      if (!desk() && r[6] === "d") trPend = { at: Date.now() };
       if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : r[6] === "s" ? "sp" : "tag", r[7], bx || null);
     });
+    tb.querySelector(".sp-trx").onclick = () => trEnd();
+    tb.querySelector(".sp-tro").onclick = () => { if (!TR || !cur.onRef) return; const r = TR.r, b = TR.box; trEnd(); cur.onRef(r[5], "tag", r[7], b || null); };
+    tb.querySelector(".sp-trz").oninput = e => { try { localStorage.setItem("kcgm_trz", e.target.value); } catch (x) {} trView(); };
+    tb.querySelector(".sp-tra").oninput = () => trView();
     return V;
   }
 
@@ -246,7 +258,7 @@ window.PdfView = (() => {
   addEventListener("resize", () => { if (V && !V.el.hidden && desk()) dock(); });
   async function open(o){
     ui(); freeRotate(); const wasOpen = !V.el.hidden; lastNum = wasOpen && cur && cur.number !== o.number ? cur.number : wasOpen ? lastNum : null;
-    cur = Object.assign({ page: 1, fit: "width" }, o);
+    if (TR) trEnd(); cur = Object.assign({ page: 1, fit: "width" }, o);
     V.el.hidden = false; document.body.classList.add("sp-on"); dock();
     { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } } V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
@@ -259,7 +271,7 @@ window.PdfView = (() => {
     if (!o._pop){ const was = curId && REG.get(curId), st0 = state(); if (was && st0 && wasOpen) was.snap = st0; push({ o, snap: null }); }
     // refs: the references printed on the sheet ([page, left, top, width, height, target, kind] in 1/10000 of the sheet,
     // a promise), each a tappable box; onRef(target, kind) acts on a tap.
-    V.sheet.classList.add("sp-wait"); V.refs = []; V.refsEl.innerHTML = ""; pickClose(); V.tap = o._pop && o._tap || null; V.tapEl.innerHTML = "";
+    V.sheet.classList.add("sp-wait"); V.refs = []; V.refsEl.innerHTML = ""; V.trl.innerHTML = ""; pickClose(); V.tap = o._pop && o._tap || null; V.tapEl.innerHTML = "";
     V.fit = false; V.fq = ""; V.fset = new Set(); V.fmatch = []; V.fstep = -2;
     // (the boxes are laid out once this document's page is in: until then V.pg is the last one's, or none)
     const me = cur; if (cur.refs) Promise.resolve(cur.refs).then(a => new Promise(ok => V.pgFor === me ? ok(a) : (V.afterPage = () => ok(a)))).then(a => { if (cur !== me) return; V.refs = a || [];
@@ -284,7 +296,7 @@ window.PdfView = (() => {
     V.zoom = 1; await go(cur.page);
     const r = cur.restore; if (r && cur === me){ quiet(); V.zoom = r.zoom; layout(false); V.body.scrollLeft = r.sl; V.body.scrollTop = r.st; sharp(); }
     if (cur === me && REG.get(curId) && !REG.get(curId).snap){ REG.get(curId).snap = state(); REG.get(curId).at = REG.get(curId).snap; }
-    if (!o._pop && cur.back != null) arrive(me);
+    if (!o._pop && cur.back != null) arrive(me); else trPend = null;
   }
   // arrived through a continuation: the red arrow on the ribbon pointing back to the drawing you came from (cur.back,
   // indexes into this drawing's refs; several when the sheets can't tell them apart), on its page and in view
@@ -298,6 +310,7 @@ window.PdfView = (() => {
     V.tap = Object.assign({}, bs[0], { more: bs.slice(1) }); drawTap();
     quiet(); if (!me.extent) focusHits(bs, true);   // zoomed onto the ribbon(s) back to where you came from: all in view, never closer than 4x
     const v = REG.get(curId); if (v){ v.tap = V.tap; v.snap = state(); v.at = v.snap; }
+    trArrive(me, me.back);
   }
   // the place tapped or found: a highlighted box on it (no arrow), grown a little round the tag like the search boxes
   function arrowAt(h, cls){ const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), [l, t, w, hh] = PdfView.grow(h.l * 1e4, h.t * 1e4, h.w * 1e4, h.h * 1e4, vp.width / vp.height);
@@ -311,6 +324,46 @@ window.PdfView = (() => {
     if (V.refsEl && V.boxes) [...V.refsEl.children].forEach((a, i) => { const b = V.boxes[i]; if (!b) return; const [l, t, w, hh] = b.map(x => x / 1e4);
       a.classList.toggle("tp", on.some(h => h.l < l + w && h.l + h.w > l && h.t < t + hh && h.t + h.h > t)); });
  }
+  // ---------- line trace (phone) ----------
+  // A tapped line number lights up its whole line (lines/<number>.json, tools/build_line_paths.py) and a bar comes up with
+  // two sliders: Zoom (remembered) and Line, which runs the view along the line from one end to the other. A ribbon
+  // tapped takes the trace on to the next sheet: the line that ribbon carries on lights up, the slider at the ribbon's end.
+  const LN = {}; let TR = null, trPend = null;
+  const linesFor = n => LN[n] || (LN[n] = fetch("lines/" + n + ".json").then(r => r.ok ? r.json() : {}).catch(() => { delete LN[n]; return {}; }));
+  const trZ = () => { let v = 55; try { const x = localStorage.getItem("kcgm_trz"); if (x != null) v = +x; } catch (e) {} return v; };
+  const zOf = v => Math.pow(10, v / 100);   // (slider 0 to 100: the whole sheet to ten times)
+  const trPt = (x, y) => V.rot ? [1e4 - y, x] : [x, y];
+  function trace(k, end, box){
+    const D = LN[cur.number]; Promise.resolve(D).then(D => {
+      const P = D && D[k]; if (!P || P.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height, r = V.refs[k];
+      const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
+      TR = { n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box };
+      // where the slider starts: the end by the ribbon arrived through, else the point of the line beside its number
+      let f = 0;
+      if (end){ const d = q => Math.hypot((q[0] - end[0]) * A, q[1] - end[1]); f = d(P[P.length - 1]) < d(P[0]) ? 1 : 0; }
+      else { const cx = r[1] + r[3] / 2, cy = r[2] + r[4] / 2; let best = 1e18;
+        for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
+          const t = Math.max(0, Math.min(1, ((cx - x0) * A * dx + (cy - y0) * dy) / ll)), e = ((x0 + t * (x1 - x0) - cx) * A) ** 2 + (y0 + t * (y1 - y0) - cy) ** 2;
+          if (e < best){ best = e; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
+      const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; tb.querySelector(".sp-trz").value = trZ(); tb.querySelector(".sp-tra").value = Math.round(f * 1000);
+      tb.hidden = false; V.el.classList.add("tracing"); drawTrace(); cxFit(); trView();
+    });
+  }
+  function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
+    const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1])]; }
+  function trView(){ if (!TR) return; const tb = V.tb, f = tb.querySelector(".sp-tra").value / 1000;
+    tb.querySelector(".sp-trp").textContent = Math.round(f * 100) + "%";
+    V.zoom = Math.max(1, Math.min(10, zOf(+tb.querySelector(".sp-trz").value))); V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false);
+    const [x, y] = trPt(...trAt(f)); centreOn(x / 1e4, y / 1e4); sharp(); settleSoon(); }
+  function drawTrace(){ if (!V || !V.trl) return; const on = TR && cur && TR.n === cur.number && TR.page === V.page;
+    V.trl.innerHTML = on ? `<polyline points="${TR.P.map(q => trPt(q[0], q[1]).join(",")).join(" ")}"/>` : ""; }
+  function trEnd(){ if (!TR && V.tb.hidden) return; TR = null; V.tb.hidden = true; V.el.classList.remove("tracing"); drawTrace(); cxFit(); }
+  // arrived through a ribbon tapped on the phone: the line that ribbon carries on, traced from the ribbon's end
+  function trArrive(me, back){ if (!trPend || Date.now() - trPend.at > 15000 || desk()) return; trPend = null;
+    linesFor(me.number).then(D => { if (cur !== me || !D.rb) return; const j = [].concat(back).find(j => D.rb[j] != null); if (j == null) return;
+      const rb = V.refs[j], k = +D.rb[j]; if (!rb || !D[k]) return;
+      const b = boxOf(V.refs[k]); V.tap = Object.assign({}, V.tap || {}, { more: [].concat((V.tap && V.tap.more) || [], [{ page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }]) }); drawTap();
+      trace(k, [rb[1] + rb[3] / 2, rb[2] + rb[4] / 2]); }); }
   // ---------- view history ----------
   const REG = new Map(); let curId = 0, seq = 0, hush = 0, st8 = null;
   const quiet = () => { hush = Date.now() + 500; };   // (moves made by a restore are not new views)
@@ -372,7 +425,7 @@ window.PdfView = (() => {
       const cls = V.fit ? " fit" + (shape(r) === "o" ? " o" : "") + (V.fq && !V.fset.has(r) ? " off" : "") : r[6] === "d" ? " d" : "";
       const rb = r[6] === "d" && Array.isArray(r[8]) && !V.rot;
       return `<a class="sp-ref${cls}${rb ? " rb" : ""}" data-i="${i}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%" title="${esc(r[5].replace(/\|/g, ", "))}">${rb ? ribbon(r[8]) : ""}</a>`; }).join("");
-    hideOwnHits(); drawTap();
+    hideOwnHits(); drawTap(); drawTrace();
   }
   // how a ref was fitted to the print on a checked sheet: "o" bubble, "b" drawn box (both exact), "t" text (a margin added)
   const shape = r => typeof r[7] === "string" ? r[7] : V.fit && r[6] === "d" ? "t" : null;
@@ -432,7 +485,7 @@ window.PdfView = (() => {
     }
   }
   async function unrot(){ if (V) V.rot = 0; if (freed){ freed = false; try { screen.orientation.unlock(); } catch (e) {} } if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
-  function close(fromPop, stepBack){ if (!V || V.el.hidden) return; unrot(); V.el.hidden = true; V.cx.hidden = true; try { sessionStorage.removeItem(SSK); } catch (e) {} document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
+  function close(fromPop, stepBack){ if (!V || V.el.hidden) return; unrot(); if (TR) trEnd(); V.el.hidden = true; V.cx.hidden = true; try { sessionStorage.removeItem(SSK); } catch (e) {} document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
     if (!fromPop && history.state && history.state.sp){
       if (stepBack){ if (zIn && history.state.z){ zIn = false; history.go(-2); } else history.back(); }
       // (✕: the drawing stays a step in the history, Back from the page returns to it; the page as it was under the viewer is the new step)
@@ -462,7 +515,7 @@ window.PdfView = (() => {
   async function go(n, fromPop){
     const d = await getDoc(cur.url); n = Math.max(1, Math.min(d.numPages, n));
     if (!fromPop && V.pg && n !== V.page){ const me = REG.get(curId); if (me) me.snap = state(); quiet(); V.page = n; push({ o: me ? me.o : cur, snap: null }); }
-    V.page = n;
+    V.page = n; if (TR && TR.page !== n) trEnd();
     V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
     await picsP; V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true); V.sheet.style.opacity = "";
     (window.requestIdleCallback || setTimeout)(() => textLayer(), { timeout: 1200 });   // (the selectable text after the picture is up)
@@ -512,7 +565,7 @@ window.PdfView = (() => {
       a.style.top = Math.round(s.top - e.top + s.height / 2 - a.offsetHeight / 2) + "px"; a.style.left = Math.round((dir < 0 ? s.left + 6 : s.right - 6 - a.offsetWidth) - e.left) + "px"; }); }
   function cxFit(){
     if (!V || !V.cx) return; const c = V.cx; V.el.classList.toggle("cx-on", false); V.el.querySelectorAll(".sp-arw").forEach(a => a.hidden = true);
-    if (!cur || !cur.panel || desk() || V.el.hidden || V.zoom > 1.001 || V.rot || V.el.classList.contains("typing")){ c.hidden = true; return; }
+    if (!cur || !cur.panel || desk() || V.el.hidden || V.zoom > 1.001 || V.rot || TR || V.el.classList.contains("typing")){ c.hidden = true; return; }
     const e = V.el.getBoundingClientRect(), sb = V.sheet.getBoundingClientRect().bottom; let lim = V.body.getBoundingClientRect().bottom;
     V.el.querySelectorAll(".sp-top").forEach(t => { const r = t.getBoundingClientRect(); if (r.height && r.top > e.top + e.height / 2) lim = Math.min(lim, r.top); });
     const room = lim - sb - 14; if (room < 120){ c.hidden = true; return; }
@@ -654,7 +707,7 @@ window.PdfView = (() => {
   // scroll so a sheet point (fractions) sits in the middle of what can be seen: above the phone's find box and buttons
   function centreOn(fx, fy){
     let bottom = V.body.getBoundingClientRect().bottom; const r0 = V.body.getBoundingClientRect();
-    if (document.documentElement.classList.contains("phone")) V.el.querySelectorAll(".sp-q, .sp-top").forEach(e => { const r = e.getBoundingClientRect(); if (r.height && getComputedStyle(e).display !== "none" && r.top > r0.top + r0.height / 3) bottom = Math.min(bottom, r.top); });
+    if (document.documentElement.classList.contains("phone")) V.el.querySelectorAll(".sp-q, .sp-top, .sp-trb").forEach(e => { const r = e.getBoundingClientRect(); if (r.height && getComputedStyle(e).display !== "none" && r.top > r0.top + r0.height / 3) bottom = Math.min(bottom, r.top); });
     V.body.scrollLeft = fx * V.sheet.offsetWidth - V.body.clientWidth / 2; V.body.scrollTop = fy * V.sheet.offsetHeight - (bottom - r0.top) / 2;
   }
   // step through the matches: the first Enter shows the whole sheet with all of them; each one after jumps straight

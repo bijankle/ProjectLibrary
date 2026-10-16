@@ -1,0 +1,137 @@
+"""The path of every pipeline drawn on the P&IDs, for the phone's line trace (pdfview.js): tap a line number and the whole
+line lights up, a slider runs the view along it. One file per drawing, lines/<number>.json:
+  {"<ref index>": [[x, y], …]}   the line's path, from one end to the other, in the same 1/10,000 sheet units as
+                                 pid-refs.json (keyed by the line label's index in that drawing's refs)
+  "rb": {"<ribbon ref index>": "<line ref index>"}   the line a continuation ribbon on the sheet carries on
+  python3 tools/build_line_paths.py [numbers…]     (default: every P&ID in PIDs/index.json)
+
+How a line is followed: the drawing's pipe strokes (dark, at least 8 pt long, so not the strokes of vector lettering)
+are cut where a short tick crosses them (flanges, spec breaks). From the stroke beside the line number the trace runs
+both ways: straight on through joints, round a corner where only one stroke meets it, across a gap of up to 30 pt in
+the same direction (a valve or other symbol drawn on the line). It stops at a tee (two ways on, neither straight),
+at a stroke that has another line's number beside it, or where the strokes run out.
+"""
+import json, math, os, re, sys
+import pymupdf
+R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+IX = json.load(open(os.path.join(R, "PIDs", "index.json")))["pids"]
+REFS = json.load(open(os.path.join(R, "pid-refs.json")))
+OUT = os.path.join(R, "lines"); os.makedirs(OUT, exist_ok=True)
+LINE = re.compile(r"\d{2,3}-\d{4}-[A-Z]{1,4}-[A-Z0-9]{2,6}-\d{2,4}")
+L = lambda t: math.hypot(t[2] - t[0], t[3] - t[1])
+def ori(s):
+    dx, dy = s[2] - s[0], s[3] - s[1]
+    return "h" if abs(dy) < 0.5 else "v" if abs(dx) < 0.5 else "d"
+
+def strokes(p):
+    S = []
+    for d in p.get_drawings():
+        w = d.get("width") or 0; c = d.get("color") or (1, 1, 1)
+        if w < 0.6 or sum(c) > 1.5: continue
+        for it in d["items"]:
+            if it[0] == "l":
+                a, b = it[1], it[2]
+                if math.hypot(b.x - a.x, b.y - a.y) >= 8: S.append((a.x, a.y, b.x, b.y))
+    ticks = [t for t in S if L(t) <= 20 and ori(t) in "hv"]
+    out = []
+    for t in S:
+        o = ori(t)
+        if L(t) <= 30 or o not in "hv": out.append(t); continue
+        cuts = []
+        for k in ticks:
+            if ori(k) == o: continue
+            if o == "h" and min(k[1], k[3]) - 1 < t[1] < max(k[1], k[3]) + 1 and min(t[0], t[2]) + 3 < k[0] < max(t[0], t[2]) - 3: cuts.append(k[0])
+            if o == "v" and min(k[0], k[2]) - 1 < t[0] < max(k[0], k[2]) + 1 and min(t[1], t[3]) + 3 < k[1] < max(t[1], t[3]) - 3: cuts.append(k[1])
+        if not cuts: out.append(t); continue
+        if o == "h":
+            xs = sorted([min(t[0], t[2])] + cuts + [max(t[0], t[2])]); out += [(xs[i], t[1], xs[i + 1], t[1]) for i in range(len(xs) - 1) if xs[i + 1] - xs[i] > 1]
+        else:
+            ys = sorted([min(t[1], t[3])] + cuts + [max(t[1], t[3])]); out += [(t[0], ys[i], t[0], ys[i + 1]) for i in range(len(ys) - 1) if ys[i + 1] - ys[i] > 1]
+    return out
+
+def trace(S, LBL, r, label, gap=30, tol=1.6):
+    cx, cy = (r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2; vert = r.height > r.width
+    best = None
+    for i, s in enumerate(S):
+        o = ori(s)
+        if vert and o == "v" and min(s[1], s[3]) - 5 < cy < max(s[1], s[3]) + 5: d = abs(s[0] - cx)
+        elif not vert and o == "h" and min(s[0], s[2]) - 5 < cx < max(s[0], s[2]) + 5: d = abs(s[1] - cy)
+        else: continue
+        if d < 25 and (best is None or d < best[0]): best = (d, i)
+    if not best: return None
+    def owner(t):
+        o = ori(t); bl = None
+        for txt, q in LBL:
+            qx, qy = (q.x0 + q.x1) / 2, (q.y0 + q.y1) / 2
+            if o == "h" and min(t[0], t[2]) - 3 < qx < max(t[0], t[2]) + 3: d = abs(t[1] - qy)
+            elif o == "v" and min(t[1], t[3]) - 3 < qy < max(t[1], t[3]) + 3: d = abs(t[0] - qx)
+            else: continue
+            if d < 20 and (bl is None or d < bl[0]): bl = (d, txt)
+        return bl and bl[1]
+    ends = lambda s: [(s[0], s[1]), (s[2], s[3])]
+    near = lambda a, b: abs(a[0] - b[0]) < tol and abs(a[1] - b[1]) < tol
+    seen = {best[1]}; chains = []
+    for start in ends(S[best[1]]):   # each way from the label: a chain of points
+        pts = [start]; i, pt = best[1], start
+        while True:
+            s = S[i]; o = ori(s)
+            cand = [j for j, t in enumerate(S) if j not in seen and any(near(pt, e) for e in ends(t))]
+            straight = [j for j in cand if ori(S[j]) == o]
+            nxt = straight or (cand if len(cand) == 1 else [])
+            if not nxt and o in "hv":
+                mx, my = (s[0] + s[2]) / 2, (s[1] + s[3]) / 2
+                for j, t in enumerate(S):
+                    if j in seen or ori(t) != o: continue
+                    for e in ends(t):
+                        if o == "h" and abs(e[1] - pt[1]) < tol and 0 < abs(e[0] - pt[0]) < gap and (e[0] - pt[0]) * (pt[0] - mx) > 0: nxt = [j]; break
+                        if o == "v" and abs(e[0] - pt[0]) < tol and 0 < abs(e[1] - pt[1]) < gap and (e[1] - pt[1]) * (pt[1] - my) > 0: nxt = [j]; break
+                    if nxt: break
+            if not nxt: break
+            j = nxt[0]; ow = owner(S[j])
+            if ow and ow != label: break
+            seen.add(j); t = S[j]
+            a, b = sorted(ends(t), key=lambda e: math.hypot(e[0] - pt[0], e[1] - pt[1]))
+            pts += [a, b]; i, pt = j, b
+        chains.append(pts)
+    path = list(reversed(chains[0])) + chains[1]
+    return [p for k, p in enumerate(path) if k == 0 or math.hypot(p[0] - path[k - 1][0], p[1] - path[k - 1][1]) > 0.5]
+
+def build(num):
+    v = IX[num]; doc = pymupdf.open(os.path.join(R, v["file"])); refs = REFS.get(num, [])
+    out = {}; rb = {}; pages = {}
+    for k, r in enumerate(refs):
+        if r[6] != "line": continue
+        pg = r[0] - 1
+        if pg not in pages:
+            p = doc[pg]
+            if p.rotation: pages[pg] = None; continue
+            LBL = [(w[4], pymupdf.Rect(w[:4])) for w in p.get_text("words") if LINE.fullmatch(w[4])]
+            pages[pg] = (p, strokes(p), LBL)
+        if not pages[pg]: continue
+        p, S, LBL = pages[pg]; W, H = p.rect.width, p.rect.height
+        rr = pymupdf.Rect(r[1] * W / 1e4, r[2] * H / 1e4, (r[1] + r[3]) * W / 1e4, (r[2] + r[4]) * H / 1e4)
+        label = str(r[5]).split("|")[0]
+        P = trace(S, LBL, rr, label)
+        if P and len(P) >= 2: out[str(k)] = [[round(x / W * 1e4), round(y / H * 1e4)] for x, y in P]
+    # a continuation ribbon carries on the line whose path ends nearest it (within 300 units, about 7 cm at A1)
+    for k, r in enumerate(refs):
+        if r[6] != "d": continue
+        bx = (r[1], r[2], r[1] + r[3], r[2] + r[4]); bestd = None
+        for lk, P in out.items():
+            if refs[int(lk)][0] != r[0]: continue
+            for e in (P[0], P[-1]):
+                dx = max(bx[0] - e[0], 0, e[0] - bx[2]); dy = max(bx[1] - e[1], 0, e[1] - bx[3]); d = math.hypot(dx, dy)
+                if d < 300 and (bestd is None or d < bestd[0]): bestd = (d, lk)
+        if bestd: rb[str(k)] = bestd[1]
+    if out: out["rb"] = rb
+    json.dump(out, open(os.path.join(OUT, num + ".json"), "w"), separators=(",", ":"))
+    return sum(1 for r in refs if r[6] == "line"), len(out) - (1 if out else 0), len(rb)
+
+if __name__ == "__main__":
+    nums = sys.argv[1:] or sorted(k for k in IX if "-PID-" in k)
+    tot = [0, 0, 0]
+    for n in nums:
+        try: a = build(n)
+        except Exception as e: print("skip", n, e); continue
+        tot = [x + y for x, y in zip(tot, a)]
+    print(f"{len(nums)} P&IDs: {tot[1]} of {tot[0]} line numbers traced; {tot[2]} ribbons matched to a line")

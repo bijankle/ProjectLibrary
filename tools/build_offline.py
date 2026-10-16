@@ -17,7 +17,8 @@ dw = json.load(open(os.path.join(ROOT, "PIDs", "index.json")))["pids"] if os.pat
 pid = sorted(v["file"] for k, v in dw.items() if "-PID-" in k); pfd = sorted(v["file"] for k, v in dw.items() if "-PFD-" in k)
 # each drawing with its ready-made sheet pictures (tools/build_pics.py), so a kept drawing opens at once
 pics = lambda fs: [x for f in fs for x in [f] + sorted(rel(p) for p in glob.glob(os.path.join(ROOT, f) + ".p*.png"))]
-add("pids", "P&IDs", f"{len(pid)} drawings", pics(pid))
+# (with each P&ID's traced line paths, lines/<number>.json, for the phone's line trace: tools/build_line_paths.py)
+add("pids", "P&IDs", f"{len(pid)} drawings", pics(pid) + sorted(rel(p) for p in glob.glob(os.path.join(ROOT, "lines", "*.json"))))
 add("pfds", "PFD sheets", f"{len(pfd)} drawings", pics(pfd))
 bfd = sorted(v["file"] for k, v in dw.items() if "-BLK-" in k)
 add("bfds", "Block flowsheets", f"{len(bfd)} drawings", pics(bfd))
