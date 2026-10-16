@@ -228,7 +228,11 @@ window.PdfView = (() => {
       if (r[6] === "line" && /-PID-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
         if (TR && TR.k === gi && TR.n === cur.number){ trOpen(); return; }
         linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
-      if (r[6] === "d") trPend = { at: Date.now(), label: TR && TR.label, dir: 1 };
+      // (on a single line diagram the same for a motor, heater or feeder: its supply traced, tools/build_sld_paths.py)
+      if ((r[6] === "mel" || r[6] === "elec") && /-SLD-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
+        if (TR && TR.k === gi && TR.n === cur.number){ trOpen(); return; }
+        linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
+      if (r[6] === "d") trPend = { at: Date.now(), label: TR && TR.label, dir: 1, from: cur.number };
       if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : r[6] === "s" ? "sp" : "tag", r[7], bx || null);
     });
     tb.querySelector(".sp-trx").onclick = () => trEnd("x");
@@ -356,7 +360,7 @@ window.PdfView = (() => {
       // (an unnumbered continuation, "r<ribbon>": traced under the number it came with, as if that were printed on its ribbon)
       const r = /^r\d+$/.test(k) ? (q => [q[0], q[1], q[2], q[3], q[4], as || "", "line"])(V.refs[+k.slice(1)]) : V.refs[k];
       const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
-      TR = { t0: Date.now(), D, n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
+      TR = { t0: Date.now(), D, n: cur.number, k, P, L, page: r[0], label: (D.lb && D.lb[k]) || String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
       TR.tn = new Map(TR.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, n) => [m, n + 1]));   // (tees numbered from upstream: T1, T2 …)
       // the slider runs from the line's upstream end (0, where the flow arrows show it, tools/build_line_paths.py); it
       // starts there, or at the end by the ribbon arrived through
@@ -379,13 +383,14 @@ window.PdfView = (() => {
   }
   // the milestones along the Line slider: a tick across the track for everything the line passes, named under it where
   // there is room (two rows); what is at each end named under the ends
-  const TK = { t: "tee", v: "valve", p: "special item", i: "instrument", e: "equipment", r: "continues", l: "next line", s: "end" };
+  const TK = { t: "tee", v: "valve", p: "special item", i: "instrument", e: "equipment", r: "continues", l: "next line", s: "end",
+    b: "board", x: "transformer", d: "device", a: "rating", f: "feeder" };   // (b to f: the single line diagrams)
   const short = t => String(t || "").replace(/^\d+-(?=\d{4}-)/, "");
   // milestone names kept short (a long line has many): a tee by the sequence number of the line leaving it, a valve or instrument by its number, equipment without
   // its area (PW-417), a ribbon by the sheet it goes to (F75-10002), the next line by the spec change (PE8|SS1)
   function trName(m){ const t = String(m[2] || "").replace(/\s+/g, "");
     if (m[1] === "t") return (String(m[2] || "").split("-")[1]) || "T" + (TR.tn.get(m) || "");   // (the branch line's sequence number, 0967; T1, T2 … where it isn't known)
-    if (m[1] === "r") return t.replace(/^2000-/, "").replace(/-PID-PR-/, "-");
+    if (m[1] === "r") return t.replace(/^2000-/, "").replace(/-PID-PR-|-SLD-EL-/, "-");
     if (m[1] === "l"){ const sp = n => (String(n || "").split("-")[3] || "?"), me = sp(TR.label), nx = sp(t); return m[0] < .5 ? nx + "|" + me : me + "|" + nx; }
     if (m[1] === "s") return "end";
     if (m[1] === "p") return t.replace(/^SP-/, "");   // (a special item: SP-MC-002 shown as MC-002 under SP)
@@ -393,14 +398,14 @@ window.PdfView = (() => {
   // (each milestone a mark through the bar; its type stands upright above and its name below in the same column, each on
   // a 45° callout from the mark, read bottom to top: TEE / 0588, VALVE / 11318; callouts lean a little further where names would touch, and
   // where they are packed too tight only the mark shows)
-  const TT = { t: "TEE", v: "VALVE", p: "SP", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END" };
+  const TT = { t: "TEE", v: "VALVE", p: "SP", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END", b: "BOARD", x: "TX", d: "DEVICE", a: "RATING", f: "FEEDER" };
   // desktop (wide): the names read across, "VALVE 11318", snug under the bar on rows of their own. Each goes where it costs
   // least: the row nearest the bar, its callout straight down from its mark; failing that a callout that dog-legs (down,
   // sideways in the gap under the bar, down again) to a place further along. Never a callout through a name, never a
   // name over a callout, never two callouts crossing; the most important names placed first
   function trMarksDesk(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 400, sl = V.tb.querySelector(".sp-tra"), BB = Math.round(sl.offsetTop + sl.offsetHeight / 2 + 4) || 20,
       J = BB + 9, RH = 16, R0 = BB + 14, NR = 6, G = 6;
-    const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, rows = [...Array(NR)].map(() => []), legs = [], put = [];
+    const pr = m => ({ r: 0, l: 1, e: 2, b: 2, x: 3, t: 3, i: 4, f: 4, d: 5, p: 5, v: 5, a: 6, s: 6 })[m[1]] ?? 7, rows = [...Array(NR)].map(() => []), legs = [], put = [];
     const wid = m => (TT[m[1]] || "").length * 5.4 + trName(m).length * 6.9 + 8;
     const ok = (x, xv, r, a, b) => {
       if (a < 0 || b > W) return false;
@@ -426,7 +431,7 @@ window.PdfView = (() => {
           return `<polyline points="${x.toFixed(1)},${BB + 6} ${x.toFixed(1)},${J} ${xv.toFixed(1)},${J} ${xv.toFixed(1)},${y} ${e.toFixed(1)},${y}"/>`; }).join("")}</svg>`
       + put.map(([m, x, a, r]) => `<b class="h k-${m[1]}" style="left:${a.toFixed(1)}px;top:${R0 + r * RH}px"><em>${TT[m[1]] || ""}</em> ${esc(trName(m))}</b>`).join(""); }
   function trMarks(){ if (desk()) return trMarksDesk(); V.tb.querySelector(".sp-trtk").style.paddingBottom = ""; const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 66, BT = OT + 9, BB = OT + 45, D0 = 8, DM = 22, placed = [];
-    const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, named = [];
+    const pr = m => ({ r: 0, l: 1, e: 2, b: 2, x: 3, t: 3, i: 4, f: 4, d: 5, p: 5, v: 5, a: 6, s: 6 })[m[1]] ?? 7, named = [];
     // names kept in the same order as their marks (so no two callouts cross), each as near its mark as the ones beside it
     // allow: pushed right past the one before, then pulled back from the right edge; a name that can't get within reach
     // of its mark is left off, the least important first (ribbons, spec changes and equipment before tees, valves …)
@@ -478,10 +483,11 @@ window.PdfView = (() => {
   // (the trace kept when its line's page is opened, so Back to the drawing puts it back as it was: the line, where on it,
   // the zoom; in this tab's session storage too, should the page reload in between)
   const TRK = "kcgm_trres";
-  function trOpen(){ if (!TR || !cur.onRef) return; const r = TR.r, b = TR.box;
+  function trOpen(){ if (!TR || !cur.onRef) return; const r = TR.r, b = TR.box, TR0 = TR;
     const keep = { n: TR.n, k: TR.k, f: trF(), as: typeof TR.k === "string" ? TR.label : null, box: b || null, at: Date.now() };
     try { sessionStorage.setItem(TRK, JSON.stringify(keep)); } catch (e) {}
-    trEnd(); cur.onRef(r[5], "tag", r[7], b || null); }
+    trEnd(); if (r[6] === "d"){ const lb = TR0.D.lb && TR0.D.lb[TR0.k]; if (lb) cur.onRef(lb, "tag", null, null); else cur.onRef(r[5], "dwg", r[7], null); return; }
+    cur.onRef(r[5], "tag", r[7], b || null); }
   async function trResume(me){ let t = null; try { t = JSON.parse(sessionStorage.getItem(TRK) || "null"); } catch (e) {}
     if (!t || t.n !== me.number || Date.now() - t.at > 12 * 3600e3) return;
     try { sessionStorage.removeItem(TRK); } catch (e) {}
@@ -543,10 +549,16 @@ window.PdfView = (() => {
     const segd = (Q, q) => { let m = 1e18; for (let i = 1; i < Q.length; i++){ const [x0, y0] = Q[i - 1], [x1, y1] = Q[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
       const t = Math.max(0, Math.min(1, ((q[0] - x0) * A * dx + (q[1] - y0) * dy) / ll)); m = Math.min(m, Math.hypot((x0 + t * (x1 - x0) - q[0]) * A, y0 + t * (y1 - y0) - q[1])); } return m; };
     const out = [], seq = k2 => String(V.refs[k2][5]).split("|")[0].split("-")[1] || "?";
+    if (D.up || D.dn){ const j = (dir < 0 ? D.up : D.dn || {})[TR.k]; if (j == null || !V.refs[j]) return [];
+      return [{ rb: j, d: 0, dir, seq: String(V.refs[j][5]).split("|")[0].replace(/^2000-/, "").replace(/-SLD-EL-/, "\n") }]; }
     Object.keys(D).forEach(k2 => { if (!/^\d+$/.test(k2) || +k2 === TR.k || !V.refs[+k2] || V.refs[+k2][0] !== TR.page) return; const Q = D[k2];
       const dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e));
       if (dE < 45) out.push({ k: +k2, pt: dist(Q[0], e) < dist(Q[Q.length - 1], e) ? Q[0] : Q[Q.length - 1], d: dE, seq: seq(+k2) });
       else { const dI = segd(Q, e); if (dI < 25) out.push({ k: +k2, pt: e, d: dI + 1, seq: seq(+k2) }); } });
+    // (joined across a pump, a strainer, a gap: tools/link_lines.py)
+    (D.lk || []).forEach(([k1, e1, k2, e2]) => { const me = dir > 0 ? 1 : 0;
+      for (const [a, ea, b, eb] of [[k1, e1, k2, e2], [k2, e2, k1, e1]]) if (String(a) === String(TR.k) && ea === me && D[b] && V.refs[b] && !out.some(o => o.k === b)){ const Q = D[b];
+        out.push({ k: b, pt: eb ? Q[Q.length - 1] : Q[0], d: 50, seq: seq(b) }); } });
     if (!out.length){ const em = TR.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
       if (em){ const k2 = V.refs.findIndex((r, i) => r[0] === TR.page && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
     if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(TR.k) || !V.refs[+j]) return; const r = V.refs[+j], d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
@@ -554,9 +566,9 @@ window.PdfView = (() => {
     return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb) === i).slice(0, 2); }
   function trNx(){ TR.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = V.tb.querySelector(".sp-trnx." + side), L = trNbs(dir); TR[dir < 0 ? "nbL" : "nbR"] = L;
     c.classList.toggle("two", L.length > 1);
-    c.innerHTML = L.map(o => { TR.nb.push(o); return `<button type="button" data-i="${TR.nb.length - 1}" class="${o.rb != null ? "sh" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(V.refs[o.k][5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
+    c.innerHTML = L.map(o => { TR.nb.push(o); return `<button type="button" data-i="${TR.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(V.refs[o.k][5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
   function trGo(nb){ if (!nb) return;
-    if (nb.rb != null){ const r = V.refs[nb.rb]; trPend = { at: Date.now(), label: TR.label, dir: nb.dir || 1 }; cur.onRef && cur.onRef(r[5], "dwg", r[7], null); return; }
+    if (nb.rb != null){ const r = V.refs[nb.rb]; trPend = { at: Date.now(), label: TR.label, dir: nb.dir || 1, from: cur.number }; cur.onRef && cur.onRef(r[5], "dwg", r[7], null); return; }
     const b = boxOf(V.refs[nb.k]), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap();
     trace(nb.k, nb.pt, [bx.l, bx.t, bx.w, bx.h]); }
   // arrived through a ribbon tapped on the phone: the line that ribbon carries on, traced from the ribbon's end
@@ -567,7 +579,9 @@ window.PdfView = (() => {
     const D = await linesFor(me.number);
     for (let n = 0; n < 60 && cur === me && !(V.pgFor === me && V.refs && V.refs.length); n++) await new Promise(ok => setTimeout(ok, 150));
     if (cur !== me || !V.refs.length) return;
-    let k = null, rbr = null; const bk = [].concat(back == null ? [] : back);
+    let k = null, rbr = null; const bk = [].concat(back == null ? [] : back).filter(j => typeof j === "number");
+    // (a single line diagram's ribbons carry no way back: the ones on this sheet naming the sheet just left)
+    if (!bk.length && tp.from) V.refs.forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").includes(tp.from)) bk.push(j); });
     const j = bk.find(j => D.rb && D.rb[j] != null); if (j != null && D[D.rb[j]]){ k = /^\d+$/.test(D.rb[j]) ? +D.rb[j] : D.rb[j]; rbr = V.refs[j]; }
     if (k == null && tp.label){ const C = V.refs.map((r, i) => i).filter(i => V.refs[i][6] === "line" && String(V.refs[i][5]).split("|")[0] === tp.label && D[i]);
       const at = bk.map(j => V.refs[j]).find(Boolean); rbr = at || null;
