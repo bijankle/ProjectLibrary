@@ -313,9 +313,53 @@ def build(num):
                 if near(Q[-1], P[0]) or near(Q[0], P[-1]): fl[k] = 1; grew = True; break
                 if near(Q[-1], P[-1]) or near(Q[0], P[0]): turn(k); fl[k] = 1; grew = True; break
         if not grew: break
+    # a ribbon whose line carries on unnumbered on this sheet (the number printed only on the sheet before): that pipe
+    # traced from the ribbon to the next numbered line, kept as "r<ribbon>" (the app traces it under the number it came
+    # with), flowing away from the ribbon when the ribbon points into the sheet
+    for j, r in enumerate(refs):
+        if r[6] != "d" or str(j) in rb: continue
+        pg = r[0] - 1
+        if pg not in pages or not pages[pg]: continue
+        p, S, LBL, AR, WD = pages[pg]; W, H = p.rect.width, p.rect.height
+        bb = r[8] if len(r) > 8 and isinstance(r[8], list) else r[1:5]
+        bx = pymupdf.Rect(bb[0] * W / 1e4, bb[1] * H / 1e4, (bb[0] + bb[2]) * W / 1e4, (bb[1] + bb[3]) * H / 1e4)
+        seed = None
+        for t in S:
+            if ori(t) != "h" or L(t) < 15: continue
+            for e, o in (((t[0], t[1]), (t[2], t[3])), ((t[2], t[3]), (t[0], t[1]))):
+                if bx.y0 - 1 < e[1] < bx.y1 + 1 and (abs(e[0] - bx.x0) < 6 or abs(e[0] - bx.x1) < 6) and not (bx.x0 + 2 < o[0] < bx.x1 - 2):
+                    seed = (e, o); break
+            if seed: break
+        if not seed: continue
+        (ex, ey), (ox, oy) = seed; mx = ex + (8 if ox > ex else -8)
+        T = trace(S, LBL, pymupdf.Rect(mx - 2, ey - 1, mx + 2, ey + 1), "", WD=WD)
+        if not T or len(T[0]) < 2: continue
+        P = [q for q in T[0] if not (bx.x0 + 3 < q[0] < bx.x1 - 3 and bx.y0 + 1 < q[1] < bx.y1 - 1)]   # (not round the ribbon's outline)
+        if len(P) < 2: continue
+        flip = math.hypot(P[-1][0] - ex, P[-1][1] - ey) < math.hypot(P[0][0] - ex, P[0][1] - ey)
+        if flip: P = P[::-1]   # (from the ribbon)
+        Lc = seglen(P); tot = Lc[-1] or 1; t0 = T[3][-1] or 1
+        if tot < 20: continue
+        M = [[0, "r", str(r[5]).split("|")[0]]] + [[round(min(1, max(0, (t0 - d if flip else d) / tot)), 3), "t", o] for d, o in T[2]]
+        if T[1][1][0] == "l" or T[1][0][0] == "l": M.append([1, "l", (T[1][1] if T[1][1][0] == "l" else T[1][0])[1]])
+        for q in refs:
+            if q[0] != r[0] or q[6] not in ("mv", "cv", "ins", "spi", "mel"): continue
+            cx, cy = (q[1] + q[3] / 2) * W / 1e4, (q[2] + q[4] / 2) * H / 1e4; bd = None
+            for i, (a, b) in enumerate(zip(P, P[1:])):
+                sl = Lc[i + 1] - Lc[i]; u = 0 if sl < 1e-6 else max(0, min(1, ((cx - a[0]) * (b[0] - a[0]) + (cy - a[1]) * (b[1] - a[1])) / sl / sl))
+                dd = math.hypot(a[0] + u * (b[0] - a[0]) - cx, a[1] + u * (b[1] - a[1]) - cy)
+                if bd is None or dd < bd[0]: bd = (dd, (Lc[i] + u * sl) / tot)
+            lim = {"mel": 60, "mv": 36, "cv": 36, "spi": 24, "ins": 42}[q[6]]
+            if bd and bd[0] < lim and 0 <= bd[1] <= 1: M.append([round(bd[1], 3), {"mel": "e", "mv": "v", "cv": "v", "spi": "p", "ins": "i"}[q[6]], str(q[5]).split("|")[0]])
+        key = "r" + str(j); out[key] = [[round(x / W * 1e4), round(y / H * 1e4)] for x, y in P]; marks[key] = M; rb[str(j)] = key
+        sh = r[8][4] if len(r) > 8 and isinstance(r[8], list) and len(r[8]) > 4 else ""
+        if "R" in sh or "L" in sh:
+            side = 1 if (bx.x0 + bx.x1) / 2 > ex else -1; pts = 1 if "R" in sh else -1
+            if pts == -side: fl[key] = 1   # (points into the sheet: the flow comes from the ribbon, as the path runs)
+            else: turn(key); fl[key] = 1
     if out: out["rb"] = rb; out["m"] = {k: sorted(v) for k, v in marks.items()}; out["fl"] = fl
     json.dump(out, open(os.path.join(OUT, num + ".json"), "w"), separators=(",", ":"))
-    return sum(1 for r in refs if r[6] == "line"), len(out) - (3 if out else 0), len(rb), len(fl)
+    return sum(1 for r in refs if r[6] == "line"), sum(1 for k in out if k.isdigit()), len(rb), sum(1 for k in fl if k.isdigit())
 
 if __name__ == "__main__":
     nums = sys.argv[1:] or sorted(k for k in IX if "-PID-" in k)

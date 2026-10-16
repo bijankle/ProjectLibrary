@@ -228,7 +228,7 @@ window.PdfView = (() => {
       if (!desk() && r[6] === "line" && /-PID-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
         if (TR && TR.k === gi && TR.n === cur.number){ trOpen(); return; }
         linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
-      if (!desk() && r[6] === "d") trPend = { at: Date.now() };
+      if (!desk() && r[6] === "d") trPend = { at: Date.now(), label: TR && TR.label, dir: 1 };
       if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : r[6] === "s" ? "sp" : "tag", r[7], bx || null);
     });
     tb.querySelector(".sp-trx").onclick = () => trEnd("x");
@@ -306,7 +306,8 @@ window.PdfView = (() => {
     V.zoom = 1; await go(cur.page);
     const r = cur.restore; if (r && cur === me){ quiet(); V.zoom = r.zoom; layout(false); V.body.scrollLeft = r.sl; V.body.scrollTop = r.st; sharp(); }
     if (cur === me && REG.get(curId) && !REG.get(curId).snap){ REG.get(curId).snap = state(); REG.get(curId).at = REG.get(curId).snap; }
-    if (!o._pop && cur.back != null) arrive(me); else trPend = null;
+    if (!o._pop && cur.back != null) arrive(me);
+    if (!o._pop && trPend) trArrive(me, cur.back); else trPend = null;
   }
   // arrived through a continuation: the red arrow on the ribbon pointing back to the drawing you came from (cur.back,
   // indexes into this drawing's refs; several when the sheets can't tell them apart), on its page and in view
@@ -320,7 +321,6 @@ window.PdfView = (() => {
     V.tap = Object.assign({}, bs[0], { more: bs.slice(1) }); drawTap();
     quiet(); if (!me.extent) focusHits(bs, true);   // zoomed onto the ribbon(s) back to where you came from: all in view, never closer than 4x
     const v = REG.get(curId); if (v){ v.tap = V.tap; v.snap = state(); v.at = v.snap; }
-    trArrive(me, me.back);
   }
   // the place tapped or found: a highlighted box on it (no arrow), grown a little round the tag like the search boxes
   function arrowAt(h, cls){ const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), [l, t, w, hh] = PdfView.grow(h.l * 1e4, h.t * 1e4, h.w * 1e4, h.h * 1e4, vp.width / vp.height);
@@ -346,9 +346,11 @@ window.PdfView = (() => {
   const zOf = v => Math.pow(10, v / 100);   // (slider 0 to 100: the whole sheet to ten times)
   const trPt = (x, y) => V.rot ? [1e4 - y, x] : [x, y];
   const trF = () => V.tb.querySelector(".sp-tra").value / 1000;
-  function trace(k, end, box){
+  function trace(k, end, box, as){
     Promise.resolve(LN[cur.number]).then(D => {
-      const P = D && D[k]; if (!P || P.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height, r = V.refs[k];
+      const P = D && D[k]; if (!P || P.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height;
+      // (an unnumbered continuation, "r<ribbon>": traced under the number it came with, as if that were printed on its ribbon)
+      const r = /^r\d+$/.test(k) ? (q => [q[0], q[1], q[2], q[3], q[4], as || "", "line"])(V.refs[+k.slice(1)]) : V.refs[k];
       const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
       TR = { D, n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
       TR.tn = new Map(TR.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, n) => [m, n + 1]));   // (tees numbered from upstream: T1, T2 …)
@@ -459,22 +461,36 @@ window.PdfView = (() => {
       else { const dI = segd(Q, e); if (dI < 25) out.push({ k: +k2, pt: e, d: dI + 1, seq: seq(+k2) }); } });
     if (!out.length){ const em = TR.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
       if (em){ const k2 = V.refs.findIndex((r, i) => r[0] === TR.page && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
-    if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (+D.rb[j] !== TR.k || !V.refs[+j]) return; const r = V.refs[+j], d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
-      if (d < 300) out.push({ rb: +j, d, seq: String(r[5]).split("|")[0].replace(/^2000-/, "").replace(/-PID-PR-/, "-") }); });
+    if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(TR.k) || !V.refs[+j]) return; const r = V.refs[+j], d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
+      if (d < 300) out.push({ rb: +j, d, dir, seq: String(r[5]).split("|")[0].replace(/^2000-/, "").replace(/-PID-PR-/, "-") }); });
     return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb) === i).slice(0, 2); }
   function trNx(){ TR.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = V.tb.querySelector(".sp-trnx." + side), L = trNbs(dir);
     c.classList.toggle("two", L.length > 1);
     c.innerHTML = L.map(o => { TR.nb.push(o); return `<button type="button" data-i="${TR.nb.length - 1}" class="${o.rb != null ? "sh" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(V.refs[o.k][5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
   function trGo(nb){ if (!nb) return;
-    if (nb.rb != null){ const r = V.refs[nb.rb]; trPend = { at: Date.now() }; cur.onRef && cur.onRef(r[5], "dwg", r[7], null); return; }
+    if (nb.rb != null){ const r = V.refs[nb.rb]; trPend = { at: Date.now(), label: TR.label, dir: nb.dir || 1 }; cur.onRef && cur.onRef(r[5], "dwg", r[7], null); return; }
     const b = boxOf(V.refs[nb.k]), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap();
     trace(nb.k, nb.pt, [bx.l, bx.t, bx.w, bx.h]); }
   // arrived through a ribbon tapped on the phone: the line that ribbon carries on, traced from the ribbon's end
-  function trArrive(me, back){ if (!trPend || Date.now() - trPend.at > 15000 || desk()) return; trPend = null;
-    linesFor(me.number).then(D => { if (cur !== me || !D.rb) return; const j = [].concat(back).find(j => D.rb[j] != null); if (j == null) return;
-      const rb = V.refs[j], k = +D.rb[j]; if (!rb || !D[k]) return;
-      const b = boxOf(V.refs[k]); V.tap = Object.assign({}, V.tap || {}, { more: [].concat((V.tap && V.tap.more) || [], [{ page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }]) }); drawTap();
-      trace(k, [rb[1] + rb[3] / 2, rb[2] + rb[4] / 2], [b[0] / 1e4, b[1] / 1e4, b[2] / 1e4, b[3] / 1e4]); }); }
+  // arrived through a ribbon (tapped, or the arrow at the end of the line slider) on the phone: the line carried on
+  // traced on the new sheet: the one that ribbon leads to, else the line with the same number there; from the ribbon's
+  // end, else from the end the way you were going (upstream end when going downstream, so 100% here is 0% there)
+  async function trArrive(me, back){ const tp = trPend; if (!tp || Date.now() - tp.at > 15000 || desk()) return; trPend = null;
+    const D = await linesFor(me.number);
+    for (let n = 0; n < 60 && cur === me && !(V.pgFor === me && V.refs && V.refs.length); n++) await new Promise(ok => setTimeout(ok, 150));
+    if (cur !== me || !V.refs.length) return;
+    let k = null, rbr = null; const bk = [].concat(back == null ? [] : back);
+    const j = bk.find(j => D.rb && D.rb[j] != null); if (j != null && D[D.rb[j]]){ k = /^\d+$/.test(D.rb[j]) ? +D.rb[j] : D.rb[j]; rbr = V.refs[j]; }
+    if (k == null && tp.label){ const C = V.refs.map((r, i) => i).filter(i => V.refs[i][6] === "line" && String(V.refs[i][5]).split("|")[0] === tp.label && D[i]);
+      const at = bk.map(j => V.refs[j]).find(Boolean); rbr = at || null;
+      const dd = i => { if (!at) return 0; const P = D[i]; return Math.min(...[P[0], P[P.length - 1]].map(q => Math.hypot(q[0] - at[1] - at[3] / 2, q[1] - at[2] - at[4] / 2))); };
+      k = C.sort((a, b) => dd(a) - dd(b))[0]; if (k == null) return; }
+    if (k == null) return;
+    const rk = typeof k === "string" ? V.refs[+k.slice(1)] : V.refs[k];
+    if (V.page !== rk[0]){ await go(rk[0], true); if (cur !== me) return; }
+    const P = D[k], end = rbr && rbr[0] === rk[0] ? [rbr[1] + rbr[3] / 2, rbr[2] + rbr[4] / 2] : (tp.dir < 0 ? P[P.length - 1] : P[0]);
+    const b = boxOf(rk); V.tap = Object.assign({}, V.tap && V.tap.page === V.page ? V.tap : {}, { more: [].concat((V.tap && V.tap.more) || [], [{ page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }]) }); drawTap();
+    trace(k, end, [b[0] / 1e4, b[1] / 1e4, b[2] / 1e4, b[3] / 1e4], tp.label); }
   // ---------- view history ----------
   const REG = new Map(); let curId = 0, seq = 0, hush = 0, st8 = null;
   const quiet = () => { hush = Date.now() + 500; };   // (moves made by a restore are not new views)
