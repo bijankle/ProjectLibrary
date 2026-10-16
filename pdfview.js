@@ -41,7 +41,7 @@ window.PdfView = (() => {
     // a button in the top right corner over the sheet, set by the opener (cur.corner: { html, title, go }): P&IDs' Drawing legend
     // phone, a line traced (trace below): its number, how far along, open its page, ✕; the zoom and along the line sliders
     const tb = document.createElement("div"); tb.className = "sp-trb"; tb.hidden = true;
-    tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><button type="button" class="sp-tro" title="Open this line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
+    tb.innerHTML = `<div class="sp-trh"><button type="button" class="sp-trnb" data-d="-1" title="The line upstream">‹</button><b class="sp-trn"></b><button type="button" class="sp-tro" title="Open this line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button><button type="button" class="sp-trnb" data-d="1" title="The line downstream">›</button></div>
       <div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="1" aria-label="Along the line"><div class="sp-trln"><span></span><span></span></div><div class="sp-trc"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
     // (the zoom: an upright slider on the right of the sheet, + at the top, − at the foot)
     const tz = document.createElement("div"); tz.className = "sp-trv"; tz.hidden = true;
@@ -235,6 +235,7 @@ window.PdfView = (() => {
     const zs = tz.querySelector(".sp-trz"), zSave = () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} trView(); };
     zs.oninput = zSave; tz.querySelectorAll("[data-z]").forEach(b => b.onclick = () => { zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.z)); zSave(); });
     tb.querySelector(".sp-tro").onclick = () => trOpen();
+    tb.querySelectorAll(".sp-trnb").forEach(b => b.onclick = () => trGo(+b.dataset.d));
     tb.querySelector(".sp-tra").oninput = () => trView();
     return V;
   }
@@ -349,7 +350,7 @@ window.PdfView = (() => {
     Promise.resolve(LN[cur.number]).then(D => {
       const P = D && D[k]; if (!P || P.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height, r = V.refs[k];
       const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
-      TR = { n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
+      TR = { D, n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
       TR.tn = new Map(TR.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, n) => [m, n + 1]));   // (tees numbered from upstream: T1, T2 …)
       // the slider runs from the line's upstream end (0, where the flow arrows show it, tools/build_line_paths.py); it
       // starts there, or at the end by the ribbon arrived through
@@ -360,6 +361,7 @@ window.PdfView = (() => {
       // (the panel kept above the phone's gesture strip, the swipe along the bottom that switches apps: 64 of the screen's
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
       { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
+      tb.querySelectorAll(".sp-trnb").forEach(b => b.disabled = !trNb(+b.dataset.d));
       tb.hidden = false; V.tz.hidden = false; V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
       // (one browser history step for the trace, after the zoom's own: the phone's back swipe leaves the trace, the drawing
       // staying as it is)
@@ -440,6 +442,24 @@ window.PdfView = (() => {
   function trEnd(fromPop){ if (!TR && V.tb.hidden) return; TR = null;
     // (✕ takes the trace's history step off again; the other ways out, opening something, leave it as a plain step)
     if (history.state && history.state.tr){ if (fromPop === "x"){ trPop = true; history.back(); } else if (!fromPop){ const st = Object.assign({}, history.state); delete st.tr; history.replaceState(st, ""); } } V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); drawTrace(); cxFit(); }
+  // ‹ ›: the line before or after this one: on this sheet the traced line whose end meets this one's (a spec change, a
+  // numbered tee), else the ribbon at that end, to the line it carries on as on the next sheet
+  function trNb(dir){ if (!TR) return null; const D = TR.D, A = (() => { const vp = V.pg.getViewport({ scale: 1 }); return vp.width / vp.height; })();
+    const e = dir > 0 ? TR.P[TR.P.length - 1] : TR.P[0], dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]);
+    let best = null;
+    Object.keys(D).forEach(k2 => { if (!/^\d+$/.test(k2) || +k2 === TR.k || !V.refs[+k2] || V.refs[+k2][0] !== TR.page) return; const Q = D[k2];
+      [Q[0], Q[Q.length - 1]].forEach(q => { const d = dist(q, e); if (d < 45 && (!best || d < best.d)) best = { d, k: +k2, pt: q }; }); });
+    if (best) return best;
+    const em = TR.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
+    if (em){ const k2 = V.refs.findIndex((r, i) => r[0] === TR.page && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) return { k: k2, pt: e }; }
+    let rb = null;
+    Object.keys(D.rb || {}).forEach(j => { if (+D.rb[j] !== TR.k || !V.refs[+j]) return; const r = V.refs[+j], d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));   // (to the ribbon's box, as tools/build_line_paths.py matched it)
+      if (d < 300 && (!rb || d < rb.d)) rb = { d, rb: +j }; });
+    return rb; }
+  function trGo(dir){ const nb = trNb(dir); if (!nb) return;
+    if (nb.rb != null){ const r = V.refs[nb.rb]; trPend = { at: Date.now() }; cur.onRef && cur.onRef(r[5], "dwg", r[7], null); return; }
+    const b = boxOf(V.refs[nb.k]), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap();
+    trace(nb.k, nb.pt, [bx.l, bx.t, bx.w, bx.h]); }
   // arrived through a ribbon tapped on the phone: the line that ribbon carries on, traced from the ribbon's end
   function trArrive(me, back){ if (!trPend || Date.now() - trPend.at > 15000 || desk()) return; trPend = null;
     linesFor(me.number).then(D => { if (cur !== me || !D.rb) return; const j = [].concat(back).find(j => D.rb[j] != null); if (j == null) return;

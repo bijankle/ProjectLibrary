@@ -179,9 +179,30 @@ def trace(S, LBL, r, label, gap=30, tol=1.6, WD=()):
         for a, b in zip(path, path[1:]): Lc.append(Lc[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
     return path, why, [(d, o or "") for d, o in tees if o != "x"], Lc
 
+def seglen(P):
+    return [0] + list(__import__("itertools").accumulate(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(P, P[1:])))
+def point_at(P, d):
+    Lc = seglen(P)
+    for i in range(1, len(Lc)):
+        if Lc[i] >= d or i == len(Lc) - 1:
+            u = (d - Lc[i - 1]) / ((Lc[i] - Lc[i - 1]) or 1); return (P[i - 1][0] + u * (P[i][0] - P[i - 1][0]), P[i - 1][1] + u * (P[i][1] - P[i - 1][1]))
+def on(q, Q, tol=1.2):
+    for a, b in zip(Q, Q[1:]):
+        sl = math.hypot(b[0] - a[0], b[1] - a[1]); u = 0 if sl < 1e-6 else max(0, min(1, ((q[0] - a[0]) * (b[0] - a[0]) + (q[1] - a[1]) * (b[1] - a[1])) / sl / sl))
+        if math.hypot(a[0] + u * (b[0] - a[0]) - q[0], a[1] + u * (b[1] - a[1]) - q[1]) < tol: return True
+    return False
+def shared(P, Q):
+    """how far from its start the path P runs along the path Q (in 2 pt steps)"""
+    tot = seglen(P)[-1]; d = 0
+    while d <= tot and on(point_at(P, d), Q): d += 2
+    return max(0, min(tot, d - 2))
+def cut(P, d):
+    """the path P without its first d"""
+    Lc = seglen(P); return [point_at(P, d)] + [p for p, x in zip(P, Lc) if x > d + .5]
+
 def build(num):
     v = IX[num]; doc = pymupdf.open(os.path.join(R, v["file"])); refs = REFS.get(num, [])
-    out = {}; rb = {}; pages = {}; marks = {}; fl = {}; ptp = {}; teep = {}; rv = {}
+    out = {}; rb = {}; pages = {}; marks = {}; fl = {}; ptp = {}; teep = {}; rv = {}; TRC = {}
     for k, r in enumerate(refs):
         if r[6] != "line": continue
         pg = r[0] - 1
@@ -196,7 +217,28 @@ def build(num):
         label = str(r[5]).split("|")[0]
         T = trace(S, LBL, rr, label, WD=WD)
         if not T or len(T[0]) < 2: continue
-        P, why, tees, Lc = T; tot = Lc[-1] or 1
+        TRC[k] = [r, label, rr, list(T[0]), list(T[1]), list(T[2]), list(T[3]), pg]
+    # a stretch of pipe two traces both ran along (one ran on past a spec break unseen) belongs to the line whose number is
+    # nearer to it: the other trace is cut back to where the stretch begins, ending there at the next line
+    for k, A in TRC.items():
+        for end in (0, 1):
+            P = A[3] if end == 0 else A[3][::-1]
+            for j, B in TRC.items():
+                if j == k or B[7] != A[7]: continue
+                run = shared(P, B[3])
+                if run < 6: continue
+                mid = point_at(P, run / 2); dA = math.hypot(mid[0] - (A[2].x0 + A[2].x1) / 2, mid[1] - (A[2].y0 + A[2].y1) / 2)
+                dB = math.hypot(mid[0] - (B[2].x0 + B[2].x1) / 2, mid[1] - (B[2].y0 + B[2].y1) / 2)
+                if dB >= dA: continue
+                tot0 = A[6][-1]; P2 = cut(P, run)
+                if len(P2) < 2: break
+                A[3] = P2 if end == 0 else P2[::-1]; A[4][end] = ("l", B[1])
+                A[5] = [((d - run) if end == 0 else d, o) for d, o in A[5] if (d > run + 1 if end == 0 else d < tot0 - run - 1)]
+                A[6] = [0]
+                for a, b in zip(A[3], A[3][1:]): A[6].append(A[6][-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
+                break
+    for k, (r, label, rr, P, why, tees, Lc, pg) in TRC.items():
+        p, S, LBL, AR, WD = pages[pg]; W, H = p.rect.width, p.rect.height; tot = Lc[-1] or 1
         # upstream first: the path turned round when the flow arrows on it point back along it
         fw = flow(P, AR)
         if fw < 0: P = P[::-1]; why = why[::-1]; tees = [(tot - d, o) for d, o in tees]; Lc = [tot - x for x in reversed(Lc)]
