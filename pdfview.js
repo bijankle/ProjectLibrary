@@ -41,7 +41,7 @@ window.PdfView = (() => {
     // a button in the top right corner over the sheet, set by the opener (cur.corner: { html, title, go }): P&IDs' Drawing legend
     // phone, a line traced (trace below): its number, how far along, open its page, ✕; the zoom and along the line sliders
     const tb = document.createElement("div"); tb.className = "sp-trb"; tb.hidden = true;
-    tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><button type="button" class="sp-tro" title="Open this line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
+    tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><span class="sp-trzh" title="Zoom (Ctrl + wheel)"><button type="button" data-zh="-10" aria-label="Further">−</button><span class="sp-trzhb"><input type="range" class="sp-rg sp-trz2" min="0" max="100" step="1" aria-label="Zoom"></span><button type="button" data-zh="10" aria-label="Closer">+</button><b>Zoom</b></span><button type="button" class="sp-tro" title="Open this line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
       <div class="sp-trrow"><div class="sp-trnx l"></div><div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="1" aria-label="Along the line"><div class="sp-trln"><span></span><span></span></div><div class="sp-trc"></div></div><div class="sp-trnx r"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
     // (the zoom: an upright slider on the right of the sheet, + at the top, − at the foot)
     const tz = document.createElement("div"); tz.className = "sp-trv"; tz.hidden = true;
@@ -234,6 +234,9 @@ window.PdfView = (() => {
     tb.querySelector(".sp-trx").onclick = () => trEnd("x");
     const zs = tz.querySelector(".sp-trz"), zSave = () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} trView(); };
     zs.oninput = zSave; tz.querySelectorAll("[data-z]").forEach(b => b.onclick = () => { zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.z)); zSave(); });
+    // (desktop: the zoom as a slider across the panel's top row, the same setting)
+    const z2 = tb.querySelector(".sp-trz2"); z2.oninput = () => { zs.value = z2.value; zSave(); };
+    tb.querySelectorAll("[data-zh]").forEach(b => b.onclick = () => { zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.zh)); zSave(); });
     tb.querySelector(".sp-tro").onclick = () => trOpen();
     tb.querySelectorAll(".sp-trnx").forEach(x => x.onclick = e => { const b = e.target.closest("button"); if (b) trGo(TR && TR.nb[+b.dataset.i]); });
     tb.querySelector(".sp-tra").oninput = () => trView();
@@ -368,7 +371,7 @@ window.PdfView = (() => {
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
       { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
       trNx();
-      tb.classList.toggle("dk", desk()); tb.hidden = false; V.tz.hidden = false; V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
+      tb.classList.toggle("dk", desk()); tb.hidden = false; V.tz.hidden = desk(); V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
       // (one browser history step for the trace, after the zoom's own: the phone's back swipe leaves the trace, the drawing
       // staying as it is)
       setTimeout(() => { if (TR && history.state && history.state.sp && !history.state.tr) history.pushState(Object.assign({}, history.state, { tr: 1 }), ""); }, 0);
@@ -394,7 +397,7 @@ window.PdfView = (() => {
   // desktop (wide): the names read across, "VALVE 11318", snug under the bar on rows of their own: each on the row nearest
   // the bar where it fits beside the names already there, its callout straight down from its mark, and never across
   // another name (a name never covers a callout going past it to a lower row); the most important placed first
-  function trMarksDesk(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 400, ln = V.tb.querySelector(".sp-trln"), BB = (ln.offsetTop + ln.offsetHeight) || 53, RH = 17, R0 = BB + 7, NR = 5, G = 6;
+  function trMarksDesk(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 400, ln = V.tb.querySelector(".sp-trln"), BB = (ln.offsetTop + ln.offsetHeight) || 53, RH = 17, R0 = BB + 10, NR = 5, G = 6;
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, rows = [...Array(NR)].map(() => []), legs = [], put = [];
     const wid = m => (TT[m[1]] || "").length * 5.4 + trName(m).length * 6.9 + 8;
     [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = m[0] * W, w = wid(m);
@@ -408,7 +411,7 @@ window.PdfView = (() => {
     const used = put.reduce((n, p) => Math.max(n, p[3] + 1), 0);
     V.tb.querySelector(".sp-trtk").style.paddingBottom = (used * RH + 8) + "px";
     c.innerHTML = TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
-      + `<svg class="sp-trco" width="${W}" height="${R0 + NR * RH}">${put.map(([m, x, a, r]) => { const y = R0 + r * RH + 7; return `<polyline points="${x.toFixed(1)},${BB} ${x.toFixed(1)},${y} ${(a > x ? a - 1 : a + wid(m) + 1).toFixed(1)},${y}"/>`; }).join("")}</svg>`
+      + `<svg class="sp-trco" width="${W}" height="${R0 + NR * RH}">${put.map(([m, x, a, r]) => { const y = R0 + r * RH + 7; return `<polyline points="${x.toFixed(1)},${BB + 6} ${x.toFixed(1)},${y} ${(a > x ? a - 1 : a + wid(m) + 1).toFixed(1)},${y}"/>`; }).join("")}</svg>`
       + put.map(([m, x, a, r]) => `<b class="h k-${m[1]}" style="left:${a.toFixed(1)}px;top:${R0 + r * RH}px"><em>${TT[m[1]] || ""}</em> ${esc(trName(m))}</b>`).join(""); }
   function trMarks(){ if (desk()) return trMarksDesk(); V.tb.querySelector(".sp-trtk").style.paddingBottom = ""; const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 66, BT = OT + 9, BB = OT + 45, D0 = 8, DM = 22, placed = [];
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, named = [];
@@ -428,7 +431,8 @@ window.PdfView = (() => {
     c.innerHTML = TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
       + `<svg class="sp-trco" width="${W}" height="${BB + 40}">${named.map(([m, x, lx]) => ln(x, lx, BT, true) + ln(x, lx, BB, false)).join("")}</svg>`
       + named.map(([m, x, lx]) => `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px;bottom:calc(100% - ${BT - DM - 5}px)">${TT[m[1]] || ""}</b><b class="k-${m[1]}" style="left:${lx.toFixed(1)}px;top:${BB + DM + 5}px">${esc(trName(m))}</b>`).join(""); }
-  function trFill(){ [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz")].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
+  function trFill(){ const z2 = V.tb.querySelector(".sp-trz2"); z2.value = V.tz.querySelector(".sp-trz").value;
+    [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz"), z2].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
   function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
     const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; }
   // the part of the path between two fractions along it
