@@ -54,15 +54,22 @@ window.PdfView = (() => {
     const lc = document.createElement("button"); lc.type = "button"; lc.className = "sp-lc"; lc.hidden = true;
     lc.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h12" stroke="#1565ff"/><path d="M3 12h15" stroke="#00a651"/><path d="M3 18h12" stroke="#ff9500"/><path d="M18 3l3 3-3 3M18 15l3 3-3 3" stroke="currentColor"/></svg><span>Lines</span>`; el.appendChild(lc);
     const lp = document.createElement("div"); lp.className = "sp-lcp"; lp.hidden = true;
-    lp.innerHTML = `<h6>P&amp;ID lines, all drawings</h6><label><span>Colour by fluid</span><input type="checkbox" class="ap-sw" data-f="c"></label><label><span>Flow animation</span><input type="checkbox" class="ap-sw" data-f="w"></label>`; el.appendChild(lp);
-    const flg = document.createElement("div"); flg.className = "sp-flg"; flg.hidden = true; el.appendChild(flg);
+    lp.innerHTML = `<h6>P&amp;ID lines, all drawings</h6><label><span>Colours</span><input type="checkbox" class="ap-sw" data-f="c"></label><label><span>Flow animation</span><input type="checkbox" class="ap-sw" data-f="w"></label>`; el.appendChild(lp);
+    const flg = document.createElement("div"); flg.className = "sp-flg lkA"; flg.hidden = true; el.appendChild(flg);
+    // (desktop: the two as tick boxes, always there, under the hand / pointer / whole sheet buttons)
+    const ftk = document.createElement("div"); ftk.className = "sp-fltk"; ftk.hidden = true;
+    ftk.innerHTML = `<label><input type="checkbox" data-f="c"><span>Colours</span></label><label><input type="checkbox" data-f="w"><span>Flow animation</span></label>`; el.appendChild(ftk);
+    ftk.addEventListener("click", e => e.stopPropagation());
+    ftk.addEventListener("change", e => { const f = e.target.dataset.f; if (!f) return; FL[f] = e.target.checked; try { localStorage.setItem(f === "c" ? "kcgm_flc" : "kcgm_flw", FL[f] ? "1" : "0"); } catch (x) {} if (!FL.c) pickEnd(); drawFl(); });
     lc.onclick = e => { e.stopPropagation(); lp.hidden = !lp.hidden; if (!lp.hidden){ lp.querySelector('[data-f="c"]').checked = FL.c; lp.querySelector('[data-f="w"]').checked = FL.w; const r = lc.getBoundingClientRect(), q = el.getBoundingClientRect(); lp.style.left = (r.left - q.left) + "px"; lp.style.top = (r.bottom - q.top + 5) + "px"; } };
     lp.addEventListener("click", e => e.stopPropagation());
     lp.addEventListener("change", e => { const f = e.target.dataset.f; if (!f) return; FL[f] = e.target.checked; try { localStorage.setItem(f === "c" ? "kcgm_flc" : "kcgm_flw", FL[f] ? "1" : "0"); } catch (x) {} drawFl(); });
-    flg.addEventListener("click", e => { e.stopPropagation(); if (!e.target.closest(".hd")) return; FL.leg = !FL.leg; try { localStorage.setItem("kcgm_flleg", FL.leg ? "1" : "0"); } catch (x) {} flLeg(FL.cnt || {}); });
+    flg.addEventListener("click", e => { e.stopPropagation(); const row = e.target.closest("[data-fc]");
+      if (row){ const c = row.dataset.fc; if (FL.pick === c) pickEnd("x"); else pick1(c); return; }
+      if (!e.target.closest(".hd")) return; FL.leg = !FL.leg; try { localStorage.setItem("kcgm_flleg", FL.leg ? "1" : "0"); } catch (x) {} flLeg(FL.cnt || {}); });
     el.addEventListener("click", e => { if (!lp.hidden && !e.target.closest(".sp-lcp,.sp-lc")) lp.hidden = true; }, true);
     document.body.appendChild(el);
-    V = { tb, tz, lc, lp, flg, fl: el.querySelector(".sp-fl"), trl: el.querySelector(".sp-trl"), cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
+    V = { tb, tz, lc, lp, flg, ftk, fl: el.querySelector(".sp-fl"), trl: el.querySelector(".sp-trl"), cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), textEl: el.querySelector(".sp-text"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
       fprev: () => V.fit ? fitStep(-1) : showHit(V.fi - 1, -1), fnext: () => V.fit ? fitStep(1) : showHit(V.fi + 1, 1), rot, close,
@@ -231,6 +238,8 @@ window.PdfView = (() => {
       const sel = getSelection(); if (sel && !sel.isCollapsed && String(sel).trim() && V.body.contains(sel.anchorNode)) return;   // (finishing a text selection on the sheet, not a tap; one elsewhere doesn't count)
       const a = refAt(e.clientX, e.clientY);
       if (!a && TR && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8) && trNear(e.clientX, e.clientY)){ trOpen(); return; }
+      if (!a && FL.pick && !TR && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8)){ const t0 = performance.now();
+        setTimeout(() => { if (FL.pick && downAt <= t0) pickEnd("x"); }, desk() ? 0 : 330); return; }
       // (a tap on the bare sheet leaves the fly through, back to the drawing as it is; not the first tap of a double tap)
       if (!a && TR && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8)){ const t0 = performance.now();
         setTimeout(() => { if (TR && downAt <= t0) trEnd("x"); }, desk() ? 0 : 330); return; }
@@ -292,7 +301,8 @@ window.PdfView = (() => {
     if (TR) trEnd(); cur = Object.assign({ page: 1, fit: "width" }, o);
     V.el.hidden = false; document.body.classList.add("sp-on"); dock();
     { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } }
-    V.lc.hidden = desk() || !/-PID-/.test(o.number || ""); V.lc.style.top = (V.body.offsetTop + 10) + "px"; V.lp.hidden = true; V.fl.innerHTML = ""; V.flg.hidden = true; FL.cnt = {};
+    V.lc.hidden = desk() || !/-PID-/.test(o.number || ""); V.lc.style.top = (V.body.offsetTop + 10) + "px"; V.lp.hidden = true; V.fl.innerHTML = ""; V.flg.hidden = true; FL.cnt = {}; if (FL.pick) pickEnd();
+    V.ftk.hidden = !desk() || !/-PID-/.test(o.number || ""); V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w;
     V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
     // (in the sheet's bottom right corner, the drawing's short title under it: cur.sub)
@@ -823,29 +833,46 @@ window.PdfView = (() => {
   const lsg = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v === "1"; } catch (e) { return d; } };
   const FL = { c: lsg("kcgm_flc", false), w: lsg("kcgm_flw", true), leg: lsg("kcgm_flleg", true), cnt: {} };
   const fluid = l => String(l || "").split("|")[0].split("-")[2] || "";
-  const flOn = () => FL.c && !desk() && cur && /-PID-/.test(cur.number || "") && V.pg;
+  const flOn = () => FL.c && cur && /-PID-/.test(cur.number || "") && V.pg;
   async function drawFl(){ if (!V || !V.fl) return;
     if (!flOn()){ V.fl.innerHTML = ""; flLeg({}); return; }
     const me = cur, pn = V.page, D = await linesFor(cur.number); if (cur !== me || V.page !== pn || !V.pg) return;
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, cnt = {}; let h = "", fw = "";
     Object.keys(D).forEach(k => { if (!/^\d+$/.test(k)) return; const r = V.refs[+k]; if (!r || r[0] !== pn) return; const c = fluid(r[5]), col = FLC[c]; if (!col) return; cnt[c] = (cnt[c] || 0) + 1;
       const pts = D[k].map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
-      h += `<polyline data-k="${k}" points="${pts}" style="--c:${col}"/>`;
-      if (FL.w && D.fl && D.fl[k]) fw += `<polyline class="fw" data-k="${k}" points="${pts}" style="animation-delay:-${(k * .37 % 1.1).toFixed(2)}s"/>`; });
+      h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
+      if (FL.w && D.fl && D.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${(k * .37 % 1.1).toFixed(2)}s"/>`; });
     V.fl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.fl.innerHTML = h + fw; flDim(); flLeg(cnt); }
   // (a line traced: the rest grey, that one in its colour)
-  function flDim(){ if (!V || !V.fl) return; const on = !!(TR && cur && TR.n === cur.number); V.fl.classList.toggle("dim", on);
-    V.fl.querySelectorAll(".sel").forEach(p => p.classList.remove("sel")); if (on) V.fl.querySelectorAll(`[data-k="${TR.k}"]`).forEach(p => p.classList.add("sel")); }
+  function flDim(){ if (!V || !V.fl) return; const tr = !!(TR && cur && TR.n === cur.number), on = tr || !!FL.pick; V.fl.classList.toggle("dim", on); V.fl.classList.toggle("pk", !tr && !!FL.pick);
+    V.fl.querySelectorAll(".sel").forEach(p => p.classList.remove("sel")); if (on) V.fl.querySelectorAll(tr ? `[data-k="${TR.k}"]` : `[data-fc="${FL.pick}"]`).forEach(p => p.classList.add("sel"));
+    V.flg.querySelectorAll("[data-fc]").forEach(r => r.classList.toggle("on", r.dataset.fc === FL.pick)); V.flg.classList.toggle("pk", !!FL.pick); }
+  // a fluid picked in the legend: its lines alone in colour, the rest grey. One browser history step, so Back (the
+  // phone's swipe back), Esc or a click on the bare sheet go back to every fluid in colour
+  let pkPop = false;
+  function pick1(c){ if (TR) return; const had = !!FL.pick; FL.pick = c; flDim();
+    if (!had && history.state && history.state.sp && !history.state.fp) history.pushState(Object.assign({}, history.state, { fp: 1 }), ""); }
+  function pickEnd(how){ if (!FL.pick) return; FL.pick = null; flDim();
+    if (history.state && history.state.fp){ if (how === "x"){ pkPop = true; history.back(); } else if (!how){ const st = Object.assign({}, history.state); delete st.fp; history.replaceState(st, ""); } } }
+  addEventListener("popstate", e => { if (pkPop){ pkPop = false; e.stopImmediatePropagation(); return; }
+    if (FL.pick && !(history.state && history.state.fp)){ e.stopImmediatePropagation(); pickEnd(true); } }, true);
+  addEventListener("keydown", e => { if (FL.pick && e.key === "Escape" && V && !V.el.hidden){ e.preventDefault(); e.stopImmediatePropagation(); pickEnd("x"); } }, true);
   // the legend: the fluids on this drawing, commonest first; "Hide" leaves one line of dots
   function flLeg(cnt){ const g = V.flg, cs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b)); FL.cnt = cnt; g.dataset.n = cs.length; g.classList.toggle("open", FL.leg);
     g.innerHTML = `<button type="button" class="hd"><b>${FL.leg ? "Fluids on this drawing" : "Fluids"}</b>${FL.leg ? "" : `<span class="fl-dots">${cs.map(c => `<i style="background:${FLC[c]}"></i>`).join("")}</span>`}<em>${FL.leg ? "Hide ▴" : "Show ▾"}</em></button>`
-      + (FL.leg ? `<div class="grid">${cs.map(c => `<div class="row"><i class="sw" style="background:${FLC[c]}"></i><span class="cd">${c}</span><span class="nm">${esc(FLN[c] || "")}</span></div>`).join("")}</div>` : "");
+      + (FL.leg ? `<div class="grid">${cs.map(c => `<button type="button" class="row${c === FL.pick ? " on" : ""}" data-fc="${c}" style="--c:${FLC[c]}" title="Only ${esc(FLN[c] || c)} in colour"><i class="sw" style="background:${FLC[c]}"></i><span class="cd" style="--c:${FLC[c]}">${c}</span><span class="nm">${esc(FLN[c] || "")}</span>${desk() ? `<span class="ct">${cnt[c]}</span>` : ""}</button>`).join("")}</div>` : "");
     cxFit(); }
   // (under the sheet while the tag list shows; zoomed in, at the foot over the buttons; not while a line is traced)
-  function legAt(under, sb, lim){ const g = V.flg, show = +g.dataset.n > 0 && FL.c && !TR && !desk() && !V.el.hidden && !V.el.classList.contains("typing"); g.hidden = !show; if (!show) return 0;
-    const e = V.el.getBoundingClientRect(), s = V.sheet.getBoundingClientRect(); g.classList.toggle("fl", !under);
+  function legAt(under, sb, lim){ const g = V.flg, show = +g.dataset.n > 0 && FL.c && !TR && !V.el.hidden && !V.el.classList.contains("typing"); g.hidden = !show; tkAt(); if (!show) return 0;
+    const e = V.el.getBoundingClientRect(), s = V.sheet.getBoundingClientRect(); g.classList.toggle("fl", !under); g.classList.toggle("dk", desk());
+    if (desk()){ const lg = V.el.querySelector(".sp-lg"), r = lg && !lg.hidden ? lg.getBoundingClientRect() : null, b = V.body.getBoundingClientRect();
+      g.style.left = ""; g.style.width = ""; g.style.bottom = ""; g.style.right = Math.round(e.right - (r ? r.right : b.right - 12)) + "px"; g.style.top = Math.round((r ? r.bottom + 6 : b.top + 10) - e.top) + "px";
+      g.style.maxHeight = Math.max(80, Math.round(b.bottom - (r ? r.bottom + 6 : b.top + 10) - 12)) + "px"; return 0; }
     if (under){ g.style.left = Math.round(Math.max(s.left, e.left + 6) - e.left) + "px"; g.style.width = Math.round(Math.min(s.width, e.width - 12)) + "px"; g.style.top = Math.round(sb - e.top + 6) + "px"; g.style.bottom = ""; return g.offsetHeight + 6; }
     g.style.left = "8px"; g.style.width = ""; g.style.top = ""; g.style.bottom = Math.round(e.bottom - lim + 8) + "px"; return 0; }
+  // (the desktop tick boxes under the hand / pointer / whole sheet buttons)
+  function tkAt(){ const t = V.ftk; if (!t || t.hidden) return; const m = V.el.querySelector(".sp-mode"); if (!m) return; const r = m.getBoundingClientRect(), e = V.el.getBoundingClientRect();
+    if (!r.height){ t.style.visibility = "hidden"; return; } t.style.visibility = ""; t.style.left = Math.round(r.left - e.left) + "px"; t.style.top = Math.round(r.bottom - e.top + 6) + "px"; }
   function cxFit(){
     if (!V || !V.cx) return; const c = V.cx; V.el.classList.toggle("cx-on", false); V.el.querySelectorAll(".sp-arw").forEach(a => a.hidden = true);
     const e = V.el.getBoundingClientRect(), sb = V.sheet.getBoundingClientRect().bottom; let lim = V.body.getBoundingClientRect().bottom;
