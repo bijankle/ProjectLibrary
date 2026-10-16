@@ -308,6 +308,7 @@ window.PdfView = (() => {
     if (cur === me && REG.get(curId) && !REG.get(curId).snap){ REG.get(curId).snap = state(); REG.get(curId).at = REG.get(curId).snap; }
     if (!o._pop && cur.back != null) arrive(me);
     if (!o._pop && trPend) trArrive(me, cur.back); else trPend = null;
+    if (o._pop || o.restore) trResume(me);   // (back to a drawing left for a traced line's page: the trace as it was)
   }
   // arrived through a continuation: the red arrow on the ribbon pointing back to the drawing you came from (cur.back,
   // indexes into this drawing's refs; several when the sheets can't tell them apart), on its page and in view
@@ -352,7 +353,7 @@ window.PdfView = (() => {
       // (an unnumbered continuation, "r<ribbon>": traced under the number it came with, as if that were printed on its ribbon)
       const r = /^r\d+$/.test(k) ? (q => [q[0], q[1], q[2], q[3], q[4], as || "", "line"])(V.refs[+k.slice(1)]) : V.refs[k];
       const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
-      TR = { D, n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
+      TR = { t0: Date.now(), D, n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
       TR.tn = new Map(TR.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, n) => [m, n + 1]));   // (tees numbered from upstream: T1, T2 …)
       // the slider runs from the line's upstream end (0, where the flow arrows show it, tools/build_line_paths.py); it
       // starts there, or at the end by the ribbon arrived through
@@ -439,11 +440,30 @@ window.PdfView = (() => {
     const P = TR.P.map(p => { const [a, b] = trPt(p[0], p[1]); return [q.left + a / 1e4 * q.width, q.top + b / 1e4 * q.height]; });
     for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = x1 - x0, dy = y1 - y0, ll = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ll));
       if (Math.hypot(x0 + t * dx - x, y0 + t * dy - y) < 12) return true; } return false; }
-  function trOpen(){ if (!TR || !cur.onRef) return; const r = TR.r, b = TR.box; trEnd(); cur.onRef(r[5], "tag", r[7], b || null); }
+  // (the trace kept when its line's page is opened, so Back to the drawing puts it back as it was: the line, where on it,
+  // the zoom; in this tab's session storage too, should the page reload in between)
+  const TRK = "kcgm_trres";
+  function trOpen(){ if (!TR || !cur.onRef) return; const r = TR.r, b = TR.box;
+    const keep = { n: TR.n, k: TR.k, f: trF(), as: typeof TR.k === "string" ? TR.label : null, box: b || null, at: Date.now() };
+    try { sessionStorage.setItem(TRK, JSON.stringify(keep)); } catch (e) {}
+    trEnd(); cur.onRef(r[5], "tag", r[7], b || null); }
+  async function trResume(me){ let t = null; try { t = JSON.parse(sessionStorage.getItem(TRK) || "null"); } catch (e) {}
+    if (!t || t.n !== me.number || Date.now() - t.at > 12 * 3600e3 || desk()) return;
+    try { sessionStorage.removeItem(TRK); } catch (e) {}
+    const D = await linesFor(me.number); if (!D[t.k]) return;
+    for (let n = 0; n < 60 && cur === me && !(V.pgFor === me && V.refs && V.refs.length); n++) await new Promise(ok => setTimeout(ok, 150));
+    if (cur !== me) return;
+    const rk = typeof t.k === "string" ? V.refs[+t.k.slice(1)] : V.refs[t.k]; if (!rk) return;
+    if (V.page !== rk[0]){ await go(rk[0], true); if (cur !== me) return; }
+    trace(t.k, null, t.box, t.as);
+    // (then the slider back where it was, once the trace is up)
+    for (let n = 0; n < 40 && cur === me && !(TR && TR.k === t.k); n++) await new Promise(ok => setTimeout(ok, 50));
+    if (!TR || TR.k !== t.k) return; V.tb.querySelector(".sp-tra").value = Math.round(t.f * 1000); trView(); }
   let trPop = false;
   addEventListener("popstate", e => {
     if (trPop){ trPop = false; e.stopImmediatePropagation(); return; }   // (the step taken off by ✕)
-    if (TR && !(history.state && history.state.tr)){ e.stopImmediatePropagation(); trEnd(true); } }, true);
+    // (not the viewer's own steps as a trace is put back, Back to the drawing: the moment after it starts)
+    if (TR && Date.now() - (TR.t0 || 0) > 1500 && !(history.state && history.state.tr)){ e.stopImmediatePropagation(); trEnd(true); } }, true);
   function trEnd(fromPop){ if (!TR && V.tb.hidden) return; TR = null;
     // (✕ takes the trace's history step off again; the other ways out, opening something, leave it as a plain step)
     if (history.state && history.state.tr){ if (fromPop === "x"){ trPop = true; history.back(); } else if (!fromPop){ const st = Object.assign({}, history.state); delete st.tr; history.replaceState(st, ""); } } V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); drawTrace(); cxFit(); }
