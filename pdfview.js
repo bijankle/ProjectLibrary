@@ -368,7 +368,7 @@ window.PdfView = (() => {
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
       { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
       trNx();
-      tb.hidden = false; V.tz.hidden = false; V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
+      tb.classList.toggle("dk", desk()); tb.hidden = false; V.tz.hidden = false; V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
       // (one browser history step for the trace, after the zoom's own: the phone's back swipe leaves the trace, the drawing
       // staying as it is)
       setTimeout(() => { if (TR && history.state && history.state.sp && !history.state.tr) history.pushState(Object.assign({}, history.state, { tr: 1 }), ""); }, 0);
@@ -391,7 +391,26 @@ window.PdfView = (() => {
   // a 45° callout from the mark, read bottom to top: TEE / 0588, VALVE / 11318; callouts lean a little further where names would touch, and
   // where they are packed too tight only the mark shows)
   const TT = { t: "TEE", v: "VALVE", p: "SP", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END" };
-  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 66, BT = OT + 9, BB = OT + 45, D0 = 8, DM = 22, placed = [];
+  // desktop (wide): the names read across, "VALVE 11318", snug under the bar on rows of their own: each on the row nearest
+  // the bar where it fits beside the names already there, its callout straight down from its mark, and never across
+  // another name (a name never covers a callout going past it to a lower row); the most important placed first
+  function trMarksDesk(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 400, ln = V.tb.querySelector(".sp-trln"), BB = (ln.offsetTop + ln.offsetHeight) || 53, RH = 17, R0 = BB + 7, NR = 5, G = 6;
+    const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, rows = [...Array(NR)].map(() => []), legs = [], put = [];
+    const wid = m => (TT[m[1]] || "").length * 5.4 + trName(m).length * 6.9 + 8;
+    [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = m[0] * W, w = wid(m);
+      for (let r = 0; r < NR; r++){
+        // (the name to the right of its callout, or to its left near the right hand end)
+        for (const a of [x + 3, x - 3 - w]){ const b = a + w; if (a < 0 || b > W) continue;
+          if (rows[r].some(q => q[0] < b + G && a < q[1] + G)) continue;                       // (a name on this row in the way)
+          if (rows.slice(0, r).some(R => R.some(q => q[0] - 2 < x && x < q[1] + 2))) continue;   // (its callout through a name above)
+          if (legs.some(l => l.r > r && a - 2 < l.x && l.x < b + 2)) continue;                    // (it over another's callout)
+          rows[r].push([a, b]); legs.push({ x, r }); put.push([m, x, a, r]); return; } } });
+    const used = put.reduce((n, p) => Math.max(n, p[3] + 1), 0);
+    V.tb.querySelector(".sp-trtk").style.paddingBottom = (used * RH + 8) + "px";
+    c.innerHTML = TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
+      + `<svg class="sp-trco" width="${W}" height="${R0 + NR * RH}">${put.map(([m, x, a, r]) => { const y = R0 + r * RH + 7; return `<polyline points="${x.toFixed(1)},${BB} ${x.toFixed(1)},${y} ${(a > x ? a - 1 : a + wid(m) + 1).toFixed(1)},${y}"/>`; }).join("")}</svg>`
+      + put.map(([m, x, a, r]) => `<b class="h k-${m[1]}" style="left:${a.toFixed(1)}px;top:${R0 + r * RH}px"><em>${TT[m[1]] || ""}</em> ${esc(trName(m))}</b>`).join(""); }
+  function trMarks(){ if (desk()) return trMarksDesk(); V.tb.querySelector(".sp-trtk").style.paddingBottom = ""; const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 66, BT = OT + 9, BB = OT + 45, D0 = 8, DM = 22, placed = [];
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, named = [];
     // names kept in the same order as their marks (so no two callouts cross), each as near its mark as the ones beside it
     // allow: pushed right past the one before, then pulled back from the right edge; a name that can't get within reach
