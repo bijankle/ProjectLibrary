@@ -378,27 +378,25 @@ window.PdfView = (() => {
     if (m[1] === "l"){ const sp = n => (String(n || "").split("-")[3] || "?"), me = sp(TR.label), nx = sp(t); return m[0] < .5 ? nx + "|" + me : me + "|" + nx; }
     if (m[1] === "s") return "end";
     return t.replace(/^F\d\d-(?=\d)/, "").replace(/^F\d\d-(?=[A-Z])/, ""); }
-  // (each name hangs under its tick on a callout line, moved sideways a little where names would overlap)
-  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, rows = [[], []], cw = 6.1, TB = 45, RT = [60, 76];
-    const pr = m => ({ r: 0, l: 1, e: 2, t: 3, v: 4, i: 5, s: 6 })[m[1]] ?? 7;
-    const endOf = lo => { const E = TR.m.filter(m => lo ? m[0] <= .02 : m[0] >= .98).sort((a, b) => pr(a) - pr(b)); return E[0] ? trName(E[0]) : "end"; };
-    V.tb.querySelector(".sp-tre .s").textContent = endOf(true); V.tb.querySelector(".sp-tre .e").textContent = endOf(false);
-    const mid = TR.m.filter(m => m[0] > .02 && m[0] < .98), named = [];
-    [...mid].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const nm = trName(m), w = nm.length * cw + 4, x = m[0] * W;
-      for (let row = 0; row < 2; row++){ const R = rows[row], free = c0 => c0 - w / 2 >= 0 && c0 + w / 2 <= W && !R.some(q => q[0] < c0 + w / 2 + 4 && c0 - w / 2 < q[1] + 4);
-        const cand = [x, Math.max(w / 2, Math.min(W - w / 2, x)), ...R.flatMap(q => [q[1] + 4 + w / 2, q[0] - 4 - w / 2])].filter(free).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
-        if (cand.length && Math.abs(cand[0] - x) <= 40){ R.push([cand[0] - w / 2, cand[0] + w / 2]); named.push([m, row, nm, x, cand[0]]); return; } } });
-    c.innerHTML = mid.map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
-      + `<svg class="sp-trco" width="${W}" height="${RT[1]}">${named.map(([m, row, nm, x, lx]) => `<polyline points="${x.toFixed(1)},${TB} ${x.toFixed(1)},${TB + 4} ${lx.toFixed(1)},${RT[row] - 2}"/>`).join("")}</svg>`
-      + named.map(([m, row, nm, x, lx]) => `<b class="k-${m[1]} r${row}" style="left:${lx.toFixed(1)}px">${esc(nm)}</b>`).join("");
-    V.tb.classList.toggle("two", rows[1].length > 0); }
+  // (each milestone's type stands upright over its tick and its name under it, both read bottom to top: TEE / 0588,
+  // VALVE / 11318, INSTR / FE13127; a callout line where they had to be moved apart, only the tick where packed too tight)
+  const TT = { t: "TEE", v: "VALVE", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END" };
+  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 40, TT0 = OT + 9, TB = OT + 45, LT = OT + 52, placed = [];
+    const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, v: 5, s: 6 })[m[1]] ?? 7, named = [];
+    [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = Math.max(LW / 2, Math.min(W - LW / 2, m[0] * W)), free = c0 => c0 - LW / 2 >= 0 && c0 + LW / 2 <= W && !placed.some(q => Math.abs(q - c0) < LW);
+      const cand = [x, ...placed.flatMap(q => [q + LW, q - LW])].filter(free).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
+      if (cand.length && Math.abs(cand[0] - x) <= 30){ placed.push(cand[0]); named.push([m, m[0] * W, cand[0]]); } });
+    const lines = named.filter(([m, x, lx]) => Math.abs(lx - x) > .5);
+    c.innerHTML = TR.m.filter(m => m[0] > .01 && m[0] < .99).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
+      + `<svg class="sp-trco" width="${W}" height="${LT}">${lines.map(([m, x, lx]) => `<polyline points="${x.toFixed(1)},${TB} ${x.toFixed(1)},${TB + 2} ${lx.toFixed(1)},${LT - 1}"/><polyline points="${x.toFixed(1)},${TT0} ${x.toFixed(1)},${TT0 - 1} ${lx.toFixed(1)},${TT0 - 3}"/>`).join("")}</svg>`
+      + named.map(([m, x, lx]) => `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px">${TT[m[1]] || ""}</b><b class="k-${m[1]}" style="left:${lx.toFixed(1)}px">${esc(trName(m))}</b>`).join(""); }
   function trFill(){ [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz")].forEach(i => i.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
   function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
     const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; }
   // the part of the path between two fractions along it
   function trSub(a, b){ const [xa, ya, ia] = trAt(a), [xb, yb, ib] = trAt(b); return [[xa, ya], ...TR.P.slice(ia, ib), [xb, yb]]; }
   function trView(){ if (!TR) return; const tb = V.tb, f = trF();
-    tb.querySelector(".sp-trp").textContent = Math.round(f * 100) + "%"; trFill();
+    trFill();
     V.zoom = Math.max(1, Math.min(10, zOf(+V.tz.querySelector(".sp-trz").value))); V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false);
     const [x, y] = trPt(...trAt(f)); centreOn(x / 1e4, y / 1e4); sharp(); drawTrace(); settleSoon(); }
   // the trail: the part of the line from its upstream end to where you are now, like a pen's, with dashes drifting down

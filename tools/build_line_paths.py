@@ -179,7 +179,7 @@ def build(num):
                 u = 0 if sl < 1e-6 else max(0, min(1, ((cx - a[0]) * (b[0] - a[0]) + (cy - a[1]) * (b[1] - a[1])) / sl / sl))
                 dd = math.hypot(a[0] + u * (b[0] - a[0]) - cx, a[1] + u * (b[1] - a[1]) - cy)
                 if bd is None or dd < bd[0]: bd = (dd, (Lc[i] + u * sl) / tot)
-            lim = {"mel": 60, "mv": 36, "cv": 36, "spi": 24, "ins": 18}[q[6]]
+            lim = {"mel": 60, "mv": 36, "cv": 36, "spi": 24, "ins": 42}[q[6]]
             if bd and bd[0] < lim: M.append([round(bd[1], 3), {"mel": "e", "mv": "v", "cv": "v", "spi": "v", "ins": "i"}[q[6]], str(q[5]).split("|")[0]])
         marks[str(k)] = M
     # each tee named by the line that leaves it: the traced line whose end is at the tee (within 4 pt)
