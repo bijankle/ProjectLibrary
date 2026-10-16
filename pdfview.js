@@ -29,7 +29,7 @@ window.PdfView = (() => {
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="in" title="Zoom in">+</button></div>
       <button class="sp-fb" data-a="find" title="Find in this drawing">⌕</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
-      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><svg class="sp-trl"></svg><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-text textLayer"></div><div class="sp-dn"></div></div></div><div class="sp-msg"></div>
+      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><svg class="sp-fl"></svg><svg class="sp-trl"></svg><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-text textLayer"></div><div class="sp-dn"></div></div></div><div class="sp-msg"></div>
       <button class="sp-ze" data-a="fit" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>`;
     // phone, sheet at fit: the room left under the sheet holds a panel (cur.panel fills it: the connected drawings, pid.js)
     // (the zoom extents button sits beside find in the bottom bar: on a phone the bar is all there is, on a computer it floats)
@@ -50,8 +50,19 @@ window.PdfView = (() => {
     tb.addEventListener("click", e => e.stopPropagation()); el.appendChild(tb);
     const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
     cb.onclick = () => cur && cur.corner && cur.corner.go();
+    // (the P&ID lines chip, top left of the sheet on a phone: colour by fluid, flow animation; and the fluid legend)
+    const lc = document.createElement("button"); lc.type = "button"; lc.className = "sp-lc"; lc.hidden = true;
+    lc.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h12" stroke="#1565ff"/><path d="M3 12h15" stroke="#00a651"/><path d="M3 18h12" stroke="#ff9500"/><path d="M18 3l3 3-3 3M18 15l3 3-3 3" stroke="currentColor"/></svg><span>Lines</span>`; el.appendChild(lc);
+    const lp = document.createElement("div"); lp.className = "sp-lcp"; lp.hidden = true;
+    lp.innerHTML = `<h6>P&amp;ID lines, all drawings</h6><label><span>Colour by fluid</span><input type="checkbox" class="ap-sw" data-f="c"></label><label><span>Flow animation</span><input type="checkbox" class="ap-sw" data-f="w"></label>`; el.appendChild(lp);
+    const flg = document.createElement("div"); flg.className = "sp-flg"; flg.hidden = true; el.appendChild(flg);
+    lc.onclick = e => { e.stopPropagation(); lp.hidden = !lp.hidden; if (!lp.hidden){ lp.querySelector('[data-f="c"]').checked = FL.c; lp.querySelector('[data-f="w"]').checked = FL.w; const r = lc.getBoundingClientRect(), q = el.getBoundingClientRect(); lp.style.left = (r.left - q.left) + "px"; lp.style.top = (r.bottom - q.top + 5) + "px"; } };
+    lp.addEventListener("click", e => e.stopPropagation());
+    lp.addEventListener("change", e => { const f = e.target.dataset.f; if (!f) return; FL[f] = e.target.checked; try { localStorage.setItem(f === "c" ? "kcgm_flc" : "kcgm_flw", FL[f] ? "1" : "0"); } catch (x) {} drawFl(); });
+    flg.addEventListener("click", e => { e.stopPropagation(); if (!e.target.closest(".hd")) return; FL.leg = !FL.leg; try { localStorage.setItem("kcgm_flleg", FL.leg ? "1" : "0"); } catch (x) {} flLeg(FL.cnt || {}); });
+    el.addEventListener("click", e => { if (!lp.hidden && !e.target.closest(".sp-lcp,.sp-lc")) lp.hidden = true; }, true);
     document.body.appendChild(el);
-    V = { tb, tz, trl: el.querySelector(".sp-trl"), cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
+    V = { tb, tz, lc, lp, flg, fl: el.querySelector(".sp-fl"), trl: el.querySelector(".sp-trl"), cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), textEl: el.querySelector(".sp-text"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
       fprev: () => V.fit ? fitStep(-1) : showHit(V.fi - 1, -1), fnext: () => V.fit ? fitStep(1) : showHit(V.fi + 1, 1), rot, close,
@@ -277,7 +288,9 @@ window.PdfView = (() => {
     ui(); freeRotate(); const wasOpen = !V.el.hidden; lastNum = wasOpen && cur && cur.number !== o.number ? cur.number : wasOpen ? lastNum : null;
     if (TR) trEnd(); cur = Object.assign({ page: 1, fit: "width" }, o);
     V.el.hidden = false; document.body.classList.add("sp-on"); dock();
-    { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } } V.el.querySelector(".sp-tt").textContent = cur.title || "";
+    { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } }
+    V.lc.hidden = desk() || !/-PID-/.test(o.number || ""); V.lc.style.top = (V.body.offsetTop + 10) + "px"; V.lp.hidden = true; V.fl.innerHTML = ""; V.flg.hidden = true; FL.cnt = {};
+    V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
     // (in the sheet's bottom right corner, the drawing's short title under it: cur.sub)
     // (cur.nodn: a cleared title block has the number and title printed in its corner box, so no label of the app's own)
@@ -462,7 +475,7 @@ window.PdfView = (() => {
   // (redrawn as the slider moves: the drift's delay set from the clock, so it carries on without a restart)
   // it the way the line flows; where you are, an arrow pointing downstream (where the drawing doesn't show the flow,
   // the way the line was traced). In the sheet's own points; the line widths are screen pixels, thicker close up
-  function drawTrace(){ if (!V || !V.trl) return; const on = TR && cur && TR.n === cur.number && TR.page === V.page && V.pg;
+  function drawTrace(){ if (!V || !V.trl) return; flDim(); const on = TR && cur && TR.n === cur.number && TR.page === V.page && V.pg;
     if (!on){ V.trl.innerHTML = ""; return; }
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, s = V.base * V.zoom, w = Math.max(4, Math.min(9, 3.2 * s)), tw = w * 1.35;
     const sc = q => { const [x, y] = trPt(q[0], q[1]); return [x / 1e4 * W, y / 1e4 * H]; };
@@ -654,7 +667,7 @@ window.PdfView = (() => {
       const cls = V.fit ? " fit" + (shape(r) === "o" ? " o" : "") + (V.fq && !V.fset.has(r) ? " off" : "") : r[6] === "d" ? " d" : "";
       const rb = r[6] === "d" && Array.isArray(r[8]) && !V.rot;
       return `<a class="sp-ref${cls}${rb ? " rb" : ""}" data-i="${i}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${h / 100}%" title="${esc(r[5].replace(/\|/g, ", "))}">${rb ? ribbon(r[8]) : ""}</a>`; }).join("");
-    hideOwnHits(); drawTap(); drawTrace();
+    hideOwnHits(); drawTap(); drawTrace(); drawFl();
   }
   // how a ref was fitted to the print on a checked sheet: "o" bubble, "b" drawn box (both exact), "t" text (a margin added)
   const shape = r => typeof r[7] === "string" ? r[7] : V.fit && r[6] === "d" ? "t" : null;
@@ -771,6 +784,7 @@ window.PdfView = (() => {
     const w = Math.round(vp1.width * s) + "px", h = Math.round(vp1.height * s) + "px";
     // the sharp layer no longer matches a new size: hide it (the background layer stretches) until its redraw is ready
     V.textEl.style.setProperty("--scale-factor", s);
+    V.sheet.style.setProperty("--flw", Math.max(2.2, Math.min(8, 6 * s)).toFixed(2) + "px");
     V.sheet.style.setProperty("--rbw", Math.max(1, Math.min(2.5, vp1.width * s * .0006)).toFixed(2) + "px");   // the red outline thins as the sheet shrinks
     // (the drawing number printed on the sheet never runs wider than the sheet: past its edge it gave the window room to scroll sideways into nothing)
     V.sheet.style.setProperty("--dnf", (vp1.width * s / Math.max(8, String(cur.label || cur.number || "").length * .68)).toFixed(1) + "px");
@@ -794,13 +808,48 @@ window.PdfView = (() => {
   function arrows(){ if (!V) return; const on = V.el.classList.contains("cx-on") && cur && cur.swipe, e = V.el.getBoundingClientRect(), s = V.sheet.getBoundingClientRect();
     V.el.querySelectorAll(".sp-arw").forEach(a => { const dir = a.classList.contains("l") ? -1 : 1, ok = !!(on && cur.swipe(dir)); a.hidden = !ok; if (!ok) return;
       a.style.top = Math.round(s.top - e.top + s.height / 2 - a.offsetHeight / 2) + "px"; a.style.left = Math.round((dir < 0 ? s.left + 6 : s.right - 6 - a.offsetWidth) - e.left) + "px"; }); }
+  // ---------- P&ID lines coloured by fluid (phone) ----------
+  // Every traced line on the sheet (lines/<number>.json) drawn over the print in its fluid's colour, the fluid code the
+  // third part of the line number (12-1646-COW-SS1-80). The commonest codes (process water, instrument air, bore water,
+  // drains, concentrate, fire water, flotation slurry …) each a colour clearly apart from the others; the obvious ones
+  // kept (water blue, fire water red, lube oil black). With the flow animation on, white dashes run downstream on the
+  // lines whose flow is known. While a line is traced the rest go grey. Both switches (the Lines chip) and the legend's
+  // shown / hidden hold for every drawing until changed.
+  const FLC = {"PW":"#1565ff","IA":"#00a651","BW":"#4a148c","FD":"#8d6e63","CON":"#ff9500","FW":"#e00000","FS":"#ffe100","POT":"#8ec5f5","PSW":"#ff3d9a","COW":"#00695c","LO":"#222222","GW":"#8db600","CN":"#d500f9","PE":"#00bfa5","SC":"#616161","OXY":"#80deea","NS":"#ce93d8","LS":"#bdbdbd","MS":"#654522","HCL":"#b3446c","FL":"#69f0ae","XA":"#556b2f","FT":"#9e9e9e","FR":"#ffab91","CW":"#9c27b0","CO":"#0097a7","HP":"#dcd300","LN":"#f99379","BE":"#604e97","HPE":"#e25822","AE":"#ff1744","HO":"#827717","BA":"#b2dfdb","WM":"#5c6bc0","AS":"#cfd8dc","CS":"#ff8a80","TO":"#d7ccc8","CA":"#90a4ae","LPG":"#ff6e40","WW":"#90caf9"};
+  const FLN = {"AE":"Acid Effluent","AS":"Antiscalant","BA":"Blower Air","BE":"Barren Eluate","BW":"Bore Water (Raw Water)","CN":"Cyanide Solution","CO":"Copper Sulphate","CON":"Concentrate Slurry","COW":"Cooling Water","CS":"Cyanide Slurry","CW":"Cyanide Water","FD":"Floor Drainage","FL":"Flocculant","FR":"Frother","FS":"Flotation Slurry","FT":"Final Tailings","FW":"Fire Water","GW":"Gland Water (High Pressure)","HCL":"Hydrochloric Acid","HO":"Hydraulic Oil","HP":"Hydrogen Peroxide","HPE":"Hydrochloric Acid / Pregnant Eluate","IA":"Instrument Air","LN":"Lead Nitrate","LO":"Lubricating Oil (High Pressure)","LPG":"Fuel Gas","LS":"Lime Slurry","MS":"Mill Slurry","NS":"Caustic Soda","OXY":"Oxygen","PE":"Pregnant Eluate (Elution)","POT":"Potable Water","PSW":"Process Scheme Water (Normal)","PW":"Process Water (High)","SC":"Carbon Slurry","WM":"UFG Media and Process Water","WW":"Washdown Water","XA":"Xanthate","CA":"Compressed air","TO":"Transformer oil"};
+  const lsg = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v === "1"; } catch (e) { return d; } };
+  const FL = { c: lsg("kcgm_flc", false), w: lsg("kcgm_flw", true), leg: lsg("kcgm_flleg", true), cnt: {} };
+  const fluid = l => String(l || "").split("|")[0].split("-")[2] || "";
+  const flOn = () => FL.c && !desk() && cur && /-PID-/.test(cur.number || "") && V.pg;
+  async function drawFl(){ if (!V || !V.fl) return;
+    if (!flOn()){ V.fl.innerHTML = ""; flLeg({}); return; }
+    const me = cur, pn = V.page, D = await linesFor(cur.number); if (cur !== me || V.page !== pn || !V.pg) return;
+    const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, cnt = {}; let h = "", fw = "";
+    Object.keys(D).forEach(k => { if (!/^\d+$/.test(k)) return; const r = V.refs[+k]; if (!r || r[0] !== pn) return; const c = fluid(r[5]), col = FLC[c]; if (!col) return; cnt[c] = (cnt[c] || 0) + 1;
+      const pts = D[k].map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
+      h += `<polyline data-k="${k}" points="${pts}" style="--c:${col}"/>`;
+      if (FL.w && D.fl && D.fl[k]) fw += `<polyline class="fw" data-k="${k}" points="${pts}" style="animation-delay:-${(k * .37 % 1.1).toFixed(2)}s"/>`; });
+    V.fl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.fl.innerHTML = h + fw; flDim(); flLeg(cnt); }
+  // (a line traced: the rest grey, that one in its colour)
+  function flDim(){ if (!V || !V.fl) return; const on = !!(TR && cur && TR.n === cur.number); V.fl.classList.toggle("dim", on);
+    V.fl.querySelectorAll(".sel").forEach(p => p.classList.remove("sel")); if (on) V.fl.querySelectorAll(`[data-k="${TR.k}"]`).forEach(p => p.classList.add("sel")); }
+  // the legend: the fluids on this drawing, commonest first; "Hide" leaves one line of dots
+  function flLeg(cnt){ const g = V.flg, cs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b)); FL.cnt = cnt; g.dataset.n = cs.length; g.classList.toggle("open", FL.leg);
+    g.innerHTML = `<button type="button" class="hd"><b>${FL.leg ? "Fluids on this drawing" : "Fluids"}</b>${FL.leg ? "" : `<span class="fl-dots">${cs.map(c => `<i style="background:${FLC[c]}"></i>`).join("")}</span>`}<em>${FL.leg ? "Hide ▴" : "Show ▾"}</em></button>`
+      + (FL.leg ? `<div class="grid">${cs.map(c => `<div class="row"><i class="sw" style="background:${FLC[c]}"></i><span class="cd">${c}</span><span class="nm">${esc(FLN[c] || "")}</span></div>`).join("")}</div>` : "");
+    cxFit(); }
+  // (under the sheet while the tag list shows; zoomed in, at the foot over the buttons; not while a line is traced)
+  function legAt(under, sb, lim){ const g = V.flg, show = +g.dataset.n > 0 && FL.c && !TR && !desk() && !V.el.hidden && !V.el.classList.contains("typing"); g.hidden = !show; if (!show) return 0;
+    const e = V.el.getBoundingClientRect(), s = V.sheet.getBoundingClientRect(); g.classList.toggle("fl", !under);
+    if (under){ g.style.left = Math.round(Math.max(s.left, e.left + 6) - e.left) + "px"; g.style.width = Math.round(Math.min(s.width, e.width - 12)) + "px"; g.style.top = Math.round(sb - e.top + 6) + "px"; g.style.bottom = ""; return g.offsetHeight + 6; }
+    g.style.left = "8px"; g.style.width = ""; g.style.top = ""; g.style.bottom = Math.round(e.bottom - lim + 8) + "px"; return 0; }
   function cxFit(){
     if (!V || !V.cx) return; const c = V.cx; V.el.classList.toggle("cx-on", false); V.el.querySelectorAll(".sp-arw").forEach(a => a.hidden = true);
-    if (!cur || !cur.panel || desk() || V.el.hidden || V.zoom > 1.001 || V.rot || TR || V.el.classList.contains("typing")){ c.hidden = true; return; }
     const e = V.el.getBoundingClientRect(), sb = V.sheet.getBoundingClientRect().bottom; let lim = V.body.getBoundingClientRect().bottom;
     V.el.querySelectorAll(".sp-top").forEach(t => { const r = t.getBoundingClientRect(); if (r.height && r.top > e.top + e.height / 2) lim = Math.min(lim, r.top); });
-    const room = lim - sb - 14; if (room < 120){ c.hidden = true; return; }
-    c.style.top = Math.round(sb - e.top + 6) + "px"; c.style.height = Math.round(room) + "px";
+    if (!cur || !cur.panel || desk() || V.el.hidden || V.zoom > 1.001 || V.rot || TR || V.el.classList.contains("typing")){ c.hidden = true; legAt(false, sb, lim); return; }
+    const lg = legAt(true, sb, lim), room = lim - sb - 14 - lg; if (room < (lg ? 70 : 120)){ c.hidden = true; legAt(false, sb, lim); return; }
+    c.style.top = Math.round(sb - e.top + 6 + lg) + "px"; c.style.height = Math.round(room) + "px";
     if (V.cxFor !== cur){ V.cxFor = cur; c.innerHTML = ""; cur.panel(c); }
     c.hidden = false; V.el.classList.add("cx-on"); arrows();
   }
