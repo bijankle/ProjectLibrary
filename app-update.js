@@ -33,9 +33,11 @@
     barEl.firstChild.style.width = Math.max(2, f * 100).toFixed(1) + "%"; barEl.classList.toggle("done", f >= 1); };
   let pending = false;
   function applyWhenIdle(){ pending = true; let t;
-    // (never while typing or with a drawing open: those wait for the next pause after; a reload also keeps the view, PdfView.saved)
-    const go = () => { if ((document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) || document.querySelector(".sp-view:not([hidden])")) return arm(); location.reload(); };
-    const arm = () => { clearTimeout(t); t = setTimeout(go, 4000); };
+    // (never while typing or tracing a line; with a drawing open after a longer pause, 15 s: the reload brings the drawing
+    // back as it was, PdfView.saved)
+    const sp = () => document.querySelector(".sp-view:not([hidden])");
+    const go = () => { if ((document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) || document.querySelector(".sp-view.tracing")) return arm(); location.reload(); };
+    const arm = () => { clearTimeout(t); t = setTimeout(go, sp() ? 15000 : 4000); };
     ["pointerdown", "keydown", "wheel", "touchstart"].forEach(ev => addEventListener(ev, arm, { passive: true })); arm();
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") location.reload(); }); }
   U.bg = async () => {
@@ -55,6 +57,9 @@
     } catch (e) { bar(1); }
   };
   addEventListener("load", () => setTimeout(() => U.bg(), 1200));
+  // (the app left open on the phone: checked again each time it comes back to the screen, and every 10 minutes)
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") setTimeout(() => U.bg(), 800); });
+  setInterval(() => { if (document.visibilityState === "visible") U.bg(); }, 600000);
   // ask the browser to protect this site's storage (downloaded documents) from automatic clean-up, every time the app opens
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => p || navigator.storage.persist()).catch(() => {}); } catch (e) {}
   window.AppUpdate = U;
