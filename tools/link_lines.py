@@ -3,10 +3,17 @@ short gap in the drawing) and the line that carries on from the other side, the 
 with nothing else there. Written to lines/<sheet>.json as "lk": [[k1, end1, k2, end2], …] (end 0 the start of the
 path, 1 its end), which the trace's next line arrows (pdfview.js trNbs) follow.
 
+Through a vessel (a tank, hopper, box, cyclone, any closed outline): a line that runs into it and one that runs out
+of it are joined whatever their fluids (process water in, slurry out through the pump), so next line flies on
+through. The outline is found on a picture of the sheet: the white inside it, reached a few points on past the
+line's end, a closed patch of a vessel's size.
+
 Where both lines run into the join, or both away from it, one flow is wrong (two suctions, or two discharges): at a
 pump the larger bore is the suction, so the smaller is turned round (path reversed, milestones mirrored).
 """
 import glob, json, math, os, sys
+import numpy as np, pymupdf
+from scipy import ndimage
 
 R = sys.argv[1] if len(sys.argv) > 1 else "."
 REFS = json.load(open(os.path.join(R, "pid-refs.json")))
@@ -37,6 +44,54 @@ def ahead(P, e, q):
     ux, uy = b[0] - a[0], b[1] - a[1]; vx, vy = q[0] - b[0], q[1] - b[1]
     n = math.hypot(ux, uy) * math.hypot(vx, vy)
     return (ux * vx + uy * vy) / n if n else 0
+
+
+IX = json.load(open(os.path.join(R, "PIDs", "index.json")))["pids"]
+
+
+UTIL = {"IA", "CA", "BA", "LO", "HO", "GW", "FD", "OXY", "LPG", "AS", "TO", "V"}   # (services into a vessel that are not the process going through it)
+
+
+def vessels(num, D, keys, pg, free, info, done):
+    if num not in IX: return []
+    doc = pymupdf.open(os.path.join(R, IX[num]["file"])); out = []
+    for pn in sorted({pg[k] for k in keys}):
+        page = doc[pn - 1]; s = 1.0; pm = page.get_pixmap(matrix=pymupdf.Matrix(s, s), colorspace=pymupdf.csGRAY)
+        img = np.frombuffer(pm.samples, np.uint8).reshape(pm.height, pm.width)
+        dark = ndimage.binary_dilation(img < 170)
+        lab, n = ndimage.label(~dark); area = np.bincount(lab.ravel())
+        W, H = pm.width, pm.height; top = W * H * .02
+        def inside(k, e):
+            """the vessel a line's end runs into: the closed white patch just past it"""
+            P = D[k]; b = P[-1] if e else P[0]
+            a = next((q for q in (P[::-1] if e else P)[1:] if math.dist(q, b) > 5), None)
+            if a is None: return None
+            ux, uy = (b[0] - a[0]) * W / 1e4, (b[1] - a[1]) * H / 1e4; L = math.hypot(ux, uy); ux, uy = ux / L, uy / L
+            x0, y0 = b[0] * W / 1e4, b[1] * H / 1e4; hit = False
+            for t in range(1, 26):
+                x, y = int(x0 + ux * t), int(y0 + uy * t)
+                if not (0 <= x < W and 0 <= y < H): return None
+                if dark[y, x]: hit = True; continue
+                c = lab[y, x]
+                if 250 < area[c] < top and (hit or t > 3): return c
+                if hit: return None
+            return None
+        ins, outs = {}, {}
+        for k in keys:
+            if pg[k] != pn: continue
+            for e in (0, 1):
+                if not free(k, e): continue
+                c = inside(k, e)
+                if c: (ins if e else outs).setdefault(c, []).append(k)
+        for c, I in ins.items():
+            O = [k for k in outs.get(c, []) if k not in I]
+            if not O or len(O) > 3 or len(I) > 4: continue
+            for a in I:
+                for b in O:
+                    fa, fb = info[a][0], info[b][0]
+                    if fa != fb and (fa in UTIL or fb in UTIL): continue
+                    if (a, b) not in done: out.append([int(a), 1, int(b), 0]); done.add((a, b))
+    return out
 
 
 def run(path):
@@ -83,6 +138,7 @@ def run(path):
                 if s == k: e = 1 - e
                 else: e2 = 1 - e2
         lk.append([int(k), e, int(k2), e2])
+    lk += vessels(num, D, keys, pg, free, info, {(a, b) for a, _, b, _ in lk} | {(b, a) for a, _, b, _ in lk})
     if lk: D["lk"] = lk
     elif "lk" in D: del D["lk"]
     json.dump(D, open(path, "w"), separators=(",", ":"))
