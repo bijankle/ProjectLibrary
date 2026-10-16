@@ -372,7 +372,8 @@ window.PdfView = (() => {
   function trName(m, end){ const t = m[2] || "";
     if (m[1] === "t") return t ? "tee " + short(t) : "tee";
     if (m[1] === "r") return (end ? (m[0] < .5 ? "from " : "to ") : "") + t.replace(/^2000-/, "").replace(/-PID-PR-/, " ");
-    if (m[1] === "l") return (end ? "spec break " : "→ ") + short(t);
+    // (where the line meets the next one: the spec change, this line's | the next's, in the slider's left to right order)
+    if (m[1] === "l"){ const sp = n => (String(n || "").split("-")[3] || "?"), me = sp(TR.label), nx = sp(t); return m[0] < .5 ? nx + " | " + me : me + " | " + nx; }
     if (m[1] === "s") return "end";
     return t.replace(/\s+/g, ""); }
   function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, rows = [[], []], cw = 6.1;
