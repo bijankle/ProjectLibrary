@@ -42,7 +42,7 @@ window.PdfView = (() => {
     // phone, a line traced (trace below): its number, how far along, open its page, ✕; the zoom and along the line sliders
     const tb = document.createElement("div"); tb.className = "sp-trb"; tb.hidden = true;
     tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><button type="button" class="sp-tro">Go to asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
-      <div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="1" aria-label="Along the line"><div class="sp-trc"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
+      <div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="1" aria-label="Along the line"><div class="sp-trln"><span></span><span></span></div><div class="sp-trc"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
     // (the zoom: an upright slider on the right of the sheet, + at the top, − at the foot)
     const tz = document.createElement("div"); tz.className = "sp-trv"; tz.hidden = true;
     tz.innerHTML = `<button type="button" data-z="10" aria-label="Closer">+</button><span class="sp-trzb"><input type="range" class="sp-trz sp-rg" min="0" max="100" step="1" aria-label="Zoom"></span><button type="button" data-z="-10" aria-label="Further">−</button>`;
@@ -356,7 +356,7 @@ window.PdfView = (() => {
       let f = 0;
       if (end){ const d = q => Math.hypot((q[0] - end[0]) * A, q[1] - end[1]); f = d(P[P.length - 1]) < d(P[0]) ? 1 : 0; }
       TR.f0 = 0;
-      const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; V.tz.querySelector(".sp-trz").value = trZ(); tb.querySelector(".sp-tra").value = Math.round(f * 1000);
+      const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; tb.querySelectorAll(".sp-trln span").forEach(e => e.textContent = TR.label); V.tz.querySelector(".sp-trz").value = trZ(); tb.querySelector(".sp-tra").value = Math.round(f * 1000);
       // (the panel kept above the phone's gesture strip, the swipe along the bottom that switches apps: 64 of the screen's
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
       { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
@@ -381,7 +381,7 @@ window.PdfView = (() => {
   // (each milestone's type stands upright over its tick and its name under it, both read bottom to top: TEE / 0588,
   // VALVE / 11318, INSTR / FE13127; a callout line where they had to be moved apart, only the tick where packed too tight)
   const TT = { t: "TEE", v: "VALVE", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END" };
-  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 40, TT0 = OT + 9, TB = OT + 45, LT = OT + 52, placed = [];
+  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 40, TT0 = OT + 2, TB = OT + 52, LT = OT + 55, placed = [];
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, v: 5, s: 6 })[m[1]] ?? 7, named = [];
     [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = Math.max(LW / 2, Math.min(W - LW / 2, m[0] * W)), free = c0 => c0 - LW / 2 >= 0 && c0 + LW / 2 <= W && !placed.some(q => Math.abs(q - c0) < LW);
       const cand = [x, ...placed.flatMap(q => [q + LW, q - LW])].filter(free).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
@@ -390,7 +390,7 @@ window.PdfView = (() => {
     c.innerHTML = TR.m.filter(m => m[0] > .01 && m[0] < .99).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
       + `<svg class="sp-trco" width="${W}" height="${LT}">${lines.map(([m, x, lx]) => `<polyline points="${x.toFixed(1)},${TB} ${x.toFixed(1)},${TB + 2} ${lx.toFixed(1)},${LT - 1}"/><polyline points="${x.toFixed(1)},${TT0} ${x.toFixed(1)},${TT0 - 1} ${lx.toFixed(1)},${TT0 - 3}"/>`).join("")}</svg>`
       + named.map(([m, x, lx]) => `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px">${TT[m[1]] || ""}</b><b class="k-${m[1]}" style="left:${lx.toFixed(1)}px">${esc(trName(m))}</b>`).join(""); }
-  function trFill(){ [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz")].forEach(i => i.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
+  function trFill(){ [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz")].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
   function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
     const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; }
   // the part of the path between two fractions along it
