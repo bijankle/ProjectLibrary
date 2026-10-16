@@ -3,6 +3,8 @@ line lights up, a slider runs the view along it. One file per drawing, lines/<nu
   {"<ref index>": [[x, y], …]}   the line's path, from one end to the other, in the same 1/10,000 sheet units as
                                  pid-refs.json (keyed by the line label's index in that drawing's refs)
   "rb": {"<ribbon ref index>": "<line ref index>"}   the line a continuation ribbon on the sheet carries on
+  "m": {"<line ref index>": [[fraction along, kind, text], …]}   what the line passes, for the commentary under the
+                                 phone's Line slider (t tee, v valve, i instrument, e equipment, r ribbon, l next line)
   python3 tools/build_line_paths.py [numbers…]     (default: every P&ID in PIDs/index.json)
 
 How a line is followed: the drawing's pipe strokes (dark, at least 8 pt long, so not the strokes of vector lettering)
@@ -70,7 +72,7 @@ def trace(S, LBL, r, label, gap=30, tol=1.6):
         return bl and bl[1]
     ends = lambda s: [(s[0], s[1]), (s[2], s[3])]
     near = lambda a, b: abs(a[0] - b[0]) < tol and abs(a[1] - b[1]) < tol
-    seen = {best[1]}; chains = []
+    seen = {best[1]}; chains = []; why = []
     for start in ends(S[best[1]]):   # each way from the label: a chain of points
         pts = [start]; i, pt = best[1], start
         while True:
@@ -86,19 +88,33 @@ def trace(S, LBL, r, label, gap=30, tol=1.6):
                         if o == "h" and abs(e[1] - pt[1]) < tol and 0 < abs(e[0] - pt[0]) < gap and (e[0] - pt[0]) * (pt[0] - mx) > 0: nxt = [j]; break
                         if o == "v" and abs(e[0] - pt[0]) < tol and 0 < abs(e[1] - pt[1]) < gap and (e[1] - pt[1]) * (pt[1] - my) > 0: nxt = [j]; break
                     if nxt: break
-            if not nxt: break
+            if not nxt: why.append(("t", "") if len(cand) > 1 else ("s", "")); break
             j = nxt[0]; ow = owner(S[j])
-            if ow and ow != label: break
+            if ow and ow != label: why.append(("l", ow)); break
             seen.add(j); t = S[j]
             a, b = sorted(ends(t), key=lambda e: math.hypot(e[0] - pt[0], e[1] - pt[1]))
             pts += [a, b]; i, pt = j, b
         chains.append(pts)
     path = list(reversed(chains[0])) + chains[1]
-    return [p for k, p in enumerate(path) if k == 0 or math.hypot(p[0] - path[k - 1][0], p[1] - path[k - 1][1]) > 0.5]
+    path = [p for k, p in enumerate(path) if k == 0 or math.hypot(p[0] - path[k - 1][0], p[1] - path[k - 1][1]) > 0.5]
+    # tees along the way: another pipe stroke ending on the line between its ends (not a short tick: a flange or spec break)
+    Lc = [0]
+    for a, b in zip(path, path[1:]): Lc.append(Lc[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
+    tees = []
+    for j, t in enumerate(S):
+        if j in seen or L(t) <= 20: continue
+        for e in ends(t):
+            for i, (a, b) in enumerate(zip(path, path[1:])):
+                sl = Lc[i + 1] - Lc[i]
+                if sl < 1: continue
+                u = ((e[0] - a[0]) * (b[0] - a[0]) + (e[1] - a[1]) * (b[1] - a[1])) / sl / sl
+                if not (0 < u < 1) or u * sl < 3 or (1 - u) * sl < 3: continue
+                if math.hypot(a[0] + u * (b[0] - a[0]) - e[0], a[1] + u * (b[1] - a[1]) - e[1]) < tol: tees.append((Lc[i] + u * sl, owner(t) or ""))
+    return path, (why + [("s", ""), ("s", "")])[:2], tees, Lc
 
 def build(num):
     v = IX[num]; doc = pymupdf.open(os.path.join(R, v["file"])); refs = REFS.get(num, [])
-    out = {}; rb = {}; pages = {}
+    out = {}; rb = {}; pages = {}; marks = {}
     for k, r in enumerate(refs):
         if r[6] != "line": continue
         pg = r[0] - 1
@@ -111,8 +127,26 @@ def build(num):
         p, S, LBL = pages[pg]; W, H = p.rect.width, p.rect.height
         rr = pymupdf.Rect(r[1] * W / 1e4, r[2] * H / 1e4, (r[1] + r[3]) * W / 1e4, (r[2] + r[4]) * H / 1e4)
         label = str(r[5]).split("|")[0]
-        P = trace(S, LBL, rr, label)
-        if P and len(P) >= 2: out[str(k)] = [[round(x / W * 1e4), round(y / H * 1e4)] for x, y in P]
+        T = trace(S, LBL, rr, label)
+        if not T or len(T[0]) < 2: continue
+        P, why, tees, Lc = T; tot = Lc[-1] or 1
+        out[str(k)] = [[round(x / W * 1e4), round(y / H * 1e4)] for x, y in P]
+        # what the line passes (commentary along the phone's Line slider): [fraction along, kind, text]
+        # kinds: t tee, v valve, i instrument, e equipment, r ribbon (set below), l the next line, s the line's end
+        M = [[round(d / tot, 3), "t", o] for d, o in tees]
+        for f, (kd, tx) in zip((0, 1), why):
+            if kd in "tl": M.append([f, kd, tx])
+        for q in refs:
+            if q[0] != r[0] or q[6] not in ("mv", "cv", "ins", "spi", "mel"): continue
+            cx, cy = (q[1] + q[3] / 2) * W / 1e4, (q[2] + q[4] / 2) * H / 1e4; bd = None
+            for i, (a, b) in enumerate(zip(P, P[1:])):
+                sl = Lc[i + 1] - Lc[i]
+                u = 0 if sl < 1e-6 else max(0, min(1, ((cx - a[0]) * (b[0] - a[0]) + (cy - a[1]) * (b[1] - a[1])) / sl / sl))
+                dd = math.hypot(a[0] + u * (b[0] - a[0]) - cx, a[1] + u * (b[1] - a[1]) - cy)
+                if bd is None or dd < bd[0]: bd = (dd, (Lc[i] + u * sl) / tot)
+            lim = {"mel": 60, "mv": 36, "cv": 36, "spi": 24, "ins": 18}[q[6]]
+            if bd and bd[0] < lim: M.append([round(bd[1], 3), {"mel": "e", "mv": "v", "cv": "v", "spi": "v", "ins": "i"}[q[6]], str(q[5]).split("|")[0]])
+        marks[str(k)] = M
     # a continuation ribbon carries on the line whose path ends nearest it (within 300 units, about 7 cm at A1)
     for k, r in enumerate(refs):
         if r[6] != "d": continue
@@ -122,10 +156,12 @@ def build(num):
             for e in (P[0], P[-1]):
                 dx = max(bx[0] - e[0], 0, e[0] - bx[2]); dy = max(bx[1] - e[1], 0, e[1] - bx[3]); d = math.hypot(dx, dy)
                 if d < 300 and (bestd is None or d < bestd[0]): bestd = (d, lk)
-        if bestd: rb[str(k)] = bestd[1]
-    if out: out["rb"] = rb
+        if bestd:
+            rb[str(k)] = bestd[1]; P = out[bestd[1]]; e0 = math.hypot(P[0][0] - (r[1] + r[3] / 2), P[0][1] - (r[2] + r[4] / 2)); e1 = math.hypot(P[-1][0] - (r[1] + r[3] / 2), P[-1][1] - (r[2] + r[4] / 2))
+            f = 0 if e0 < e1 else 1; marks[bestd[1]] = [m for m in marks[bestd[1]] if not (m[0] == f and m[1] in "ts")] + [[f, "r", str(r[5]).split("|")[0]]]
+    if out: out["rb"] = rb; out["m"] = {k: sorted(v) for k, v in marks.items()}
     json.dump(out, open(os.path.join(OUT, num + ".json"), "w"), separators=(",", ":"))
-    return sum(1 for r in refs if r[6] == "line"), len(out) - (1 if out else 0), len(rb)
+    return sum(1 for r in refs if r[6] == "line"), len(out) - (2 if out else 0), len(rb)
 
 if __name__ == "__main__":
     nums = sys.argv[1:] or sorted(k for k in IX if "-PID-" in k)

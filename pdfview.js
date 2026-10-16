@@ -29,7 +29,7 @@ window.PdfView = (() => {
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="in" title="Zoom in">+</button></div>
       <button class="sp-fb" data-a="find" title="Find in this drawing">⌕</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
-      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><svg class="sp-trl" viewBox="0 0 10000 10000" preserveAspectRatio="none"></svg><div class="sp-text textLayer"></div><div class="sp-dn"></div></div></div><div class="sp-msg"></div>
+      <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><svg class="sp-trl"></svg><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-text textLayer"></div><div class="sp-dn"></div></div></div><div class="sp-msg"></div>
       <button class="sp-ze" data-a="fit" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>`;
     // phone, sheet at fit: the room left under the sheet holds a panel (cur.panel fills it: the connected drawings, pid.js)
     const cx = document.createElement("div"); cx.className = "sp-cx"; cx.hidden = true; el.appendChild(cx);
@@ -39,13 +39,17 @@ window.PdfView = (() => {
     // a button in the top right corner over the sheet, set by the opener (cur.corner: { html, title, go }): P&IDs' Drawing legend
     // phone, a line traced (trace below): its number, how far along, open its page, ✕; the zoom and along the line sliders
     const tb = document.createElement("div"); tb.className = "sp-trb"; tb.hidden = true;
-    tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><button type="button" class="sp-tro" title="Open this line's page">Open</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
-      <label><span>Zoom</span><input type="range" class="sp-trz" min="0" max="100" step="1"></label><label><span>Line</span><input type="range" class="sp-tra" min="0" max="1000" step="1"><span class="sp-trp"></span></label>`;
+    tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><button type="button" class="sp-tro">Go to asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
+      <div class="sp-trtk"><input type="range" class="sp-tra" min="0" max="1000" step="1" aria-label="Along the line"><div class="sp-trc"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
+    // (the zoom: an upright slider on the right of the sheet, + at the top, − at the foot)
+    const tz = document.createElement("div"); tz.className = "sp-trv"; tz.hidden = true;
+    tz.innerHTML = `<button type="button" data-z="10" aria-label="Closer">+</button><input type="range" class="sp-trz" min="0" max="100" step="1" aria-label="Zoom"><button type="button" data-z="-10" aria-label="Further">−</button>`;
+    tz.addEventListener("click", e => e.stopPropagation()); el.appendChild(tz);
     tb.addEventListener("click", e => e.stopPropagation()); el.appendChild(tb);
     const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
     cb.onclick = () => cur && cur.corner && cur.corner.go();
     document.body.appendChild(el);
-    V = { tb, trl: el.querySelector(".sp-trl"), cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
+    V = { tb, tz, trl: el.querySelector(".sp-trl"), cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), textEl: el.querySelector(".sp-text"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
       fprev: () => V.fit ? fitStep(-1) : showHit(V.fi - 1, -1), fnext: () => V.fit ? fitStep(1) : showHit(V.fi + 1, 1), rot, close,
@@ -213,19 +217,22 @@ window.PdfView = (() => {
       if (!e.target.closest || !e.target.closest(".sp-pick")) pickClose(); else return;
       const sel = getSelection(); if (sel && !sel.isCollapsed && String(sel).trim() && V.body.contains(sel.anchorNode)) return;   // (finishing a text selection on the sheet, not a tap; one elsewhere doesn't count)
       const a = refAt(e.clientX, e.clientY);
+      if (!a && TR && !desk() && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8) && trNear(e.clientX, e.clientY)){ trOpen(); return; }
       if (!a || (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8)) return;
       const r = V.pageRefs[+a.dataset.i]; if (!r || !cur.onRef) return;
       a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
       // the red arrow on what was tapped, kept with this view (back here shows where you were)
       const bx = V.boxes[+a.dataset.i]; if (bx){ V.tap = { page: V.page, l: bx[0] / 1e4, t: bx[1] / 1e4, w: bx[2] / 1e4, h: bx[3] / 1e4 }; drawTap(); const me = REG.get(curId); if (me){ me.snap = state(); me.tap = V.tap; } }
       if (!desk() && r[6] === "line" && /-PID-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
+        if (TR && TR.k === gi && TR.n === cur.number){ trOpen(); return; }
         linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
       if (!desk() && r[6] === "d") trPend = { at: Date.now() };
       if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : r[6] === "s" ? "sp" : "tag", r[7], bx || null);
     });
     tb.querySelector(".sp-trx").onclick = () => trEnd();
-    tb.querySelector(".sp-tro").onclick = () => { if (!TR || !cur.onRef) return; const r = TR.r, b = TR.box; trEnd(); cur.onRef(r[5], "tag", r[7], b || null); };
-    tb.querySelector(".sp-trz").oninput = e => { try { localStorage.setItem("kcgm_trz", e.target.value); } catch (x) {} trView(); };
+    const zs = tz.querySelector(".sp-trz"), zSave = () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} trView(); };
+    zs.oninput = zSave; tz.querySelectorAll("[data-z]").forEach(b => b.onclick = () => { zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.z)); zSave(); });
+    tb.querySelector(".sp-tro").onclick = () => trOpen();
     tb.querySelector(".sp-tra").oninput = () => trView();
     return V;
   }
@@ -325,19 +332,23 @@ window.PdfView = (() => {
       a.classList.toggle("tp", on.some(h => h.l < l + w && h.l + h.w > l && h.t < t + hh && h.t + h.h > t)); });
  }
   // ---------- line trace (phone) ----------
-  // A tapped line number lights up its whole line (lines/<number>.json, tools/build_line_paths.py) and a bar comes up with
-  // two sliders: Zoom (remembered) and Line, which runs the view along the line from one end to the other. A ribbon
-  // tapped takes the trace on to the next sheet: the line that ribbon carries on lights up, the slider at the ribbon's end.
+  // A tapped line number lights up its whole line faintly (lines/<number>.json, tools/build_line_paths.py), in the app's
+  // theme colour. A panel comes up under the sheet with the line slider, which runs the view along the line from one end
+  // to the other (a dot where you are, a stronger trail left behind like a pen's), the milestones along it (tees, valves,
+  // equipment, ribbons) and Go to asset; the zoom (remembered) is an upright slider on the right. Tapping the line or its
+  // number again also opens the line's page. A ribbon tapped takes the
+  // trace on to the next sheet: the line that ribbon carries on lights up, the slider at the ribbon's end.
   const LN = {}; let TR = null, trPend = null;
   const linesFor = n => LN[n] || (LN[n] = fetch("lines/" + n + ".json").then(r => r.ok ? r.json() : {}).catch(() => { delete LN[n]; return {}; }));
   const trZ = () => { let v = 55; try { const x = localStorage.getItem("kcgm_trz"); if (x != null) v = +x; } catch (e) {} return v; };
   const zOf = v => Math.pow(10, v / 100);   // (slider 0 to 100: the whole sheet to ten times)
   const trPt = (x, y) => V.rot ? [1e4 - y, x] : [x, y];
+  const trF = () => V.tb.querySelector(".sp-tra").value / 1000;
   function trace(k, end, box){
-    const D = LN[cur.number]; Promise.resolve(D).then(D => {
+    Promise.resolve(LN[cur.number]).then(D => {
       const P = D && D[k]; if (!P || P.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height, r = V.refs[k];
       const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
-      TR = { n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box };
+      TR = { n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [] };
       // where the slider starts: the end by the ribbon arrived through, else the point of the line beside its number
       let f = 0;
       if (end){ const d = q => Math.hypot((q[0] - end[0]) * A, q[1] - end[1]); f = d(P[P.length - 1]) < d(P[0]) ? 1 : 0; }
@@ -345,25 +356,61 @@ window.PdfView = (() => {
         for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
           const t = Math.max(0, Math.min(1, ((cx - x0) * A * dx + (cy - y0) * dy) / ll)), e = ((x0 + t * (x1 - x0) - cx) * A) ** 2 + (y0 + t * (y1 - y0) - cy) ** 2;
           if (e < best){ best = e; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
-      const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; tb.querySelector(".sp-trz").value = trZ(); tb.querySelector(".sp-tra").value = Math.round(f * 1000);
-      tb.hidden = false; V.el.classList.add("tracing"); drawTrace(); cxFit(); trView();
+      TR.lo = TR.hi = f;
+      const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; V.tz.querySelector(".sp-trz").value = trZ(); tb.querySelector(".sp-tra").value = Math.round(f * 1000);
+      tb.hidden = false; V.tz.hidden = false; V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
     });
   }
+  // the milestones along the Line slider: a tick across the track for everything the line passes, named under it where
+  // there is room (two rows); what is at each end named under the ends
+  const TK = { t: "tee", v: "valve", i: "instrument", e: "equipment", r: "continues", l: "next line", s: "end" };
+  const short = t => String(t || "").replace(/^\d+-(?=\d{4}-)/, "");
+  function trName(m, end){ const t = m[2] || "";
+    if (m[1] === "t") return t ? "tee " + short(t) : "tee";
+    if (m[1] === "r") return (end ? (m[0] < .5 ? "from " : "to ") : "") + t.replace(/^2000-/, "").replace(/-PID-PR-/, " ");
+    if (m[1] === "l") return (end ? "spec break " : "→ ") + short(t);
+    if (m[1] === "s") return "end";
+    return t.replace(/\s+/g, ""); }
+  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, rows = [[], []], cw = 4.7;
+    const pr = m => ({ r: 0, l: 1, e: 2, t: 3, v: 4, i: 5, s: 6 })[m[1]] ?? 7;
+    const endOf = lo => { const E = TR.m.filter(m => lo ? m[0] <= .02 : m[0] >= .98).sort((a, b) => pr(a) - pr(b)); return E[0] ? trName(E[0], true) : "end"; };
+    V.tb.querySelector(".sp-tre .s").textContent = endOf(true); V.tb.querySelector(".sp-tre .e").textContent = endOf(false);
+    const mid = TR.m.filter(m => m[0] > .02 && m[0] < .98), named = [];
+    [...mid].sort((a, b) => pr(a) - pr(b)).forEach(m => { const nm = trName(m), w = nm.length * cw + 4, x = m[0] * W, rr = [x - w / 2, x + w / 2];
+      if (rr[0] < 0 || rr[1] > W) return; const row = rows.findIndex(R => !R.some(q => q[0] < rr[1] + 4 && rr[0] < q[1] + 4)); if (row < 0) return; rows[row].push(rr); named.push([m, row, nm]); });
+    c.innerHTML = mid.map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
+      + named.map(([m, row, nm]) => `<b class="k-${m[1]} r${row}" style="left:${(m[0] * 100).toFixed(1)}%">${esc(nm)}</b>`).join("");
+    V.tb.classList.toggle("two", rows[1].length > 0); }
   function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
-    const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1])]; }
-  function trView(){ if (!TR) return; const tb = V.tb, f = tb.querySelector(".sp-tra").value / 1000;
-    tb.querySelector(".sp-trp").textContent = Math.round(f * 100) + "%";
-    V.zoom = Math.max(1, Math.min(10, zOf(+tb.querySelector(".sp-trz").value))); V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false);
-    const [x, y] = trPt(...trAt(f)); centreOn(x / 1e4, y / 1e4); sharp(); settleSoon(); }
-  function drawTrace(){ if (!V || !V.trl) return; const on = TR && cur && TR.n === cur.number && TR.page === V.page;
-    V.trl.innerHTML = on ? `<polyline points="${TR.P.map(q => trPt(q[0], q[1]).join(",")).join(" ")}"/>` : ""; }
-  function trEnd(){ if (!TR && V.tb.hidden) return; TR = null; V.tb.hidden = true; V.el.classList.remove("tracing"); drawTrace(); cxFit(); }
+    const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; }
+  // the part of the path between two fractions along it
+  function trSub(a, b){ const [xa, ya, ia] = trAt(a), [xb, yb, ib] = trAt(b); return [[xa, ya], ...TR.P.slice(ia, ib), [xb, yb]]; }
+  function trView(){ if (!TR) return; const tb = V.tb, f = trF();
+    tb.querySelector(".sp-trp").textContent = Math.round(f * 100) + "%"; TR.lo = Math.min(TR.lo, f); TR.hi = Math.max(TR.hi, f);
+    V.zoom = Math.max(1, Math.min(10, zOf(+V.tz.querySelector(".sp-trz").value))); V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false);
+    const [x, y] = trPt(...trAt(f)); centreOn(x / 1e4, y / 1e4); sharp(); drawTrace(); settleSoon(); }
+  // the line, faint; the trail, strong; the dot (twice the trail's width across). In the sheet's own
+  // points, so the dot stays round; the line widths are screen pixels, thin when the whole sheet shows, a little more close up
+  function drawTrace(){ if (!V || !V.trl) return; const on = TR && cur && TR.n === cur.number && TR.page === V.page && V.pg;
+    if (!on){ V.trl.innerHTML = ""; return; }
+    const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, s = V.base * V.zoom, w = Math.max(1, Math.min(2.25, .8 * s)), tw = w * 1.35;
+    const pts = P => P.map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
+    const [dx, dy] = trPt(...trAt(trF())).map((v, i) => v / 1e4 * (i ? H : W));
+    V.trl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.trl.style.setProperty("--trw", w + "px");
+    V.trl.innerHTML = `<polyline class="all" points="${pts(TR.P)}"/><polyline class="tr" points="${pts(trSub(TR.lo, TR.hi))}"/><circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(tw / s).toFixed(2)}"/>`; }
+  // a tap on the traced line itself (within 12 px of it)
+  function trNear(x, y){ if (!TR || TR.page !== V.page) return false; const q = V.sheet.getBoundingClientRect(); if (!q.width) return false;
+    const P = TR.P.map(p => { const [a, b] = trPt(p[0], p[1]); return [q.left + a / 1e4 * q.width, q.top + b / 1e4 * q.height]; });
+    for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = x1 - x0, dy = y1 - y0, ll = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ll));
+      if (Math.hypot(x0 + t * dx - x, y0 + t * dy - y) < 12) return true; } return false; }
+  function trOpen(){ if (!TR || !cur.onRef) return; const r = TR.r, b = TR.box; trEnd(); cur.onRef(r[5], "tag", r[7], b || null); }
+  function trEnd(){ if (!TR && V.tb.hidden) return; TR = null; V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); drawTrace(); cxFit(); }
   // arrived through a ribbon tapped on the phone: the line that ribbon carries on, traced from the ribbon's end
   function trArrive(me, back){ if (!trPend || Date.now() - trPend.at > 15000 || desk()) return; trPend = null;
     linesFor(me.number).then(D => { if (cur !== me || !D.rb) return; const j = [].concat(back).find(j => D.rb[j] != null); if (j == null) return;
       const rb = V.refs[j], k = +D.rb[j]; if (!rb || !D[k]) return;
       const b = boxOf(V.refs[k]); V.tap = Object.assign({}, V.tap || {}, { more: [].concat((V.tap && V.tap.more) || [], [{ page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }]) }); drawTap();
-      trace(k, [rb[1] + rb[3] / 2, rb[2] + rb[4] / 2]); }); }
+      trace(k, [rb[1] + rb[3] / 2, rb[2] + rb[4] / 2], [b[0] / 1e4, b[1] / 1e4, b[2] / 1e4, b[3] / 1e4]); }); }
   // ---------- view history ----------
   const REG = new Map(); let curId = 0, seq = 0, hush = 0, st8 = null;
   const quiet = () => { hush = Date.now() + 500; };   // (moves made by a restore are not new views)
