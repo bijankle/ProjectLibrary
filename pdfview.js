@@ -373,7 +373,7 @@ window.PdfView = (() => {
     if (m[1] === "l") return (end ? "spec break " : "→ ") + short(t);
     if (m[1] === "s") return "end";
     return t.replace(/\s+/g, ""); }
-  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, rows = [[], []], cw = 5.3;
+  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, rows = [[], []], cw = 6.1;
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, v: 4, i: 5, s: 6 })[m[1]] ?? 7;
     const endOf = lo => { const E = TR.m.filter(m => lo ? m[0] <= .02 : m[0] >= .98).sort((a, b) => pr(a) - pr(b)); return E[0] ? trName(E[0], true) : "end"; };
     V.tb.querySelector(".sp-tre .s").textContent = endOf(true); V.tb.querySelector(".sp-tre .e").textContent = endOf(false);
