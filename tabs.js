@@ -392,6 +392,8 @@ window.Tabs = (() => {
   }
   // ⌂ is always the Assets front page with nothing searched, filtered or open (this page does it when it holds Assets)
   function goHome(){ more(false); const h = document.getElementById("helpWin"); if (h) h.hidden = true;
+    // phone: the P logo over a drawing closes the drawing too, so Assets opens at its front (the filter pills, nothing picked)
+    if (phone && window.PdfView && PdfView.panelOn !== undefined && document.querySelector(".sp-view:not([hidden])")) PdfView.close();
     if (O.homeHere && O.onHome && O.onHome("assets") !== false) return; location.href = "index.html?cards#home"; }
   // phone, Assets: pull down from the top of the page (already scrolled to the top) to update the app, as the
   // refresh button by the project box does. A round arrow comes down under the search row and turns as you pull; let
