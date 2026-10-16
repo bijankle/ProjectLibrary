@@ -91,15 +91,15 @@ window.Offline = (() => {
     try { await load(); } catch (e){ return; }
     el.className = "oc";
     const files = k => [...new Set(M.groups.filter(g => inSet(g, k)).flatMap(g => g.files))], tot = fs => fs.reduce((t, f) => t + (M.sz[f] || 0), 0);
-    el.innerHTML = `<b class="oc-t">Use the app with no signal</b><span class="oc-n">Drawings open and their tags work, every asset's details, line tracing and the camera reader, all from this device. SharePoint links and Ref Only downloads still need signal.</span>
-      <div class="oc-bs">${SETS.map(([k, n, h]) => `<button type="button" class="oc-b" data-k="${k}"><b>${n}</b><span class="oc-s"></span><small>${h}</small><i class="oc-bar"><i></i></i></button>`).join("")}</div><span class="oc-room"></span>`;
+    // (29B: one bar split in two, each half its set and size; one line under it for what's held and the room left)
+    el.innerHTML = `<div class="oc-bs">${SETS.map(([k, n, h]) => `<button type="button" class="oc-b" data-k="${k}" title="${esc(h)}"><b>⬇ ${n}</b><span class="oc-s"></span><i class="oc-bar"><i></i></i></button>`).join("")}</div><span class="oc-room"></span>`;
     const stop = { x: false };
     const paint = async () => { if (!el.isConnected){ PAINT.delete(paint); return; } const st = await check(files("all"));
       el.querySelectorAll(".oc-b").forEach(b => { if (b.classList.contains("busy")) return; const fs = files(b.dataset.k), have = tot(fs.filter(f => st[f] === "ok")), all = tot(fs), full = have >= all;
-        b.classList.toggle("have", full); b.querySelector(".oc-s").textContent = full ? `On this device ✓ (${mb(all)})` : have ? `${mb(have)} of ${mb(all)}, tap to finish` : mb(all);
+        b.classList.toggle("have", full); b.querySelector(".oc-s").textContent = full ? `✓ on this phone · ${mb(all)}` : have ? `${mb(have)} of ${mb(all)}` : mb(all);
         b.disabled = busy && !b.classList.contains("busy"); if (coreBusy && !b.classList.contains("busy")) b.querySelector(".oc-s").textContent = "Getting the app core first…"; });
       if (navigator.storage && navigator.storage.estimate){ const e = await navigator.storage.estimate().catch(() => null), kept = navigator.storage.persisted ? await navigator.storage.persisted().catch(() => false) : false;
-        if (e) el.querySelector(".oc-room").textContent = `This app uses ${mb(e.usage || 0)} of this device; ${mb(Math.max(0, (e.quota || 0) - (e.usage || 0)))} free for it.${kept ? " Kept: the phone won't clear it to make room." : ""}`; } };
+        if (e) el.querySelector(".oc-room").textContent = `Make the app work with no signal. ${mb(e.usage || 0)} on this device; ${mb(Math.max(0, (e.quota || 0) - (e.usage || 0)))} free.${kept ? " Kept safe from clean-ups." : ""}`; } };
     el.querySelectorAll(".oc-b").forEach(b => b.onclick = async () => {
       if (b.classList.contains("busy")){ stop.x = true; return; }
       if (busy) return;
@@ -109,7 +109,7 @@ window.Offline = (() => {
       if (navigator.storage && navigator.storage.persist) await navigator.storage.persist().catch(() => {});
       busy = true; stop.x = false; b.classList.add("busy"); el.querySelectorAll(".oc-b").forEach(x => x.disabled = x !== b);
       const s0 = tot(fs) - size, all = tot(fs), bar = b.querySelector(".oc-bar i");
-      try { await get(fs, f => { const d = s0 + f * size; b.querySelector(".oc-s").textContent = `${mb(d)} of ${mb(all)}… tap to stop`; bar.style.width = (d / all * 100).toFixed(1) + "%"; }, stop); }
+      try { await get(fs, f => { const d = s0 + f * size; b.querySelector(".oc-s").textContent = `${mb(d)} of ${mb(all)} · tap to stop`; bar.style.width = (d / all * 100).toFixed(1) + "%"; }, stop); }
       catch (e){ if (e.message !== "stopped") alert("Download stopped: " + e.message + ". What was saved is kept; tap again to finish."); }
       busy = false; b.classList.remove("busy"); bar.style.width = "0"; paint(); });
     PAINT.add(paint); paint();
@@ -150,11 +150,11 @@ window.Offline = (() => {
 .dl-b{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--gold,var(--accent));background:none;color:color-mix(in srgb,var(--gold,var(--accent)) 75%,var(--ink));display:grid;place-items:center;padding:0;cursor:pointer}
 .dl-r.have .dl-b{border-color:transparent;color:#22a35a}.dl-b:disabled{opacity:.35;cursor:default}.dl-r.busy .dl-s{color:var(--ink);font-weight:700}
 .dl-bar{display:none;position:absolute;left:0;right:0;bottom:-1px;height:3px}.dl-bars .dl-r.busy .dl-bar{display:block}.dl-bar i{display:block;height:100%;width:0;background:var(--gold,var(--accent));transition:width .2s}`;
-  const css2 = `.oc{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;padding:12px;border:1.5px solid var(--th,var(--accent));border-radius:12px;background:var(--card,var(--panel))}
-.oc-t{font-size:var(--fb,15px);font-weight:800;color:var(--ink)}.oc-n,.oc-room{font-size:var(--fl,13px);color:var(--mute);line-height:1.4}
-.oc-bs{display:flex;gap:8px;flex-wrap:wrap}.oc-b{position:relative;flex:1 1 140px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:0;border-radius:4px;background:var(--th,var(--accent));color:var(--on-th,#fff);padding:9px 11px 11px;cursor:pointer;overflow:hidden;font:inherit;box-shadow:0 1px 2px rgba(0,0,0,.25)}
-.oc-b b{font-size:var(--fb,15px)}.oc-b .oc-s{font-size:var(--fl,13px);font-weight:700;font-variant-numeric:tabular-nums}.oc-b small{font-size:11px;opacity:.85;line-height:1.3}
-.oc-b.have{background:#1f7a46}.oc-b:disabled{opacity:.45;cursor:default}.oc-bar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.25)}.oc-bar i{display:block;height:100%;width:0;background:#fff;transition:width .2s}
+  const css2 = `.oc{display:flex;flex-direction:column;gap:5px;margin:0 0 12px}
+.oc-room{font-size:var(--fl,13px);color:var(--mute);line-height:1.35}
+.oc-bs{display:flex;border-radius:4px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.25)}.oc-b{position:relative;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;border:0;border-radius:0;background:var(--th,var(--accent));color:var(--on-th,#fff);padding:9px 6px 10px;cursor:pointer;overflow:hidden;font:inherit}
+.oc-b+.oc-b{border-left:1px solid rgba(255,255,255,.4)}.oc-b b{font-size:var(--fb,15px);white-space:nowrap}.oc-b .oc-s{font-size:var(--fl,13px);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;opacity:.95}
+.oc-b.have{background:#1f7a46}.oc-b:disabled{opacity:.45;cursor:default}.oc-bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.25)}.oc-bar i{display:block;height:100%;width:0;background:#fff;transition:width .2s}
 #offBadge{position:fixed;z-index:9999;top:calc(6px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:#b45309;color:#fff;font:700 12px/1 system-ui,sans-serif;padding:5px 10px;border-radius:4px;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.3)}#offBadge[hidden]{display:none}`;
   const st = document.createElement("style"); st.textContent = css + css2; document.head.appendChild(st);
   // keep the documents on this device current (run once a session, in the background): a drawing or table rebuilt on the
