@@ -742,8 +742,11 @@
   const loadScript = src => new Promise((ok, bad) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => bad(new Error("couldn't load the text reader (needs internet the first time)")); document.head.appendChild(s); });
   async function getWorker(progress){
     if (worker) return worker;
-    if (!window.Tesseract) { progress("Downloading the text reader (about 5 MB, first time only)…"); await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"); }
-    worker = await Tesseract.createWorker("eng", 1, { logger: m => { if (m.status === "recognizing text") progress(`Reading text… ${Math.round(m.progress * 100)}%`); else if (m.status) progress(m.status.replace(/^\w/, c => c.toUpperCase()) + "…"); } });
+    // (the reader, its engine and the English text data are the app's own files, vendor/tesseract: kept on the device with
+    // the app's offline core, offline.js, so the camera reads tags with no signal)
+    const V = f => new URL("vendor/tesseract/" + f, location.href).href;
+    if (!window.Tesseract) { progress("Loading the text reader…"); await loadScript(V("tesseract.min.js")); }
+    worker = await Tesseract.createWorker("eng", 1, { workerPath: V("worker.min.js"), corePath: V("core"), langPath: V("lang"), gzip: true, logger: m => { if (m.status === "recognizing text") progress(`Reading text… ${Math.round(m.progress * 100)}%`); else if (m.status) progress(m.status.replace(/^\w/, c => c.toUpperCase()) + "…"); } });
     await worker.setParameters({ tessedit_pageseg_mode: "11", tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/. " });
     return worker;
   }

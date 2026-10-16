@@ -274,7 +274,8 @@ window.Tabs = (() => {
     body.className = "mo-l st-b st-" + k; body.innerHTML = "";
     SLp = null; const inp = el.querySelector(".mo-q"); if (inp){ inp.placeholder = k === "src" ? "Search sources" : "Search"; if (inp.value){ inp.value = ""; } }
     if (k === "src") Promise.all([need("offline.js", () => !!window.Offline), need("sources-view.js", () => !!window.SourceView)]).then(() => need("sources-list.js", () => !!window.SourcesList))
-      .then(() => { if (window.SourcesList && stGet() === "src") SLp = SourcesList.mount(body, { phone: true }); else if (!window.SourcesList) body.innerHTML = `<div class="mn-no">Not available offline.</div>`; });
+      .then(() => { if (window.SourcesList && stGet() === "src"){ body.innerHTML = `<div></div><div></div>`;   // (the one-tap offline card over the list, offline.js)
+        if (window.Offline && Offline.card) Offline.card(body.firstChild); SLp = SourcesList.mount(body.lastChild, { phone: true }); } else if (!window.SourcesList) body.innerHTML = `<div class="mn-no">Not available offline.</div>`; });
     if (k === "look") appearance(body);
     if (k === "help"){ body.innerHTML = `<div class="st-l">${TOPICS.map((x, i) => `<details class="st-h" data-t="${esc(x.t)}"><summary>${esc(x.t)}</summary><p>${esc(x.h)}</p></details>`).join("")}<details class="st-h"><summary>About this app</summary><p>Project Library: the plant lists, P&amp;IDs, PFD sheets, spec and Stage 2 PDC as a reference with a smart PFD, the layout on the real plant and a quiz. Design values from the project documents, not live plant data.</p></details></div>`;
       const at = topic && body.querySelector(`[data-t="${CSS.escape(topic)}"]`); if (at){ at.open = true; setTimeout(() => at.scrollIntoView({ block: "start" }), 0); } }

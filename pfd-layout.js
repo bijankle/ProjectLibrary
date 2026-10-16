@@ -29,8 +29,8 @@ window.PFDLayout = (() => {
 
   function load(){
     if (ready) return ready;
-    const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"; document.head.appendChild(css);
-    ready = new Promise((ok, bad) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"; s.onload = ok; s.onerror = () => { ready = null; bad(new Error("map library not reachable")); }; document.head.appendChild(s); });
+    const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "vendor/leaflet/leaflet.css"; document.head.appendChild(css);
+    ready = new Promise((ok, bad) => { const s = document.createElement("script"); s.src = "vendor/leaflet/leaflet.js"; s.onload = ok; s.onerror = () => { ready = null; bad(new Error("map library not reachable")); }; document.head.appendChild(s); });
     return ready;
   }
 
