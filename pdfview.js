@@ -385,10 +385,16 @@ window.PdfView = (() => {
   const TT = { t: "TEE", v: "VALVE", p: "SP", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END" };
   function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 56, BT = OT + 9, BB = OT + 45, D0 = 8, DM = 22, placed = [];
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, named = [];
-    [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = m[0] * W, pref = Math.max(LW / 2, Math.min(W - LW / 2, x + (x + D0 + LW / 2 > W ? -D0 : D0)));
-      const free = c0 => c0 - LW / 2 >= 0 && c0 + LW / 2 <= W && !placed.some(q => Math.abs(q - c0) < LW);
-      const cand = [pref, ...placed.flatMap(q => [q + LW, q - LW])].filter(free).sort((a, b) => Math.abs(a - pref) - Math.abs(b - pref));
-      if (cand.length && Math.abs(cand[0] - x) <= DM){ placed.push(cand[0]); named.push([m, x, cand[0]]); } });
+    // names kept in the same order as their marks (so no two callouts cross), each as near its mark as the ones beside it
+    // allow: pushed right past the one before, then pulled back from the right edge; a name that can't get within reach
+    // of its mark is left off, the least important first (ribbons, spec changes and equipment before tees, valves …)
+    const lay = S => { const X = S.map(m => m[0] * W), P = X.map(x => Math.max(LW / 2, Math.min(W - LW / 2, x + (x + D0 + LW / 2 > W ? -D0 : D0))));
+      for (let k = 1; k < P.length; k++) P[k] = Math.max(P[k], P[k - 1] + LW);
+      for (let k = P.length - 1; k >= 0; k--) P[k] = Math.min(P[k], k < P.length - 1 ? P[k + 1] - LW : W - LW / 2);
+      return P.every((q, k) => q >= LW / 2 - .01 && Math.abs(q - X[k]) <= DM) ? P : null; };
+    let keep = [];
+    [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const t = [...keep, m].sort((a, b) => a[0] - b[0]); if (lay(t)) keep = t; });
+    const PL = lay(keep) || []; keep.forEach((m, k) => named.push([m, m[0] * W, PL[k]]));
     const ln = (x, lx, y0, up) => { const d = Math.abs(lx - x); return `<polyline points="${x.toFixed(1)},${y0} ${lx.toFixed(1)},${(up ? y0 - d : y0 + d).toFixed(1)} ${lx.toFixed(1)},${(up ? y0 - d - 2 : y0 + d + 2).toFixed(1)}"/>`; };
     c.innerHTML = TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
       + `<svg class="sp-trco" width="${W}" height="${BB + 40}">${named.map(([m, x, lx]) => ln(x, lx, BT, true) + ln(x, lx, BB, false)).join("")}</svg>`
