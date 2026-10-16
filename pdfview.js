@@ -350,6 +350,7 @@ window.PdfView = (() => {
       const P = D && D[k]; if (!P || P.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height, r = V.refs[k];
       const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
       TR = { n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
+      TR.tn = new Map(TR.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, n) => [m, n + 1]));   // (tees numbered from upstream: T1, T2 …)
       // the slider runs from the line's upstream end (0, where the flow arrows show it, tools/build_line_paths.py); it
       // starts there, or at the end by the ribbon arrived through
       let f = 0;
@@ -369,20 +370,24 @@ window.PdfView = (() => {
   // milestone names kept short (a long line has many): T a tee, a valve or instrument by its number, equipment without
   // its area (PW-417), a ribbon by the sheet it goes to (F75-10002), the next line by the spec change (PE8|SS1)
   function trName(m){ const t = String(m[2] || "").replace(/\s+/g, "");
-    if (m[1] === "t") return "T";
+    if (m[1] === "t") return "T" + (TR.tn.get(m) || "");
     if (m[1] === "r") return t.replace(/^2000-/, "").replace(/-PID-PR-/, "-");
     if (m[1] === "l"){ const sp = n => (String(n || "").split("-")[3] || "?"), me = sp(TR.label), nx = sp(t); return m[0] < .5 ? nx + "|" + me : me + "|" + nx; }
     if (m[1] === "s") return "end";
     return t.replace(/^F\d\d-(?=\d)/, "").replace(/^F\d\d-(?=[A-Z])/, ""); }
-  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, rows = [[], []], cw = 6.1;
+  // (each name hangs under its tick on a callout line, moved sideways a little where names would overlap)
+  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, rows = [[], []], cw = 6.1, TB = 45, RT = [60, 76];
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, v: 4, i: 5, s: 6 })[m[1]] ?? 7;
     const endOf = lo => { const E = TR.m.filter(m => lo ? m[0] <= .02 : m[0] >= .98).sort((a, b) => pr(a) - pr(b)); return E[0] ? trName(E[0]) : "end"; };
     V.tb.querySelector(".sp-tre .s").textContent = endOf(true); V.tb.querySelector(".sp-tre .e").textContent = endOf(false);
     const mid = TR.m.filter(m => m[0] > .02 && m[0] < .98), named = [];
-    [...mid].sort((a, b) => pr(a) - pr(b)).forEach(m => { const nm = trName(m), w = nm.length * cw + 4, x = m[0] * W, rr = [x - w / 2, x + w / 2];
-      if (rr[0] < 0 || rr[1] > W) return; const row = rows.findIndex(R => !R.some(q => q[0] < rr[1] + 4 && rr[0] < q[1] + 4)); if (row < 0) return; rows[row].push(rr); named.push([m, row, nm]); });
+    [...mid].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const nm = trName(m), w = nm.length * cw + 4, x = m[0] * W;
+      for (let row = 0; row < 2; row++){ const R = rows[row], free = c0 => c0 - w / 2 >= 0 && c0 + w / 2 <= W && !R.some(q => q[0] < c0 + w / 2 + 4 && c0 - w / 2 < q[1] + 4);
+        const cand = [x, Math.max(w / 2, Math.min(W - w / 2, x)), ...R.flatMap(q => [q[1] + 4 + w / 2, q[0] - 4 - w / 2])].filter(free).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
+        if (cand.length && Math.abs(cand[0] - x) <= 40){ R.push([cand[0] - w / 2, cand[0] + w / 2]); named.push([m, row, nm, x, cand[0]]); return; } } });
     c.innerHTML = mid.map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
-      + named.map(([m, row, nm]) => `<b class="k-${m[1]} r${row}" style="left:${(m[0] * 100).toFixed(1)}%">${esc(nm)}</b>`).join("");
+      + `<svg class="sp-trco" width="${W}" height="${RT[1]}">${named.map(([m, row, nm, x, lx]) => `<polyline points="${x.toFixed(1)},${TB} ${x.toFixed(1)},${TB + 4} ${lx.toFixed(1)},${RT[row] - 2}"/>`).join("")}</svg>`
+      + named.map(([m, row, nm, x, lx]) => `<b class="k-${m[1]} r${row}" style="left:${lx.toFixed(1)}px">${esc(nm)}</b>`).join("");
     V.tb.classList.toggle("two", rows[1].length > 0); }
   function trFill(){ [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz")].forEach(i => i.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
   function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
