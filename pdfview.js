@@ -368,7 +368,7 @@ window.PdfView = (() => {
   }
   // the milestones along the Line slider: a tick across the track for everything the line passes, named under it where
   // there is room (two rows); what is at each end named under the ends
-  const TK = { t: "tee", v: "valve", i: "instrument", e: "equipment", r: "continues", l: "next line", s: "end" };
+  const TK = { t: "tee", v: "valve", p: "special item", i: "instrument", e: "equipment", r: "continues", l: "next line", s: "end" };
   const short = t => String(t || "").replace(/^\d+-(?=\d{4}-)/, "");
   // milestone names kept short (a long line has many): a tee by the sequence number of the line leaving it, a valve or instrument by its number, equipment without
   // its area (PW-417), a ribbon by the sheet it goes to (F75-10002), the next line by the spec change (PE8|SS1)
@@ -377,12 +377,13 @@ window.PdfView = (() => {
     if (m[1] === "r") return t.replace(/^2000-/, "").replace(/-PID-PR-/, "-");
     if (m[1] === "l"){ const sp = n => (String(n || "").split("-")[3] || "?"), me = sp(TR.label), nx = sp(t); return m[0] < .5 ? nx + "|" + me : me + "|" + nx; }
     if (m[1] === "s") return "end";
+    if (m[1] === "p") return t.replace(/^SP-/, "");   // (a special item: SP-MC-002 shown as MC-002 under SP)
     return t.replace(/^F\d\d-(?=\d)/, "").replace(/^F\d\d-(?=[A-Z])/, ""); }
   // (each milestone's type stands upright over its tick and its name under it, both read bottom to top: TEE / 0588,
   // VALVE / 11318, INSTR / FE13127; a callout line where they had to be moved apart, only the tick where packed too tight)
-  const TT = { t: "TEE", v: "VALVE", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END" };
+  const TT = { t: "TEE", v: "VALVE", p: "SP", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END" };
   function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 40, TT0 = OT + 2, TB = OT + 52, LT = OT + 55, placed = [];
-    const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, v: 5, s: 6 })[m[1]] ?? 7, named = [];
+    const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, named = [];
     [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = Math.max(LW / 2, Math.min(W - LW / 2, m[0] * W)), free = c0 => c0 - LW / 2 >= 0 && c0 + LW / 2 <= W && !placed.some(q => Math.abs(q - c0) < LW);
       const cand = [x, ...placed.flatMap(q => [q + LW, q - LW])].filter(free).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
       if (cand.length && Math.abs(cand[0] - x) <= 30){ placed.push(cand[0]); named.push([m, m[0] * W, cand[0]]); } });

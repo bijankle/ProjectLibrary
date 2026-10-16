@@ -19,7 +19,7 @@ R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IX = json.load(open(os.path.join(R, "PIDs", "index.json")))["pids"]
 REFS = json.load(open(os.path.join(R, "pid-refs.json")))
 OUT = os.path.join(R, "lines"); os.makedirs(OUT, exist_ok=True)
-LINE = re.compile(r"\d{2,3}-\d{4}-[A-Z]{1,4}-[A-Z0-9]{2,6}-\d{2,4}")
+LINE = re.compile(r"\d{2,3}-\d{4}-[A-Z]{1,4}-[A-Z0-9]{2,6}-\d{2,4}(?:-[A-Z0-9]{1,4})?")   # (with a suffix: -TI insulated)
 L = lambda t: math.hypot(t[2] - t[0], t[3] - t[1])
 def ori(s):
     dx, dy = s[2] - s[0], s[3] - s[1]
@@ -77,7 +77,8 @@ def flow(P, A):
             if -2 < u < sl + 2 and abs((cx - a[0]) * dy - (cy - a[1]) * dx) < 2.5 and abs(ux * dx + uy * dy) > .85: v += 1 if ux * dx + uy * dy > 0 else -1; break
     return (v > 0) - (v < 0)
 
-def trace(S, LBL, r, label, gap=30, tol=1.6):
+DRAIN = re.compile(r"GRADE|DRAIN|VENT|ATM|SUMP|BUND|FUNNEL|TUNDISH", re.I)
+def trace(S, LBL, r, label, gap=30, tol=1.6, WD=()):
     cx, cy = (r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2; vert = r.height > r.width
     best = None
     for i, s in enumerate(S):
@@ -99,6 +100,24 @@ def trace(S, LBL, r, label, gap=30, tol=1.6):
     ends = lambda s: [(s[0], s[1]), (s[2], s[3])]
     near = lambda a, b: abs(a[0] - b[0]) < tol and abs(a[1] - b[1]) < tol
     seen = {best[1]}; chains = []; why = []
+    def bown(j0, at, main):
+        """the line number on a branch: the first line label beside the strokes leading off from stroke j0 (up to 30 of
+        them); with none, "" for a real run of pipe (reaching 80 pt or more from the tee, at) or None for something close
+        by (an instrument tapping, a valve's actuator, a vent)"""
+        # (never back along the main line itself: a pipe drawn twice over has a second copy the walk could follow)
+        mo = "h" if abs(main[1] - main[3]) < .5 else "v" if abs(main[0] - main[2]) < .5 else "d"
+        onmain = lambda t: ori(t) == mo and (abs(t[1] - main[1]) < tol if mo == "h" else abs(t[0] - main[0]) < tol if mo == "v" else False)
+        if onmain(S[j0]): return "x"
+        q, got, run = [j0], {j0}, 0
+        while q and len(got) < 31:
+            j = q.pop(0); ow = owner(S[j]); run = max(run, *(math.hypot(e[0] - at[0], e[1] - at[1]) for e in ends(S[j])))
+            if ow: return ow
+            # (a drain or vent: "TO GRADE", "TO DRAIN", "VENT TO ATM" at its end, not the line going two ways)
+            if any(abs(e[0] - (w.x0 + w.x1) / 2) < 25 and abs(e[1] - (w.y0 + w.y1) / 2) < 25 for e in ends(S[j]) for w in WD): return None
+            for k2, t in enumerate(S):
+                if k2 not in got and k2 not in seen and not onmain(t) and any(near(e, f) for e in ends(S[j]) for f in ends(t)): got.add(k2); q.append(k2)
+        return "" if run >= 80 else None
+    split = lambda b: b == "" or b == label   # (the same line going two ways)
     for start in ends(S[best[1]]):   # each way from the label: a chain of points
         pts = [start]; i, pt = best[1], start
         while True:
@@ -106,6 +125,8 @@ def trace(S, LBL, r, label, gap=30, tol=1.6):
             cand = [j for j, t in enumerate(S) if j not in seen and any(near(pt, e) for e in ends(t))]
             straight = [j for j in cand if ori(S[j]) == o]
             nxt = straight or (cand if len(cand) == 1 else [])
+            # a split with no new line number on the branch (the same line going two ways): the line ends at the tee
+            if straight and len(cand) > len(straight) and any(split(bown(j, pt, s)) for j in cand if j not in straight): why.append(("t", "")); break
             if not nxt and o in "hv":
                 mx, my = (s[0] + s[2]) / 2, (s[1] + s[3]) / 2
                 for j, t in enumerate(S):
@@ -135,8 +156,28 @@ def trace(S, LBL, r, label, gap=30, tol=1.6):
                 if sl < 1: continue
                 u = ((e[0] - a[0]) * (b[0] - a[0]) + (e[1] - a[1]) * (b[1] - a[1])) / sl / sl
                 if not (0 < u < 1) or u * sl < 3 or (1 - u) * sl < 3: continue
-                if math.hypot(a[0] + u * (b[0] - a[0]) - e[0], a[1] + u * (b[1] - a[1]) - e[1]) < tol: tees.append((Lc[i] + u * sl, owner(t) or ""))
-    return path, (why + [("s", ""), ("s", "")])[:2], tees, Lc
+                if math.hypot(a[0] + u * (b[0] - a[0]) - e[0], a[1] + u * (b[1] - a[1]) - e[1]) < tol: tees.append((Lc[i] + u * sl, bown(j, e, (a[0], a[1], b[0], b[1]))))
+    why = (why + [("s", ""), ("s", "")])[:2]
+    # the same line splitting part way along a stroke (a branch with no new number): cut there, keeping the side with the label
+    cx, cy = (r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2; dL, bd = 0, None
+    for i, (a, b) in enumerate(zip(path, path[1:])):
+        sl = Lc[i + 1] - Lc[i]; u = 0 if sl < 1e-6 else max(0, min(1, ((cx - a[0]) * (b[0] - a[0]) + (cy - a[1]) * (b[1] - a[1])) / sl / sl))
+        dd = math.hypot(a[0] + u * (b[0] - a[0]) - cx, a[1] + u * (b[1] - a[1]) - cy)
+        if bd is None or dd < bd: bd, dL = dd, Lc[i] + u * sl
+    cuts = [d for d, o in tees if split(o)]
+    lo = max([d for d in cuts if d < dL - 1], default=0); hi = min([d for d in cuts if d > dL + 1], default=Lc[-1])
+    if lo > 0 or hi < Lc[-1]:
+        def at(d):
+            for i in range(1, len(Lc)):
+                if Lc[i] >= d or i == len(Lc) - 1:
+                    u = (d - Lc[i - 1]) / ((Lc[i] - Lc[i - 1]) or 1); return (path[i - 1][0] + u * (path[i][0] - path[i - 1][0]), path[i - 1][1] + u * (path[i][1] - path[i - 1][1]))
+        path = [at(lo)] + [p for p, d in zip(path, Lc) if lo < d < hi] + [at(hi)]
+        tees = [(d - lo, o) for d, o in tees if lo + 1 < d < hi - 1]
+        if lo > 0: why[0] = ("t", "")
+        if hi < Lc[-1]: why[1] = ("t", "")
+        Lc = [0]
+        for a, b in zip(path, path[1:]): Lc.append(Lc[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
+    return path, why, [(d, o or "") for d, o in tees if o != "x"], Lc
 
 def build(num):
     v = IX[num]; doc = pymupdf.open(os.path.join(R, v["file"])); refs = REFS.get(num, [])
@@ -148,12 +189,12 @@ def build(num):
             p = doc[pg]
             if p.rotation: pages[pg] = None; continue
             LBL = [(w[4], pymupdf.Rect(w[:4])) for w in p.get_text("words") if LINE.fullmatch(w[4])]
-            pages[pg] = (p, strokes(p), LBL, arrows(p))
+            pages[pg] = (p, strokes(p), LBL, arrows(p), [pymupdf.Rect(w[:4]) for w in p.get_text("words") if DRAIN.search(w[4])])
         if not pages[pg]: continue
-        p, S, LBL, AR = pages[pg]; W, H = p.rect.width, p.rect.height
+        p, S, LBL, AR, WD = pages[pg]; W, H = p.rect.width, p.rect.height
         rr = pymupdf.Rect(r[1] * W / 1e4, r[2] * H / 1e4, (r[1] + r[3]) * W / 1e4, (r[2] + r[4]) * H / 1e4)
         label = str(r[5]).split("|")[0]
-        T = trace(S, LBL, rr, label)
+        T = trace(S, LBL, rr, label, WD=WD)
         if not T or len(T[0]) < 2: continue
         P, why, tees, Lc = T; tot = Lc[-1] or 1
         # upstream first: the path turned round when the flow arrows on it point back along it
@@ -162,7 +203,7 @@ def build(num):
         if fw: fl[str(k)] = 1
         out[str(k)] = [[round(x / W * 1e4), round(y / H * 1e4)] for x, y in P]
         # what the line passes (commentary along the phone's Line slider): [fraction along, kind, text]
-        # kinds: t tee, v valve, i instrument, e equipment, r ribbon (set below), l the next line, s the line's end
+        # kinds: t tee, v valve, p special item (SP), i instrument, e equipment, r ribbon (set below), l the next line, s the line's end
         M = [[round(d / tot, 3), "t", o] for d, o in tees]
         def at(d):
             for i in range(1, len(Lc)):
@@ -180,7 +221,7 @@ def build(num):
                 dd = math.hypot(a[0] + u * (b[0] - a[0]) - cx, a[1] + u * (b[1] - a[1]) - cy)
                 if bd is None or dd < bd[0]: bd = (dd, (Lc[i] + u * sl) / tot)
             lim = {"mel": 60, "mv": 36, "cv": 36, "spi": 24, "ins": 42}[q[6]]
-            if bd and bd[0] < lim: M.append([round(bd[1], 3), {"mel": "e", "mv": "v", "cv": "v", "spi": "v", "ins": "i"}[q[6]], str(q[5]).split("|")[0]])
+            if bd and bd[0] < lim and 0 <= bd[1] <= 1: M.append([round(bd[1], 3), {"mel": "e", "mv": "v", "cv": "v", "spi": "p", "ins": "i"}[q[6]], str(q[5]).split("|")[0]])
         marks[str(k)] = M
     # each tee named by the line that leaves it: the traced line whose end is at the tee (within 4 pt)
     for k, T in teep.items():
