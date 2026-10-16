@@ -379,11 +379,11 @@ window.PdfView = (() => {
     if (m[1] === "s") return "end";
     if (m[1] === "p") return t.replace(/^SP-/, "");   // (a special item: SP-MC-002 shown as MC-002 under SP)
     return t.replace(/^F\d\d-(?=\d)/, "").replace(/^F\d\d-(?=[A-Z])/, ""); }
-  // (each milestone a mark through the bar; its type stands upright above and its name below, each on a 45° callout from
-  // the mark, read bottom to top: TEE / 0588, VALVE / 11318; callouts lean a little further where names would touch, and
+  // (each milestone a mark through the bar; under it on a 45° callout its type and, beside that, its name, read bottom to
+  // top: TEE 0588, VALVE 11318; callouts lean a little further where names would touch, and
   // where they are packed too tight only the mark shows)
   const TT = { t: "TEE", v: "VALVE", p: "SP", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END" };
-  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 56, BT = OT + 9, BB = OT + 45, D0 = 8, DM = 22, placed = [];
+  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 24, OT = 12, BT = OT + 9, BB = OT + 45, D0 = 8, DM = 22, placed = [];
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, named = [];
     // names kept in the same order as their marks (so no two callouts cross), each as near its mark as the ones beside it
     // allow: pushed right past the one before, then pulled back from the right edge; a name that can't get within reach
@@ -397,9 +397,9 @@ window.PdfView = (() => {
     const PL = lay(keep) || []; keep.forEach((m, k) => named.push([m, m[0] * W, PL[k]]));
     const ln = (x, lx, y0, up) => { const d = Math.abs(lx - x); return `<polyline points="${x.toFixed(1)},${y0} ${lx.toFixed(1)},${(up ? y0 - d : y0 + d).toFixed(1)} ${lx.toFixed(1)},${(up ? y0 - d - 2 : y0 + d + 2).toFixed(1)}"/>`; };
     c.innerHTML = TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
-      + `<svg class="sp-trco" width="${W}" height="${BB + 40}">${named.map(([m, x, lx]) => ln(x, lx, BT, true) + ln(x, lx, BB, false)).join("")}</svg>`
+      + `<svg class="sp-trco" width="${W}" height="${BB + 40}">${named.map(([m, x, lx]) => ln(x, lx, BB, false)).join("")}</svg>`
       + named.map(([m, x, lx]) => { const d = Math.abs(lx - x);
-        return `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px;bottom:calc(100% - ${(BT - d - 3).toFixed(1)}px)">${TT[m[1]] || ""}</b><b class="k-${m[1]}" style="left:${lx.toFixed(1)}px;top:${(BB + d + 3).toFixed(1)}px">${esc(trName(m))}</b>`; }).join(""); }
+        return `<b class="k-${m[1]}" style="left:${lx.toFixed(1)}px;top:${(BB + d + 3).toFixed(1)}px"><em>${TT[m[1]] || ""}</em><br>${esc(trName(m))}</b>`; }).join(""); }
   function trFill(){ [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz")].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
   function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
     const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; }
