@@ -194,7 +194,7 @@ window.PdfView = (() => {
     el.appendChild(md); const setMode = m => { el.classList.toggle("sp-hand", m !== "sel"); md.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m === (m === "sel" ? "sel" : "hand"))); try { localStorage.setItem("kcgm_spm", m); } catch (x) {} };
     md.onclick = e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.m) setMode(b.dataset.m); else if (b.dataset.a === "fit") el.querySelector(".sp-ze").click(); }; setMode((() => { try { return localStorage.getItem("kcgm_spm") || "hand"; } catch (x) { return "hand"; } })());
     V.body.style.touchAction = "none";   // (fingers pan and pinch through the handlers above, free in every direction; "pan-x pan-y" left the browser to scroll, locked to one axis)
-    let down = null; V.body.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; }, true);
+    let down = null, downAt = 0; V.body.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; downAt = performance.now(); }, true);
     // right click (long press on a phone) anywhere on the sheet: Save as PDF, and on a highlighted tag, copy its text
     V.body.addEventListener("contextmenu", e => {
       if (!cur || !V.pg) return; e.preventDefault();
@@ -231,6 +231,9 @@ window.PdfView = (() => {
       const sel = getSelection(); if (sel && !sel.isCollapsed && String(sel).trim() && V.body.contains(sel.anchorNode)) return;   // (finishing a text selection on the sheet, not a tap; one elsewhere doesn't count)
       const a = refAt(e.clientX, e.clientY);
       if (!a && TR && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8) && trNear(e.clientX, e.clientY)){ trOpen(); return; }
+      // (a tap on the bare sheet leaves the fly through, back to the drawing as it is; not the first tap of a double tap)
+      if (!a && TR && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8)){ const t0 = performance.now();
+        setTimeout(() => { if (TR && downAt <= t0) trEnd("x"); }, desk() ? 0 : 330); return; }
       if (!a || (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8)) return;
       const r = V.pageRefs[+a.dataset.i]; if (!r || !cur.onRef) return;
       a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
