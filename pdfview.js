@@ -32,6 +32,8 @@ window.PdfView = (() => {
       <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><svg class="sp-trl"></svg><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-text textLayer"></div><div class="sp-dn"></div></div></div><div class="sp-msg"></div>
       <button class="sp-ze" data-a="fit" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>`;
     // phone, sheet at fit: the room left under the sheet holds a panel (cur.panel fills it: the connected drawings, pid.js)
+    // (the zoom extents button sits beside find in the bottom bar: on a phone the bar is all there is, on a computer it floats)
+    { const fb = el.querySelector(".sp-fb"); fb.after(el.querySelector(".sp-ze")); }
     const cx = document.createElement("div"); cx.className = "sp-cx"; cx.hidden = true; el.appendChild(cx);
     // phone, the whole sheet in view: ‹ › on its left and right edges, the drawing before / after (as a swipe)
     ["l", "r"].forEach(sd => { const a = document.createElement("button"); a.type = "button"; a.className = "sp-arw " + sd; a.hidden = true; a.textContent = sd === "l" ? "‹" : "›";
