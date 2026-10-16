@@ -357,6 +357,9 @@ window.PdfView = (() => {
           if (e < best){ best = e; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
       TR.f0 = f;
       const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; V.tz.querySelector(".sp-trz").value = trZ(); tb.querySelector(".sp-tra").value = Math.round(f * 1000);
+      // (the panel kept above the phone's gesture strip, the swipe along the bottom that switches apps: 64 of the screen's
+      // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
+      { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
       tb.hidden = false; V.tz.hidden = false; V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
     });
   }
