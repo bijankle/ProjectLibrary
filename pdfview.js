@@ -503,7 +503,7 @@ window.PdfView = (() => {
     if (V.fstep === -2){ V.fstep = -1; quiet(); if (V.page !== V.fmatch[0][0]) await go(V.fmatch[0][0]); V.zoom = 1; layout(false); V.body.scrollTo(0, 0); sharp(); V.tap = null; drawTap(); return; }
     const n = V.fmatch.length; V.fstep = V.fstep < 0 ? (dir > 0 ? 0 : n - 1) : (V.fstep + dir + n) % n; const r = V.fmatch[V.fstep];
     if (V.page !== r[0]) await go(r[0]);
-    const [l, t, w, h] = boxOf(r); quiet(); V.zoom = 4; layout(false);
+    const [l, t, w, h] = boxOf(r); quiet(); V.zoom = hitZ(); layout(false);
     centreOn((l + w / 2) / 1e4, (t + h / 2) / 1e4); sharp();
     V.tap = { page: r[0], l: l / 1e4, t: t / 1e4, w: w / 1e4, h: h / 1e4 }; drawTap(); settleSoon();
     V.el.querySelector(".sp-fn").textContent = `${V.fstep + 1} of ${n}`;
@@ -544,9 +544,11 @@ window.PdfView = (() => {
   const hide = () => close(true);
   // opened for a searched item: one place on this page, four times closer centred on it; several, zoomed to fit them all
   // (boxes in fractions of the sheet). Not when the drawing itself was what you searched (no find).
+  // how close a find result is shown: four times the whole sheet, seven on a phone (narrower, so the tag reads)
+  const hitZ = () => desk() ? 4 : 7;
   function focusHits(hs, ext){ if (!V || !hs || !hs.length) return; const r = V.body.getBoundingClientRect(), z0 = V.zoom, sw = V.sheet.offsetWidth / z0, sh = V.sheet.offsetHeight / z0;
     const l = Math.min(...hs.map(h => h.l)), t = Math.min(...hs.map(h => h.t)), rr = Math.max(...hs.map(h => h.l + h.w)), b = Math.max(...hs.map(h => h.t + h.h));
-    const z = hs.length === 1 && !ext ? 4 : Math.max(1, Math.min(ext ? 2 : 4, .8 * Math.min(r.width / ((rr - l) * sw || 1), r.height / ((b - t) * sh || 1))));
+    const z = hs.length === 1 && !ext ? hitZ() : Math.max(1, Math.min(ext ? 2 : hitZ(), .8 * Math.min(r.width / ((rr - l) * sw || 1), r.height / ((b - t) * sh || 1))));
     zoomTo(z, r.left + r.width / 2, r.top + r.height / 2, (l + rr) / 2, (t + b) / 2); }
   // the app's ← and →: one view back or forward (a small pan or zoom is a step, as undo / redo in CAD), across
   // drawings too; ← from the first view of the visit closes the viewer, back to the page it was opened from
@@ -765,15 +767,15 @@ window.PdfView = (() => {
     if (V.fi === -2){ V.fi = -1; quiet(); V.zoom = 1; layout(false); V.body.scrollTo(0, 0); sharp(); V.tap = null; drawTap(); return; }
     V.fi = V.fi < 0 ? (dir < 0 ? n - 1 : 0) : (k + n) % n; const h = V.hits[V.fi];
     V.el.querySelector(".sp-fn").textContent = `${V.fi + 1} of ${n}`; pulse(V.fi);
-    quiet(); V.zoom = 4; layout(false);
+    quiet(); V.zoom = hitZ(); layout(false);
     centreOn(h.l + h.w / 2, h.t + h.h / 2); sharp();
     V.tap = { page: V.page, l: h.l, t: h.t, w: h.w, h: h.h }; drawTap(); settleSoon();
   }
   let tt; function toast(m){ let t = V.el.querySelector(".sp-toast"); if (!t){ t = document.createElement("div"); t.className = "sp-toast"; V.el.appendChild(t); } t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 3500); }
 
-  // a reference's tap box, grown: 25% of the text height added on every side (height +50%), the same margin (in
+  // a reference's tap box, grown: 45% of the text height added on every side (height +90%), the same margin (in
   // screen terms) on the width. Boxes in 1/10000 of the sheet; A = sheet width / height.
-  const grow = (l, t, w, h, A) => { const m = .25 * Math.min(h, w * A); return [l - m / A, t - m, w + 2 * m / A, h + 2 * m]; };
+  const grow = (l, t, w, h, A) => { const m = .45 * Math.min(h, w * A); return [l - m / A, t - m, w + 2 * m / A, h + 2 * m]; };
   // of the boxes holding a point, the one whose centre is nearest (-1: none)
   const nearest = (B, x, y) => { let k = -1, d = 1e18; B.forEach(([l, t, w, h], i) => { if (x < l || x > l + w || y < t || y > t + h) return;
       const e = (x - l - w / 2) ** 2 + (y - t - h / 2) ** 2; if (e < d){ d = e; k = i; } }); return k; };
