@@ -41,8 +41,8 @@ window.PdfView = (() => {
     // a button in the top right corner over the sheet, set by the opener (cur.corner: { html, title, go }): P&IDs' Drawing legend
     // phone, a line traced (trace below): its number, how far along, open its page, ✕; the zoom and along the line sliders
     const tb = document.createElement("div"); tb.className = "sp-trb"; tb.hidden = true;
-    tb.innerHTML = `<div class="sp-trh"><button type="button" class="sp-trnb" data-d="-1" title="The line upstream">‹</button><b class="sp-trn"></b><button type="button" class="sp-tro" title="Open this line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button><button type="button" class="sp-trnb" data-d="1" title="The line downstream">›</button></div>
-      <div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="1" aria-label="Along the line"><div class="sp-trln"><span></span><span></span></div><div class="sp-trc"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
+    tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><button type="button" class="sp-tro" title="Open this line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
+      <div class="sp-trrow"><div class="sp-trnx l"></div><div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="1" aria-label="Along the line"><div class="sp-trln"><span></span><span></span></div><div class="sp-trc"></div></div><div class="sp-trnx r"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
     // (the zoom: an upright slider on the right of the sheet, + at the top, − at the foot)
     const tz = document.createElement("div"); tz.className = "sp-trv"; tz.hidden = true;
     tz.innerHTML = `<button type="button" data-z="10" aria-label="Closer">+</button><span class="sp-trzb"><input type="range" class="sp-trz sp-rg" min="0" max="100" step="1" aria-label="Zoom"></span><button type="button" data-z="-10" aria-label="Further">−</button>`;
@@ -235,7 +235,7 @@ window.PdfView = (() => {
     const zs = tz.querySelector(".sp-trz"), zSave = () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} trView(); };
     zs.oninput = zSave; tz.querySelectorAll("[data-z]").forEach(b => b.onclick = () => { zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.z)); zSave(); });
     tb.querySelector(".sp-tro").onclick = () => trOpen();
-    tb.querySelectorAll(".sp-trnb").forEach(b => b.onclick = () => trGo(+b.dataset.d));
+    tb.querySelectorAll(".sp-trnx").forEach(x => x.onclick = e => { const b = e.target.closest("button"); if (b) trGo(TR && TR.nb[+b.dataset.i]); });
     tb.querySelector(".sp-tra").oninput = () => trView();
     return V;
   }
@@ -355,13 +355,16 @@ window.PdfView = (() => {
       // the slider runs from the line's upstream end (0, where the flow arrows show it, tools/build_line_paths.py); it
       // starts there, or at the end by the ribbon arrived through
       let f = 0;
-      if (end){ const d = q => Math.hypot((q[0] - end[0]) * A, q[1] - end[1]); f = d(P[P.length - 1]) < d(P[0]) ? 1 : 0; }
+      if (end){ let best = 1e18;   // (the point of the line nearest: one end, or where it was joined part way along)
+        for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
+          const t = Math.max(0, Math.min(1, ((end[0] - x0) * A * dx + (end[1] - y0) * dy) / ll)), e = ((x0 + t * (x1 - x0) - end[0]) * A) ** 2 + (y0 + t * (y1 - y0) - end[1]) ** 2;
+          if (e < best){ best = e; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
       TR.f0 = 0;
       const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; tb.querySelectorAll(".sp-trln span").forEach(e => e.textContent = TR.label); V.tz.querySelector(".sp-trz").value = trZ(); tb.querySelector(".sp-tra").value = Math.round(f * 1000);
       // (the panel kept above the phone's gesture strip, the swipe along the bottom that switches apps: 64 of the screen's
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
       { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
-      tb.querySelectorAll(".sp-trnb").forEach(b => b.disabled = !trNb(+b.dataset.d));
+      trNx();
       tb.hidden = false; V.tz.hidden = false; V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
       // (one browser history step for the trace, after the zoom's own: the phone's back swipe leaves the trace, the drawing
       // staying as it is)
@@ -442,21 +445,27 @@ window.PdfView = (() => {
   function trEnd(fromPop){ if (!TR && V.tb.hidden) return; TR = null;
     // (✕ takes the trace's history step off again; the other ways out, opening something, leave it as a plain step)
     if (history.state && history.state.tr){ if (fromPop === "x"){ trPop = true; history.back(); } else if (!fromPop){ const st = Object.assign({}, history.state); delete st.tr; history.replaceState(st, ""); } } V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); drawTrace(); cxFit(); }
-  // ‹ ›: the line before or after this one: on this sheet the traced line whose end meets this one's (a spec change, a
-  // numbered tee), else the ribbon at that end, to the line it carries on as on the next sheet
-  function trNb(dir){ if (!TR) return null; const D = TR.D, A = (() => { const vp = V.pg.getViewport({ scale: 1 }); return vp.width / vp.height; })();
+  // the arrows at the ends of the line slider: the line(s) this one runs on into at that end, each with its sequence
+  // number (two where it ends at a tee into two lines): on this sheet the traced lines whose end meets this one's end (a
+  // spec change, a split) or whose run it joins part way along (a header), else the ribbon there, to the next sheet
+  function trNbs(dir){ const D = TR.D, vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height;
     const e = dir > 0 ? TR.P[TR.P.length - 1] : TR.P[0], dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]);
-    let best = null;
+    const segd = (Q, q) => { let m = 1e18; for (let i = 1; i < Q.length; i++){ const [x0, y0] = Q[i - 1], [x1, y1] = Q[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
+      const t = Math.max(0, Math.min(1, ((q[0] - x0) * A * dx + (q[1] - y0) * dy) / ll)); m = Math.min(m, Math.hypot((x0 + t * (x1 - x0) - q[0]) * A, y0 + t * (y1 - y0) - q[1])); } return m; };
+    const out = [], seq = k2 => String(V.refs[k2][5]).split("|")[0].split("-")[1] || "?";
     Object.keys(D).forEach(k2 => { if (!/^\d+$/.test(k2) || +k2 === TR.k || !V.refs[+k2] || V.refs[+k2][0] !== TR.page) return; const Q = D[k2];
-      [Q[0], Q[Q.length - 1]].forEach(q => { const d = dist(q, e); if (d < 45 && (!best || d < best.d)) best = { d, k: +k2, pt: q }; }); });
-    if (best) return best;
-    const em = TR.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
-    if (em){ const k2 = V.refs.findIndex((r, i) => r[0] === TR.page && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) return { k: k2, pt: e }; }
-    let rb = null;
-    Object.keys(D.rb || {}).forEach(j => { if (+D.rb[j] !== TR.k || !V.refs[+j]) return; const r = V.refs[+j], d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));   // (to the ribbon's box, as tools/build_line_paths.py matched it)
-      if (d < 300 && (!rb || d < rb.d)) rb = { d, rb: +j }; });
-    return rb; }
-  function trGo(dir){ const nb = trNb(dir); if (!nb) return;
+      const dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e));
+      if (dE < 45) out.push({ k: +k2, pt: dist(Q[0], e) < dist(Q[Q.length - 1], e) ? Q[0] : Q[Q.length - 1], d: dE, seq: seq(+k2) });
+      else { const dI = segd(Q, e); if (dI < 25) out.push({ k: +k2, pt: e, d: dI + 1, seq: seq(+k2) }); } });
+    if (!out.length){ const em = TR.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
+      if (em){ const k2 = V.refs.findIndex((r, i) => r[0] === TR.page && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
+    if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (+D.rb[j] !== TR.k || !V.refs[+j]) return; const r = V.refs[+j], d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
+      if (d < 300) out.push({ rb: +j, d, seq: String(r[5]).split("|")[0].replace(/^2000-/, "").replace(/-PID-PR-/, "-") }); });
+    return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb) === i).slice(0, 2); }
+  function trNx(){ TR.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = V.tb.querySelector(".sp-trnx." + side), L = trNbs(dir);
+    c.classList.toggle("two", L.length > 1);
+    c.innerHTML = L.map(o => { TR.nb.push(o); return `<button type="button" data-i="${TR.nb.length - 1}" class="${o.rb != null ? "sh" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(V.refs[o.k][5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
+  function trGo(nb){ if (!nb) return;
     if (nb.rb != null){ const r = V.refs[nb.rb]; trPend = { at: Date.now() }; cur.onRef && cur.onRef(r[5], "dwg", r[7], null); return; }
     const b = boxOf(V.refs[nb.k]), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap();
     trace(nb.k, nb.pt, [bx.l, bx.t, bx.w, bx.h]); }
