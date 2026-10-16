@@ -55,7 +55,7 @@ window.PdfView = (() => {
     lc.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h12" stroke="#1565ff"/><path d="M3 12h15" stroke="#00a651"/><path d="M3 18h12" stroke="#ff9500"/><path d="M18 3l3 3-3 3M18 15l3 3-3 3" stroke="currentColor"/></svg><span>Lines</span>`; el.appendChild(lc);
     const lp = document.createElement("div"); lp.className = "sp-lcp"; lp.hidden = true;
     lp.innerHTML = `<h6>P&amp;ID lines, all drawings</h6><label><span>Colours</span><input type="checkbox" class="ap-sw" data-f="c"></label><label><span>Flow animation</span><input type="checkbox" class="ap-sw" data-f="w"></label>`; el.appendChild(lp);
-    const flg = document.createElement("div"); flg.className = "sp-flg lkA"; flg.hidden = true; el.appendChild(flg);
+    const flg = document.createElement("div"); flg.className = "sp-flg lkC"; flg.hidden = true; el.appendChild(flg);
     // (desktop: the two as tick boxes, always there, under the hand / pointer / whole sheet buttons)
     const ftk = document.createElement("div"); ftk.className = "sp-fltk"; ftk.hidden = true;
     ftk.innerHTML = `<label><input type="checkbox" data-f="c"><span>Colours</span></label><label><input type="checkbox" data-f="w"><span>Flow animation</span></label>`; el.appendChild(ftk);
