@@ -400,6 +400,7 @@ window.PdfView = (() => {
     V.zoom = Math.max(1, Math.min(10, zOf(+V.tz.querySelector(".sp-trz").value))); V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false);
     const [x, y] = trPt(...trAt(f)); centreOn(x / 1e4, y / 1e4); sharp(); drawTrace(); settleSoon(); }
   // the trail: the part of the line from its upstream end to where you are now, like a pen's, with dashes drifting down
+  // (redrawn as the slider moves: the drift's delay set from the clock, so it carries on without a restart)
   // it the way the line flows; where you are, an arrow pointing downstream (a dot when the drawing shows no flow arrows,
   // so the direction isn't known). In the sheet's own points; the line widths are screen pixels, thicker close up
   function drawTrace(){ if (!V || !V.trl) return; const on = TR && cur && TR.n === cur.number && TR.page === V.page && V.pg;
@@ -415,7 +416,7 @@ window.PdfView = (() => {
       const L = 2.6 * tw / s, B = 1.1 * tw / s, tx = dx + ux * L * .6, ty = dy + uy * L * .6, bx0 = dx - ux * L * .4, by0 = dy - uy * L * .4;
       mk = `<polygon points="${[[tx, ty], [bx0 - uy * B, by0 + ux * B], [bx0 + uy * B, by0 - ux * B]].map(p => p.map(v => v.toFixed(1)).join(",")).join(" ")}"/>`; }
     else mk = `<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(tw / s).toFixed(2)}"/>`;
-    V.trl.innerHTML = (tr ? `<polyline class="tr" points="${tr}"/>` + (TR.fl ? `<polyline class="fw" points="${tr}"/>` : "") : "") + mk; }
+    V.trl.innerHTML = (tr ? `<polyline class="tr" points="${tr}"/>` + (TR.fl ? `<polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "") : "") + mk; }
   // a tap on the traced line itself (within 12 px of it)
   function trNear(x, y){ if (!TR || TR.page !== V.page) return false; const q = V.sheet.getBoundingClientRect(); if (!q.width) return false;
     const P = TR.P.map(p => { const [a, b] = trPt(p[0], p[1]); return [q.left + a / 1e4 * q.width, q.top + b / 1e4 * q.height]; });
