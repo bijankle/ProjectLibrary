@@ -41,7 +41,7 @@ window.PdfView = (() => {
     // a button in the top right corner over the sheet, set by the opener (cur.corner: { html, title, go }): P&IDs' Drawing legend
     // phone, a line traced (trace below): its number, how far along, open its page, ✕; the zoom and along the line sliders
     const tb = document.createElement("div"); tb.className = "sp-trb"; tb.hidden = true;
-    tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><button type="button" class="sp-tro">Go to asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
+    tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><button type="button" class="sp-tro" title="Open this line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
       <div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="1" aria-label="Along the line"><div class="sp-trln"><span></span><span></span></div><div class="sp-trc"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
     // (the zoom: an upright slider on the right of the sheet, + at the top, − at the foot)
     const tz = document.createElement("div"); tz.className = "sp-trv"; tz.hidden = true;
