@@ -181,7 +181,7 @@ def trace(S, LBL, r, label, gap=30, tol=1.6, WD=()):
 
 def build(num):
     v = IX[num]; doc = pymupdf.open(os.path.join(R, v["file"])); refs = REFS.get(num, [])
-    out = {}; rb = {}; pages = {}; marks = {}; fl = {}; ptp = {}; teep = {}
+    out = {}; rb = {}; pages = {}; marks = {}; fl = {}; ptp = {}; teep = {}; rv = {}
     for k, r in enumerate(refs):
         if r[6] != "line": continue
         pg = r[0] - 1
@@ -245,6 +245,32 @@ def build(num):
         if bestd:
             rb[str(k)] = bestd[1]; P = out[bestd[1]]; e0 = math.hypot(P[0][0] - (r[1] + r[3] / 2), P[0][1] - (r[2] + r[4] / 2)); e1 = math.hypot(P[-1][0] - (r[1] + r[3] / 2), P[-1][1] - (r[2] + r[4] / 2))
             f = 0 if e0 < e1 else 1; marks[bestd[1]] = [m for m in marks[bestd[1]] if not (m[0] == f and m[1] in "ts")] + [[f, "r", str(r[5]).split("|")[0]]]
+            # (which way the flow goes there, from the way the ribbon points: towards the line, it comes in from the other
+            # sheet, that end upstream; away from it, it leaves)
+            sh = r[8][4] if len(r) > 8 and isinstance(r[8], list) and len(r[8]) > 4 else ""
+            if "R" in sh or "L" in sh:
+                e = P[0] if f == 0 else P[-1]; side = 1 if r[1] + r[3] / 2 > e[0] else -1; pts = 1 if "R" in sh else -1
+                rv.setdefault(bestd[1], []).append(f if pts == -side else 1 - f)   # (the end that is upstream)
+    # flow for the lines the arrows didn't settle: by their ribbons, then carried on from a line joined end to end (a spec
+    # break) whose flow is known; the path turned round so it runs upstream to downstream
+    def turn(k):
+        out[k] = out[k][::-1]; marks[k] = [[round(1 - m[0], 3)] + m[1:] for m in marks[k]]
+    for k, v in rv.items():
+        if k in fl or not v: continue
+        if all(x == v[0] for x in v):
+            if v[0] == 1: turn(k)
+            fl[k] = 1
+    W0, H0 = (doc[0].rect.width, doc[0].rect.height)
+    near = lambda a, b: math.hypot((a[0] - b[0]) * W0 / 1e4, (a[1] - b[1]) * H0 / 1e4) < 4
+    for _ in range(6):
+        grew = False
+        for k in [k for k in out if k not in fl]:
+            for j in list(fl):
+                if j == k or refs[int(j)][0] != refs[int(k)][0]: continue
+                Q, P = out[j], out[k]
+                if near(Q[-1], P[0]) or near(Q[0], P[-1]): fl[k] = 1; grew = True; break
+                if near(Q[-1], P[-1]) or near(Q[0], P[0]): turn(k); fl[k] = 1; grew = True; break
+        if not grew: break
     if out: out["rb"] = rb; out["m"] = {k: sorted(v) for k, v in marks.items()}; out["fl"] = fl
     json.dump(out, open(os.path.join(OUT, num + ".json"), "w"), separators=(",", ":"))
     return sum(1 for r in refs if r[6] == "line"), len(out) - (3 if out else 0), len(rb), len(fl)
@@ -256,4 +282,4 @@ if __name__ == "__main__":
         try: a = build(n)
         except Exception as e: print("skip", n, e); continue
         tot = [x + y for x, y in zip(tot, a)]
-    print(f"{len(nums)} P&IDs: {tot[1]} of {tot[0]} line numbers traced ({tot[3]} with their flow direction from the arrows); {tot[2]} ribbons matched to a line")
+    print(f"{len(nums)} P&IDs: {tot[1]} of {tot[0]} line numbers traced ({tot[3]} with their flow direction from arrows, ribbons or the line they join); {tot[2]} ribbons matched to a line")

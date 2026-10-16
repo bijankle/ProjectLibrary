@@ -379,18 +379,21 @@ window.PdfView = (() => {
     if (m[1] === "s") return "end";
     if (m[1] === "p") return t.replace(/^SP-/, "");   // (a special item: SP-MC-002 shown as MC-002 under SP)
     return t.replace(/^F\d\d-(?=\d)/, "").replace(/^F\d\d-(?=[A-Z])/, ""); }
-  // (each milestone's type stands upright over its tick and its name under it, both read bottom to top: TEE / 0588,
-  // VALVE / 11318, INSTR / FE13127; a callout line where they had to be moved apart, only the tick where packed too tight)
+  // (each milestone a mark through the bar; its type stands upright above and its name below, each on a 45° callout from
+  // the mark, read bottom to top: TEE / 0588, VALVE / 11318; callouts lean a little further where names would touch, and
+  // where they are packed too tight only the mark shows)
   const TT = { t: "TEE", v: "VALVE", p: "SP", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END" };
-  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 40, TT0 = OT + 2, TB = OT + 52, LT = OT + 55, placed = [];
+  function trMarks(){ const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 56, BT = OT + 9, BB = OT + 45, D0 = 8, DM = 22, placed = [];
     const pr = m => ({ r: 0, l: 1, e: 2, t: 3, i: 4, p: 5, v: 5, s: 6 })[m[1]] ?? 7, named = [];
-    [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = Math.max(LW / 2, Math.min(W - LW / 2, m[0] * W)), free = c0 => c0 - LW / 2 >= 0 && c0 + LW / 2 <= W && !placed.some(q => Math.abs(q - c0) < LW);
-      const cand = [x, ...placed.flatMap(q => [q + LW, q - LW])].filter(free).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
-      if (cand.length && Math.abs(cand[0] - x) <= 30){ placed.push(cand[0]); named.push([m, m[0] * W, cand[0]]); } });
-    const lines = named.filter(([m, x, lx]) => Math.abs(lx - x) > .5);
-    c.innerHTML = TR.m.filter(m => m[0] > .01 && m[0] < .99).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
-      + `<svg class="sp-trco" width="${W}" height="${LT}">${lines.map(([m, x, lx]) => `<polyline points="${x.toFixed(1)},${TB} ${x.toFixed(1)},${TB + 2} ${lx.toFixed(1)},${LT - 1}"/><polyline points="${x.toFixed(1)},${TT0} ${x.toFixed(1)},${TT0 - 1} ${lx.toFixed(1)},${TT0 - 3}"/>`).join("")}</svg>`
-      + named.map(([m, x, lx]) => `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px">${TT[m[1]] || ""}</b><b class="k-${m[1]}" style="left:${lx.toFixed(1)}px">${esc(trName(m))}</b>`).join(""); }
+    [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = m[0] * W, pref = Math.max(LW / 2, Math.min(W - LW / 2, x + (x + D0 + LW / 2 > W ? -D0 : D0)));
+      const free = c0 => c0 - LW / 2 >= 0 && c0 + LW / 2 <= W && !placed.some(q => Math.abs(q - c0) < LW);
+      const cand = [pref, ...placed.flatMap(q => [q + LW, q - LW])].filter(free).sort((a, b) => Math.abs(a - pref) - Math.abs(b - pref));
+      if (cand.length && Math.abs(cand[0] - x) <= DM){ placed.push(cand[0]); named.push([m, x, cand[0]]); } });
+    const ln = (x, lx, y0, up) => { const d = Math.abs(lx - x); return `<polyline points="${x.toFixed(1)},${y0} ${lx.toFixed(1)},${(up ? y0 - d : y0 + d).toFixed(1)} ${lx.toFixed(1)},${(up ? y0 - d - 2 : y0 + d + 2).toFixed(1)}"/>`; };
+    c.innerHTML = TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
+      + `<svg class="sp-trco" width="${W}" height="${BB + 40}">${named.map(([m, x, lx]) => ln(x, lx, BT, true) + ln(x, lx, BB, false)).join("")}</svg>`
+      + named.map(([m, x, lx]) => { const d = Math.abs(lx - x);
+        return `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px;bottom:calc(100% - ${(BT - d - 3).toFixed(1)}px)">${TT[m[1]] || ""}</b><b class="k-${m[1]}" style="left:${lx.toFixed(1)}px;top:${(BB + d + 3).toFixed(1)}px">${esc(trName(m))}</b>`; }).join(""); }
   function trFill(){ [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz")].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
   function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
     const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; }
@@ -402,8 +405,8 @@ window.PdfView = (() => {
     const [x, y] = trPt(...trAt(f)); centreOn(x / 1e4, y / 1e4); sharp(); drawTrace(); settleSoon(); }
   // the trail: the part of the line from its upstream end to where you are now, like a pen's, with dashes drifting down
   // (redrawn as the slider moves: the drift's delay set from the clock, so it carries on without a restart)
-  // it the way the line flows; where you are, an arrow pointing downstream (a dot when the drawing shows no flow arrows,
-  // so the direction isn't known). In the sheet's own points; the line widths are screen pixels, thicker close up
+  // it the way the line flows; where you are, an arrow pointing downstream (where the drawing doesn't show the flow,
+  // the way the line was traced). In the sheet's own points; the line widths are screen pixels, thicker close up
   function drawTrace(){ if (!V || !V.trl) return; const on = TR && cur && TR.n === cur.number && TR.page === V.page && V.pg;
     if (!on){ V.trl.innerHTML = ""; return; }
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, s = V.base * V.zoom, w = Math.max(4, Math.min(9, 3.2 * s)), tw = w * 1.35;
@@ -413,11 +416,10 @@ window.PdfView = (() => {
     V.trl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.trl.style.setProperty("--trw", w + "px");
     const tr = f > 1e-4 ? pts(trSub(0, f)) : "";
     let mk;
-    if (TR.fl){ const [ax, ay] = sc(TR.P[i - 1]), [bx, by] = sc(TR.P[i]), d = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / d, uy = (by - ay) / d;
+    { const [ax, ay] = sc(TR.P[i - 1]), [bx, by] = sc(TR.P[i]), d = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / d, uy = (by - ay) / d;
       const L = 2.6 * tw / s, B = 1.1 * tw / s, tx = dx + ux * L * .6, ty = dy + uy * L * .6, bx0 = dx - ux * L * .4, by0 = dy - uy * L * .4;
       mk = `<polygon points="${[[tx, ty], [bx0 - uy * B, by0 + ux * B], [bx0 + uy * B, by0 - ux * B]].map(p => p.map(v => v.toFixed(1)).join(",")).join(" ")}"/>`; }
-    else mk = `<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(tw / s).toFixed(2)}"/>`;
-    V.trl.innerHTML = (tr ? `<polyline class="tr" points="${tr}"/>` + (TR.fl ? `<polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "") : "") + mk; }
+    V.trl.innerHTML = (tr ? `<polyline class="tr" points="${tr}"/>` + (true ? `<polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "") : "") + mk; }
   // a tap on the traced line itself (within 12 px of it)
   function trNear(x, y){ if (!TR || TR.page !== V.page) return false; const q = V.sheet.getBoundingClientRect(); if (!q.width) return false;
     const P = TR.P.map(p => { const [a, b] = trPt(p[0], p[1]); return [q.left + a / 1e4 * q.width, q.top + b / 1e4 * q.height]; });

@@ -36,7 +36,7 @@ def tag(t):
     if not m: return None
     a, n, c, s, x = m.groups(); f = f"{a}{n.translate(D)}-{c.translate(A)}-{s.translate(D)}{x}"
     return f if f.split("-")[0] in AREAS and c.translate(A).isalpha() else None
-LINE = re.compile(r"\d{2,3}-\d{4}-[A-Z]{1,4}-[A-Z0-9]{2,6}-\d{2,4}")      # 30-4329-FD-PE10-90
+LINE = re.compile(r"\d{2,3}-\d{4}-[A-Z]{1,4}-[A-Z0-9]{2,6}-\d{2,4}(?:-[A-Z0-9]{1,4})?")      # 30-4329-FD-PE10-90, 13-0096-COW-MSG1-100-TI
 OLD = re.compile(r"\d{2,3}-[A-Z]{2,4}-\d{2,3}[A-Z]?")                    # 25-SW-31, the existing plant's numbering
 DOC = re.compile(r"2000-[A-Z0-9.]{2,10}-[A-Z]{3}(?:-[A-Z]{2})?-\d{5}")   # 2000-F13-SCM-EL-10202, 2000-ME060-J02-10003
 refs = json.load(open(os.path.join(R, "pid-refs.json")))
