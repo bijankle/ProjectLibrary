@@ -349,15 +349,12 @@ window.PdfView = (() => {
     Promise.resolve(LN[cur.number]).then(D => {
       const P = D && D[k]; if (!P || P.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height, r = V.refs[k];
       const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
-      TR = { n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [] };
-      // where the slider starts: the end by the ribbon arrived through, else the point of the line beside its number
+      TR = { n: cur.number, k, P, L, page: r[0], label: String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
+      // the slider runs from the line's upstream end (0, where the flow arrows show it, tools/build_line_paths.py); it
+      // starts there, or at the end by the ribbon arrived through
       let f = 0;
       if (end){ const d = q => Math.hypot((q[0] - end[0]) * A, q[1] - end[1]); f = d(P[P.length - 1]) < d(P[0]) ? 1 : 0; }
-      else { const cx = r[1] + r[3] / 2, cy = r[2] + r[4] / 2; let best = 1e18;
-        for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
-          const t = Math.max(0, Math.min(1, ((cx - x0) * A * dx + (cy - y0) * dy) / ll)), e = ((x0 + t * (x1 - x0) - cx) * A) ** 2 + (y0 + t * (y1 - y0) - cy) ** 2;
-          if (e < best){ best = e; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
-      TR.f0 = f;
+      TR.f0 = 0;
       const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; V.tz.querySelector(".sp-trz").value = trZ(); tb.querySelector(".sp-tra").value = Math.round(f * 1000);
       // (the panel kept above the phone's gesture strip, the swipe along the bottom that switches apps: 64 of the screen's
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
@@ -396,16 +393,23 @@ window.PdfView = (() => {
     tb.querySelector(".sp-trp").textContent = Math.round(f * 100) + "%"; trFill();
     V.zoom = Math.max(1, Math.min(10, zOf(+V.tz.querySelector(".sp-trz").value))); V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false);
     const [x, y] = trPt(...trAt(f)); centreOn(x / 1e4, y / 1e4); sharp(); drawTrace(); settleSoon(); }
-  // the trail: only the part of the line between where the trace started (the line number, or the ribbon arrived
-  // through) and where you are now, like a pen's; the dot where you are (twice the trail's width across). In the sheet's own
-  // points, so the dot stays round; the line widths are screen pixels, thin when the whole sheet shows, a little more close up
+  // the trail: the part of the line from its upstream end to where you are now, like a pen's, with dashes drifting down
+  // it the way the line flows; where you are, an arrow pointing downstream (a dot when the drawing shows no flow arrows,
+  // so the direction isn't known). In the sheet's own points; the line widths are screen pixels, thicker close up
   function drawTrace(){ if (!V || !V.trl) return; const on = TR && cur && TR.n === cur.number && TR.page === V.page && V.pg;
     if (!on){ V.trl.innerHTML = ""; return; }
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, s = V.base * V.zoom, w = Math.max(4, Math.min(9, 3.2 * s)), tw = w * 1.35;
-    const pts = P => P.map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
-    const f = trF(), [dx, dy] = trPt(...trAt(f)).map((v, i) => v / 1e4 * (i ? H : W));
+    const sc = q => { const [x, y] = trPt(q[0], q[1]); return [x / 1e4 * W, y / 1e4 * H]; };
+    const pts = P => P.map(q => sc(q).map(v => v.toFixed(1)).join(",")).join(" ");
+    const f = trF(), at = trAt(f), [dx, dy] = sc(at), i = at[2];
     V.trl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.trl.style.setProperty("--trw", w + "px");
-    V.trl.innerHTML = `${Math.abs(f - TR.f0) > 1e-4 ? `<polyline class="tr" points="${pts(trSub(Math.min(f, TR.f0), Math.max(f, TR.f0)))}"/>` : ""}<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(tw / s).toFixed(2)}"/>`; }
+    const tr = f > 1e-4 ? pts(trSub(0, f)) : "";
+    let mk;
+    if (TR.fl){ const [ax, ay] = sc(TR.P[i - 1]), [bx, by] = sc(TR.P[i]), d = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / d, uy = (by - ay) / d;
+      const L = 2.6 * tw / s, B = 1.1 * tw / s, tx = dx + ux * L * .6, ty = dy + uy * L * .6, bx0 = dx - ux * L * .4, by0 = dy - uy * L * .4;
+      mk = `<polygon points="${[[tx, ty], [bx0 - uy * B, by0 + ux * B], [bx0 + uy * B, by0 - ux * B]].map(p => p.map(v => v.toFixed(1)).join(",")).join(" ")}"/>`; }
+    else mk = `<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(tw / s).toFixed(2)}"/>`;
+    V.trl.innerHTML = (tr ? `<polyline class="tr" points="${tr}"/>` + (TR.fl ? `<polyline class="fw" points="${tr}"/>` : "") : "") + mk; }
   // a tap on the traced line itself (within 12 px of it)
   function trNear(x, y){ if (!TR || TR.page !== V.page) return false; const q = V.sheet.getBoundingClientRect(); if (!q.width) return false;
     const P = TR.P.map(p => { const [a, b] = trPt(p[0], p[1]); return [q.left + a / 1e4 * q.width, q.top + b / 1e4 * q.height]; });

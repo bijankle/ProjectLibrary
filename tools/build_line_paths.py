@@ -1,6 +1,6 @@
 """The path of every pipeline drawn on the P&IDs, for the phone's line trace (pdfview.js): tap a line number and the whole
 line lights up, a slider runs the view along it. One file per drawing, lines/<number>.json:
-  {"<ref index>": [[x, y], …]}   the line's path, from one end to the other, in the same 1/10,000 sheet units as
+  {"<ref index>": [[x, y], …]}   the line's path, from its upstream end where the flow arrows show it ("fl" lists those), in the same 1/10,000 sheet units as
                                  pid-refs.json (keyed by the line label's index in that drawing's refs)
   "rb": {"<ribbon ref index>": "<line ref index>"}   the line a continuation ribbon on the sheet carries on
   "m": {"<line ref index>": [[fraction along, kind, text], …]}   what the line passes, for the commentary under the
@@ -50,6 +50,32 @@ def strokes(p):
         else:
             ys = sorted([min(t[1], t[3])] + cuts + [max(t[1], t[3])]); out += [(t[0], ys[i], t[0], ys[i + 1]) for i in range(len(ys) - 1) if ys[i + 1] - ys[i] > 1]
     return out
+
+def arrows(p):
+    """the flow arrows on the sheet: small filled triangles, as (centre, unit direction the tip points)"""
+    A = []
+    for g in p.get_drawings():
+        if g.get("fill") is None or len(g["items"]) != 3 or any(i[0] != "l" for i in g["items"]): continue
+        r = g["rect"]
+        if not (2 < max(r.width, r.height) < 16): continue
+        V = [(i[1].x, i[1].y) for i in g["items"]]
+        E = [math.hypot(V[(k + 1) % 3][0] - V[(k + 2) % 3][0], V[(k + 1) % 3][1] - V[(k + 2) % 3][1]) for k in range(3)]   # (the side opposite each corner)
+        k = min(range(3), key=lambda k: E[k]); tip = V[k]; b = ((V[(k + 1) % 3][0] + V[(k + 2) % 3][0]) / 2, (V[(k + 1) % 3][1] + V[(k + 2) % 3][1]) / 2)
+        d = math.hypot(tip[0] - b[0], tip[1] - b[1])
+        if d < 2 or d < E[k] * 1.1: continue   # (a pointed triangle: longer than its base is wide)
+        A.append((((tip[0] + b[0]) / 2, (tip[1] + b[1]) / 2), ((tip[0] - b[0]) / d, (tip[1] - b[1]) / d)))
+    return A
+
+def flow(P, A):
+    """which way the line runs, by the arrows drawn on it: +1 from P[0] to P[-1], -1 the other way, 0 not shown"""
+    v = 0
+    for (cx, cy), (ux, uy) in A:
+        for a, b in zip(P, P[1:]):
+            sl = math.hypot(b[0] - a[0], b[1] - a[1])
+            if sl < 1: continue
+            dx, dy = (b[0] - a[0]) / sl, (b[1] - a[1]) / sl; u = (cx - a[0]) * dx + (cy - a[1]) * dy
+            if -2 < u < sl + 2 and abs((cx - a[0]) * dy - (cy - a[1]) * dx) < 2.5 and abs(ux * dx + uy * dy) > .85: v += 1 if ux * dx + uy * dy > 0 else -1; break
+    return (v > 0) - (v < 0)
 
 def trace(S, LBL, r, label, gap=30, tol=1.6):
     cx, cy = (r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2; vert = r.height > r.width
@@ -114,7 +140,7 @@ def trace(S, LBL, r, label, gap=30, tol=1.6):
 
 def build(num):
     v = IX[num]; doc = pymupdf.open(os.path.join(R, v["file"])); refs = REFS.get(num, [])
-    out = {}; rb = {}; pages = {}; marks = {}
+    out = {}; rb = {}; pages = {}; marks = {}; fl = {}
     for k, r in enumerate(refs):
         if r[6] != "line": continue
         pg = r[0] - 1
@@ -122,14 +148,18 @@ def build(num):
             p = doc[pg]
             if p.rotation: pages[pg] = None; continue
             LBL = [(w[4], pymupdf.Rect(w[:4])) for w in p.get_text("words") if LINE.fullmatch(w[4])]
-            pages[pg] = (p, strokes(p), LBL)
+            pages[pg] = (p, strokes(p), LBL, arrows(p))
         if not pages[pg]: continue
-        p, S, LBL = pages[pg]; W, H = p.rect.width, p.rect.height
+        p, S, LBL, AR = pages[pg]; W, H = p.rect.width, p.rect.height
         rr = pymupdf.Rect(r[1] * W / 1e4, r[2] * H / 1e4, (r[1] + r[3]) * W / 1e4, (r[2] + r[4]) * H / 1e4)
         label = str(r[5]).split("|")[0]
         T = trace(S, LBL, rr, label)
         if not T or len(T[0]) < 2: continue
         P, why, tees, Lc = T; tot = Lc[-1] or 1
+        # upstream first: the path turned round when the flow arrows on it point back along it
+        fw = flow(P, AR)
+        if fw < 0: P = P[::-1]; why = why[::-1]; tees = [(tot - d, o) for d, o in tees]; Lc = [tot - x for x in reversed(Lc)]
+        if fw: fl[str(k)] = 1
         out[str(k)] = [[round(x / W * 1e4), round(y / H * 1e4)] for x, y in P]
         # what the line passes (commentary along the phone's Line slider): [fraction along, kind, text]
         # kinds: t tee, v valve, i instrument, e equipment, r ribbon (set below), l the next line, s the line's end
@@ -159,15 +189,15 @@ def build(num):
         if bestd:
             rb[str(k)] = bestd[1]; P = out[bestd[1]]; e0 = math.hypot(P[0][0] - (r[1] + r[3] / 2), P[0][1] - (r[2] + r[4] / 2)); e1 = math.hypot(P[-1][0] - (r[1] + r[3] / 2), P[-1][1] - (r[2] + r[4] / 2))
             f = 0 if e0 < e1 else 1; marks[bestd[1]] = [m for m in marks[bestd[1]] if not (m[0] == f and m[1] in "ts")] + [[f, "r", str(r[5]).split("|")[0]]]
-    if out: out["rb"] = rb; out["m"] = {k: sorted(v) for k, v in marks.items()}
+    if out: out["rb"] = rb; out["m"] = {k: sorted(v) for k, v in marks.items()}; out["fl"] = fl
     json.dump(out, open(os.path.join(OUT, num + ".json"), "w"), separators=(",", ":"))
-    return sum(1 for r in refs if r[6] == "line"), len(out) - (2 if out else 0), len(rb)
+    return sum(1 for r in refs if r[6] == "line"), len(out) - (3 if out else 0), len(rb), len(fl)
 
 if __name__ == "__main__":
     nums = sys.argv[1:] or sorted(k for k in IX if "-PID-" in k)
-    tot = [0, 0, 0]
+    tot = [0, 0, 0, 0]
     for n in nums:
         try: a = build(n)
         except Exception as e: print("skip", n, e); continue
         tot = [x + y for x, y in zip(tot, a)]
-    print(f"{len(nums)} P&IDs: {tot[1]} of {tot[0]} line numbers traced; {tot[2]} ribbons matched to a line")
+    print(f"{len(nums)} P&IDs: {tot[1]} of {tot[0]} line numbers traced ({tot[3]} with their flow direction from the arrows); {tot[2]} ribbons matched to a line")
