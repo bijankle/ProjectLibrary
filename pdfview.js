@@ -231,7 +231,7 @@ window.PdfView = (() => {
       if (!desk() && r[6] === "d") trPend = { at: Date.now() };
       if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : r[6] === "s" ? "sp" : "tag", r[7], bx || null);
     });
-    tb.querySelector(".sp-trx").onclick = () => trEnd();
+    tb.querySelector(".sp-trx").onclick = () => trEnd("x");
     const zs = tz.querySelector(".sp-trz"), zSave = () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} trView(); };
     zs.oninput = zSave; tz.querySelectorAll("[data-z]").forEach(b => b.onclick = () => { zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.z)); zSave(); });
     tb.querySelector(".sp-tro").onclick = () => trOpen();
@@ -361,6 +361,9 @@ window.PdfView = (() => {
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
       { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
       tb.hidden = false; V.tz.hidden = false; V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
+      // (one browser history step for the trace, after the zoom's own: the phone's back swipe leaves the trace, the drawing
+      // staying as it is)
+      setTimeout(() => { if (TR && history.state && history.state.sp && !history.state.tr) history.pushState(Object.assign({}, history.state, { tr: 1 }), ""); }, 0);
     });
   }
   // the milestones along the Line slider: a tick across the track for everything the line passes, named under it where
@@ -421,7 +424,13 @@ window.PdfView = (() => {
     for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = x1 - x0, dy = y1 - y0, ll = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ll));
       if (Math.hypot(x0 + t * dx - x, y0 + t * dy - y) < 12) return true; } return false; }
   function trOpen(){ if (!TR || !cur.onRef) return; const r = TR.r, b = TR.box; trEnd(); cur.onRef(r[5], "tag", r[7], b || null); }
-  function trEnd(){ if (!TR && V.tb.hidden) return; TR = null; V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); drawTrace(); cxFit(); }
+  let trPop = false;
+  addEventListener("popstate", e => {
+    if (trPop){ trPop = false; e.stopImmediatePropagation(); return; }   // (the step taken off by ✕)
+    if (TR && !(history.state && history.state.tr)){ e.stopImmediatePropagation(); trEnd(true); } }, true);
+  function trEnd(fromPop){ if (!TR && V.tb.hidden) return; TR = null;
+    // (✕ takes the trace's history step off again; the other ways out, opening something, leave it as a plain step)
+    if (history.state && history.state.tr){ if (fromPop === "x"){ trPop = true; history.back(); } else if (!fromPop){ const st = Object.assign({}, history.state); delete st.tr; history.replaceState(st, ""); } } V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); drawTrace(); cxFit(); }
   // arrived through a ribbon tapped on the phone: the line that ribbon carries on, traced from the ribbon's end
   function trArrive(me, back){ if (!trPend || Date.now() - trPend.at > 15000 || desk()) return; trPend = null;
     linesFor(me.number).then(D => { if (cur !== me || !D.rb) return; const j = [].concat(back).find(j => D.rb[j] != null); if (j == null) return;
