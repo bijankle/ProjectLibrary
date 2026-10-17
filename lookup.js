@@ -284,7 +284,37 @@
         for (let i = rows.length - 1; i >= 0; i--) if (/^P&IDs?$/.test(rows[i].l) && /PID-/.test(rows[i].v) && !ks.some(x => String(rows[i].v).includes(x))) rows.splice(i, 1); }
       const w = [d.res.by, d.res.at && String(d.res.at).slice(0, 10)].filter(Boolean).join(", ");
       rows.push({ l: "Resolved check", h: `${esc(d.row.cat)}: ${esc(d.res.note || "resolved")}${w ? `<div class="lk-rsw">${esc(w)}</div>` : ""}` }); })); };
-  L.rowsHTML = rows => rows.map(r => `<tr><td>${esc(r.l)}</td><td>${r.h != null ? r.h : esc(r.v)}</td></tr>`).join("");
+  // (a value read from a list: an i beside its name says which list, revision and row, with the list in SharePoint)
+  L.rowsHTML = rows => rows.map(r => `<tr><td>${esc(r.l)}${r.s && DB.types[r.s] && r.l !== "Source" ? `<button type="button" class="lk-i" data-s="${esc(r.s)}" data-k="${esc(r.k || "")}" data-l="${esc(r.l)}" data-v="${esc(r.v)}" title="Where this value comes from" aria-label="Source of ${esc(r.l)}">i</button>` : ""}</td><td>${r.h != null ? r.h : esc(r.v)}</td></tr>`).join("");
+  // ---- the source of a value (the i): the list it was read from, its revision, where in it, and SharePoint's copy ----
+  const LISTN = { mel: "Mechanical Equipment List", ins: "Instrument List", cv: "Control Valve List", line: "Line List", mv: "Manual Valve List", spi: "Special Piping Items (SPI) List", hose: "Slurry Hose List" };
+  const spRev = u => { const m = String(u || "").match(/_((?:MS_)?[0-9A-Z]{1,3})(?:_(?:APP|RNC|RWC|IFC|IFR|AFC|IFA))?\.pdf$/i); return m ? m[1].replace(/^MS_/, "MS_") : ""; };
+  L.srcDocs = (t, k) => { const T = DB.types[t]; if (!T) return [];
+    if (/^\d{4}-/.test(T.doc || "")){   // (one list, or two, as the hose lists: "2000-F00-LST-PP-10032 / 12032")
+      const ns = String(T.doc).split(" / ").map((x, i, a) => i ? a[0].replace(/\d+$/, x) : x), rv = String(T.rev || "").split(" / ");
+      return ns.map((n, i) => ({ n, title: LISTN[t] || T.n, rev: rv[i] || rv[0] || "", where: `the row for ${k}` })); }
+    // (the electrical lists: each record names its own sources, "2000-F175-LST-EL-40004 Rev 1, page 8; …")
+    const x = (byKey.get(norm(k)) || []).find(y => y.t === t), sv = x ? L.get(x, "Source") : "";
+    return String(sv).split(/;\s*/).filter(Boolean).map(q => { const m = q.match(/^(2000-[A-Z0-9-]+?)\s+(Rev\s+\w+)(?:,\s*(.*))?$/); return m ? { n: m[1], title: T.doc || T.n, rev: m[2], where: m[3] ? `${m[3]}, the row for ${k}` : `the row for ${k}` } : null; }).filter(Boolean); };
+  let srcPop = null;
+  L.srcPop = async (btn) => { const t = btn.dataset.s, k = btn.dataset.k, l = btn.dataset.l, v = btn.dataset.v, docs = L.srcDocs(t, k);
+    if (!srcPop){ srcPop = document.createElement("div"); srcPop.className = "lk-src"; srcPop.setAttribute("role", "dialog"); document.body.appendChild(srcPop);
+      document.addEventListener("click", e => { if (srcPop.hidden || e.target.closest(".lk-src, .lk-i")) return; srcPop.hidden = true; }, true);
+      addEventListener("keydown", e => { if (e.key === "Escape" && !srcPop.hidden){ srcPop.hidden = true; e.stopPropagation(); } }, true); addEventListener("scroll", () => srcPop.hidden = true, true); }
+    const six = await (L._six || (L._six = fetch("sources/index.json").then(r => r.ok ? r.json() : {}).catch(() => ({})))), TT = {};
+    Object.values(six).forEach(v => { const m = String(v.fname || "").match(/^(2000-[A-Z0-9-]+?)\s+(.*?)\s+Rev\s+\w+\s+\(tables\)/); if (m) TT[m[1]] = m[2]; });
+    docs.forEach(d => { if (TT[d.n]) d.title = TT[d.n]; });
+    const held = await (L._held || (L._held = fetch("sp-held.json").then(r => r.ok ? r.json() : {}).catch(() => ({})))), url = n => held[n] ? (window.SP ? SP.view(held[n]) : held[n]) : (window.SP ? SP.url(n) : "");
+    srcPop.innerHTML = `<div class="hd">Where this value comes from<button type="button" class="x" aria-label="Close">×</button></div><div class="val"><span>${esc(l)}</span><b>${esc(v)}</b></div>`
+      + (docs.length > 1 ? `<p class="tip" style="padding:6px 12px 0">Read from these lists together:</p>` : "") + (docs.length ? docs.map(d => { const u = url(d.n), sr = spRev(held[d.n]), ar = (String(d.rev).match(/Rev\s+(\w+)/) || [])[1] || "";
+        const chk = sr && ar ? (sr.toUpperCase() === ar.toUpperCase() ? `<p class="ok">✓ Same revision as the latest file in SharePoint (Rev ${esc(sr)})</p>` : `<p class="warn">SharePoint's latest file is Rev ${esc(sr)}: this value was read from ${esc(d.rev.split(" (")[0])}. Check SharePoint.</p>`) : "";
+        return `<div class="doc"><div class="dn">${u ? `<a class="sp-a" href="${esc(u)}" target="_blank" rel="noopener">${esc(d.n)}</a>` : `<b>${esc(d.n)}</b>`}</div><div class="dt">${esc(d.title)}${d.rev ? " · " + esc(d.rev) : ""}</div>`
+          + `<p>Read from ${esc(d.where)}, column <i>${esc(l)}</i>.</p>${chk}${u ? `<p class="tip">To check it: open the list in SharePoint and search (Ctrl + F) for <b>${esc(k)}</b>.</p>` : `<p class="tip">Not found in the document register's SharePoint links.</p>`}</div>`; }).join("")
+        : `<p class="tip">No source list recorded for this value.</p>`);
+    srcPop.querySelector(".x").onclick = () => srcPop.hidden = true;
+    srcPop.hidden = false; const r = btn.getBoundingClientRect(), w = Math.min(380, innerWidth - 16); srcPop.style.width = w + "px";
+    const top = r.bottom + 6 + srcPop.offsetHeight > innerHeight - 8 ? Math.max(8, r.top - 6 - srcPop.offsetHeight) : r.bottom + 6;
+    srcPop.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left - 12)) + "px"; srcPop.style.top = top + "px"; };
   L.fields = t => DB && DB.types[t] ? DB.types[t].f : null;
   // a line in a list: "from <equipment description> (<tag>) to …", equipment named from the MEL; another line stays a number
   const endText = v => { v = String(v || "").trim().replace(/^(to|from)\s+/i, ""); if (!v) return "not given";
@@ -322,10 +352,10 @@
       const top = key.map(n => f.indexOf(n)).filter(i => i > 0 && it.r[i]);
       const rest = f.map((n, i) => i).filter(i => i > 0 && it.r[i] && !top.includes(i));
       // this list first, then the same tag in other lists; each property once (L.dedupe)
-      const rows = [...top, ...rest].map(i => ({ l: f[i], v: it.r[i], h: linkify(it.r[i]), s: it.t }));
+      const rows = [...top, ...rest].map(i => ({ l: f[i], v: it.r[i], h: linkify(it.r[i]), s: it.t, k: it.key }));
       // the manual valve list puts words like "Commissioning" in its line number column: that is a note, not a line
       rows.forEach(r => { if (/^line number$/i.test(r.l) && !/\d{2,3}-[A-Z]?\d{3,4}-/.test(r.v)) r.l = "Note"; });
-      twins.forEach(x => { const g = DB.types[x.t].f; g.forEach((n, i) => { if (i > 0 && x.r[i]) rows.push({ l: n, v: x.r[i], h: linkify(x.r[i]), s: x.t }); }); });
+      twins.forEach(x => { const g = DB.types[x.t].f; g.forEach((n, i) => { if (i > 0 && x.r[i]) rows.push({ l: n, v: x.r[i], h: linkify(x.r[i]), s: x.t, k: x.key }); }); });
       const NAMEF = { mel: "Equipment name", ins: "Description", cv: "Location", spi: "Description", hose: "Description" };   // the phone's header card names it
       const kept = L.dedupe(rows.filter(r => !inTag(it, r.l) && !(PHONE() && r.l === NAMEF[it.t])), { heads: [it.key, ...twins.map(x => x.key)] });
       docRows(it, kept);
@@ -675,6 +705,7 @@
     const stepHTML = it => { const a = stepList(it), i = a.indexOf(it); if (i < 0 || a.length < 2) return "";
       return `<span class="lk-step"><button class="lk-st" data-s="-1"${i > 0 ? ` title="${esc(a[i - 1].key)}"` : " disabled"} aria-label="Previous item">‹</button><span class="lk-sn"><b>${(i + 1).toLocaleString()}</b> of ${a.length.toLocaleString()}</span><button class="lk-st" data-s="1"${i < a.length - 1 ? ` title="${esc(a[i + 1].key)}"` : " disabled"} aria-label="Next item">›</button></span>`; };
     // any code link in an item (also ones filled in later, like the valve codes in a pipe spec) opens that item
+    body.addEventListener("click", e => { const ib = e.target.closest && e.target.closest(".lk-i"); if (ib && body.contains(ib)){ e.preventDefault(); e.stopPropagation(); L.srcPop(ib); return; } }, true);
     body.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a[data-k]"); if (!a || !body.contains(a)) return; e.preventDefault();
       ensure().then(() => { const x = L.find(a.dataset.k, a.dataset.t); if (x){ ctx = null; open(x, true); } }); });
     // desktop, a drawing's own page: the search box searches in that drawing (its pills narrow to what matches, the sheet
@@ -831,7 +862,11 @@
 .lk-btn{border:1px solid var(--lk-a);background:none;color:var(--lk-a);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer;margin:6px 0}
 .lk-spec .lk-btn{font-size:var(--fb,15px);padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:var(--fb,15px);line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:var(--fb,15px);margin-left:4px}
-.lk-t td:last-child{overflow-wrap:anywhere}
+.lk-t td:last-child{overflow-wrap:anywhere}.lk-i{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;border-radius:50%;border:1.3px solid currentColor;color:var(--doc-a,#0b63c5);font:italic 700 10px/1 Georgia,serif;cursor:pointer;vertical-align:1px;opacity:.75}.lk-i:hover{opacity:1;background:color-mix(in srgb,var(--doc-a,#0b63c5) 12%,transparent)}
+.lk-src{position:fixed;z-index:1000;background:var(--card,#fff);color:var(--ink,#1d2430);border:1px solid var(--line,#d9dee5);border-radius:10px;box-shadow:0 10px 30px #0004;font-size:var(--fb,15px);line-height:1.4;overflow:hidden}.lk-src[hidden]{display:none}
+.lk-src .hd{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--th,#475569);color:#fff;font-weight:800;font-size:var(--fl,13px);letter-spacing:.3px}.lk-src .x{all:unset;cursor:pointer;font-size:20px;line-height:1;padding:0 2px}
+.lk-src .val{display:flex;gap:10px;align-items:baseline;padding:8px 12px;border-bottom:1px solid var(--line,#d9dee5)}.lk-src .val span{color:var(--mute,#5d6875)}.lk-src .doc{padding:8px 12px;border-bottom:1px solid var(--line,#d9dee5)}.lk-src .doc:last-child{border-bottom:0}
+.lk-src .dn{font-weight:800}.lk-src .dt{color:var(--mute,#5d6875);font-size:.9em}.lk-src p{margin:6px 0 0}.lk-src .tip{color:var(--mute,#5d6875);font-size:.9em}.lk-src .ok{color:#15803d;font-weight:700;font-size:.9em}.lk-src .warn{color:#b45309;font-weight:700;font-size:.9em}
 .lk-iomt{color:var(--mute)}.lk-otd{border-bottom:1px solid var(--lk-l,rgba(0,0,0,.08))}.lk-otd>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:7px 4px}.lk-otd>summary::-webkit-details-marker{display:none}.lk-otn{color:var(--mute);font-size:.9em;margin-left:auto;background:var(--card2,rgba(120,130,145,.14));border-radius:10px;padding:1px 8px;white-space:nowrap}.lk-otd>summary::after{content:"▾";color:var(--mute);transition:transform .15s}.lk-otd[open]>summary::after{transform:rotate(180deg)}.lk-otl{display:flex;flex-wrap:wrap;gap:4px 12px;padding:0 4px 8px 22px}.lk-iomm summary{cursor:pointer;color:var(--doc-a,#0b63c5);margin-top:3px}.lk-iomm[open] summary{margin-bottom:3px}
 .lk-ctw{overflow-x:auto;margin:2px 0 6px}.lk-ct{border-collapse:collapse;font-size:var(--fl,13px);min-width:100%}.lk-ct th{text-align:left;font-weight:700;color:var(--mute);border-bottom:1px solid var(--line,#ddd);padding:3px 6px;white-space:nowrap}.lk-ct td{border-bottom:1px solid var(--line,#eee);padding:3px 6px;vertical-align:top}.lk-ctl .lk-band:first-child{margin-top:2px}.lk-cu{padding:5px 2px;border-bottom:1px solid var(--line,#eee)}.lk-cu em{font-style:normal;color:var(--mute);font-size:var(--fl,13px);margin-left:4px}.lk-cuv{font-size:var(--fl,13px);margin-top:2px;color:var(--ink)}.lk-cuv b{color:var(--mute);font-weight:600}.lk-di{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;margin:0 0 0 5px;padding:0;border-radius:50%;border:1.5px solid var(--doc-a,#0b63c5);background:transparent;color:var(--doc-a,#0b63c5);font:italic 800 11px/1 Georgia,serif;vertical-align:1px;cursor:pointer}.lk-dip{position:absolute;z-index:3000;max-width:min(340px,calc(100vw - 16px));background:var(--card,#fff);color:var(--ink,#111);border:1px solid var(--line,#ccd);border-radius:10px;box-shadow:0 6px 20px #0003;padding:8px 11px;font-size:var(--fl,13px);line-height:1.35}.lk-dip:before{content:"";position:absolute;top:-6px;left:calc(var(--ax,50%) - 6px);width:10px;height:10px;background:inherit;border-left:1px solid var(--line,#ccd);border-top:1px solid var(--line,#ccd);transform:rotate(45deg)}.lk-dip b{display:block;margin-bottom:2px}.lk-dip b i{font-style:normal;font-weight:600;color:var(--mute,#667)}.lk-dip span{display:block}.lk-bandr td{padding:0!important;border:0!important}.lk-band{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2);margin:10px 0 2px}.lk-band small{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute);text-align:right}.lk-band span{white-space:nowrap}:root.phone .lk-band small{display:none}
 .lk-red,.lk-red a{color:#d11!important}.lk-clash{color:#d11;font-size:12px;font-weight:800;margin-top:2px}.lk-clash a{color:#d11;text-decoration:underline;font-weight:600;margin-left:4px}.lk-rsw{font-size:12px;color:var(--mute)}

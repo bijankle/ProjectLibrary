@@ -80,6 +80,18 @@ window.AssetViz = (() => {
     return Pid.all().filter(x => x && SH.test(x.title || "") && base(x.title) === b && /-PFD-/.test(x.number) === k)
       .map(x => [x.number, +SH.exec(x.title)[1]]).sort((a, c) => a[1] - c[1] || a[0].localeCompare(c[0])).map(x => x[0]); };
   const sheetOf = n => { const m = SH.exec((Pid.info(n) || {}).title || ""); return m ? +m[1] : null; };
+  let HELDV = null;
+  async function titleBlock(tb, n, d){
+    const held = await (HELDV || (HELDV = fetch("sp-held.json").then(r => r.ok ? r.json() : {}).catch(() => ({})))); if (!tb.isConnected) return;
+    const num = d.number || n, raw = held[num] || (window.SP ? (SP.url(num) || "") : ""), url = raw ? (window.SP ? SP.view(raw) : raw) : "";
+    const m = String(raw).match(/_((?:MS_)?[0-9A-Z]{1,3})(?:_(?:APP|RNC|RWC|IFC|IFR|AFC|IFA))?\.pdf$/i), sr = m ? m[1] : "", rev = String(d.rev || "");
+    const st = !sr ? `<span class="q">Not in the document register's SharePoint links: check the register for the latest revision.</span>`
+      : !rev ? `<span class="warn">The app has no revision recorded for this copy. SharePoint's latest file is ${esc(sr)}: check it there.</span>`
+      : sr.toUpperCase() === rev.toUpperCase() ? `<span class="ok">✓ Same revision as the latest file in SharePoint (${esc(sr)})</span>`
+      : `<span class="warn">SharePoint's latest file is ${esc(sr)}: this copy is ${esc(rev || "unknown")}. Check SharePoint.</span>`;
+    tb.innerHTML = `<div class="g"><div class="c t"><i>TITLE</i><b>${esc(d.title || "")}</b></div>`
+      + `<div class="c n"><i>DRAWING No.</i>${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" title="Open the latest file in SharePoint">${esc(num)}</a>` : `<b>${esc(num)}</b>`}</div>`
+      + `<div class="c r"><i>REV</i><b>${esc(rev || "?")}</b></div></div><div class="s">${st}</div>`; }
   function drawItem(){
     const g = ++gen, own = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(cur) : [];
     if ((!own.length && !shown) || !window.Pid || !window.PdfView){ el.innerHTML = ""; return; }
@@ -93,6 +105,10 @@ window.AssetViz = (() => {
       `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Open full screen"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button><button type="button" data-z="fit" class="vz-ze" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>` +
       `<p class="vz-note">Loading the drawing…</p></div></div>`;
     el.querySelectorAll(".vz-tab[data-n]").forEach(b => b.onclick = () => { if (b.dataset.n) go(b.dataset.n); });
+    // the drawing's title block under the sheet, laid out as on the drawing (the drawing's own was cleared from the app's
+    // copy: it names companies and people): its number, tinted as a link, opens SharePoint's latest file; a line under it
+    // says whether that file is the revision shown here
+    { const tb = document.createElement("div"); tb.className = "vz-tb"; el.querySelector(".vz-sheet").after(tb); titleBlock(tb, n, d); }
     // (desktop, 41B2: the drawing tools, the line tick boxes and the fluid codes in a bar above the drawing, off the sheet)
     if (!document.documentElement.classList.contains("phone")){ const cb = document.createElement("div"); cb.className = "vz-cb";
       cb.append(el.querySelector(".vz-tg"), el.querySelector(".vz-fltk"), el.querySelector(".vz-flg")); el.querySelector(".vz-sheet").before(cb); }
@@ -554,6 +570,11 @@ window.AssetViz = (() => {
 :root[data-theme="light"] .vz{--vz-1:#2a78d6;--vz-2:#eb6834;--vz-3:#1baf7a;--vz-4:#eda100;--vz-5:#e87ba4}
 .vz[hidden]{display:none}
 .vz-pv{display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.vz-tb{align-self:flex-end;max-width:100%;width:640px;background:#fff;color:#111;border:2px solid #111;font-family:"ISOCPEUR","Isonorm","Arial Narrow","Liberation Sans Narrow","Roboto Condensed",sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.vz-tb .g{display:grid;grid-template-columns:1fr auto 70px}.vz-tb .c{padding:4px 8px 6px;border-right:1.5px solid #111;min-width:0}.vz-tb .c:last-child{border-right:0}
+.vz-tb i{display:block;font-style:normal;font-size:9px;color:#333;margin-bottom:2px}.vz-tb b{font-weight:400;font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vz-tb .n a,.vz-tb .n b{font-size:15px;font-weight:400}.vz-tb .n a{color:#0b63c5;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}.vz-tb .r b{font-size:15px;text-align:center}
+.vz-tb .s{border-top:1.5px solid #111;padding:3px 8px;font:600 11.5px system-ui,sans-serif;letter-spacing:0;text-transform:none}.vz-tb .ok{color:#15803d}.vz-tb .warn{color:#b45309}.vz-tb .q{color:#5d6875}
 .vz-tabs{display:flex;flex-wrap:wrap;gap:6px}
 .vz-tab{border:1px solid var(--line);background:var(--card,var(--panel));color:var(--mute);border-radius:8px;padding:5px 10px;font:inherit;font-size:var(--fb,15px);cursor:pointer}
 .vz-tab.on{border-color:var(--gold);color:var(--ink);font-weight:700}
