@@ -1057,7 +1057,16 @@ window.PdfView = (() => {
   // (whichever way you left it: the strip, a ribbon, ← or →; the visit's first drawing has none)
   let lastNum = null;
   const came = () => lastNum && cur && lastNum !== cur.number ? lastNum : null;
-  return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, arrows,
+  // a line picked on the drawing beside an item's page (viz.js): its fly through here once this sheet is up
+  async function want(n, label, at){ const t0 = Date.now();
+    while (Date.now() - t0 < 12000){ if (cur && cur.number === n && V.pgFor === cur && V.refs && V.refs.length) break; await new Promise(ok => setTimeout(ok, 150)); }
+    if (!cur || cur.number !== n) return; const D = await linesFor(n); if (!cur || cur.number !== n) return;
+    const gi = V.refs.findIndex(r => (r[6] === "line" || r[6] === "mel" || r[6] === "elec") && String(r[5]).split("|")[0] === label && D[V.refs.indexOf(r)]); if (gi < 0) return;
+    if (V.page !== V.refs[gi][0]) await go(V.refs[gi][0], true);
+    const b = boxOf(V.refs[gi]), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap(); trace(gi, at || null, [bx.l, bx.t, bx.w, bx.h]); }
+  // the coloured lines' settings and palette, shared with that drawing
+  const flApi = { FLC, FLN, fluid, get: () => ({ c: FL.c, w: FL.w, leg: FL.leg }), set(f, v){ FL[f] = v; try { localStorage.setItem({ c: "kcgm_flc", w: "kcgm_flw", leg: "kcgm_flleg" }[f], v ? "1" : "0"); } catch (x) {} if (V && !V.el.hidden){ if (V.ftk){ V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w; } drawFl(); } } };
+  return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, arrows, want, fl: flApi,
     saved: () => { try { return JSON.parse(sessionStorage.getItem(SSK) || "null"); } catch (e) { return null; } },
     // a tag picked from the list under the sheet: zoomed to and marked by its box (pid-refs.json), else found in the text
     find: t => { if (!V || !cur) return; fitFilter(t, true); if (V.fmatch.length){ V.fstep = -1; fitStep(1); return; } fitFilter(""); findText(t, true); }, panelOn: () => !!(V && V.cx && !V.cx.hidden && !V.el.hidden), clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };

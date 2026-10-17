@@ -85,7 +85,7 @@ window.AssetViz = (() => {
     // sheets of a series are reached through their continuation boxes on the drawing
     el.style.paddingTop = "";   // (the charts' extra top room, to line up with the Results band, is not for a drawing: it sits snug at the top)
     el.innerHTML = `<div class="vz-pv"><div class="vz-hd vz-tools"><b class="vz-ttl">${esc(Pid.label(n))}</b></div>` +
-      `<div class="vz-sheet"><div class="vz-tg"><button type="button" data-z="hand" class="vz-md" title="Pan: drag the drawing">${HAND}</button><button type="button" data-z="sel" class="vz-md" title="Select text">${ARROW}</button><i></i><button type="button" data-z="fit" title="Zoom to fit the whole sheet">${FIT}</button></div><div class="vz-stage"><canvas></canvas><div class="vz-rf"></div><div class="vz-fd"></div><div class="vz-tx sp-text"></div><div class="vz-mk"></div></div>` +
+      `<div class="vz-sheet"><div class="vz-tg"><button type="button" data-z="hand" class="vz-md" title="Pan: drag the drawing">${HAND}</button><button type="button" data-z="sel" class="vz-md" title="Select text">${ARROW}</button><i></i><button type="button" data-z="fit" title="Zoom to fit the whole sheet">${FIT}</button></div><div class="sp-fltk vz-fltk" hidden><label><input type="checkbox" data-f="c"><span>Colours</span></label><label><input type="checkbox" data-f="w"><span>Flow animation</span></label></div><div class="sp-flg lkC dk vz-flg" hidden></div><div class="vz-stage"><canvas></canvas><svg class="sp-fl"></svg><div class="vz-rf"></div><div class="vz-fd"></div><div class="vz-tx sp-text"></div><div class="vz-mk"></div></div>` +
       `<div class="vz-zb"><button type="button" data-z="out" title="Zoom out">−</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="full" title="Open full screen"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button><button type="button" data-z="fit" class="vz-ze" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>` +
       `<p class="vz-note">Loading the drawing…</p></div></div>`;
     el.querySelectorAll(".vz-tab[data-n]").forEach(b => b.onclick = () => { if (b.dataset.n) go(b.dataset.n); });
@@ -128,7 +128,7 @@ window.AssetViz = (() => {
     const pts = new Map(); let moved = 0, pinch = null;
     box.addEventListener("mousedown", e => { if (e.button === 1) e.preventDefault(); });   // (no browser auto-scroll: that moved the whole page)
     box.addEventListener("auxclick", e => { if (e.button === 1) e.preventDefault(); });
-    box.addEventListener("pointerdown", e => { if (e.target.closest(".vz-zb,.vz-tg")) return; moved = 0;
+    box.addEventListener("pointerdown", e => { if (e.target.closest(".vz-zb,.vz-tg,.vz-fltk,.vz-flg")) return; moved = 0;
       if (e.pointerType === "mouse" && e.button !== 1 && !(e.button === 0 && box.classList.contains("vz-hand"))) return;   // (mouse: the hand drags with the left button, the pointer selects text; the middle one always pans)
       if (e.pointerType === "mouse") e.preventDefault(); pts.set(e.pointerId, [e.clientX, e.clientY]);
       if (pts.size === 2){ const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z }; } });
@@ -150,8 +150,13 @@ window.AssetViz = (() => {
     let hv = null; box.addEventListener("mousemove", e => { const a = pts.size ? null : refAt(e.clientX, e.clientY); if (a === hv) return; if (hv) hv.classList.remove("hv"); hv = a; if (a) a.classList.add("hv"); box.classList.toggle("on-ref", !!a); });
     // (a text selection made on the sheet means that click was the end of selecting; one elsewhere on the page, e.g. the
     // item's heading, doesn't stop a tap on the sheet)
-    box.addEventListener("click", e => { if (e.target.closest(".vz-zb") || moved > 4) return; const sl = getSelection(); if (sl && !sl.isCollapsed && String(sl).trim() && box.contains(sl.anchorNode)) return;
-      const a = refAt(e.clientX, e.clientY);
+    box.addEventListener("click", e => { if (e.target.closest(".vz-zb,.vz-fltk,.vz-flg") || moved > 4) return; const sl = getSelection(); if (sl && !sl.isCollapsed && String(sl).trim() && box.contains(sl.anchorNode)) return;
+      const a = refAt(e.clientX, e.clientY), dk = !document.documentElement.classList.contains("phone");
+      // a line number, or the pipe itself: its fly through, in the full viewer (pdfview.js), on this sheet
+      if (dk && isPid && a && a.dataset.k === "line"){ e.stopPropagation(); flyTo(a.dataset.t.split("|")[0], null); return; }
+      if (dk && isPid && !a && !e.target.closest(".vz-tg")){ const hit = pipeAt(e.clientX, e.clientY); if (hit){ e.stopPropagation(); flyTo(hit.label, hit.at); return; } }
+      // (a fluid picked in the legend: the bare sheet goes back to every fluid in colour)
+      if (!a && flPick){ e.stopPropagation(); flPickSet(null); return; }
       // (an empty part of the sheet, an asset's page showing: the drawing's own page, the sheet left as it is)
       if (!a){ if (cur && cur.t !== "pid" && !document.documentElement.classList.contains("phone") && window.kcgmOpenTag && !e.target.closest(".vz-tg")){ keepView = { n, z, tx, ty, tap: null, force: true }; setTimeout(() => { if (keepView && keepView.force) keepView = null; }, 2500); kcgmOpenTag(n); } return; }
       e.stopPropagation();
@@ -160,6 +165,40 @@ window.AssetViz = (() => {
       if (k === "d"){ if (Pid.has(t)){ arrival = { to: t, back: a.dataset.b ? JSON.parse(a.dataset.b) : null }; if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }
       // a tag on this sheet: its item opens on the left and the sheet stays as you have it (same zoom and place), only the arrow moves
       const tag = t.split("|")[0], bi = [...rfEl.children].indexOf(a); keepView = { n, z, tx, ty, tap: boxes[bi] || null }; if (window.kcgmOpenTag) kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); });
+    // ---- coloured lines (as in the full viewer, pdfview.js: the same tick boxes, palette, legend and settings) ----
+    const isPid = /-PID-/.test(d.number || ""), FLX = PdfView.fl, flTk = box.querySelector(".vz-fltk"), flLg = box.querySelector(".vz-flg"), flSvg = box.querySelector(".sp-fl");
+    let flD = null, flRefs = [], flPick = null;
+    const flyTo = (label, at) => { Pid.open(n, cur.t === "pid" ? null : key); PdfView.want(d.number, label, at); };
+    const pipeAt = (x, y) => { if (!flD) return null; const q = stage.getBoundingClientRect(); if (!q.width) return null; let best = null;
+      for (const k of Object.keys(flD)){ if (!/^\d+$/.test(k) || !flRefs[+k] || flRefs[+k][0] !== 1) continue;
+        const P = flD[k].map(p => [q.left + p[0] / 1e4 * q.width, q.top + p[1] / 1e4 * q.height]);
+        for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = x1 - x0, dy = y1 - y0, ll = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ll)), dd = Math.hypot(x0 + t * dx - x, y0 + t * dy - y);
+          if (dd < 10 && (!best || dd < best.d)) best = { d: dd, label: String(flRefs[+k][5]).split("|")[0], at: [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }; } }
+      return best; };
+    const flPickSet = c => { flPick = c; flSvg.classList.toggle("dim", !!c); flSvg.classList.toggle("pk", !!c);
+      flSvg.querySelectorAll("polyline").forEach(p => p.classList.toggle("sel", !!c && p.dataset.fc === c)); flLg.classList.toggle("pk", !!c);
+      flLg.querySelectorAll("[data-fc]").forEach(r => r.classList.toggle("on", r.dataset.fc === c)); };
+    async function flDraw(){ if (!FLX || !isPid || g !== gen) return; const S = FLX.get(); flTk.hidden = document.documentElement.classList.contains("phone");
+      flTk.querySelector('[data-f="c"]').checked = S.c; flTk.querySelector('[data-f="w"]').checked = S.w;
+      if (!flD) flD = await fetch("lines/" + d.number + ".json").then(r => r.ok ? r.json() : {}).catch(() => ({}));
+      if (g !== gen) return;
+      if (!S.c || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }
+      const cnt = {}; let h = "", fw = ""; flSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      Object.keys(flD).forEach(k => { if (!/^\d+$/.test(k)) return; const r = flRefs[+k]; if (!r || r[0] !== 1) return; const c = FLX.fluid(r[5]), col = FLX.FLC[c]; if (!col) return; cnt[c] = (cnt[c] || 0) + 1;
+        const pts = flD[k].map(p => (p[0] / 1e4 * W).toFixed(1) + "," + (p[1] / 1e4 * H).toFixed(1)).join(" ");
+        h += `<polyline data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
+        if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-fc="${c}" points="${pts}" style="animation-delay:-${(k * .37 % 1.1).toFixed(2)}s"/>`; });
+      flSvg.innerHTML = h + fw; const cs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b));
+      flLg.hidden = !cs.length; flLg.classList.toggle("open", S.leg);
+      flLg.innerHTML = `<button type="button" class="hd"><b>${S.leg ? "Fluids on this drawing" : "Fluids"}</b>${S.leg ? "" : `<span class="fl-dots">${cs.map(c => `<i style="background:${FLX.FLC[c]}"></i>`).join("")}</span>`}<em>${S.leg ? "Hide ▴" : "Show ▾"}</em></button>`
+        + (S.leg ? `<div class="grid">${cs.map(c => `<button type="button" class="row" data-fc="${c}" style="--c:${FLX.FLC[c]}" title="Only ${esc(FLX.FLN[c] || c)} in colour"><i class="sw" style="background:${FLX.FLC[c]}"></i><span class="cd" style="--c:${FLX.FLC[c]}">${c}</span><span class="nm">${esc(FLX.FLN[c] || "")}</span><span class="ct">${cnt[c]}</span></button>`).join("")}</div>` : "");
+      flPickSet(flPick && cnt[flPick] ? flPick : null); }
+    flTk.addEventListener("change", e => { const f = e.target.dataset.f; if (f && FLX){ FLX.set(f, e.target.checked); flDraw(); } });
+    flLg.addEventListener("click", e => { e.stopPropagation(); const row = e.target.closest("[data-fc]");
+      if (row){ flPickSet(flPick === row.dataset.fc ? null : row.dataset.fc); return; }
+      if (e.target.closest(".hd") && FLX){ FLX.set("leg", !FLX.get().leg); flDraw(); } });
+    const flEsc = e => { if (!box.isConnected){ removeEventListener("keydown", flEsc, true); return; } if (e.key === "Escape" && flPick && !document.querySelector(".sp-view:not([hidden])")){ e.stopImmediatePropagation(); flPickSet(null); } };
+    addEventListener("keydown", flEsc, true);
     PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
       if (g !== gen) return; page = pg;
       const v1 = pg.getViewport({ scale: 1 }), bw = box.clientWidth, bh = Math.max(200, innerHeight - box.getBoundingClientRect().top - 24);
@@ -175,7 +214,7 @@ window.AssetViz = (() => {
       finder = { box, stage, get z(){ return z; }, n: d.number, g };
       const refsP = Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
         const A = W / H; boxes = [];
-        refsNow = (R[d.number] || []).filter(r => r[0] === 1 && r[6] !== "x");
+        refsNow = (R[d.number] || []).filter(r => r[0] === 1 && r[6] !== "x"); flRefs = R[d.number] || []; flDraw();
         rf.innerHTML = refsNow.map(r => { const fit = r[7] === "o" || r[7] === "b";   // (fitted to the printed bubble or box: used as is, as in the full screen viewer)
           const rb = r[6] === "d" && Array.isArray(r[8]);   // (a continuation: its ribbon's outline)
           const [l, t, w, h] = rb ? r[8] : fit ? [r[1], r[2], r[3], r[4]] : PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
@@ -349,7 +388,7 @@ window.AssetViz = (() => {
 .vz-sheet .vz-tx{z-index:2}.vz-mk{z-index:3}
 .vz-zb{position:absolute;right:8px;bottom:8px;display:flex;gap:4px;z-index:2}.vz-zb button{width:32px;height:32px;border-radius:8px;border:1px solid #d9dee5;background:#fff;color:#1d2430;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}.vz-zb .vz-ze{border-radius:50%;border:1.5px solid var(--gold);color:color-mix(in srgb,var(--gold) 75%,var(--ink))}   /* zoom extents, in the corner as in the full screen viewer */
 .vz-zb button:hover{border-color:var(--gold)}
-.vz-mk{position:absolute;left:0;top:0;pointer-events:none}:root:not(.phone) .vz-zb [data-z="out"],:root:not(.phone) .vz-zb [data-z="in"],:root:not(.phone) .vz-zb [data-z="full"]{display:none}:root.phone .vz-zb .vz-md{display:none}.vz-ttl{font:800 22px/1.2 system-ui,sans-serif;color:var(--ink);letter-spacing:.01em}.vz-sheet>.vz-tg{position:absolute;left:8px;top:8px;z-index:5;box-shadow:0 2px 8px #0002}.vz-tg{display:inline-flex;gap:2px;padding:2px;background:var(--card,#fff);border:1.5px solid var(--line);border-radius:9px}.vz-tg button{width:30px;height:30px;border:0;border-radius:7px;background:none;color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0}.vz-tg i{width:1px;background:var(--line);margin:4px 2px}:root.phone .vz-sheet>.vz-tg{display:none}:root:not(.phone) .vz-zb{display:none}.vz-tg .vz-md.on,.vz-zb .vz-md.on{background:var(--th-t,#eef1f5);box-shadow:inset 0 0 0 2px var(--th,#475569)}.vz-hand .vz-sheet{cursor:grab}.vz-hand.drag .vz-sheet{cursor:grabbing}.vz-hand .vz-tx{pointer-events:none;user-select:none;-webkit-user-select:none}:root:not(.phone) .vz-zb [data-z="full"]{display:none}
+.vz-mk{position:absolute;left:0;top:0;pointer-events:none}:root:not(.phone) .vz-zb [data-z="out"],:root:not(.phone) .vz-zb [data-z="in"],:root:not(.phone) .vz-zb [data-z="full"]{display:none}:root.phone .vz-zb .vz-md{display:none}.vz-ttl{font:800 22px/1.2 system-ui,sans-serif;color:var(--ink);letter-spacing:.01em}.vz-sheet>.vz-tg{position:absolute;left:8px;top:8px;z-index:5;box-shadow:0 2px 8px #0002}.vz-fltk{left:8px;top:52px;z-index:5}.vz-flg{right:8px;top:8px;max-height:calc(100% - 16px);z-index:5}.vz-tg{display:inline-flex;gap:2px;padding:2px;background:var(--card,#fff);border:1.5px solid var(--line);border-radius:9px}.vz-tg button{width:30px;height:30px;border:0;border-radius:7px;background:none;color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0}.vz-tg i{width:1px;background:var(--line);margin:4px 2px}:root.phone .vz-sheet>.vz-tg{display:none}:root:not(.phone) .vz-zb{display:none}.vz-tg .vz-md.on,.vz-zb .vz-md.on{background:var(--th-t,#eef1f5);box-shadow:inset 0 0 0 2px var(--th,#475569)}.vz-hand .vz-sheet{cursor:grab}.vz-hand.drag .vz-sheet{cursor:grabbing}.vz-hand .vz-tx{pointer-events:none;user-select:none;-webkit-user-select:none}:root:not(.phone) .vz-zb [data-z="full"]{display:none}
 .vz-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start}
 .vz-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:1px;min-width:0}.vz-tile em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vz-tile span{font-size:var(--fl,13px);color:var(--mute);text-transform:uppercase;letter-spacing:.05em;font-weight:700}.vz-tile b{font-size:var(--fh,22px);line-height:1.15;font-variant-numeric:tabular-nums}.vz-tile em{font-style:normal;font-size:var(--fb,15px);color:var(--mute)}
