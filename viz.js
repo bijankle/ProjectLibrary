@@ -48,6 +48,7 @@ window.AssetViz = (() => {
     // (a kept view waits for the item it was kept for: closing the full screen viewer steps back through the one before)
     if (keepView && keepView.key && nk(keepView.key) !== nk(it.key)){ cur = it; return; }
     const kv = keepView && (own.includes(keepView.n) || keepView.tap || keepView.force) ? keepView : null; keepView = null;
+    if (!kv) TRV = null;   // (an item picked on the left, not from the drawing: its drawing afresh, no fly through)
     cur = it; shown = kv ? kv.n : null; hist = []; lastSig = ""; held = kv; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
   function list(){}
   // Back to an item: its drawing as it was left (index.html keeps it with the history step)
