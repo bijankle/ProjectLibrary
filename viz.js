@@ -315,9 +315,9 @@ window.AssetViz = (() => {
       trl.innerHTML = rg + (tr ? `<polyline class="tr" points="${tr}"/><polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "")
         + `<polygon points="${[[ex, ey], [bx0 - uy * B, by0 + ux * B], [bx0 + uy * B, by0 - ux * B]].map(p => p.map(v => v.toFixed(1)).join(",")).join(" ")}"/>`; }
     // (the milestones: names read across under the bar, each where it costs least, no callout crossing a name or another)
-    function trMarks(){ const c = tb.querySelector(".sp-trc"), Wd = c.offsetWidth || 400, BB = Math.round(sl.offsetTop + sl.offsetHeight / 2 + 4) || 20, J = BB + 9, RH = 16, R0 = BB + 14, NR = 6, G = 6;
+    function trMarks(){ const c = tb.querySelector(".sp-trc"), Wd = c.offsetWidth || 400, BB = Math.round(sl.offsetTop + sl.offsetHeight / 2 + 4) || 20, J = BB + 9, RH = 20, R0 = BB + 14, NR = 6, G = 6;
       const pr = m => ({ r: 0, l: 1, e: 2, b: 2, x: 3, t: 3, i: 4, f: 4, d: 5, p: 5, v: 5, a: 6, s: 6 })[m[1]] ?? 7, rows = [...Array(NR)].map(() => []), legs = [], put = [];
-      const wid = m => (TT[m[1]] || "").length * 5.4 + trName(m).length * 6.9 + 8;
+      const wid = m => (TT[m[1]] || "").length * 5.4 + trName(m).length * 6.9 + 8 + (m[2] && ASK.includes(m[1]) ? 12 : 0);
       const ok = (x, xv, r, a, b) => { if (a < 0 || b > Wd) return false;
         if (rows[r].some(q => q[0] < b + G && a < q[1] + G)) return false;
         if (rows.slice(0, r).some(Rw => Rw.some(q => q[0] - 2 < xv && xv < q[1] + 2))) return false;
@@ -337,8 +337,9 @@ window.AssetViz = (() => {
       c.innerHTML = T.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%;top:${BB + 1}px" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
         + `<svg class="sp-trco" width="${Wd}" height="${R0 + NR * RH}">${put.map(([m, x, a, r, xv]) => { const y = R0 + r * RH + 7, e2 = a > xv ? a - 1 : a + wid(m) + 1;
             return `<polyline points="${x.toFixed(1)},${BB + 6} ${x.toFixed(1)},${J} ${xv.toFixed(1)},${J} ${xv.toFixed(1)},${y} ${e2.toFixed(1)},${y}"/>`; }).join("")}</svg>`
-        + put.map(([m, x, a, r]) => { const go = m[1] === "t" && teeKey(m) != null;   // (a tee whose branch is traced here: a tab that flies onto it)
-          return `<b class="h k-${m[1]}${go ? " go" : ""}"${go ? ` data-f="${m[0]}" data-t="${esc(m[2])}" title="Fly along ${esc(m[2])}"` : ""} style="left:${a.toFixed(1)}px;top:${R0 + r * RH - (go ? 2 : 0)}px"><em>${TT[m[1]] || ""}</em> ${esc(trName(m))}</b>`; }).join(""); }
+        + put.map(([m, x, a, r]) => { const go = m[1] === "t" && teeKey(m) != null, as = !go && ASK.includes(m[1]) && !!m[2];   // (a tee whose branch is traced here: a tab that flies onto it; an instrument, valve, equipment: a button that opens it)
+          return `<b class="h k-${m[1]}${go ? " go" : as ? " go as" : ""}"${go ? ` data-f="${m[0]}" data-t="${esc(m[2])}" title="Fly along ${esc(m[2])}"` : as ? ` data-g="${esc(m[2])}" title="Open ${esc(m[2])}"` : ""} style="left:${a.toFixed(1)}px;top:${R0 + r * RH - (go || as ? 2 : 0)}px"><em>${TT[m[1]] || ""}</em> ${esc(trName(m))}</b>`; }).join(""); }
+    const ASK = ["v", "p", "i", "e", "b", "x", "d", "f"];
     // the branch line at a tee: the traced line on this sheet with that number, its end nearest the tee
     function teeKey(m){ if (!flD || !m[2]) return null; const at = trAt(m[0]); let best = null;
       for (const k of Object.keys(flD)){ if (String(k) === String(T.k)) continue; const lab = /^\d+$/.test(k) ? (flRefs[+k] && flRefs[+k][0] === 1 ? String(flRefs[+k][5]).split("|")[0] : null) : flD.lb && flD.lb[k];
@@ -380,7 +381,11 @@ window.AssetViz = (() => {
       if (k == null && tp.label){ const C = flRefs.map((r, i) => i).filter(i => flRefs[i][0] === 1 && flRefs[i][6] === "line" && String(flRefs[i][5]).split("|")[0] === tp.label && flD[i]); k = C[0]; rbr = flRefs[bk[0]]; }
       if (k == null) return false; const P = flD[k], end = rbr ? [rbr[1] + rbr[3] / 2, rbr[2] + rbr[4] / 2] : (tp.dir < 0 ? P[P.length - 1] : P[0]);
       return trStart(k, end, 0, tp.label); }
-    tb.addEventListener("click", e => { const g = e.target.closest("b.go"); if (g && T){ e.stopPropagation(); const m = T.m.find(q => q[1] === "t" && String(q[0]) === g.dataset.f && q[2] === g.dataset.t); const k = m && teeKey(m); if (k != null) trGo({ k, pt: trAt(m[0]) }); return; } }, true);
+    tb.addEventListener("click", e => { const g = e.target.closest("b.go"); if (g && T){ e.stopPropagation();
+      // (an asset named on the strip: out of the fly through, the asset opened with its box on this sheet marked)
+      if (g.dataset.g){ const tag = g.dataset.g, bi = refsNow.findIndex(r => r[0] === 1 && String(r[5]).split("|").includes(tag)); trEnd();
+        if (window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: boxes[bi] || null }; kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); } return; }
+      const m = T.m.find(q => q[1] === "t" && String(q[0]) === g.dataset.f && q[2] === g.dataset.t); const k = m && teeKey(m); if (k != null) trGo({ k, pt: trAt(m[0]) }); return; } }, true);
     tb.addEventListener("click", e => { e.stopPropagation(); const b = e.target.closest("button"); if (!b) return;
       if (b.classList.contains("sp-trx")) return trEnd();
       if (b.classList.contains("sp-tro")){ if (T && !noPage(T.k) && window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: null, force: true }; kcgmOpenTag(T.label); setTimeout(() => { keepView = null; }, 2000); } return; }

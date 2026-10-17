@@ -48,6 +48,10 @@ window.PdfView = (() => {
     tz.innerHTML = `<button type="button" data-z="10" aria-label="Closer">+</button><span class="sp-trzb"><input type="range" class="sp-trz sp-rg" min="0" max="100" step="any" aria-label="Zoom"></span><button type="button" data-z="-10" aria-label="Further">−</button>`;
     tz.addEventListener("click", e => e.stopPropagation()); el.appendChild(tz);
     tb.addEventListener("click", e => { e.stopPropagation(); const g = e.target.closest("b.go"); if (!g || !TR) return;
+      // (an instrument, valve, equipment named on the strip: out of the fly through, the asset opened, its box on the sheet marked)
+      if (g.classList.contains("as")){ const tag = g.dataset.t, i = V.pageRefs.findIndex(r => String(r[5]).split("|").includes(tag)), bx = i >= 0 ? V.boxes[i] : null;
+        if (bx){ V.tap = { page: V.page, l: bx[0] / 1e4, t: bx[1] / 1e4, w: bx[2] / 1e4, h: bx[3] / 1e4 }; drawTap(); }
+        trEnd(); if (cur && cur.onRef) cur.onRef(tag, "tag", null, bx || null); return; }
       const m = TR.m.find(q => q[1] === "t" && String(q[0]) === g.dataset.f && q[2] === g.dataset.t), k = m && teeK(m); if (k != null) trGo({ k, pt: trAt(m[0]) }); }); el.appendChild(tb);
     const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
     cb.onclick = () => cur && cur.corner && cur.corner.go();
@@ -455,6 +459,7 @@ window.PdfView = (() => {
   // (each milestone a mark through the bar; its type stands upright above and its name below in the same column, each on
   // a 45° callout from the mark, read bottom to top: TEE / 0588, VALVE / 11318; callouts lean a little further where names would touch, and
   // where they are packed too tight only the mark shows)
+  const ASK = ["v", "p", "i", "e", "b", "x", "d", "f"];   // (the marks naming an asset: a button on the strip that opens it)
   const TT = { t: "TEE", v: "VALVE", p: "SP", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END", b: "BOARD", x: "TX", d: "DEVICE", a: "RATING", f: "FEEDER" };
   // desktop (wide): the names read across, "VALVE 11318", snug under the bar on rows of their own. Each goes where it costs
   // least: the row nearest the bar, its callout straight down from its mark; failing that a callout that dog-legs (down,
@@ -504,7 +509,7 @@ window.PdfView = (() => {
     const ln = (x, lx, y0, up) => { const d = Math.abs(lx - x), e = DM + 2; return `<polyline points="${x.toFixed(1)},${y0} ${lx.toFixed(1)},${(up ? y0 - d : y0 + d).toFixed(1)} ${lx.toFixed(1)},${(up ? y0 - e : y0 + e).toFixed(1)}"/>`; };
     c.innerHTML = TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
       + `<svg class="sp-trco" width="${W}" height="${BB + 40}">${named.map(([m, x, lx]) => ln(x, lx, BT, true) + ln(x, lx, BB, false)).join("")}</svg>`
-      + named.map(([m, x, lx]) => `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px;bottom:calc(100% - ${BT - DM - 5}px)">${TT[m[1]] || ""}</b><b class="k-${m[1]}${m[1] === "t" && teeK(m) != null ? " go" : ""}" data-f="${m[0]}" data-t="${esc(m[2] || "")}" style="left:${lx.toFixed(1)}px;top:${BB + DM + 5}px">${esc(trName(m))}</b>`).join(""); }
+      + named.map(([m, x, lx]) => `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px;bottom:calc(100% - ${BT - DM - 5}px)">${TT[m[1]] || ""}</b><b class="k-${m[1]}${m[1] === "t" && teeK(m) != null ? " go" : ASK.includes(m[1]) && m[2] ? " go as" : ""}" data-f="${m[0]}" data-t="${esc(m[2] || "")}" style="left:${lx.toFixed(1)}px;top:${BB + DM + 5}px">${esc(trName(m))}</b>`).join(""); }
   // the branch line at a tee (a tap on its name flies onto it): the traced line on this sheet with that number, nearest the tee
   function teeK(m){ const D = TR && TR.D; if (!D || !m[2]) return null; const at = trAt(m[0]); let best = null;
     for (const k of Object.keys(D)){ if (String(k) === String(TR.k) || !Array.isArray(D[k]) || !/^(\d+|u\d+|r\d+)$/.test(k)) continue; const r = refK(k, D), lab = /^\d+$/.test(k) ? (r && r[0] === TR.page ? String(r[5]).split("|")[0] : null) : D.lb && D.lb[k];
