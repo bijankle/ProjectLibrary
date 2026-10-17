@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.join(R, "tools"))
 import build_line_paths as B
 
 REFS = json.load(open(os.path.join(R, "pid-refs.json"))); IX = json.load(open(os.path.join(R, "PIDs", "index.json")))["pids"]
+LISTED = {str(r[0]) for r in json.load(open(os.path.join(R, "search-data.json")))["data"].get("line", [])}
 PIPE = re.compile(r"^(\d{2,4})(?:x\d{2,4})?-MECH-[A-Z0-9.]{2,10}$")
 
 
@@ -37,15 +38,17 @@ def run(path):
     D = json.load(open(path)); refs = REFS.get(num, [])
     isu = lambda k: re.fullmatch(r"u\d+", k)
     for k in [k for k in D if isu(k)]: del D[k]
-    D.pop("ub", None); D.pop("pj", None)
+    D.pop("ub", None); D.pop("pj", None); D.pop("uk", None)
     for g in ("lb", "m", "fl"):
         if g in D: D[g] = {k: v for k, v in D[g].items() if not isu(k)}
     doc = pymupdf.open(os.path.join(R, IX[num]["file"])); n = 0
     for pn in range(len(doc)):
         p = doc[pn]
-        if p.rotation: continue
         words = p.get_text("words"); mech = [(w[4], pymupdf.Rect(w[:4])) for w in words if PIPE.match(w[4])]
-        if not mech: continue
+        # (and line numbers printed on the sheet that its tappable refs missed: in the line list or not, traced the same)
+        have = {str(q[5]).split("|")[0] for q in refs if q[6] == "line" and q[0] == pn + 1}
+        lone = [(w[4], pymupdf.Rect(w[:4])) for w in words if B.LINE.fullmatch(w[4]) and w[4] not in have]
+        if not mech and not lone: continue
         W, H = p.rect.width, p.rect.height
         S = B.strokes(p); AR = B.arrows(p)
         LBL = [(w[4], pymupdf.Rect(w[:4])) for w in words if B.LINE.fullmatch(w[4])] + mech
@@ -79,10 +82,23 @@ def run(path):
                 if rr.contains(pymupdf.Point(*pt)): return i
             return None
         U = {}
-        for lbl, rr in mech:
-            T = B.trace(S, LBL, rr, lbl, WD=WD, splits=False)
+        THIN = [(it[1].x, it[1].y, it[2].x, it[2].y) for d in B.drawings(p) if not B.pale(d.get("color")) for it in d["items"] if it[0] == "l" and math.hypot(it[2].x - it[1].x, it[2].y - it[1].y) >= 3]
+        FINE = None
+        for lbl, rr in mech + lone:
+            num_ = not PIPE.match(lbl)
+            T = B.trace(S, LBL, rr, lbl, WD=WD, splits=num_)
+            if num_ and (not T or len(T[0]) < 2):   # (as a numbered line: a leader, then the fine pens)
+                sd = B.leader(rr, THIN, S); T = sd and B.trace(S, LBL, sd, lbl, WD=WD)
+                if not T or len(T[0]) < 2:
+                    FINE = FINE or B.strokes(p, -1); T = B.trace(FINE, LBL, rr, lbl, WD=WD)
             if not T or len(T[0]) < 2 or T[3][-1] < 25: continue
             P = list(T[0])
+            # (an end run on along a numbered line's pipe, round a corner into it: cut back to where it meets it)
+            for end in (0, 1):
+                Q = P if end == 0 else P[::-1]
+                run = max([B.shared(Q, K) for K in known.values()] or [0])
+                if 6 < run < B.seglen(Q)[-1] - 20: Q = B.cut(Q, run); P = Q if end == 0 else Q[::-1]
+            T = (P, T[1], T[2], B.seglen(P))
             # (not a numbered line's own pipe, nor one already traced from the same label printed twice)
             if any(B.shared(P, Q) > .6 * T[3][-1] for Q in list(known.values()) + [u[0] for u in U.values()]): continue
             U["u" + str(len(U) + sum(1 for k in D if isu(k)))] = [P, lbl, rr, T]
@@ -134,6 +150,7 @@ def run(path):
             if fl.get(k, 0) < 0: P = P[::-1]; tees = [(tot - d, o) for d, o in tees]
             D[k] = [[round(x / W * 1e4), round(y / H * 1e4)] for x, y in P]
             D.setdefault("lb", {})[k] = lbl
+            if lbl in LISTED: D.setdefault("uk", {})[k] = 1   # (in the line list: its page can open)
             D.setdefault("ub", {})[k] = [pn + 1, round(rr.x0 / W * 1e4), round(rr.y0 / H * 1e4), round(rr.width / W * 1e4), round(rr.height / H * 1e4)]
             M = [[round(d / tot, 3), "t", o] for d, o in tees]
             for q in refs:

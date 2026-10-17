@@ -393,7 +393,7 @@ window.PdfView = (() => {
   // a process pipe with no line number ("u<n>", tools/link_pipes.py: 1200-MECH-CERAMIC from a hopper to its pump) stands
   // in for a line: a ref made from its label and where that sits ([page, x, y, w, h, label, "line", , "u"])
   const isU = k => /^u\d+$/.test(k);
-  const refK = (k, D) => { if (isU(k)){ D = D || (cur && LNR[cur.number]) || {}; const b = D.ub && D.ub[k]; return b ? [b[0], b[1], b[2], b[3], b[4], D.lb[k], "line", null, "u"] : null; } return V.refs[+k]; };
+  const refK = (k, D) => { if (isU(k)){ D = D || (cur && LNR[cur.number]) || {}; const b = D.ub && D.ub[k]; return b ? [b[0], b[1], b[2], b[3], b[4], D.lb[k], "line", null, D.uk && D.uk[k] ? "uk" : "u"] : null; } return V.refs[+k]; };   // ("uk": a line number in the line list, its page can open)
   // the traced line under a tap on the sheet (within 10 px of its path), and the spot on the sheet tapped
   function lineAt(x, y){ const D = cur && LNR[cur.number]; if (!D || !V.refs || !V.refs.length) return null; const q = V.sheet.getBoundingClientRect(); if (!q.width) return null;
     let best = null;
@@ -414,7 +414,7 @@ window.PdfView = (() => {
       const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
       TR = { t0: Date.now(), D, n: cur.number, k, P, L, page: r[0], label: (D.lb && D.lb[k]) || String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
       TR.tn = new Map(TR.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, n) => [m, n + 1]));   // (tees numbered from upstream: T1, T2 …)
-      { const ab = V.tb.querySelector(".sp-tro"); if (ab) ab.hidden = r[8] === "u"; }
+      { const ab = V.tb.querySelector(".sp-tro"); if (ab) ab.hidden = r[8] === "u"; }   // (no page to open)
       // the slider runs from the line's upstream end (0, where the flow arrows show it, tools/build_line_paths.py); it
       // starts there, or at the end by the ribbon arrived through
       let f = 0;
@@ -607,7 +607,7 @@ window.PdfView = (() => {
     const e = dir > 0 ? TR.P[TR.P.length - 1] : TR.P[0], dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]);
     const segd = (Q, q) => { let m = 1e18; for (let i = 1; i < Q.length; i++){ const [x0, y0] = Q[i - 1], [x1, y1] = Q[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
       const t = Math.max(0, Math.min(1, ((q[0] - x0) * A * dx + (q[1] - y0) * dy) / ll)); m = Math.min(m, Math.hypot((x0 + t * (x1 - x0) - q[0]) * A, y0 + t * (y1 - y0) - q[1])); } return m; };
-    const out = [], seq = k2 => isU(k2) ? String(D.lb[k2]).split("-").slice(0, 2).join("\n") : String(V.refs[k2][5]).split("|")[0].split("-")[1] || "?";
+    const out = [], seq = k2 => isU(k2) && /-MECH-/.test(D.lb[k2]) ? String(D.lb[k2]).split("-").slice(0, 2).join("\n") : isU(k2) ? String(D.lb[k2]).split("-")[1] || "?" : String(V.refs[k2][5]).split("|")[0].split("-")[1] || "?";
     if (D.up || D.dn){ const j = (dir < 0 ? D.up : D.dn || {})[TR.k]; if (j == null || !V.refs[j]) return [];
       return [{ rb: j, d: 0, dir, seq: String(V.refs[j][5]).split("|")[0].replace(/^2000-/, "").replace(/-SLD-EL-/, "\n") }]; }
     Object.keys(D).forEach(k2 => { if ((!/^\d+$/.test(k2) && !isU(k2)) || k2 === String(TR.k) || !refK(k2, D) || refK(k2, D)[0] !== TR.page) return; const Q = D[k2]; const kk = isU(k2) ? k2 : +k2;
@@ -876,7 +876,7 @@ window.PdfView = (() => {
     const me = cur, pn = V.page, D = await linesFor(cur.number); if (cur !== me || V.page !== pn || !V.pg) return;
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, cnt = {}; let h = "", fw = "";
     Object.keys(D).forEach(k => { const rk = /^r\d+$/.test(k) && D.lb && D.lb[k];   // (a ribbon's continuation, under the number it carries)
-      if (!/^\d+$/.test(k) && !isU(k) && !rk) return; const r = rk ? V.refs[+k.slice(1)] : refK(k, D); if (!r || r[0] !== pn) return; const c = isU(k) ? "MECH" : fluid(rk || r[5]), col = isU(k) ? MECHC : FLC[c]; if (!col) return; if (/^\d+$/.test(k)) cnt[c] = (cnt[c] || 0) + 1;
+      if (!/^\d+$/.test(k) && !isU(k) && !rk) return; const r = rk ? V.refs[+k.slice(1)] : refK(k, D); if (!r || r[0] !== pn) return; const mech = isU(k) && /-MECH-/.test(D.lb[k]), c = mech ? "MECH" : fluid(rk || (isU(k) ? D.lb[k] : r[5])), col = mech ? MECHC : FLC[c]; if (!col) return; if (!mech && !rk) cnt[c] = (cnt[c] || 0) + 1;
       const pts = D[k].map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
       h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
       if (FL.w && D.fl && D.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + (parseInt(String(k).replace(/\D/g, "")) || 0) * .37) % 1.1).toFixed(3)}s"/>`; });

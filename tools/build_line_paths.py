@@ -281,7 +281,7 @@ def cut(P, d):
 
 def build(num):
     v = IX[num]; doc = pymupdf.open(os.path.join(R, v["file"])); refs = REFS.get(num, [])
-    out = {}; rb = {}; pages = {}; FINE = {}; WORDS = {}; marks = {}; fl = {}; ptp = {}; teep = {}; rv = {}; TRC = {}
+    out = {}; rb = {}; pages = {}; FINE = {}; WORDS = {}; insend = set(); marks = {}; fl = {}; ptp = {}; teep = {}; rv = {}; TRC = {}
     for k, r in enumerate(refs):
         if r[6] != "line": continue
         pg = r[0] - 1
@@ -344,7 +344,7 @@ def build(num):
                 cutl = seglen(Q)[-1] - seglen(Q2)[-1]; tot0 = Lc[-1]
                 P = Q2 if end == 0 else Q2[::-1]
                 tees = [((d - cutl) if end == 0 else d, o) for d, o in tees if (d > cutl + 1 if end == 0 else d < tot0 - cutl - 1)]
-                why[end] = ("s", ""); Lc = seglen(P)
+                why[end] = ("s", ""); Lc = seglen(P); insend.add((k, end))
         TRC[k] = [r, label, rr, P, why, tees, Lc, pg]
     # a stretch of pipe two traces both ran along (one ran on past a spec break unseen) belongs to the line whose number is
     # nearer to it: the other trace is cut back to where the stretch begins, ending there at the next line
@@ -365,6 +365,17 @@ def build(num):
                 A[6] = [0]
                 for a, b in zip(A[3], A[3][1:]): A[6].append(A[6][-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
                 break
+    # (an end cut back out of an instrument's bubble: on back to the first pipe it meets, within 100 pt; the stretch from
+    # the bubble to there, the controller's link to its valve, is not pipe)
+    for k, end in insend:
+        A = TRC[k]; Q = A[3] if end == 0 else A[3][::-1]; tot = seglen(Q)[-1]
+        for d in range(2, 100, 2):
+            if d > tot - 20: break
+            q = point_at(Q, d)
+            if any(j != k and B_[7] == A[7] and on(q, B_[3], 1.5) for j, B_ in TRC.items()):
+                Q2 = cut(Q, d); cutl = tot - seglen(Q2)[-1]; A[3] = Q2 if end == 0 else Q2[::-1]
+                A[5] = [((dd - cutl) if end == 0 else dd, o) for dd, o in A[5] if (dd > cutl + 1 if end == 0 else dd < tot - cutl - 1)]
+                A[6] = seglen(A[3]); break
     for k, (r, label, rr, P, why, tees, Lc, pg) in TRC.items():
         p, S, LBL, AR, WD, _ = pages[pg]; W, H = p.rect.width, p.rect.height; tot = Lc[-1] or 1
         # upstream first: the path turned round when the flow arrows on it point back along it

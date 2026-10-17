@@ -165,7 +165,8 @@ window.AssetViz = (() => {
       if (dk && isPid && !a && !e.target.closest(".vz-tg")){ const hit = pipeAt(e.clientX, e.clientY);
         if (hit){ e.stopPropagation(); if (!(T && T.k === hit.k)){ flPick = null; trStart(hit.k, hit.at); }
           if (hit.u) return;   // (an unnumbered pipe: no item to show)
-          keepView = { n, z, tx, ty, tap: boxes[refsNow.indexOf(flRefs[hit.k])] || null }; if (window.kcgmOpenTag) kcgmOpenTag(hit.label); setTimeout(() => { keepView = null; }, 2000); return; } }
+          // (force: a line traced from the sheet text alone, no label box to mark: the sheet kept as it is)
+          keepView = { n, z, tx, ty, tap: boxes[refsNow.indexOf(flRefs[hit.k])] || null, force: isU(hit.k) }; if (window.kcgmOpenTag) kcgmOpenTag(hit.label); setTimeout(() => { keepView = null; }, 2000); return; } }
       // (the bare sheet: out of the fly through, or back to every fluid in colour, the drawing as it is)
       if (!a && T){ e.stopPropagation(); trEnd(); return; }
       if (!a && flPick){ e.stopPropagation(); flPickSet(null); return; }
@@ -186,12 +187,13 @@ window.AssetViz = (() => {
     const isPid = /-PID-/.test(d.number || ""), FLX = PdfView.fl, flTk = box.querySelector(".vz-fltk"), flLg = box.querySelector(".vz-flg"), flSvg = box.querySelector(".sp-fl");
     let flD = null, flRefs = [], flPick = null, hiB = null;   // (hiB: arrived at the whole sheet through these ribbons back: the line they carry shown)
     // (a process pipe with no line number, "u<n>": a ref made from its label and where that sits, as in pdfview.js)
-    const isU = k => /^u\d+$/.test(k), refV = k => { if (isU(k)){ const b = flD && flD.ub && flD.ub[k]; return b ? [b[0], b[1], b[2], b[3], b[4], flD.lb[k], "line", null, "u"] : null; } return flRefs[+k]; };
+    const isU = k => /^u\d+$/.test(k), refV = k => { if (isU(k)){ const b = flD && flD.ub && flD.ub[k]; return b ? [b[0], b[1], b[2], b[3], b[4], flD.lb[k], "line", null, flD.uk && flD.uk[k] ? "uk" : "u"] : null; } return flRefs[+k]; };
+    const noPage = k => isU(k) && !(flD && flD.uk && flD.uk[k]);   // (an unnumbered pipe, or a line not in the line list: no page to open)
     const pipeAt = (x, y) => { if (!flD) return null; const q = stage.getBoundingClientRect(); if (!q.width) return null; let best = null;
       for (const k of Object.keys(flD)){ if ((!/^\d+$/.test(k) && !isU(k)) || !refV(k) || refV(k)[0] !== 1) continue;
         const P = flD[k].map(p => [q.left + p[0] / 1e4 * q.width, q.top + p[1] / 1e4 * q.height]);
         for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = x1 - x0, dy = y1 - y0, ll = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ll)), dd = Math.hypot(x0 + t * dx - x, y0 + t * dy - y);
-          if (dd < 10 && (!best || dd < best.d)) best = { d: dd, k: isU(k) ? k : +k, u: isU(k), label: String(refV(k)[5]).split("|")[0], at: [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }; } }
+          if (dd < 10 && (!best || dd < best.d)) best = { d: dd, k: isU(k) ? k : +k, u: noPage(k), label: String(refV(k)[5]).split("|")[0], at: [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }; } }
       return best; };
     // (a line flown through: the rest grey, that one in its colour; the legend out of the way)
     // (the item's own line on this sheet, when the item is a line: shown as when flown through, with no fly through)
@@ -213,7 +215,7 @@ window.AssetViz = (() => {
       if ((!S.c && !T && !itemKeys().length) || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }   // (a line flown through: drawn, it in colour and the rest grey, even with Colours off)
       const cnt = {}; let h = "", fw = ""; flSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
       Object.keys(flD).forEach(k => { const rk = /^r\d+$/.test(k) && flD.lb && flD.lb[k];   // (a ribbon's continuation, under the number it carries)
-        if (!/^\d+$/.test(k) && !isU(k) && !rk) return; const r = rk ? flRefs[+k.slice(1)] : refV(k); if (!r || r[0] !== 1) return; const c = isU(k) ? "MECH" : FLX.fluid(rk || r[5]), col = isU(k) ? FLX.MECHC : FLX.FLC[c]; if (!col) return; if (/^\d+$/.test(k)) cnt[c] = (cnt[c] || 0) + 1;
+        if (!/^\d+$/.test(k) && !isU(k) && !rk) return; const r = rk ? flRefs[+k.slice(1)] : refV(k); if (!r || r[0] !== 1) return; const mech = isU(k) && /-MECH-/.test(flD.lb[k]), c = mech ? "MECH" : FLX.fluid(rk || (isU(k) ? flD.lb[k] : r[5])), col = mech ? FLX.MECHC : FLX.FLC[c]; if (!col) return; if (!mech && !rk) cnt[c] = (cnt[c] || 0) + 1;
         const pts = flD[k].map(p => (p[0] / 1e4 * W).toFixed(1) + "," + (p[1] / 1e4 * H).toFixed(1)).join(" ");
         h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
         if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + (parseInt(String(k).replace(/\D/g, "")) || 0) * .37) % 1.1).toFixed(3)}s"/>`; });
@@ -262,7 +264,7 @@ window.AssetViz = (() => {
         if (e2 < best){ best = e2; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
       TRV = { n: d.number, k, f, as: T.label };
       tb.querySelector(".sp-trn").textContent = T.label; sl.value = Math.round(f * 1000); zs.value = trZ();
-      { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = isU(k); } tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDraw(); trMarks(); view(); return true; }
+      { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = noPage(k); } tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDraw(); trMarks(); view(); return true; }
     function trEnd(){ if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
     function view(){ if (!T) return; const f = sl.value / 1000; TRV.f = f;
       [sl, zs].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%"));
@@ -307,7 +309,7 @@ window.AssetViz = (() => {
     function trNbs(dir){ const D = flD, A = W / H, e = dir > 0 ? T.P[T.P.length - 1] : T.P[0], dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]);
       const segd = (Q, q) => { let m = 1e18; for (let i = 1; i < Q.length; i++){ const [x0, y0] = Q[i - 1], [x1, y1] = Q[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
         const t = Math.max(0, Math.min(1, ((q[0] - x0) * A * dx + (q[1] - y0) * dy) / ll)); m = Math.min(m, Math.hypot((x0 + t * (x1 - x0) - q[0]) * A, y0 + t * (y1 - y0) - q[1])); } return m; };
-      const out = [], seq = k2 => isU(k2) ? String(D.lb[k2]).split("-").slice(0, 2).join("\n") : String(flRefs[k2][5]).split("|")[0].split("-")[1] || "?";
+      const out = [], seq = k2 => isU(k2) && /-MECH-/.test(D.lb[k2]) ? String(D.lb[k2]).split("-").slice(0, 2).join("\n") : isU(k2) ? String(D.lb[k2]).split("-")[1] || "?" : String(flRefs[k2][5]).split("|")[0].split("-")[1] || "?";
       if (D.up || D.dn){ const j = (dir < 0 ? D.up : D.dn || {})[T.k]; if (j == null || !flRefs[j]) return [];
         return [{ rb: j, d: 0, dir, seq: String(flRefs[j][5]).split("|")[0].replace(/^2000-/, "").replace(/-SLD-EL-/, "\n") }]; }
       Object.keys(D).forEach(k2 => { if ((!/^\d+$/.test(k2) && !isU(k2)) || String(k2) === String(T.k) || !refV(k2) || refV(k2)[0] !== 1) return; const Q = D[k2], dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e)), kk = isU(k2) ? k2 : +k2;
@@ -335,7 +337,7 @@ window.AssetViz = (() => {
       return trStart(k, end, 0, tp.label); }
     tb.addEventListener("click", e => { e.stopPropagation(); const b = e.target.closest("button"); if (!b) return;
       if (b.classList.contains("sp-trx")) return trEnd();
-      if (b.classList.contains("sp-tro")){ if (T && !isU(T.k) && window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: null, force: true }; kcgmOpenTag(T.label); setTimeout(() => { keepView = null; }, 2000); } return; }
+      if (b.classList.contains("sp-tro")){ if (T && !noPage(T.k) && window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: null, force: true }; kcgmOpenTag(T.label); setTimeout(() => { keepView = null; }, 2000); } return; }
       if (b.dataset.zh){ zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.zh)); try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} view(); return; }
       if (b.dataset.i != null && T) trGo(T.nb[+b.dataset.i]); });
     sl.addEventListener("input", () => view()); zs.addEventListener("input", () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} view(); });
