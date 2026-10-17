@@ -150,3 +150,6 @@ if __name__ == "__main__":
     for p in sorted(glob.glob(os.path.join(R, "lines", "*-PID-*.json"))):
         a, b = run(p); n += a; f += b
     print(n, "joins,", f, "lines turned round")
+
+    # (the offline list holds each file's fingerprint: rebuilt, so phones and browsers that kept the old paths fetch the new ones)
+    import subprocess; subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_offline.py")], cwd=R, check=False)

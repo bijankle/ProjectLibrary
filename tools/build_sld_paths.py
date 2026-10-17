@@ -11,7 +11,7 @@ and the supply ribbon at the top gets a key of its own: the board, ribbon down t
 Milestones along the path: the supply sheet (r), board (b), transformer (x), ACB/EOL/VSD/AFD (d), ratings (a, 400A),
 feeder numbers (f, 3F-09) and the item at the end (e).
 """
-import collections, json, math, re, sys, pymupdf
+import collections, json, math, os, re, sys, pymupdf
 
 R = sys.argv[1] if len(sys.argv) > 1 else "."
 REFS = json.load(open(R + "/pid-refs.json")); IX = json.load(open(R + "/PIDs/index.json"))["pids"]
@@ -239,3 +239,6 @@ if __name__ == "__main__":
         tot += sum(1 for r in REFS[num] if r[6] in ("mel", "elec") and not BOARD.search(str(r[5])))
         json.dump(o, open(R + "/lines/" + num + ".json", "w"), separators=(",", ":"))
     print(got, "paths;", tot, "items on the sheets")
+
+    # (the offline list holds each file's fingerprint: rebuilt, so phones and browsers that kept the old paths fetch the new ones)
+    import subprocess; subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_offline.py")], cwd=R, check=False)

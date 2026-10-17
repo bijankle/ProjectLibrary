@@ -369,3 +369,6 @@ if __name__ == "__main__":
         except Exception as e: print("skip", n, e); continue
         tot = [x + y for x, y in zip(tot, a)]
     print(f"{len(nums)} P&IDs: {tot[1]} of {tot[0]} line numbers traced ({tot[3]} with their flow direction from arrows, ribbons or the line they join); {tot[2]} ribbons matched to a line")
+
+    # (the offline list holds each file's fingerprint: rebuilt, so phones and browsers that kept the old paths fetch the new ones)
+    import subprocess; subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_offline.py")], cwd=R, check=False)
