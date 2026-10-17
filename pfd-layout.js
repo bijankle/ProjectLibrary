@@ -37,6 +37,11 @@ window.PFDLayout = (() => {
   function build(){
     map = L.map("mapView", { zoomControl: false, attributionControl: true, maxZoom: 23, minZoom: 11, zoomSnap: .25, wheelPxPerZoomLevel: 90, boxZoom: false });
     rend = L.svg({ padding: .6 });
+    // the site map (map/site.webp: the plant from the FIM 1 / FIM 2 layout drawings' photo, tools/build_site_map.py)
+    // under the satellite: it shows at once and with no signal, and the satellite covers it as its pictures come in
+    map.createPane("site0").style.zIndex = 150;
+    L.imageOverlay("map/site.webp", [[-30.7782, 121.4955], [-30.7542, 121.5279]], { pane: "site0", interactive: false,
+      attribution: "FIM drawings" }).addTo(map);
     setBase(api.pref.get("lo_base", "sat"));
     home(false);
     map.on("zoomend", () => { zoomCls(); redrawStreamsOf(null); }); zoomCls(); map.on("moveend", () => setTimeout(() => { declutter(); declutterAreas(); }, 0));

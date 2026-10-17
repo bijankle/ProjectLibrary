@@ -18,8 +18,9 @@ def add(id, name, note, files, set="ess"):
 core = sorted(rel(p) for p in glob.glob(os.path.join(ROOT, "lines", "*.json"))) + \
     sorted(rel(p) for p in glob.glob(os.path.join(ROOT, "pct", "*.json")) if not p.endswith("idx.json")) + \
     sorted(rel(p) for p in glob.glob(os.path.join(ROOT, "vendor", "tesseract", "**", "*"), recursive=True) if os.path.isfile(p) and "LICENSE" not in p) + \
-    sorted(rel(p) for p in glob.glob(os.path.join(ROOT, "vendor", "leaflet", "**", "*"), recursive=True) if os.path.isfile(p) and "LICENSE" not in p)
-add("core", "App core", "Line tracing, process control data, the camera's text reader and the map library: kept on this device by themselves", core, "core")
+    sorted(rel(p) for p in glob.glob(os.path.join(ROOT, "vendor", "leaflet", "**", "*"), recursive=True) if os.path.isfile(p) and "LICENSE" not in p) + \
+    sorted(rel(p) for p in glob.glob(os.path.join(ROOT, "map", "*.webp")))   # (the offline site map, tools/build_site_map.py)
+add("core", "App core", "Line tracing, process control data, the camera's text reader, the map library and the site map: kept on this device by themselves", core, "core")
 add("spec", "Pipe & valve spec", "2000-F00-STS-PP-10001 Rev 3, every piping class and valve datasheet", ["spec/pvs.pdf"])
 dw = json.load(open(os.path.join(ROOT, "PIDs", "index.json")))["pids"] if os.path.exists(os.path.join(ROOT, "PIDs", "index.json")) else {}
 pid = sorted(v["file"] for k, v in dw.items() if "-PID-" in k); pfd = sorted(v["file"] for k, v in dw.items() if "-PFD-" in k)

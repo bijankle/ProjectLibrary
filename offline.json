@@ -1,6 +1,6 @@
 {
  "cache": "kcgm-docs-5",
- "built": "2026-10-17T02:05:31+00:00",
+ "built": "2026-10-17T05:05:33+00:00",
  "ver": {
   "lines/2000-F00-PID-PR-10001.json": "bf21a9e8fb",
   "lines/2000-F00-PID-PR-10002.json": "bf21a9e8fb",
@@ -353,6 +353,7 @@
   "vendor/leaflet/images/marker-shadow.png": "7b6a8df639",
   "vendor/leaflet/leaflet.css": "ec929f1100",
   "vendor/leaflet/leaflet.js": "5a640ff863",
+  "map/site.webp": "4a764a304c",
   "spec/pvs.pdf": "00cab82284",
   "PIDs/2000-F00-PID-PR-10001.pdf": "a0208a6fc2",
   "PIDs/2000-F00-PID-PR-10001.pdf.p1.png": "0928125589",
@@ -3332,6 +3333,7 @@
   "vendor/leaflet/images/marker-shadow.png": 618,
   "vendor/leaflet/leaflet.css": 14806,
   "vendor/leaflet/leaflet.js": 147552,
+  "map/site.webp": 200518,
   "spec/pvs.pdf": 9276709,
   "PIDs/2000-F00-PID-PR-10001.pdf": 216438,
   "PIDs/2000-F00-PID-PR-10001.pdf.p1.png": 64235,
@@ -5963,7 +5965,7 @@
   {
    "id": "core",
    "name": "App core",
-   "note": "Line tracing, process control data, the camera's text reader and the map library: kept on this device by themselves",
+   "note": "Line tracing, process control data, the camera's text reader, the map library and the site map: kept on this device by themselves",
    "files": [
     "lines/2000-F00-PID-PR-10001.json",
     "lines/2000-F00-PID-PR-10002.json",
@@ -6315,9 +6317,10 @@
     "vendor/leaflet/images/marker-icon.png",
     "vendor/leaflet/images/marker-shadow.png",
     "vendor/leaflet/leaflet.css",
-    "vendor/leaflet/leaflet.js"
+    "vendor/leaflet/leaflet.js",
+    "map/site.webp"
    ],
-   "size": 20070341,
+   "size": 20270859,
    "set": "core"
   },
   {
@@ -9622,5 +9625,5 @@
    "set": "ess"
   }
  ],
- "total": 481036853
+ "total": 481237371
 }
