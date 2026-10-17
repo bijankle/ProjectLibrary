@@ -324,7 +324,9 @@ window.AssetViz = (() => {
           if (hi - lo > .5 && (lo - 2 < l.x && l.x < hi + 2 || lo - 2 < l.xv && l.xv < hi + 2)) return false;
           if (hi2 - lo2 > .5 && (lo2 - 2 < x && x < hi2 + 2 || lo2 - 2 < xv && xv < hi2 + 2)) return false; }
         return true; };
-      [...T.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = m[0] * Wd, w = wid(m); let best = null;
+      // (an end the arrow there already names, a sheet, the next line or the equipment: no label under it as well)
+      const covered = m => ["r", "l", "e", "t"].includes(m[1]) && ((m[0] <= .02 && (T.nbL || []).length) || (m[0] >= .98 && (T.nbR || []).length));
+      [...T.m].filter(m => !covered(m)).sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = m[0] * Wd, w = wid(m); let best = null;
         for (let dd = 0; dd <= 150; dd += 6) for (const sg of dd ? [1, -1] : [1]){ const xv = x + sg * dd;
           for (let r = 0; r < NR; r++) for (const [a, b] of [[xv + 3, xv + 3 + w], [xv - 3 - w, xv - 3]]){ const cost = r * 22 + dd + (a < xv ? 4 : 0); if (best && cost >= best.cost) continue; if (ok(x, xv, r, a, b)) best = { cost, xv, r, a, b }; } }
         if (!best) return; rows[best.r].push([best.a, best.b]); legs.push({ x, xv: best.xv, r: best.r }); put.push([m, x, best.a, best.r, best.xv]); });
@@ -351,10 +353,13 @@ window.AssetViz = (() => {
         if (em){ const k2 = flRefs.findIndex((r, i) => r[0] === 1 && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
       if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(T.k) || !flRefs[+j]) return; const r = flRefs[+j], dd = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
         if (dd < 300) out.push({ rb: +j, d: dd, dir, seq: String(r[5]).split("|")[0] }); });
-      return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb) === i).slice(0, 2); }
+      // (nothing on: the line ends at a piece of equipment, an arrow to its page)
+      if (!out.length){ const em = T.m.find(m => (dir > 0 ? m[0] >= .97 : m[0] <= .03) && m[1] === "e" && m[2]); if (em) out.push({ eq: em[2], d: 0, seq: em[2] }); }
+      return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb && x.eq === o.eq) === i).slice(0, 2); }
     function trNx(){ T.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = tb.querySelector(".sp-trnx." + side), Lb = trNbs(dir); T[dir < 0 ? "nbL" : "nbR"] = Lb; c.classList.toggle("two", Lb.length > 1);
-      c.innerHTML = Lb.map(o => { T.nb.push(o); return `<button type="button" data-i="${T.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(refV(o.k)[5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
+      c.innerHTML = Lb.map(o => { T.nb.push(o); return `<button type="button" data-i="${T.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.eq ? "equipment " + o.eq + " (opens its page)" : o.rb != null ? "sheet " + o.seq : String(refV(o.k)[5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
     function trGo(nb){ if (!nb || !T) return;
+      if (nb.eq){ if (window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: null, force: true }; kcgmOpenTag(nb.eq); setTimeout(() => { keepView = null; }, 2000); } return; }
       if (nb.rb != null){ const t = String(flRefs[nb.rb][5]).split("|")[0]; if (!Pid.has(t)) return; TRP = { at: Date.now(), label: T.label, dir: nb.dir || 1, from: d.number }; TRV = null;
         arrival = { to: t, back: null }; if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); return; }
       trStart(nb.k, nb.pt); }
