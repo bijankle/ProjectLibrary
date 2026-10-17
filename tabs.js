@@ -204,7 +204,7 @@ window.Tabs = (() => {
     if (phone) return buildPhone();
     // (desktop: islands, each looking the same: Assets (and Export) | PFD, Layout, Learn | Sources, Checks)
     const tab = ([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`;
-    const tabs = TABS.filter(t => t[0] === "assets").map(tab).join("") + `</div><div class="tb-seg">` + TABS.filter(t => t[0] !== "assets").map(tab).join("");
+    const tabs = TABS.filter(t => t[0] === "assets").map(tab).join("") + tab(["export", "Export", "export.html"]) + `</div><div class="tb-seg">` + TABS.filter(t => t[0] !== "assets").map(tab).join("");
     el.innerHTML = `<nav class="mb" aria-label="Menu">${PJ}<span class="mb-sep"></span><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-v"><button type="button" class="mn-b">View</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
       `<nav class="tb" aria-label="App sections">${navLogo(34)}<div class="tb-seg">${tabs}</div><div class="tb-seg tb-x">${XTABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("")}</div></nav>`;
     document.body.prepend(el); wirePj(); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", true);
