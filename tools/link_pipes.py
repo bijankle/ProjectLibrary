@@ -119,6 +119,12 @@ def run(path):
                     if math.dist(Q[-1], q) < 6: fl[k] = 1 if e == 0 else -1
                     elif math.dist(Q[0], q) < 6: fl[k] = -1 if e == 0 else 1
                 if k in fl: break
+            # (one end on the side of a line of any known flow, a branch off it: that end upstream; the other end free)
+            if k not in fl:
+                for e in (0, 1):
+                    q = P[-1] if e else P[0]
+                    if any(j in D.get("fl", {}) and min(math.dist(Q[0], q), math.dist(Q[-1], q)) > 6 and B.on(q, Q, 2.5) for j, Q in known.items()):
+                        fl[k] = 1 if e == 0 else -1; break
         # at a pump: the larger bore is the suction (into it), the smaller the discharge
         at = {}
         for k, (P, lbl, rr, T) in U.items():

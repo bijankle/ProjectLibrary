@@ -522,7 +522,7 @@ window.PdfView = (() => {
     const pts = P => P.map(q => sc(q).map(v => v.toFixed(1)).join(",")).join(" ");
     const f = trF(), at = trAt(f), [dx, dy] = sc(at), i = at[2];
     V.trl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.trl.style.setProperty("--trw", w + "px");
-    { const c = FLC[fluid(TR.label)]; if (c) V.trl.style.setProperty("--hl", c); else V.trl.style.removeProperty("--hl"); }   // (the line in its fluid's colour, whether or not all lines are coloured)
+    { const c = /-MECH-/.test(TR.label) ? MECHC : FLC[fluid(TR.label)] || OTHC; if (c) V.trl.style.setProperty("--hl", c); else V.trl.style.removeProperty("--hl"); }   // (the line in its fluid's colour, whether or not all lines are coloured)
     const tr = f > 1e-4 ? pts(trSub(0, f)) : "";
     let mk;
     { const [ax, ay] = sc(TR.P[i - 1]), [bx, by] = sc(TR.P[i]), d = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / d, uy = (by - ay) / d;
@@ -861,7 +861,7 @@ window.PdfView = (() => {
   // kept (water blue, fire water red, lube oil black). With the flow animation on, white dashes run downstream on the
   // lines whose flow is known. While a line is traced the rest go grey. Both switches (the Lines chip) and the legend's
   // shown / hidden hold for every drawing until changed.
-  const MECHC = "#8d6e63";   // (an unnumbered process pipe, slurry and the like: tools/link_pipes.py)
+  const MECHC = "#8d6e63", OTHC = "#64748b";   // (OTHC: a line with no fluid code, ducting or a continuation printed without a number)   // (an unnumbered process pipe, slurry and the like: tools/link_pipes.py)
   const FLC = {"PW":"#1565ff","IA":"#00a651","BW":"#4a148c","FD":"#8d6e63","CON":"#ff9500","FW":"#e00000","FS":"#ffe100","POT":"#8ec5f5","PSW":"#ff3d9a","COW":"#00695c","LO":"#222222","GW":"#8db600","CN":"#d500f9","PE":"#00bfa5","SC":"#616161","OXY":"#80deea","NS":"#ce93d8","LS":"#bdbdbd","MS":"#654522","HCL":"#b3446c","FL":"#69f0ae","XA":"#556b2f","FT":"#9e9e9e","FR":"#ffab91","CW":"#9c27b0","CO":"#0097a7","HP":"#dcd300","LN":"#f99379","BE":"#604e97","HPE":"#e25822","AE":"#ff1744","HO":"#827717","BA":"#b2dfdb","WM":"#5c6bc0","AS":"#cfd8dc","CS":"#ff8a80","TO":"#d7ccc8","CA":"#90a4ae","LPG":"#ff6e40","WW":"#90caf9"};
   const FLN = {"AE":"Acid Effluent","AS":"Antiscalant","BA":"Blower Air","BE":"Barren Eluate","BW":"Bore Water (Raw Water)","CN":"Cyanide Solution","CO":"Copper Sulphate","CON":"Concentrate Slurry","COW":"Cooling Water","CS":"Cyanide Slurry","CW":"Cyanide Water","FD":"Floor Drainage","FL":"Flocculant","FR":"Frother","FS":"Flotation Slurry","FT":"Final Tailings","FW":"Fire Water","GW":"Gland Water (High Pressure)","HCL":"Hydrochloric Acid","HO":"Hydraulic Oil","HP":"Hydrogen Peroxide","HPE":"Hydrochloric Acid / Pregnant Eluate","IA":"Instrument Air","LN":"Lead Nitrate","LO":"Lubricating Oil (High Pressure)","LPG":"Fuel Gas","LS":"Lime Slurry","MS":"Mill Slurry","NS":"Caustic Soda","OXY":"Oxygen","PE":"Pregnant Eluate (Elution)","POT":"Potable Water","PSW":"Process Scheme Water (Normal)","PW":"Process Water (High)","SC":"Carbon Slurry","WM":"UFG Media and Process Water","WW":"Washdown Water","XA":"Xanthate","CA":"Compressed air","TO":"Transformer oil"};
   const lsg = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v === "1"; } catch (e) { return d; } };
@@ -876,7 +876,7 @@ window.PdfView = (() => {
     const me = cur, pn = V.page, D = await linesFor(cur.number); if (cur !== me || V.page !== pn || !V.pg) return;
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, cnt = {}; let h = "", fw = "";
     Object.keys(D).forEach(k => { const rk = /^r\d+$/.test(k) && D.lb && D.lb[k];   // (a ribbon's continuation, under the number it carries)
-      if (!/^\d+$/.test(k) && !isU(k) && !rk) return; const r = rk ? V.refs[+k.slice(1)] : refK(k, D); if (!r || r[0] !== pn) return; const mech = isU(k) && /-MECH-/.test(D.lb[k]), c = mech ? "MECH" : fluid(rk || (isU(k) ? D.lb[k] : r[5])), col = mech ? MECHC : FLC[c]; if (!col) return; if (!mech && !rk) cnt[c] = (cnt[c] || 0) + 1;
+      const rr = /^r\d+$/.test(k); if (!/^\d+$/.test(k) && !isU(k) && !rr) return; const r = rr ? V.refs[+k.slice(1)] : refK(k, D); if (!r || r[0] !== pn) return; const mech = isU(k) && /-MECH-/.test(D.lb[k]), c = mech ? "MECH" : rr && !rk ? "" : fluid(rk || (isU(k) ? D.lb[k] : r[5])), col = mech ? MECHC : FLC[c] || OTHC; if (!mech && !rr && FLC[c]) cnt[c] = (cnt[c] || 0) + 1;
       const pts = D[k].map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
       h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
       if (FL.w && D.fl && D.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + (parseInt(String(k).replace(/\D/g, "")) || 0) * .37) % 1.1).toFixed(3)}s"/>`; });
@@ -1109,7 +1109,7 @@ window.PdfView = (() => {
     if (V.page !== V.refs[gi][0]) await go(V.refs[gi][0], true);
     const b = boxOf(V.refs[gi]), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap(); trace(gi, at || null, [bx.l, bx.t, bx.w, bx.h]); }
   // the coloured lines' settings and palette, shared with that drawing
-  const flApi = { MECHC, FLC, FLN, fluid, get: () => ({ c: FL.c, w: FL.w, leg: FL.leg }), set(f, v){ FL[f] = v; try { localStorage.setItem({ c: "kcgm_flc", w: "kcgm_flw", leg: "kcgm_flleg" }[f], v ? "1" : "0"); } catch (x) {} if (V && !V.el.hidden){ if (V.ftk){ V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w; } drawFl(); } } };
+  const flApi = { MECHC, OTHC, FLC, FLN, fluid, get: () => ({ c: FL.c, w: FL.w, leg: FL.leg }), set(f, v){ FL[f] = v; try { localStorage.setItem({ c: "kcgm_flc", w: "kcgm_flw", leg: "kcgm_flleg" }[f], v ? "1" : "0"); } catch (x) {} if (V && !V.el.hidden){ if (V.ftk){ V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w; } drawFl(); } } };
   return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, arrows, want, fl: flApi, chain,
     saved: () => { try { return JSON.parse(sessionStorage.getItem(SSK) || "null"); } catch (e) { return null; } },
     // a tag picked from the list under the sheet: zoomed to and marked by its box (pid-refs.json), else found in the text

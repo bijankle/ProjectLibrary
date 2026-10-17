@@ -182,10 +182,10 @@ window.AssetViz = (() => {
       if (dk && isPid && a && a.dataset.k === "line"){ const lab = a.dataset.t.split("|")[0], k = flRefs.findIndex((r, i) => r[6] === "line" && r[0] === 1 && String(r[5]).split("|")[0] === lab && flD && flD[i]);
         if (k >= 0 && !(T && T.k === k)){ flPick = null; trStart(k, null, 0); } }
       if (dk && isPid && !a && !e.target.closest(".vz-tg")){ const hit = pipeAt(e.clientX, e.clientY);
-        if (hit){ e.stopPropagation(); if (!(T && T.k === hit.k)){ flPick = null; trStart(hit.k, hit.at); }
+        if (hit){ e.stopPropagation(); if (!(T && T.k === hit.k)){ flPick = null; trStart(hit.k, hit.at, 0, hit.label); }
           if (hit.u) return;   // (an unnumbered pipe: no item to show)
           // (force: a line traced from the sheet text alone, no label box to mark: the sheet kept as it is)
-          keepView = { n, z, tx, ty, tap: boxes[refsNow.indexOf(flRefs[hit.k])] || null, force: isU(hit.k) }; if (window.kcgmOpenTag) kcgmOpenTag(hit.label); setTimeout(() => { keepView = null; }, 2000); return; } }
+          keepView = { n, z, tx, ty, tap: boxes[refsNow.indexOf(flRefs[hit.k])] || null, force: typeof hit.k === "string" }; if (window.kcgmOpenTag) kcgmOpenTag(hit.label); setTimeout(() => { keepView = null; }, 2000); return; } }
       // (the bare sheet: out of the fly through, or back to every fluid in colour, the drawing as it is)
       if (!a && T){ e.stopPropagation(); trEnd(); return; }
       if (!a && flPick){ e.stopPropagation(); flPickSet(null); return; }
@@ -207,13 +207,20 @@ window.AssetViz = (() => {
     let flD = null, flRefs = [], flPick = null, hiB = null;   // (hiB: arrived at the whole sheet through these ribbons back: the line they carry shown)
     // (a process pipe with no line number, "u<n>": a ref made from its label and where that sits, as in pdfview.js)
     const isU = k => /^u\d+$/.test(k), refV = k => { if (isU(k)){ const b = flD && flD.ub && flD.ub[k]; return b ? [b[0], b[1], b[2], b[3], b[4], flD.lb[k], "line", null, flD.uk && flD.uk[k] ? "uk" : "u"] : null; } return flRefs[+k]; };
-    const noPage = k => isU(k) && !(flD && flD.uk && flD.uk[k]);   // (an unnumbered pipe, or a line not in the line list: no page to open)
+    const noPage = k => (isU(k) && !(flD && flD.uk && flD.uk[k])) || (/^r\d+$/.test(k) && !(flD && flD.lb && flD.lb[k]));   // (an unnumbered pipe, or a line not in the line list: no page to open)
     const pipeAt = (x, y) => { if (!flD) return null; const q = stage.getBoundingClientRect(); if (!q.width) return null; let best = null;
-      for (const k of Object.keys(flD)){ if ((!/^\d+$/.test(k) && !isU(k)) || !refV(k) || refV(k)[0] !== 1) continue;
+      for (const k of Object.keys(flD)){ const rr = /^r\d+$/.test(k), rf = rr ? flRefs[+k.slice(1)] : refV(k);   // (r: a ribbon's continuation, a number or none)
+        if ((!/^\d+$/.test(k) && !isU(k) && !rr) || !rf || rf[0] !== 1) continue;
         const P = flD[k].map(p => [q.left + p[0] / 1e4 * q.width, q.top + p[1] / 1e4 * q.height]);
         for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = x1 - x0, dy = y1 - y0, ll = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ll)), dd = Math.hypot(x0 + t * dx - x, y0 + t * dy - y);
-          if (dd < 10 && (!best || dd < best.d)) best = { d: dd, k: isU(k) ? k : +k, u: noPage(k), label: String(refV(k)[5]).split("|")[0], at: [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }; } }
+          if (dd < 10 && (!best || dd < best.d)) best = { d: dd, k: isU(k) || rr ? k : +k, u: rr ? !(flD.lb && flD.lb[k]) : noPage(k), label: rr ? (flD.lb && flD.lb[k]) || "" : String(rf[5]).split("|")[0], at: [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }; } }
       return best; };
+    // (the mouse over a pipe: the pointing hand, as over a label or a ribbon, since a click there flies along it)
+    let pipeRaf = 0, pipeEv = null;
+    box.addEventListener("pointermove", e => { if (e.pointerType !== "mouse" || !isPid || e.buttons) return; pipeEv = e; if (pipeRaf) return;
+      pipeRaf = requestAnimationFrame(() => { pipeRaf = 0; const q = pipeEv; if (!q || !box.isConnected) return;
+        const over = !q.target.closest(".vz-rf i, .vz-trb, .vz-zb, .vz-tg") && !!pipeAt(q.clientX, q.clientY); box.classList.toggle("vz-onpipe", over); }); });
+    box.addEventListener("pointerleave", () => box.classList.remove("vz-onpipe"));
     // (a line flown through: the rest grey, that one in its colour; the legend out of the way)
     // (the item's own line on this sheet, when the item is a line: shown as when flown through, with no fly through)
     const itemKeys = () => { if (hiB && flD){ const ks = hiB.map(j => flD.rb && flD.rb[j]).filter(x => x != null && flD[x]).map(String); if (ks.length) return ks; }
@@ -234,7 +241,7 @@ window.AssetViz = (() => {
       if ((!S.c && !T && !itemKeys().length) || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }   // (a line flown through: drawn, it in colour and the rest grey, even with Colours off)
       const cnt = {}; let h = "", fw = ""; flSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
       Object.keys(flD).forEach(k => { const rk = /^r\d+$/.test(k) && flD.lb && flD.lb[k];   // (a ribbon's continuation, under the number it carries)
-        if (!/^\d+$/.test(k) && !isU(k) && !rk) return; const r = rk ? flRefs[+k.slice(1)] : refV(k); if (!r || r[0] !== 1) return; const mech = isU(k) && /-MECH-/.test(flD.lb[k]), c = mech ? "MECH" : FLX.fluid(rk || (isU(k) ? flD.lb[k] : r[5])), col = mech ? FLX.MECHC : FLX.FLC[c]; if (!col) return; if (!mech && !rk) cnt[c] = (cnt[c] || 0) + 1;
+        const rr = /^r\d+$/.test(k); if (!/^\d+$/.test(k) && !isU(k) && !rr) return; const r = rr ? flRefs[+k.slice(1)] : refV(k); if (!r || r[0] !== 1) return; const mech = isU(k) && /-MECH-/.test(flD.lb[k]), c = mech ? "MECH" : rr && !rk ? "" : FLX.fluid(rk || (isU(k) ? flD.lb[k] : r[5])), col = mech ? FLX.MECHC : FLX.FLC[c] || FLX.OTHC; if (!mech && !rr && FLX.FLC[c]) cnt[c] = (cnt[c] || 0) + 1;
         const pts = flD[k].map(p => (p[0] / 1e4 * W).toFixed(1) + "," + (p[1] / 1e4 * H).toFixed(1)).join(" ");
         h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
         if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + (parseInt(String(k).replace(/\D/g, "")) || 0) * .37) % 1.1).toFixed(3)}s"/>`; });
@@ -295,7 +302,7 @@ window.AssetViz = (() => {
     function drawTrail(){ if (!T) return; const s = z * kf, w = Math.max(4, Math.min(9, 3.2 * s)), tw = w * 1.35, sc = q => [q[0] / 1e4 * W, q[1] / 1e4 * H];
       const pts = P => P.map(q => sc(q).map(v => v.toFixed(1)).join(",")).join(" "), f = sl.value / 1000, at = trAt(f), [dx, dy] = sc(at), i = at[2];
       trl.setAttribute("viewBox", `0 0 ${W} ${H}`); trl.style.setProperty("--trw", w + "px");
-      { const c = FLX && FLX.FLC[FLX.fluid(T.label)]; if (c) trl.style.setProperty("--hl", c); else trl.style.removeProperty("--hl"); }   // (the line in its fluid's colour, whether or not all lines are coloured)
+      { const c = FLX && (/-MECH-/.test(T.label) ? FLX.MECHC : FLX.FLC[FLX.fluid(T.label)] || FLX.OTHC); if (c) trl.style.setProperty("--hl", c); else trl.style.removeProperty("--hl"); }   // (the line in its fluid's colour, whether or not all lines are coloured)
       const tr = f > 1e-4 ? pts(trSub(0, f)) : "", [ax, ay] = sc(T.P[i - 1]), [bx, by] = sc(T.P[i]), dd = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / dd, uy = (by - ay) / dd;
       const L = 2.6 * tw / s, B = 1.1 * tw / s, ex = dx + ux * L * .6, ey = dy + uy * L * .6, bx0 = dx - ux * L * .4, by0 = dy - uy * L * .4;
       // (39A: just after the line is first opened, two rings pulse out from the arrow, three times, so the eye finds it;
@@ -331,9 +338,10 @@ window.AssetViz = (() => {
     function trNbs(dir){ const D = flD, A = W / H, e = dir > 0 ? T.P[T.P.length - 1] : T.P[0], dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]);
       const segd = (Q, q) => { let m = 1e18; for (let i = 1; i < Q.length; i++){ const [x0, y0] = Q[i - 1], [x1, y1] = Q[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
         const t = Math.max(0, Math.min(1, ((q[0] - x0) * A * dx + (q[1] - y0) * dy) / ll)); m = Math.min(m, Math.hypot((x0 + t * (x1 - x0) - q[0]) * A, y0 + t * (y1 - y0) - q[1])); } return m; };
-      const out = [], seq = k2 => isU(k2) && /-MECH-/.test(D.lb[k2]) ? String(D.lb[k2]).split("-").slice(0, 2).join("\n") : isU(k2) ? String(D.lb[k2]).split("-")[1] || "?" : String(flRefs[k2][5]).split("|")[0].split("-")[1] || "?";
+      // (desktop: the whole line number, or the whole drawing number, on a ribbon as the P&IDs draw them)
+      const out = [], seq = k2 => isU(k2) ? String(D.lb[k2]) : /^r\d+$/.test(k2) ? String((D.lb && D.lb[k2]) || "continuation") : String(flRefs[k2][5]).split("|")[0];
       if (D.up || D.dn){ const j = (dir < 0 ? D.up : D.dn || {})[T.k]; if (j == null || !flRefs[j]) return [];
-        return [{ rb: j, d: 0, dir, seq: String(flRefs[j][5]).split("|")[0].replace(/^2000-/, "").replace(/-SLD-EL-/, "\n") }]; }
+        return [{ rb: j, d: 0, dir, seq: String(flRefs[j][5]).split("|")[0] }]; }
       Object.keys(D).forEach(k2 => { if ((!/^\d+$/.test(k2) && !isU(k2)) || String(k2) === String(T.k) || !refV(k2) || refV(k2)[0] !== 1) return; const Q = D[k2], dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e)), kk = isU(k2) ? k2 : +k2;
         if (dE < 45) out.push({ k: kk, pt: dist(Q[0], e) < dist(Q[Q.length - 1], e) ? Q[0] : Q[Q.length - 1], d: dE, seq: seq(kk) });
         else { const dI = segd(Q, e); if (dI < 25) out.push({ k: kk, pt: e, d: dI + 1, seq: seq(kk) }); } });
@@ -342,7 +350,7 @@ window.AssetViz = (() => {
       if (!out.length){ const em = T.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
         if (em){ const k2 = flRefs.findIndex((r, i) => r[0] === 1 && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
       if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(T.k) || !flRefs[+j]) return; const r = flRefs[+j], dd = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
-        if (dd < 300) out.push({ rb: +j, d: dd, dir, seq: String(r[5]).split("|")[0].replace(/^2000-/, "").replace(/-PID-PR-/, "-") }); });
+        if (dd < 300) out.push({ rb: +j, d: dd, dir, seq: String(r[5]).split("|")[0] }); });
       return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb) === i).slice(0, 2); }
     function trNx(){ T.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = tb.querySelector(".sp-trnx." + side), Lb = trNbs(dir); T[dir < 0 ? "nbL" : "nbR"] = Lb; c.classList.toggle("two", Lb.length > 1);
       c.innerHTML = Lb.map(o => { T.nb.push(o); return `<button type="button" data-i="${T.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(refV(o.k)[5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
@@ -583,7 +591,7 @@ window.AssetViz = (() => {
 .vz-sheet{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;touch-action:none;cursor:default;user-select:none}
 .vz-sheet.drag{cursor:default}.vz-stage{position:absolute;left:0;top:0;transform-origin:0 0}
 .vz-sheet canvas{display:block}.vz-sheet .vz-note{padding:14px;margin:0;color:#5d6875}
-.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:calc(2px * var(--iz,1));background:rgba(90,100,115,.15)}   /* as in the full screen viewer: a 15% grey wash */
+.vz-sheet.vz-onpipe,.vz-sheet.vz-onpipe .vz-stage,.vz-sheet.vz-onpipe .vz-tx{cursor:pointer!important}.vz-rf{position:absolute;inset:0}.vz-rf i{position:absolute;cursor:pointer;border-radius:calc(2px * var(--iz,1));background:rgba(90,100,115,.15)}   /* as in the full screen viewer: a 15% grey wash */
 .vz-rf i[data-k="d"]{background:rgba(90,100,115,.15)}.vz-rf i.hv{background:rgba(90,100,115,.28)}.vz-rf i.o{border-radius:50%}
 .vz-rf i.rb{background:none!important;box-shadow:none!important}.vz-rf i.rb svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.vz-rf i.rb polygon{fill:rgba(90,100,115,.15);stroke:none}
 .vz-rf i.rb.hv polygon{fill:rgba(90,100,115,.28)}.vz-rf i.rb.hit polygon{fill:rgba(30,110,230,.28);stroke:rgba(30,110,230,.85);stroke-width:1.5px}.vz-rf i.rb.pick polygon{fill:rgba(30,110,230,.32);stroke:#1e6ee6;stroke-width:2.5px}.vz-sheet.on-ref,.vz-sheet.on-ref *{cursor:pointer!important}
