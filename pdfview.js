@@ -867,7 +867,7 @@ window.PdfView = (() => {
     Object.keys(D).forEach(k => { if (!/^\d+$/.test(k)) return; const r = V.refs[+k]; if (!r || r[0] !== pn) return; const c = fluid(r[5]), col = FLC[c]; if (!col) return; cnt[c] = (cnt[c] || 0) + 1;
       const pts = D[k].map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
       h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
-      if (FL.w && D.fl && D.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${(k * .37 % 1.1).toFixed(2)}s"/>`; });
+      if (FL.w && D.fl && D.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + k * .37) % 1.1).toFixed(3)}s"/>`; });
     V.fl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.fl.innerHTML = h + fw; flDim(); flLeg(cnt); }
   // (a line traced: the rest grey, that one in its colour)
   function flDim(){ if (!V || !V.fl) return; const tr = !!(TR && cur && TR.n === cur.number), on = tr || !!FL.pick; V.fl.classList.toggle("dim", on); V.fl.classList.toggle("pk", !tr && !!FL.pick);

@@ -204,7 +204,7 @@ window.AssetViz = (() => {
       Object.keys(flD).forEach(k => { if (!/^\d+$/.test(k)) return; const r = flRefs[+k]; if (!r || r[0] !== 1) return; const c = FLX.fluid(r[5]), col = FLX.FLC[c]; if (!col) return; cnt[c] = (cnt[c] || 0) + 1;
         const pts = flD[k].map(p => (p[0] / 1e4 * W).toFixed(1) + "," + (p[1] / 1e4 * H).toFixed(1)).join(" ");
         h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
-        if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${(k * .37 % 1.1).toFixed(2)}s"/>`; });
+        if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + k * .37) % 1.1).toFixed(3)}s"/>`; });
       flSvg.innerHTML = h + fw; const cs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b));
       flLg.hidden = !cs.length || !S.c; flLg.classList.toggle("open", S.leg);
       flLg.innerHTML = `<button type="button" class="hd"><b>${S.leg ? "Fluids on this drawing" : "Fluids"}</b>${S.leg ? "" : `<span class="fl-dots">${cs.map(c => `<i style="background:${FLX.FLC[c]}"></i>`).join("")}</span>`}<em>${S.leg ? "Hide ▴" : "Show ▾"}</em></button>`
@@ -355,7 +355,9 @@ window.AssetViz = (() => {
       const cw = (bb[2] - bb[0]) * v1.width, ch = (bb[3] - bb[1]) * v1.height;
       sc = Math.min(bw / cw, bh / ch); const vp = pg.getViewport({ scale: sc }); W = vp.width; H = vp.height;
       vw0 = bw; vh0 = Math.round(ch * sc); box.style.height = vh0 + "px"; kf = 1;
-      new ResizeObserver(() => { if (g !== gen || !vw0) return; const k2 = box.clientWidth / vw0; if (Math.abs(k2 - kf) < .002) return; kf = k2; box.style.height = Math.round(vh0 * kf) + "px"; apply(); if (T) view(); }).observe(box); stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
+      let kb = null;   // (a size that flips straight back, the pane's scrollbar showing and hiding as the sheet grows and shrinks: left as it is, or the sheet shakes)
+      new ResizeObserver(() => { if (g !== gen || !vw0) return; const k2 = box.clientWidth / vw0, now = performance.now(); if (Math.abs(k2 - kf) < .002) return;
+        if (kb && Math.abs(k2 - kb[0]) < .002 && now - kb[1] < 900 && Math.abs(k2 - kf) < .04) return; kb = [kf, now]; kf = k2; box.style.height = Math.round(vh0 * kf) + "px"; apply(); if (T) view(); }).observe(box); stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
       const tap = held && held.n === n ? held.tap : null; tapNow = tap; if (held && held.n === n && held.z){ z = held.z; tx = held.tx; ty = held.ty; } else { tx = ty = -1e9; } apply(); held = null;
       rz = 0; await sharp(1); if (g !== gen) return; setTimeout(() => { if (g === gen) sharp(); }, 250);   // (then sharpened in the background) const nt = box.querySelector(".vz-note"); if (nt) nt.remove();
       const txl = box.querySelector(".vz-tx"); txl.style.setProperty("--scale-factor", sc);
