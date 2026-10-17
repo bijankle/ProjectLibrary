@@ -859,6 +859,7 @@ window.PdfView = (() => {
   // kept (water blue, fire water red, lube oil black). With the flow animation on, white dashes run downstream on the
   // lines whose flow is known. While a line is traced the rest go grey. Both switches (the Lines chip) and the legend's
   // shown / hidden hold for every drawing until changed.
+  const MECHC = "#8d6e63";   // (an unnumbered process pipe, slurry and the like: tools/link_pipes.py)
   const FLC = {"PW":"#1565ff","IA":"#00a651","BW":"#4a148c","FD":"#8d6e63","CON":"#ff9500","FW":"#e00000","FS":"#ffe100","POT":"#8ec5f5","PSW":"#ff3d9a","COW":"#00695c","LO":"#222222","GW":"#8db600","CN":"#d500f9","PE":"#00bfa5","SC":"#616161","OXY":"#80deea","NS":"#ce93d8","LS":"#bdbdbd","MS":"#654522","HCL":"#b3446c","FL":"#69f0ae","XA":"#556b2f","FT":"#9e9e9e","FR":"#ffab91","CW":"#9c27b0","CO":"#0097a7","HP":"#dcd300","LN":"#f99379","BE":"#604e97","HPE":"#e25822","AE":"#ff1744","HO":"#827717","BA":"#b2dfdb","WM":"#5c6bc0","AS":"#cfd8dc","CS":"#ff8a80","TO":"#d7ccc8","CA":"#90a4ae","LPG":"#ff6e40","WW":"#90caf9"};
   const FLN = {"AE":"Acid Effluent","AS":"Antiscalant","BA":"Blower Air","BE":"Barren Eluate","BW":"Bore Water (Raw Water)","CN":"Cyanide Solution","CO":"Copper Sulphate","CON":"Concentrate Slurry","COW":"Cooling Water","CS":"Cyanide Slurry","CW":"Cyanide Water","FD":"Floor Drainage","FL":"Flocculant","FR":"Frother","FS":"Flotation Slurry","FT":"Final Tailings","FW":"Fire Water","GW":"Gland Water (High Pressure)","HCL":"Hydrochloric Acid","HO":"Hydraulic Oil","HP":"Hydrogen Peroxide","HPE":"Hydrochloric Acid / Pregnant Eluate","IA":"Instrument Air","LN":"Lead Nitrate","LO":"Lubricating Oil (High Pressure)","LPG":"Fuel Gas","LS":"Lime Slurry","MS":"Mill Slurry","NS":"Caustic Soda","OXY":"Oxygen","PE":"Pregnant Eluate (Elution)","POT":"Potable Water","PSW":"Process Scheme Water (Normal)","PW":"Process Water (High)","SC":"Carbon Slurry","WM":"UFG Media and Process Water","WW":"Washdown Water","XA":"Xanthate","CA":"Compressed air","TO":"Transformer oil"};
   const lsg = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v === "1"; } catch (e) { return d; } };
@@ -869,14 +870,31 @@ window.PdfView = (() => {
     if (!flOn()){ V.fl.innerHTML = ""; flLeg({}); return; }
     const me = cur, pn = V.page, D = await linesFor(cur.number); if (cur !== me || V.page !== pn || !V.pg) return;
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, cnt = {}; let h = "", fw = "";
-    Object.keys(D).forEach(k => { if (!/^\d+$/.test(k)) return; const r = V.refs[+k]; if (!r || r[0] !== pn) return; const c = fluid(r[5]), col = FLC[c]; if (!col) return; cnt[c] = (cnt[c] || 0) + 1;
+    Object.keys(D).forEach(k => { if (!/^\d+$/.test(k) && !isU(k)) return; const r = refK(k, D); if (!r || r[0] !== pn) return; const c = isU(k) ? "MECH" : fluid(r[5]), col = isU(k) ? MECHC : FLC[c]; if (!col) return; if (!isU(k)) cnt[c] = (cnt[c] || 0) + 1;
       const pts = D[k].map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
       h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
-      if (FL.w && D.fl && D.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + k * .37) % 1.1).toFixed(3)}s"/>`; });
+      if (FL.w && D.fl && D.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + (parseInt(String(k).replace(/\D/g, "")) || 0) * .37) % 1.1).toFixed(3)}s"/>`; });
     V.fl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.fl.innerHTML = h + fw; flDim(); flLeg(cnt); }
-  // (a line traced: the rest grey, that one in its colour)
+  // the lines a line runs on into downstream on this sheet: what the next line arrows offer (an end on an end or on its
+  // side, a join through a pump or vessel), followed on to the sheet's edge. A line feeding in at the same place is not
+  // where the flow goes: left out. D the sheet's lines, refOf a key's ref, A the sheet's width over its height
+  function chain(D, k0, refOf, A, pg){ const out = new Set(), fl = D.fl || {}, isK = k => /^(\d+|u\d+)$/.test(k);
+    const dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]);
+    const segd = (Q, q) => { let m = 1e18; for (let i = 1; i < Q.length; i++){ const [x0, y0] = Q[i - 1], [x1, y1] = Q[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
+      const t = Math.max(0, Math.min(1, ((q[0] - x0) * A * dx + (q[1] - y0) * dy) / ll)); m = Math.min(m, Math.hypot((x0 + t * (x1 - x0) - q[0]) * A, y0 + t * (y1 - y0) - q[1])); } return m; };
+    const keys = Object.keys(D).filter(k => isK(k) && refOf(k) && refOf(k)[0] === pg), q = [[String(k0), 1]], seen = new Set([String(k0)]);
+    while (q.length && out.size < 60){ const [k, ei] = q.shift(), P = D[k]; if (!P) continue; const e = ei ? P[P.length - 1] : P[0];
+      const add = (k2, ni) => { if (seen.has(k2)) return; seen.add(k2); out.add(k2); if (ni != null) q.push([k2, ni]); };
+      keys.forEach(k2 => { if (seen.has(k2)) return; const Q = D[k2], dS = dist(Q[0], e), dE = dist(Q[Q.length - 1], e);
+        if (Math.min(dS, dE) < 45){ if (fl[k2] && dE < dS) return; add(k2, dS < dE ? 1 : 0); }   // (end to end: on from its far end; one ending here feeds in)
+        else if (segd(Q, e) < 25) add(k2, fl[k2] ? 1 : null); });   // (into its side: on from its downstream end, when known)
+      (D.lk || []).forEach(([a, ea, b, eb]) => { for (const [x, ex, y, ey] of [[a, ea, b, eb], [b, eb, a, ea]]) if (String(x) === k && ex === ei && D[y]) add(String(y), 1 - ey); }); }
+    return out; }
+  // (a line traced: the rest grey, that one in its colour, the lines it runs on into lighter)
   function flDim(){ if (!V || !V.fl) return; const tr = !!(TR && cur && TR.n === cur.number), on = tr || !!FL.pick; V.fl.classList.toggle("dim", on); V.fl.classList.toggle("pk", !tr && !!FL.pick);
-    V.fl.querySelectorAll(".sel").forEach(p => p.classList.remove("sel")); if (on) V.fl.querySelectorAll(tr ? `[data-k="${TR.k}"]` : `[data-fc="${FL.pick}"]`).forEach(p => p.classList.add("sel"));
+    V.fl.querySelectorAll(".sel, .nx").forEach(p => p.classList.remove("sel", "nx")); if (on) V.fl.querySelectorAll(tr ? `[data-k="${TR.k}"]` : `[data-fc="${FL.pick}"]`).forEach(p => p.classList.add("sel"));
+    if (tr && V.pg){ if (!TR.ch){ const vp = V.pg.getViewport({ scale: 1 }); TR.ch = chain(TR.D, TR.k, k => refK(k, TR.D), vp.width / vp.height, TR.page); }
+      TR.ch.forEach(k => V.fl.querySelectorAll(`[data-k="${k}"]:not(.fw)`).forEach(p => p.classList.add("nx"))); }
     V.flg.querySelectorAll("[data-fc]").forEach(r => r.classList.toggle("on", r.dataset.fc === FL.pick)); V.flg.classList.toggle("pk", !!FL.pick); }
   // a fluid picked in the legend: its lines alone in colour, the rest grey. One browser history step, so Back (the
   // phone's swipe back), Esc or a click on the bare sheet go back to every fluid in colour
@@ -1083,8 +1101,8 @@ window.PdfView = (() => {
     if (V.page !== V.refs[gi][0]) await go(V.refs[gi][0], true);
     const b = boxOf(V.refs[gi]), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap(); trace(gi, at || null, [bx.l, bx.t, bx.w, bx.h]); }
   // the coloured lines' settings and palette, shared with that drawing
-  const flApi = { FLC, FLN, fluid, get: () => ({ c: FL.c, w: FL.w, leg: FL.leg }), set(f, v){ FL[f] = v; try { localStorage.setItem({ c: "kcgm_flc", w: "kcgm_flw", leg: "kcgm_flleg" }[f], v ? "1" : "0"); } catch (x) {} if (V && !V.el.hidden){ if (V.ftk){ V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w; } drawFl(); } } };
-  return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, arrows, want, fl: flApi,
+  const flApi = { MECHC, FLC, FLN, fluid, get: () => ({ c: FL.c, w: FL.w, leg: FL.leg }), set(f, v){ FL[f] = v; try { localStorage.setItem({ c: "kcgm_flc", w: "kcgm_flw", leg: "kcgm_flleg" }[f], v ? "1" : "0"); } catch (x) {} if (V && !V.el.hidden){ if (V.ftk){ V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w; } drawFl(); } } };
+  return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, arrows, want, fl: flApi, chain,
     saved: () => { try { return JSON.parse(sessionStorage.getItem(SSK) || "null"); } catch (e) { return null; } },
     // a tag picked from the list under the sheet: zoomed to and marked by its box (pid-refs.json), else found in the text
     find: t => { if (!V || !cur) return; fitFilter(t, true); if (V.fmatch.length){ V.fstep = -1; fitStep(1); return; } fitFilter(""); findText(t, true); }, panelOn: () => !!(V && V.cx && !V.cx.hidden && !V.el.hidden), clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };

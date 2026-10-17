@@ -193,8 +193,14 @@ window.AssetViz = (() => {
           if (dd < 10 && (!best || dd < best.d)) best = { d: dd, k: isU(k) ? k : +k, u: isU(k), label: String(refV(k)[5]).split("|")[0], at: [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }; } }
       return best; };
     // (a line flown through: the rest grey, that one in its colour; the legend out of the way)
-    const flDimT = () => { if (!T){ flLg.style.display = ""; return; } flLg.style.display = "none"; flSvg.classList.add("dim"); flSvg.classList.remove("pk");
-      flSvg.querySelectorAll("polyline").forEach(p => p.classList.toggle("sel", p.dataset.k === String(T.k))); };
+    // (the item's own line on this sheet, when the item is a line: shown as when flown through, with no fly through)
+    const itemKeys = () => { const t = String((cur && cur.key) || ""); return flD ? Object.keys(flD).filter(k => /^\d+$/.test(k) && flRefs[+k] && flRefs[+k][0] === 1 && flRefs[+k][6] === "line" && String(flRefs[+k][5]).split("|")[0] === t) : []; };
+    // a line flown through, or the item's line: it in colour, the lines it runs on into lighter (PdfView.chain), the rest grey
+    const flDimT = () => { const ik = T ? [String(T.k)] : flPick ? [] : itemKeys();
+      if (!ik.length){ flLg.style.display = ""; flSvg.querySelectorAll(".nx").forEach(p => p.classList.remove("nx")); return; }
+      if (T) flLg.style.display = "none"; flSvg.classList.add("dim"); flSvg.classList.remove("pk");
+      const ch = new Set(); if (PdfView.chain && W) ik.forEach(k => PdfView.chain(flD, k, refV, W / H, 1).forEach(x => ch.add(x)));
+      flSvg.querySelectorAll("polyline").forEach(p => { const on = ik.includes(p.dataset.k); p.classList.toggle("sel", on); p.classList.toggle("nx", !on && ch.has(p.dataset.k) && !p.classList.contains("fw")); }); };
     const flPickSet = c => { if (T) return flDimT(); flPick = c; flSvg.classList.toggle("dim", !!c); flSvg.classList.toggle("pk", !!c);
       flSvg.querySelectorAll("polyline").forEach(p => p.classList.toggle("sel", !!c && p.dataset.fc === c)); flLg.classList.toggle("pk", !!c);
       flLg.querySelectorAll("[data-fc]").forEach(r => r.classList.toggle("on", r.dataset.fc === c)); };
@@ -202,12 +208,12 @@ window.AssetViz = (() => {
       flTk.querySelector('[data-f="c"]').checked = S.c; flTk.querySelector('[data-f="w"]').checked = S.w;
       if (!flD) flD = await fetch("lines/" + d.number + ".json").then(r => r.ok ? r.json() : {}).catch(() => ({}));
       if (g !== gen) return;
-      if ((!S.c && !T) || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }   // (a line flown through: drawn, it in colour and the rest grey, even with Colours off)
+      if ((!S.c && !T && !itemKeys().length) || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }   // (a line flown through: drawn, it in colour and the rest grey, even with Colours off)
       const cnt = {}; let h = "", fw = ""; flSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-      Object.keys(flD).forEach(k => { if (!/^\d+$/.test(k)) return; const r = flRefs[+k]; if (!r || r[0] !== 1) return; const c = FLX.fluid(r[5]), col = FLX.FLC[c]; if (!col) return; cnt[c] = (cnt[c] || 0) + 1;
+      Object.keys(flD).forEach(k => { if (!/^\d+$/.test(k) && !isU(k)) return; const r = refV(k); if (!r || r[0] !== 1) return; const c = isU(k) ? "MECH" : FLX.fluid(r[5]), col = isU(k) ? FLX.MECHC : FLX.FLC[c]; if (!col) return; if (!isU(k)) cnt[c] = (cnt[c] || 0) + 1;
         const pts = flD[k].map(p => (p[0] / 1e4 * W).toFixed(1) + "," + (p[1] / 1e4 * H).toFixed(1)).join(" ");
         h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
-        if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + k * .37) % 1.1).toFixed(3)}s"/>`; });
+        if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + (parseInt(String(k).replace(/\D/g, "")) || 0) * .37) % 1.1).toFixed(3)}s"/>`; });
       flSvg.innerHTML = h + fw; const cs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b));
       flLg.hidden = !cs.length || !S.c; flLg.classList.toggle("open", S.leg);
       flLg.innerHTML = `<button type="button" class="hd"><b>${S.leg ? "Fluids on this drawing" : "Fluids"}</b>${S.leg ? "" : `<span class="fl-dots">${cs.map(c => `<i style="background:${FLX.FLC[c]}"></i>`).join("")}</span>`}<em>${S.leg ? "Hide ▴" : "Show ▾"}</em></button>`
