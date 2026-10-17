@@ -169,6 +169,7 @@ window.AssetViz = (() => {
       // (the bare sheet: out of the fly through, or back to every fluid in colour, the drawing as it is)
       if (!a && T){ e.stopPropagation(); trEnd(); return; }
       if (!a && flPick){ e.stopPropagation(); flPickSet(null); return; }
+      if (!a && hiB){ e.stopPropagation(); hiB = null; flDraw(); return; }
       // (an empty part of the sheet, an asset's page showing: the drawing's own page, the sheet left as it is)
       if (!a){ if (cur && cur.t !== "pid" && !document.documentElement.classList.contains("phone") && window.kcgmOpenTag && !e.target.closest(".vz-tg")){ keepView = { n, z, tx, ty, tap: null, force: true }; setTimeout(() => { if (keepView && keepView.force) keepView = null; }, 2500); kcgmOpenTag(n); } return; }
       e.stopPropagation();
@@ -183,7 +184,7 @@ window.AssetViz = (() => {
       const tag = t.split("|")[0], bi = [...rfEl.children].indexOf(a); keepView = { n, z, tx, ty, tap: boxes[bi] || null }; if (window.kcgmOpenTag) kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); });
     // ---- coloured lines (as in the full viewer, pdfview.js: the same tick boxes, palette, legend and settings) ----
     const isPid = /-PID-/.test(d.number || ""), FLX = PdfView.fl, flTk = box.querySelector(".vz-fltk"), flLg = box.querySelector(".vz-flg"), flSvg = box.querySelector(".sp-fl");
-    let flD = null, flRefs = [], flPick = null;
+    let flD = null, flRefs = [], flPick = null, hiB = null;   // (hiB: arrived at the whole sheet through these ribbons back: the line they carry shown)
     // (a process pipe with no line number, "u<n>": a ref made from its label and where that sits, as in pdfview.js)
     const isU = k => /^u\d+$/.test(k), refV = k => { if (isU(k)){ const b = flD && flD.ub && flD.ub[k]; return b ? [b[0], b[1], b[2], b[3], b[4], flD.lb[k], "line", null, "u"] : null; } return flRefs[+k]; };
     const pipeAt = (x, y) => { if (!flD) return null; const q = stage.getBoundingClientRect(); if (!q.width) return null; let best = null;
@@ -194,7 +195,8 @@ window.AssetViz = (() => {
       return best; };
     // (a line flown through: the rest grey, that one in its colour; the legend out of the way)
     // (the item's own line on this sheet, when the item is a line: shown as when flown through, with no fly through)
-    const itemKeys = () => { const t = String((cur && cur.key) || ""); return flD ? Object.keys(flD).filter(k => /^\d+$/.test(k) && flRefs[+k] && flRefs[+k][0] === 1 && flRefs[+k][6] === "line" && String(flRefs[+k][5]).split("|")[0] === t) : []; };
+    const itemKeys = () => { if (hiB && flD){ const ks = hiB.map(j => flD.rb && flD.rb[j]).filter(x => x != null && flD[x]).map(String); if (ks.length) return ks; }
+      const t = String((cur && cur.key) || ""); return flD ? Object.keys(flD).filter(k => /^\d+$/.test(k) && flRefs[+k] && flRefs[+k][0] === 1 && flRefs[+k][6] === "line" && String(flRefs[+k][5]).split("|")[0] === t) : []; };
     // a line flown through, or the item's line: it in colour, the lines it runs on into lighter (PdfView.chain), the rest grey
     const flDimT = () => { const ik = T ? [String(T.k)] : flPick ? [] : itemKeys();
       if (!ik.length){ flLg.style.display = ""; flSvg.querySelectorAll(".nx").forEach(p => p.classList.remove("nx")); return; }
@@ -210,11 +212,12 @@ window.AssetViz = (() => {
       if (g !== gen) return;
       if ((!S.c && !T && !itemKeys().length) || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }   // (a line flown through: drawn, it in colour and the rest grey, even with Colours off)
       const cnt = {}; let h = "", fw = ""; flSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-      Object.keys(flD).forEach(k => { if (!/^\d+$/.test(k) && !isU(k)) return; const r = refV(k); if (!r || r[0] !== 1) return; const c = isU(k) ? "MECH" : FLX.fluid(r[5]), col = isU(k) ? FLX.MECHC : FLX.FLC[c]; if (!col) return; if (!isU(k)) cnt[c] = (cnt[c] || 0) + 1;
+      Object.keys(flD).forEach(k => { const rk = /^r\d+$/.test(k) && flD.lb && flD.lb[k];   // (a ribbon's continuation, under the number it carries)
+        if (!/^\d+$/.test(k) && !isU(k) && !rk) return; const r = rk ? flRefs[+k.slice(1)] : refV(k); if (!r || r[0] !== 1) return; const c = isU(k) ? "MECH" : FLX.fluid(rk || r[5]), col = isU(k) ? FLX.MECHC : FLX.FLC[c]; if (!col) return; if (/^\d+$/.test(k)) cnt[c] = (cnt[c] || 0) + 1;
         const pts = flD[k].map(p => (p[0] / 1e4 * W).toFixed(1) + "," + (p[1] / 1e4 * H).toFixed(1)).join(" ");
         h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
         if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + (parseInt(String(k).replace(/\D/g, "")) || 0) * .37) % 1.1).toFixed(3)}s"/>`; });
-      flSvg.innerHTML = h + fw; const cs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b));
+      flSvg.innerHTML = h + fw; flSvg.classList.toggle("c", !!S.c); const cs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b));
       flLg.hidden = !cs.length || !S.c; flLg.classList.toggle("open", S.leg);
       flLg.innerHTML = `<button type="button" class="hd"><b>${S.leg ? "Fluids on this drawing" : "Fluids"}</b>${S.leg ? "" : `<span class="fl-dots">${cs.map(c => `<i style="background:${FLX.FLC[c]}"></i>`).join("")}</span>`}<em>${S.leg ? "Hide ▴" : "Show ▾"}</em></button>`
         + (S.leg ? `<div class="grid">${cs.map(c => `<button type="button" class="row" data-fc="${c}" style="--c:${FLX.FLC[c]}" title="Only ${esc(FLX.FLN[c] || c)} in colour"><i class="sw" style="background:${FLX.FLC[c]}"></i><span class="cd" style="--c:${FLX.FLC[c]}">${c}</span><span class="nm">${esc(FLX.FLN[c] || "")}</span><span class="ct">${cnt[c]}</span></button>`).join("")}</div>` : "");
@@ -395,7 +398,8 @@ window.AssetViz = (() => {
         if (arr){ const aw = W * .018, ah = aw * 1.7;
           const back = [].concat(arr.back).map(j => (R[d.number] || [])[j]).filter(r => r && r[0] === 1);
           pick((i, r) => back.includes(r));   // (its own ribbon turns blue)
-          if (!arr.ext) focus(back.map(r => boxes[refsNow.indexOf(r)]).filter(Boolean)); } });   // (zoomed onto the ribbon back to where you came from)
+          if (!arr.ext) focus(back.map(r => boxes[refsNow.indexOf(r)]).filter(Boolean));
+          else { hiB = [].concat(arr.back).filter(j => typeof j === "number"); flDraw(); } } });   // (at the whole sheet: the line come in on shown, the rest faint)   // (zoomed onto the ribbon back to where you came from)
       // the tag tapped (here or in the full screen viewer): the arrow on that very spot
       // (decided once the tag boxes are in: before that every tag looked boxless and got a second box on top of its own)
       if (tap){ refsP.then(() => { if (g !== gen) return; const hitT = ([l, t, w, h]) => tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t, own = boxes.some(hitT);   // its own tag box shows it: no second box

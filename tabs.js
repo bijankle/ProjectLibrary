@@ -202,7 +202,9 @@ window.Tabs = (() => {
   function build(){
     el = document.createElement("div"); el.className = "tbw";
     if (phone) return buildPhone();
-    const tabs = TABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("");
+    // (desktop: islands, each looking the same: Assets (and Export) | PFD, Layout, Learn | Sources, Checks)
+    const tab = ([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`;
+    const tabs = TABS.filter(t => t[0] === "assets").map(tab).join("") + `</div><div class="tb-seg">` + TABS.filter(t => t[0] !== "assets").map(tab).join("");
     el.innerHTML = `<nav class="mb" aria-label="Menu">${PJ}<span class="mb-sep"></span><div class="mn mn-f"><button type="button" class="mn-b">File</button><div class="mn-d"></div></div><div class="mn mn-v"><button type="button" class="mn-b">View</button><div class="mn-d"></div></div><div class="mn mn-h2"><button type="button" class="mn-b">Help</button><div class="mn-d mn-dh"></div></div></nav>` +
       `<nav class="tb" aria-label="App sections">${navLogo(34)}<div class="tb-seg">${tabs}</div><div class="tb-seg tb-x">${XTABS.map(([id, n, href]) => `<a class="tb-t" data-t="${id}" href="${href}"><span>${n}</span></a>`).join("")}</div></nav>`;
     document.body.prepend(el); wirePj(); document.documentElement.classList.add("has-tb"); document.documentElement.classList.toggle("has-mb", true);
@@ -475,7 +477,7 @@ body,button,input,select,textarea,code,kbd,pre,svg,.leaflet-container{font-famil
 .tb-t:hover{color:var(--ink)}
 .tb-t.on{color:var(--ink);background:color-mix(in srgb,var(--ink) 18%,var(--panel,var(--card)));box-shadow:0 1px 3px rgba(0,0,0,.25)}
 html[data-theme="light"] .tb-t.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.16)}
-.tb-x{margin-left:22px;background:none;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 16%,var(--line))}
+.tb-seg+.tb-seg{margin-left:22px}.tb-x{margin-left:22px;background:none;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 16%,var(--line))}
 .tb-x .tb-t.on,html[data-theme="light"] .tb-x .tb-t.on{background:color-mix(in srgb,var(--gold,var(--accent)) 14%,var(--panel,var(--card)));box-shadow:inset 0 0 0 1.5px var(--gold,var(--accent));color:color-mix(in srgb,var(--gold,var(--accent)) 70%,var(--ink))}
 .tb-i{font-size:var(--fb,15px)}
 .mn{position:relative;display:flex}

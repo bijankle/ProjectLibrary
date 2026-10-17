@@ -154,5 +154,28 @@ if __name__ == "__main__":
         a, b = run(p); n += a; f += b
     print(n, "joins,", f, "lines turned round")
 
+    # a ribbon's unnumbered continuation ("r<ribbon>", build_line_paths.py) named: the line the ribbon on the other sheet,
+    # the one pointing back here, carries there (kept in "lb", so it is coloured and traced under that number)
+    paths = {os.path.basename(p)[:-5]: p for p in glob.glob(os.path.join(R, "lines", "*-PID-*.json"))}; L = {}
+    load = lambda n: L.setdefault(n, json.load(open(paths[n]))) if n in paths else {}
+    named = 0
+    for n in paths:
+        D = load(n); refs = REFS.get(n, [])
+        for k in [k for k in D if re.fullmatch(r"r\d+", k)]:
+            r = refs[int(k[1:])] if int(k[1:]) < len(refs) else None
+            if not r or len(r) < 8 or r[7] is None: continue
+            lab = None
+            for t in str(r[5]).split("|"):
+                T = load(t); tr = REFS.get(t, [])
+                for b in [r[7]] if isinstance(r[7], int) else r[7]:
+                    kk = (T.get("rb") or {}).get(str(b))
+                    if kk is not None and str(kk).isdigit() and int(kk) < len(tr): lab = str(tr[int(kk)][5]).split("|")[0]
+                    elif kk is not None and (T.get("lb") or {}).get(str(kk)): lab = T["lb"][str(kk)]
+                    if lab: break
+                if lab: break
+            if lab and (D.get("lb") or {}).get(k) != lab: D.setdefault("lb", {})[k] = lab; named += 1
+    for n, D in L.items(): json.dump(D, open(paths[n], "w"), separators=(",", ":"))
+    print(named, "ribbon continuations named")
+
     # (the offline list holds each file's fingerprint: rebuilt, so phones and browsers that kept the old paths fetch the new ones)
     import subprocess; subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_offline.py")], cwd=R, check=False)

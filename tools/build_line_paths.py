@@ -26,10 +26,14 @@ def ori(s):
     return "h" if abs(dy) < 0.5 else "v" if abs(dx) < 0.5 else "d"
 
 def strokes(p):
-    S = []
-    for d in p.get_drawings():
+    S = []; G = p.get_drawings()
+    # (the pipe pen: 0.6 pt or more; a sheet drawn with a thinner set of pens, its pipes at about 0.48 and its signal
+    # lines at 0.24, has hardly any of those, and takes 0.45 pt; one drawn all in a single fine pen, 0.2)
+    long_ = lambda d, mw: sum(1 for it in d["items"] if it[0] == "l" and math.hypot(it[2].x - it[1].x, it[2].y - it[1].y) >= 8) if (d.get("width") or 0) >= mw and sum(d.get("color") or (1, 1, 1)) <= 1.5 else 0
+    mw = next((m for m in (0.6, 0.45) if sum(long_(d, m) for d in G) >= 300), 0.2)   # (a small sheet drawn all in one fine pen: that)
+    for d in G:
         w = d.get("width") or 0; c = d.get("color") or (1, 1, 1)
-        if w < 0.6 or sum(c) > 1.5: continue
+        if w < mw or sum(c) > 1.5: continue
         for it in d["items"]:
             if it[0] == "l":
                 a, b = it[1], it[2]
@@ -125,6 +129,10 @@ def trace(S, LBL, r, label, gap=30, tol=1.6, WD=(), splits=True):
             cand = [j for j, t in enumerate(S) if j not in seen and any(near(pt, e) for e in ends(t))]
             straight = [j for j in cand if ori(S[j]) == o]
             nxt = straight or (cand if len(cand) == 1 else [])
+            # (a corner with a long run one way and only short stubs the others, a vent or a tapping: on along the run)
+            if not nxt and len(cand) > 1:
+                bo = [(j, bown(j, pt, s)) for j in cand]; runs = [j for j, b in bo if b == "" or b == label]
+                if len(runs) == 1 and all(b is None for j, b in bo if j != runs[0]): nxt = runs
             # a split with no new line number on the branch (the same line going two ways): the line ends at the tee
             if straight and len(cand) > len(straight) and any(split(bown(j, pt, s)) for j in cand if j not in straight): why.append(("t", "")); break
             if not nxt and o in "hv":
@@ -135,6 +143,9 @@ def trace(S, LBL, r, label, gap=30, tol=1.6, WD=(), splits=True):
                         if o == "h" and abs(e[1] - pt[1]) < tol and 0 < abs(e[0] - pt[0]) < gap and (e[0] - pt[0]) * (pt[0] - mx) > 0: nxt = [j]; break
                         if o == "v" and abs(e[0] - pt[0]) < tol and 0 < abs(e[1] - pt[1]) < gap and (e[1] - pt[1]) * (pt[1] - my) > 0: nxt = [j]; break
                     if nxt: break
+            if not nxt and not cand and o in "hv":   # (a corner drawn a little short: a square run starting within 7 pt)
+                near7 = [j for j, t in enumerate(S) if j not in seen and ori(t) in "hv" and ori(t) != o and L(t) > 20 and min(math.hypot(e[0] - pt[0], e[1] - pt[1]) for e in ends(t)) < 7]
+                if len(near7) == 1: nxt = near7
             if not nxt: why.append(("t", "") if len(cand) > 1 else ("s", "")); break
             j = nxt[0]; ow = owner(S[j])
             if ow and ow != label: why.append(("l", ow)); break
@@ -217,7 +228,29 @@ def build(num):
         label = str(r[5]).split("|")[0]
         T = trace(S, LBL, rr, label, WD=WD)
         if not T or len(T[0]) < 2: continue
-        TRC[k] = [r, label, rr, list(T[0]), list(T[1]), list(T[2]), list(T[3]), pg]
+        P, why, tees, Lc = list(T[0]), list(T[1]), list(T[2]), list(T[3])
+        # (an end run on into an instrument's bubble, its tapping drawn on from the pipe: cut back to the bubble's edge)
+        for q in refs:
+            if q[0] != r[0] or q[6] != "ins": continue
+            bx = pymupdf.Rect(q[1] * W / 1e4 - 2, q[2] * H / 1e4 - 2, (q[1] + q[3]) * W / 1e4 + 2, (q[2] + q[4]) * H / 1e4 + 2)
+            for end in (0, 1):
+                Q = P if end == 0 else P[::-1]
+                if not bx.contains(pymupdf.Point(*Q[0])): continue
+                i = 0
+                while i < len(Q) - 1 and bx.contains(pymupdf.Point(*Q[i + 1])): i += 1
+                if i >= len(Q) - 1: continue
+                a, b = Q[i], Q[i + 1]; lo, hi = 0.0, 1.0   # (where the run leaves the box: halving the step)
+                for _ in range(20):
+                    m = (lo + hi) / 2; pm_ = (a[0] + m * (b[0] - a[0]), a[1] + m * (b[1] - a[1]))
+                    if bx.contains(pymupdf.Point(*pm_)): lo = m
+                    else: hi = m
+                Q2 = [(a[0] + hi * (b[0] - a[0]), a[1] + hi * (b[1] - a[1]))] + Q[i + 1:]
+                if seglen(Q2)[-1] < 20: continue
+                cutl = seglen(Q)[-1] - seglen(Q2)[-1]; tot0 = Lc[-1]
+                P = Q2 if end == 0 else Q2[::-1]
+                tees = [((d - cutl) if end == 0 else d, o) for d, o in tees if (d > cutl + 1 if end == 0 else d < tot0 - cutl - 1)]
+                why[end] = ("s", ""); Lc = seglen(P)
+        TRC[k] = [r, label, rr, P, why, tees, Lc, pg]
     # a stretch of pipe two traces both ran along (one ran on past a spec break unseen) belongs to the line whose number is
     # nearer to it: the other trace is cut back to where the stretch begins, ending there at the next line
     for k, A in TRC.items():
