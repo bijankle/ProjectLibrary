@@ -39,7 +39,10 @@ window.PFDLayout = (() => {
     rend = L.svg({ padding: .6 });
     // the site map (map/site.webp: the plant from the FIM 1 / FIM 2 layout drawings' photo, tools/build_site_map.py)
     // under the satellite: it shows at once and with no signal, and the satellite covers it as its pictures come in
-    map.createPane("site0").style.zIndex = 150;
+    map.createPane("site0").style.zIndex = 150; map.createPane("ground").style.zIndex = 140;
+    // (bare ground round it, and where the drawing has no picture: map/ground.webp tiled, moving with the map)
+    const Ground = L.GridLayer.extend({ createTile(){ const t = document.createElement("div"); t.style.background = "url(map/ground.webp)"; return t; } });
+    new Ground({ pane: "ground", tileSize: 256, maxZoom: 24 }).addTo(map);
     L.imageOverlay("map/site.webp", [[-30.7782, 121.4955], [-30.7542, 121.5279]], { pane: "site0", interactive: false,
       attribution: "FIM drawings" }).addTo(map);
     setBase(api.pref.get("lo_base", "sat"));

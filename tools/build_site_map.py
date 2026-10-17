@@ -39,6 +39,7 @@ cv = np.array(cover) > 128; a = np.array(photo).astype(np.float32)
 
 # (the callouts: small white boxes with a number, painted out from the photo round them)
 wh = a > 246; lab, n = nd.label(wh); ar = nd.sum(wh, lab, range(1, n + 1))
+cut = nd.binary_dilation(np.isin(lab, np.nonzero(ar > 5000)[0] + 1), iterations=2)   # (cleared out of the photo on the drawing: no picture, the ground shows)
 mk = nd.binary_dilation(np.isin(lab, np.nonzero((ar > 6) & (ar < 900))[0] + 1), iterations=3)
 ww = nd.gaussian_filter((~mk).astype(np.float32), 6); a = np.where(mk, nd.gaussian_filter(np.where(mk, 0, a), 6) / np.maximum(ww, 1e-3), a)
 lo, hi = np.percentile(a[cv], [2, 98]); st = np.clip((a - lo) / (hi - lo), 0, 1)
@@ -48,9 +49,16 @@ det = np.array(Image.fromarray((st * 255).astype(np.uint8)).filter(ImageFilter.U
 dk, lt = np.array([44, 52, 64], np.float32), np.array([236, 238, 236], np.float32)
 rgb = dk + (lt - dk) * det
 
-# off the drawings: see through (the map's own background, or the satellite)
-alpha = (nd.gaussian_filter(cv.astype(np.float32), 1.5) * 255).astype(np.uint8)
+# off the drawings, and where the drawing has no picture: see through (the ground under it, or the satellite)
+alpha = (nd.gaussian_filter((cv & ~cut).astype(np.float32), 1.5) * 255).astype(np.uint8)
 os.makedirs(os.path.join(R, "map"), exist_ok=True)
 Image.fromarray(np.dstack([rgb.astype(np.uint8), alpha])).save(os.path.join(R, "map", "site.webp"), quality=58, method=6)
 print("map/site.webp", W, "x", H, os.path.getsize(os.path.join(R, "map", "site.webp")) // 1024, "KB")
+# the ground under it all (map/ground.webp, tiled by pfd-layout.js where there is no picture): the photo's grey ground,
+# mottled and grained, the noise wrapped round so the tile repeats with no seam
+rng = np.random.default_rng(7); T = 256
+fine = nd.gaussian_filter(rng.normal(0, 1, (T, T)), .8, mode="wrap"); mot = nd.gaussian_filter(rng.normal(0, 1, (T, T)), 14, mode="wrap")
+mot = mot / mot.std(); fine = fine / fine.std(); spk = (nd.gaussian_filter(rng.normal(0, 1, (T, T)), .5, mode="wrap") > 2.6) * -18
+v = np.median(rgb[alpha > 250], 0) * .9 + mot[..., None] * 2.5 + fine[..., None] * 6 + spk[..., None]
+Image.fromarray(np.clip(v, 0, 255).astype(np.uint8)).save(os.path.join(R, "map", "ground.webp"), quality=70)
 import subprocess; subprocess.run([sys.executable, os.path.join(R, "tools", "build_offline.py")], cwd=R, check=False)
