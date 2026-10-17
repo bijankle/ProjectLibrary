@@ -201,6 +201,7 @@ window.AssetViz = (() => {
         if (zin && isPid) TRP = { at: Date.now(), label: T ? T.label : null, dir: 1, from: d.number }; TRV = null;
         if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }
       // a tag on this sheet: its item opens on the left and the sheet stays as you have it (same zoom and place), only the arrow moves
+      if (T) trEnd();   // (an instrument, equipment, a valve picked while flying along a line: out of the fly through, the sheet kept)
       const tag = t.split("|")[0], bi = [...rfEl.children].indexOf(a); keepView = { n, z, tx, ty, tap: boxes[bi] || null }; if (window.kcgmOpenTag) kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); });
     // ---- coloured lines (as in the full viewer, pdfview.js: the same tick boxes, palette, legend and settings) ----
     const isPid = /-PID-/.test(d.number || ""), FLX = PdfView.fl, flTk = el.querySelector(".vz-fltk"), flLg = el.querySelector(".vz-flg"), flSvg = box.querySelector(".sp-fl");
@@ -238,7 +239,9 @@ window.AssetViz = (() => {
       flTk.querySelector('[data-f="c"]').checked = S.c; flTk.querySelector('[data-f="w"]').checked = S.w;
       if (!flD) flD = await fetch("lines/" + d.number + ".json").then(r => r.ok ? r.json() : {}).catch(() => ({}));
       if (g !== gen) return;
-      if ((!S.c && !T && !itemKeys().length) || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }   // (a line flown through: drawn, it in colour and the rest grey, even with Colours off)
+      // (an asset picked, an instrument, equipment, a valve: no line colours to draw the eye away from it)
+      const asset = !T && !flPick && !hiB && cur && cur.t !== "pid" && cur.t !== "line" && !itemKeys().length;
+      if ((!S.c && !T && !itemKeys().length) || asset || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }   // (a line flown through: drawn, it in colour and the rest grey, even with Colours off)
       const cnt = {}; let h = "", fw = ""; flSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
       Object.keys(flD).forEach(k => { const rk = /^r\d+$/.test(k) && flD.lb && flD.lb[k];   // (a ribbon's continuation, under the number it carries)
         const rr = /^r\d+$/.test(k); if (!/^\d+$/.test(k) && !isU(k) && !rr) return; const r = rr ? flRefs[+k.slice(1)] : refV(k); if (!r || r[0] !== 1) return; const mech = isU(k) && /-MECH-/.test(flD.lb[k]), c = mech ? "MECH" : rr && !rk ? "" : FLX.fluid(rk || (isU(k) ? flD.lb[k] : r[5])), col = mech ? FLX.MECHC : FLX.FLC[c] || FLX.OTHC; if (!mech && !rr && FLX.FLC[c]) cnt[c] = (cnt[c] || 0) + 1;
@@ -334,7 +337,14 @@ window.AssetViz = (() => {
       c.innerHTML = T.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%;top:${BB + 1}px" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
         + `<svg class="sp-trco" width="${Wd}" height="${R0 + NR * RH}">${put.map(([m, x, a, r, xv]) => { const y = R0 + r * RH + 7, e2 = a > xv ? a - 1 : a + wid(m) + 1;
             return `<polyline points="${x.toFixed(1)},${BB + 6} ${x.toFixed(1)},${J} ${xv.toFixed(1)},${J} ${xv.toFixed(1)},${y} ${e2.toFixed(1)},${y}"/>`; }).join("")}</svg>`
-        + put.map(([m, x, a, r]) => `<b class="h k-${m[1]}" style="left:${a.toFixed(1)}px;top:${R0 + r * RH}px"><em>${TT[m[1]] || ""}</em> ${esc(trName(m))}</b>`).join(""); }
+        + put.map(([m, x, a, r]) => { const go = m[1] === "t" && teeKey(m) != null;   // (a tee whose branch is traced here: a tab that flies onto it)
+          return `<b class="h k-${m[1]}${go ? " go" : ""}"${go ? ` data-f="${m[0]}" data-t="${esc(m[2])}" title="Fly along ${esc(m[2])}"` : ""} style="left:${a.toFixed(1)}px;top:${R0 + r * RH - (go ? 2 : 0)}px"><em>${TT[m[1]] || ""}</em> ${esc(trName(m))}</b>`; }).join(""); }
+    // the branch line at a tee: the traced line on this sheet with that number, its end nearest the tee
+    function teeKey(m){ if (!flD || !m[2]) return null; const at = trAt(m[0]); let best = null;
+      for (const k of Object.keys(flD)){ if (String(k) === String(T.k)) continue; const lab = /^\d+$/.test(k) ? (flRefs[+k] && flRefs[+k][0] === 1 ? String(flRefs[+k][5]).split("|")[0] : null) : flD.lb && flD.lb[k];
+        if (lab !== m[2] || !Array.isArray(flD[k])) continue; const Q = flD[k], d0 = Math.min(Math.hypot(Q[0][0] - at[0], Q[0][1] - at[1]), Math.hypot(Q[Q.length - 1][0] - at[0], Q[Q.length - 1][1] - at[1]));
+        if (!best || d0 < best[1]) best = [/^\d+$/.test(k) ? +k : k, d0]; }
+      return best && best[0]; }
     // (the next lines at each end: on this sheet the lines meeting its end, the ones joined across a pump or vessel
     // (tools/link_lines.py), else the ribbon there, on to the next sheet)
     function trNbs(dir){ const D = flD, A = W / H, e = dir > 0 ? T.P[T.P.length - 1] : T.P[0], dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]);
@@ -370,6 +380,7 @@ window.AssetViz = (() => {
       if (k == null && tp.label){ const C = flRefs.map((r, i) => i).filter(i => flRefs[i][0] === 1 && flRefs[i][6] === "line" && String(flRefs[i][5]).split("|")[0] === tp.label && flD[i]); k = C[0]; rbr = flRefs[bk[0]]; }
       if (k == null) return false; const P = flD[k], end = rbr ? [rbr[1] + rbr[3] / 2, rbr[2] + rbr[4] / 2] : (tp.dir < 0 ? P[P.length - 1] : P[0]);
       return trStart(k, end, 0, tp.label); }
+    tb.addEventListener("click", e => { const g = e.target.closest("b.go"); if (g && T){ e.stopPropagation(); const m = T.m.find(q => q[1] === "t" && String(q[0]) === g.dataset.f && q[2] === g.dataset.t); const k = m && teeKey(m); if (k != null) trGo({ k, pt: trAt(m[0]) }); return; } }, true);
     tb.addEventListener("click", e => { e.stopPropagation(); const b = e.target.closest("button"); if (!b) return;
       if (b.classList.contains("sp-trx")) return trEnd();
       if (b.classList.contains("sp-tro")){ if (T && !noPage(T.k) && window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: null, force: true }; kcgmOpenTag(T.label); setTimeout(() => { keepView = null; }, 2000); } return; }
@@ -439,7 +450,8 @@ window.AssetViz = (() => {
           else { hiB = [].concat(arr.back).filter(j => typeof j === "number"); flDraw(); } } });   // (at the whole sheet: the line come in on shown, the rest faint)   // (zoomed onto the ribbon back to where you came from)
       // the tag tapped (here or in the full screen viewer): the arrow on that very spot
       // (decided once the tag boxes are in: before that every tag looked boxless and got a second box on top of its own)
-      if (tap){ refsP.then(() => { if (g !== gen) return; const hitT = ([l, t, w, h]) => tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t, own = boxes.some(hitT);   // its own tag box shows it: no second box
+      if (tap){ refsP.then(() => { if (g !== gen) return; const hitT = ([l, t, w, h]) => { const ox = Math.min(tap[0] + tap[2], l + w) - Math.max(tap[0], l), oy = Math.min(tap[1] + tap[3], t + h) - Math.max(tap[1], t);
+            return ox > 0 && oy > 0 && ox * oy >= .5 * Math.min(tap[2] * tap[3], w * h); }, own = boxes.some(hitT);   // (the same place: overlapping by half or more, not a neighbour touching its edge)   // its own tag box shows it: no second box
           box.querySelector(".vz-mk").innerHTML = own ? "" : hbox(tap[0], tap[1], tap[2], tap[3]);
           if (own) pick(i => hitT(boxes[i])); });
         return; }

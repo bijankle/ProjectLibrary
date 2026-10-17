@@ -47,7 +47,8 @@ window.PdfView = (() => {
     const tz = document.createElement("div"); tz.className = "sp-trv"; tz.hidden = true;
     tz.innerHTML = `<button type="button" data-z="10" aria-label="Closer">+</button><span class="sp-trzb"><input type="range" class="sp-trz sp-rg" min="0" max="100" step="any" aria-label="Zoom"></span><button type="button" data-z="-10" aria-label="Further">−</button>`;
     tz.addEventListener("click", e => e.stopPropagation()); el.appendChild(tz);
-    tb.addEventListener("click", e => e.stopPropagation()); el.appendChild(tb);
+    tb.addEventListener("click", e => { e.stopPropagation(); const g = e.target.closest("b.go"); if (!g || !TR) return;
+      const m = TR.m.find(q => q[1] === "t" && String(q[0]) === g.dataset.f && q[2] === g.dataset.t), k = m && teeK(m); if (k != null) trGo({ k, pt: trAt(m[0]) }); }); el.appendChild(tb);
     const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
     cb.onclick = () => cur && cur.corner && cur.corner.go();
     // (the P&ID lines chip, top left of the sheet on a phone: colour by fluid, flow animation; and the fluid legend)
@@ -257,7 +258,8 @@ window.PdfView = (() => {
       a.classList.add("hit"); setTimeout(() => a.classList.remove("hit"), 400);
       // the red arrow on what was tapped, kept with this view (back here shows where you were)
       const bx = V.boxes[+a.dataset.i]; if (bx){ V.tap = { page: V.page, l: bx[0] / 1e4, t: bx[1] / 1e4, w: bx[2] / 1e4, h: bx[3] / 1e4 }; drawTap(); const me = REG.get(curId); if (me){ me.snap = state(); me.tap = V.tap; } }
-      if (FL.pick && (r[6] === "line" || r[6] === "mel" || r[6] === "elec")) pickEnd();   // (a fluid picked in the legend is let go: the tap works as on the plain drawing)
+      if (FL.pick && (r[6] === "line" || r[6] === "mel" || r[6] === "elec")) pickEnd();
+      if (TR && r[6] !== "line" && r[6] !== "d") trEnd();   // (an instrument, equipment, a valve picked while flying: out of the fly through)   // (a fluid picked in the legend is let go: the tap works as on the plain drawing)
       if (r[6] === "line" && /-PID-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
         if (TR && TR.k === gi && TR.n === cur.number){ trOpen(); return; }
         linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
@@ -373,14 +375,16 @@ window.PdfView = (() => {
   // the place tapped or found: a highlighted box on it (no arrow), grown a little round the tag like the search boxes
   function arrowAt(h, cls){ const vp = V.pg.getViewport({ rotation: V.rot || 0, scale: 1 }), [l, t, w, hh] = PdfView.grow(h.l * 1e4, h.t * 1e4, h.w * 1e4, h.h * 1e4, vp.width / vp.height);
     return `<i class="sp-hb sp-hbon ${cls || ""}" style="left:${l / 100}%;top:${t / 100}%;width:${w / 100}%;height:${hh / 100}%"></i>`; }
+  // (two boxes are the same place when they overlap by half the smaller or more: a neighbour touching an edge is not)
+  const same = (h, l, t, w, hh) => { const ox = Math.min(h.l + h.w, l + w) - Math.max(h.l, l), oy = Math.min(h.t + h.h, t + hh) - Math.max(h.t, t); return ox > 0 && oy > 0 && ox * oy >= .5 * Math.min(h.w * h.h, w * hh); };
   function drawTap(){ if (!V.tapEl) return; const on = V.tap && V.pg && V.tap.page === V.page ? [V.tap, ...(V.tap.more || [])] : [];
     // a place that has its own tag box (a checked sheet) is already shown by that box turning blue: no second box on it
     const own = h => V.refs.some(r => { if (r[0] !== V.page) return false; const [l, t, w, hh] = boxOf(r).map(x => x / 1e4);
-      return h.l < l + w && h.l + h.w > l && h.t < t + hh && h.t + h.h > t; });
+      return same(h, l, t, w, hh); });
     V.tapEl.innerHTML = on.filter(h => !own(h)).map(h => arrowAt(h, "on")).join("");
     // (and those own boxes are marked instead, ribbon shaped where the ribbon is known)
     if (V.refsEl && V.boxes) [...V.refsEl.children].forEach((a, i) => { const b = V.boxes[i]; if (!b) return; const [l, t, w, hh] = b.map(x => x / 1e4);
-      a.classList.toggle("tp", on.some(h => h.l < l + w && h.l + h.w > l && h.t < t + hh && h.t + h.h > t)); });
+      a.classList.toggle("tp", on.some(h => same(h, l, t, w, hh))); });
  }
   // ---------- line trace (phone) ----------
   // A tapped line number traces its line (lines/<number>.json, tools/build_line_paths.py), in the app's theme colour. A panel comes up under the sheet with the line slider, which runs the view along the line from one end
@@ -500,7 +504,13 @@ window.PdfView = (() => {
     const ln = (x, lx, y0, up) => { const d = Math.abs(lx - x), e = DM + 2; return `<polyline points="${x.toFixed(1)},${y0} ${lx.toFixed(1)},${(up ? y0 - d : y0 + d).toFixed(1)} ${lx.toFixed(1)},${(up ? y0 - e : y0 + e).toFixed(1)}"/>`; };
     c.innerHTML = TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
       + `<svg class="sp-trco" width="${W}" height="${BB + 40}">${named.map(([m, x, lx]) => ln(x, lx, BT, true) + ln(x, lx, BB, false)).join("")}</svg>`
-      + named.map(([m, x, lx]) => `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px;bottom:calc(100% - ${BT - DM - 5}px)">${TT[m[1]] || ""}</b><b class="k-${m[1]}" style="left:${lx.toFixed(1)}px;top:${BB + DM + 5}px">${esc(trName(m))}</b>`).join(""); }
+      + named.map(([m, x, lx]) => `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px;bottom:calc(100% - ${BT - DM - 5}px)">${TT[m[1]] || ""}</b><b class="k-${m[1]}${m[1] === "t" && teeK(m) != null ? " go" : ""}" data-f="${m[0]}" data-t="${esc(m[2] || "")}" style="left:${lx.toFixed(1)}px;top:${BB + DM + 5}px">${esc(trName(m))}</b>`).join(""); }
+  // the branch line at a tee (a tap on its name flies onto it): the traced line on this sheet with that number, nearest the tee
+  function teeK(m){ const D = TR && TR.D; if (!D || !m[2]) return null; const at = trAt(m[0]); let best = null;
+    for (const k of Object.keys(D)){ if (String(k) === String(TR.k) || !Array.isArray(D[k]) || !/^(\d+|u\d+|r\d+)$/.test(k)) continue; const r = refK(k, D), lab = /^\d+$/.test(k) ? (r && r[0] === TR.page ? String(r[5]).split("|")[0] : null) : D.lb && D.lb[k];
+      if (lab !== m[2]) continue; const Q = D[k], d0 = Math.min(Math.hypot(Q[0][0] - at[0], Q[0][1] - at[1]), Math.hypot(Q[Q.length - 1][0] - at[0], Q[Q.length - 1][1] - at[1]));
+      if (!best || d0 < best[1]) best = [/^\d+$/.test(k) ? +k : k, d0]; }
+    return best && best[0]; }
   function trFill(){ const z2 = V.tb.querySelector(".sp-trz2"); z2.value = V.tz.querySelector(".sp-trz").value;
     [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz"), z2].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
   function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
