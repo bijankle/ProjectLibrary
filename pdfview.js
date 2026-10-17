@@ -230,7 +230,11 @@ window.PdfView = (() => {
     const fallbackCopy = t => { const x = document.createElement("textarea"); x.value = t; x.style.position = "fixed"; x.style.opacity = "0"; document.body.appendChild(x); x.select(); try { document.execCommand("copy"); } catch (e) {} x.remove(); };
     // the tag under a point on the screen (the boxes sit under the text layer, so found by position)
     const refAt = (x, y) => { if (!V.boxes || !V.boxes.length) return null; const q = V.refsEl.getBoundingClientRect(); if (!q.width) return null;
-      const i = PdfView.nearest(V.boxes, (x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4); return i >= 0 ? V.refsEl.children[i] : null; };
+      const fx = (x - q.left) / q.width * 1e4, fy = (y - q.top) / q.height * 1e4, i = PdfView.nearest(V.boxes, fx, fy); if (i >= 0) return V.refsEl.children[i];
+      // (phone, the whole sheet in view: a continuation ribbon answers a finger anywhere near it, half its size again all round)
+      if (!desk() && V.zoom <= 1.001) for (let j = 0; j < V.pageRefs.length; j++){ const r = V.pageRefs[j], b = V.boxes[j]; if (!b || r[6] !== "d") continue; const gx = Math.max(b[2], 120) * .5, gy = Math.max(b[3], 120) * .5;
+        if (fx > b[0] - gx && fx < b[0] + b[2] + gx && fy > b[1] - gy && fy < b[1] + b[3] + gy) return V.refsEl.children[j]; }
+      return null; };
     let hv = null; V.body.addEventListener("mousemove", e => { const a = refAt(e.clientX, e.clientY); if (a === hv) return;
       if (hv) hv.classList.remove("hv"); hv = a; if (a) a.classList.add("hv"); V.body.classList.toggle("on-ref", !!a); });
     V.body.addEventListener("click", e => {
@@ -417,7 +421,7 @@ window.PdfView = (() => {
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
       { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
       trNx();
-      tb.classList.toggle("dk", desk()); tb.hidden = false; V.tz.hidden = desk(); trWheelOn(); V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
+      drawFl(); tb.classList.toggle("dk", desk()); tb.hidden = false; V.tz.hidden = desk(); trWheelOn(); V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
       // (one browser history step for the trace, after the zoom's own: the phone's back swipe leaves the trace, the drawing
       // staying as it is)
       setTimeout(() => { if (TR && history.state && history.state.sp && !history.state.tr) history.pushState(Object.assign({}, history.state, { tr: 1 }), ""); }, 0);
@@ -550,7 +554,7 @@ window.PdfView = (() => {
     if (TR && Date.now() - (TR.t0 || 0) > 1500 && !(history.state && history.state.tr)){ e.stopImmediatePropagation(); trEnd(true); } }, true);
   function trEnd(fromPop){ if (!TR && V.tb.hidden) return; TR = null;
     // (✕ takes the trace's history step off again; the other ways out, opening something, leave it as a plain step)
-    if (history.state && history.state.tr){ if (fromPop === "x"){ trPop = true; history.back(); } else if (!fromPop){ const st = Object.assign({}, history.state); delete st.tr; history.replaceState(st, ""); } } V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); drawTrace(); cxFit(); }
+    if (history.state && history.state.tr){ if (fromPop === "x"){ trPop = true; history.back(); } else if (!fromPop){ const st = Object.assign({}, history.state); delete st.tr; history.replaceState(st, ""); } } V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); drawTrace(); drawFl(); cxFit(); }
   // desktop: the wheel runs the view along the line (down: downstream) and Ctrl + wheel zooms. Free-spinning wheels (MX
   // Master) and trackpads send a stream of small deltas: each counts in proportion, no steps, gathered and applied once a
   // frame, a wheel pixel moving the view one screen pixel along the pipe at the zoom shown
@@ -850,7 +854,7 @@ window.PdfView = (() => {
   const lsg = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v === "1"; } catch (e) { return d; } };
   const FL = { c: lsg("kcgm_flc", false), w: lsg("kcgm_flw", true), leg: lsg("kcgm_flleg", true), cnt: {} };
   const fluid = l => String(l || "").split("|")[0].split("-")[2] || "";
-  const flOn = () => FL.c && cur && /-PID-/.test(cur.number || "") && V.pg;
+  const flOn = () => (FL.c || (TR && TR.n === cur.number)) && cur && /-PID-/.test(cur.number || "") && V.pg;   // (a line flown through: it in its colour and the rest grey, whether or not all lines are coloured)
   async function drawFl(){ if (!V || !V.fl) return;
     if (!flOn()){ V.fl.innerHTML = ""; flLeg({}); return; }
     const me = cur, pn = V.page, D = await linesFor(cur.number); if (cur !== me || V.page !== pn || !V.pg) return;

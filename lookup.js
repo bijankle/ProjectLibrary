@@ -920,7 +920,7 @@
 .sp-ref.tp{background:color-mix(in srgb,var(--hl,#1e6ee6) 14%,transparent);box-shadow:inset 0 0 0 1.5px var(--hl,#1e6ee6)}
 .sp-ref.rb{background:none!important;border:0!important;box-shadow:none!important}.sp-ref.rb svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .sp-ref.rb polygon{fill:rgba(90,100,115,.15);stroke:none}.sp-ref.fit.rb polygon{fill:rgba(90,100,115,.15);stroke:none}
-.sp-finding .sp-ref.fit.rb:not(.off) polygon{fill:color-mix(in srgb,var(--hl,#1e6ee6) 32%,transparent);stroke:color-mix(in srgb,var(--hl,#1e6ee6) 85%,transparent);stroke-width:var(--rbw,1.5px)}.sp-ref.rb.hv polygon{fill:rgba(90,100,115,.28)}.sp-ref.fit.off.rb polygon{stroke:none;fill:rgba(90,100,115,.06)}
+.sp-finding .sp-ref.fit.rb:not(.off) polygon{fill:color-mix(in srgb,var(--hl,#1e6ee6) 32%,transparent);stroke:color-mix(in srgb,var(--hl,#1e6ee6) 85%,transparent);stroke-width:var(--rbw,1.5px)}.sp-ref.rb.hv polygon{fill:rgba(90,100,115,.28)}:root.phone .sp-view.cx-on .sp-ref.rb polygon{fill:color-mix(in srgb,var(--th,#475569) 30%,transparent);stroke:var(--th,#475569);stroke-width:2px;vector-effect:non-scaling-stroke}.sp-ref.fit.off.rb polygon{stroke:none;fill:rgba(90,100,115,.06)}
 .sp-ref.rb.tp polygon{fill:color-mix(in srgb,var(--hl,#1e6ee6) 32%,transparent);stroke:var(--hl,#1e6ee6);stroke-width:calc(var(--rbw,1.5px) + 1px)}
 .sp-ref.fit.off{border:0;background:rgba(90,100,115,.06)}.sp-ref.fit.hv{background:rgba(90,100,115,.28)}.sp-ref.fit.off.hv{background:rgba(90,100,115,.22)}   /* a checked sheet: red labels, grey when a find leaves them out */.sp-refs .sp-ref{pointer-events:none}
 /* the page's text, invisible but selectable (left drag), on top of everything; a tag under it still opens on a click */

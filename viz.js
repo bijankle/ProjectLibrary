@@ -199,14 +199,14 @@ window.AssetViz = (() => {
       flTk.querySelector('[data-f="c"]').checked = S.c; flTk.querySelector('[data-f="w"]').checked = S.w;
       if (!flD) flD = await fetch("lines/" + d.number + ".json").then(r => r.ok ? r.json() : {}).catch(() => ({}));
       if (g !== gen) return;
-      if (!S.c || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }
+      if ((!S.c && !T) || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }   // (a line flown through: drawn, it in colour and the rest grey, even with Colours off)
       const cnt = {}; let h = "", fw = ""; flSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
       Object.keys(flD).forEach(k => { if (!/^\d+$/.test(k)) return; const r = flRefs[+k]; if (!r || r[0] !== 1) return; const c = FLX.fluid(r[5]), col = FLX.FLC[c]; if (!col) return; cnt[c] = (cnt[c] || 0) + 1;
         const pts = flD[k].map(p => (p[0] / 1e4 * W).toFixed(1) + "," + (p[1] / 1e4 * H).toFixed(1)).join(" ");
         h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
         if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${(k * .37 % 1.1).toFixed(2)}s"/>`; });
       flSvg.innerHTML = h + fw; const cs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b));
-      flLg.hidden = !cs.length; flLg.classList.toggle("open", S.leg);
+      flLg.hidden = !cs.length || !S.c; flLg.classList.toggle("open", S.leg);
       flLg.innerHTML = `<button type="button" class="hd"><b>${S.leg ? "Fluids on this drawing" : "Fluids"}</b>${S.leg ? "" : `<span class="fl-dots">${cs.map(c => `<i style="background:${FLX.FLC[c]}"></i>`).join("")}</span>`}<em>${S.leg ? "Hide ▴" : "Show ▾"}</em></button>`
         + (S.leg ? `<div class="grid">${cs.map(c => `<button type="button" class="row" data-fc="${c}" style="--c:${FLX.FLC[c]}" title="Only ${esc(FLX.FLN[c] || c)} in colour"><i class="sw" style="background:${FLX.FLC[c]}"></i><span class="cd" style="--c:${FLX.FLC[c]}">${c}</span><span class="nm">${esc(FLX.FLN[c] || "")}</span><span class="ct">${cnt[c]}</span></button>`).join("")}</div>` : "");
       flPickSet(flPick && cnt[flPick] ? flPick : null); flDimT(); }
@@ -250,8 +250,8 @@ window.AssetViz = (() => {
         if (e2 < best){ best = e2; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
       TRV = { n: d.number, k, f, as: T.label };
       tb.querySelector(".sp-trn").textContent = T.label; sl.value = Math.round(f * 1000); zs.value = trZ();
-      tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDimT(); trMarks(); view(); return true; }
-    function trEnd(){ if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flPickSet(flPick); }
+      tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDraw(); trMarks(); view(); return true; }
+    function trEnd(){ if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
     function view(){ if (!T) return; const f = sl.value / 1000; TRV.f = f;
       [sl, zs].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%"));
       z = Math.max(1, Math.min(10, zOf(+zs.value))); const [x, y] = trAt(f), vw = box.clientWidth / kf, vh = (box.clientHeight - tb.offsetHeight) / kf;
