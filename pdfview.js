@@ -508,6 +508,7 @@ window.PdfView = (() => {
     const pts = P => P.map(q => sc(q).map(v => v.toFixed(1)).join(",")).join(" ");
     const f = trF(), at = trAt(f), [dx, dy] = sc(at), i = at[2];
     V.trl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.trl.style.setProperty("--trw", w + "px");
+    { const c = FLC[fluid(TR.label)]; if (c) V.trl.style.setProperty("--hl", c); else V.trl.style.removeProperty("--hl"); }   // (the line in its fluid's colour, whether or not all lines are coloured)
     const tr = f > 1e-4 ? pts(trSub(0, f)) : "";
     let mk;
     { const [ax, ay] = sc(TR.P[i - 1]), [bx, by] = sc(TR.P[i]), d = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / d, uy = (by - ay) / d;
@@ -578,7 +579,7 @@ window.PdfView = (() => {
   function trWheelOn(){ trKeysOn(); if (V.trWheel) return; V.trWheel = true;
     V.el.addEventListener("wheel", e => { if (!TR || !desk() || !e.target.closest(".sp-body, .sp-trb")) return; e.preventDefault(); e.stopPropagation();
       const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1, d = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * k;
-      if (e.ctrlKey) zAcc += d; else wAcc += d;
+      if (e.ctrlKey) zAcc += d; else wAcc -= d;   // (up: on downstream)
       if (!wRaf) wRaf = requestAnimationFrame(trWheel); }, { passive: false, capture: true }); }
   // the arrows at the ends of the line slider: the line(s) this one runs on into at that end, each with its sequence
   // number (two where it ends at a tee into two lines): on this sheet the traced lines whose end meets this one's end (a

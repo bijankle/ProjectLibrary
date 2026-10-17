@@ -33,6 +33,9 @@ window.AssetViz = (() => {
   // the whole sheet fits the space with the item marked; drawing number tabs above when there are several; a click on
   // the sheet opens it full screen in the drawing viewer
   let cur = null, shown = null, hist = [], gen = 0, arrival = null, keepView = null, held = null;
+  // a line being flown through on the drawing (kept while the item on the left changes, the sheet staying), and one
+  // asked for on the next sheet (an arrow at the end of the line strip, into a continuation)
+  let TRV = null, TRP = null;
   const bboxP = fetch("sheet-bbox.json").then(r => r.ok ? r.json() : {}).catch(() => ({}));
   const ORD = new Intl.Collator(undefined, { numeric: true });
   const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -103,13 +106,16 @@ window.AssetViz = (() => {
     const hbox = (l, t, w, h) => { const [a, b, c, d] = PdfView.grow(l, t, w, h, W / H); return `<i class="sp-hb sp-hbon" style="left:${a / 1e4 * W}px;top:${b / 1e4 * H}px;width:${c / 1e4 * W}px;height:${d / 1e4 * H}px"></i>`; };
     // (the drawing kept in the window: centred while smaller than it, else no further than its edges)
     const fitAx = (t, a, b, page, view) => { const lo = a * page * z, hi = b * page * z; return hi - lo <= view ? (view - (hi - lo)) / 2 - lo : Math.min(-lo, Math.max(view - hi, t)); };
+    // (kf: the pane widened or narrowed since the sheet was laid out, the divider being dragged: the whole view scaled
+    // with it at once, redrawn sharp at the new size when the drag ends)
+    let kf = 1;
     const apply = () => { z = Math.max(1, Math.min(10, z)); tx = fitAx(tx, bb[0], bb[2], W, vw0 || W); ty = fitAx(ty, bb[1], bb[3], H, vh0 || H);
-      stage.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; stage.style.setProperty("--iz", (1 / z).toFixed(4)); stage.style.setProperty("--rbw", (1.5 / z).toFixed(3) + "px"); clearTimeout(rt); rt = setTimeout(sharp, 180); report(); };
+      stage.style.transform = `translate(${tx * kf}px,${ty * kf}px) scale(${z * kf})`; stage.style.setProperty("--iz", (1 / z).toFixed(4)); stage.style.setProperty("--rbw", (1.5 / z).toFixed(3) + "px"); clearTimeout(rt); rt = setTimeout(sharp, 180); report(); };
     // zoom onto boxes ([l, t, w, h] in 1/10000 of the sheet): all of them in view, but never closer than 4x
     const focus = bs => { if (!bs.length) return; const l = Math.min(...bs.map(b => b[0])) / 1e4 * W, t = Math.min(...bs.map(b => b[1])) / 1e4 * H,
       r = Math.max(...bs.map(b => b[0] + b[2])) / 1e4 * W, b = Math.max(...bs.map(q => q[1] + q[3])) / 1e4 * H, vw = box.clientWidth || W, vh = box.clientHeight || H;
       z = Math.max(1, Math.min(2, .8 * Math.min(vw / Math.max(1, r - l), vh / Math.max(1, b - t)))); tx = vw / 2 - (l + r) / 2 * z; ty = vh / 2 - (t + b) / 2 * z; apply(); };
-    const zoomAt = (f, x, y) => { const z0 = z; z = Math.max(1, Math.min(10, z * f)); tx = x - (x - tx) * z / z0; ty = y - (y - ty) * z / z0; apply(); };
+    const zoomAt = (f, x, y) => { x /= kf; y /= kf; const z0 = z; z = Math.max(1, Math.min(10, z * f)); tx = x - (x - tx) * z / z0; ty = y - (y - ty) * z / z0; apply(); };
     // drawn at twice the size it shows at least (a scanned sheet drawn at its own size comes out soft; drawn larger and
     // shown smaller it is crisp), after a first quick pass at its size so the sheet is up at once (sharp(1))
     async function sharp(first){ if (!page) return; const q = first || Math.min(4, Math.max(2, Math.ceil(z))), dpr = devicePixelRatio || 1; if (q === rz) return; rz = q;
@@ -120,15 +126,15 @@ window.AssetViz = (() => {
       if (b.dataset.z === "full") return Pid.open(n, cur.t === "pid" ? null : key);
       if (b.dataset.z === "hand" || b.dataset.z === "sel"){ try { localStorage.setItem("kcgm_spm", b.dataset.z); } catch (x) {} mode(); return; }
       if (b.dataset.z === "fit"){ z = 1; tx = -1e9; ty = -1e9; apply(); return; }
-      zoomAt(b.dataset.z === "in" ? 1.6 : 1 / 1.6, W / 2, H / 2); };
+      zoomAt(b.dataset.z === "in" ? 1.6 : 1 / 1.6, W / 2 * kf, H / 2 * kf); };
     box.querySelector(".vz-zb").onclick = zbClick; el.querySelector(".vz-tg").onclick = zbClick;
     box.addEventListener("wheel", e => { e.preventDefault(); const r = box.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * .001), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
-    box.addEventListener("dblclick", e => { const r = box.getBoundingClientRect(); zoomAt(2, e.clientX - r.left, e.clientY - r.top); });
+    box.addEventListener("dblclick", e => { if (e.target.closest(".vz-trb,.vz-fltk,.vz-flg")) return; const r = box.getBoundingClientRect(); zoomAt(2, e.clientX - r.left, e.clientY - r.top); });
     // drag to pan (a press that doesn't move is a tap: references still work); two fingers pinch
     const pts = new Map(); let moved = 0, pinch = null;
     box.addEventListener("mousedown", e => { if (e.button === 1) e.preventDefault(); });   // (no browser auto-scroll: that moved the whole page)
     box.addEventListener("auxclick", e => { if (e.button === 1) e.preventDefault(); });
-    box.addEventListener("pointerdown", e => { if (e.target.closest(".vz-zb,.vz-tg,.vz-fltk,.vz-flg")) return; moved = 0;
+    box.addEventListener("pointerdown", e => { if (e.target.closest(".vz-zb,.vz-tg,.vz-fltk,.vz-flg,.vz-trb")) return; moved = 0;
       if (e.pointerType === "mouse" && e.button !== 1 && !(e.button === 0 && box.classList.contains("vz-hand"))) return;   // (mouse: the hand drags with the left button, the pointer selects text; the middle one always pans)
       if (e.pointerType === "mouse") e.preventDefault(); pts.set(e.pointerId, [e.clientX, e.clientY]);
       if (pts.size === 2){ const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z }; } });
@@ -136,7 +142,7 @@ window.AssetViz = (() => {
       if (pts.size === 2 && pinch){ pts.set(e.pointerId, [e.clientX, e.clientY]); const [a, b] = [...pts.values()], r = box.getBoundingClientRect();
         zoomAt(pinch.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d / z, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top); moved = 9; return; }
       const dx = e.clientX - p[0], dy = e.clientY - p[1]; moved += Math.abs(dx) + Math.abs(dy); pts.set(e.pointerId, [e.clientX, e.clientY]);
-      if (moved > 4){ box.classList.add("drag"); try { box.setPointerCapture(e.pointerId); } catch (x) {} tx += dx; ty += dy; apply(); } });
+      if (moved > 4){ box.classList.add("drag"); try { box.setPointerCapture(e.pointerId); } catch (x) {} tx += dx / kf; ty += dy / kf; apply(); } });
     const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; setTimeout(() => box.classList.remove("drag"), 0); };
     box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
     // the hand / pointer switch (shared with the docked viewer): the hand drags, the pointer selects text
@@ -150,12 +156,16 @@ window.AssetViz = (() => {
     let hv = null; box.addEventListener("mousemove", e => { const a = pts.size ? null : refAt(e.clientX, e.clientY); if (a === hv) return; if (hv) hv.classList.remove("hv"); hv = a; if (a) a.classList.add("hv"); box.classList.toggle("on-ref", !!a); });
     // (a text selection made on the sheet means that click was the end of selecting; one elsewhere on the page, e.g. the
     // item's heading, doesn't stop a tap on the sheet)
-    box.addEventListener("click", e => { if (e.target.closest(".vz-zb,.vz-fltk,.vz-flg") || moved > 4) return; const sl = getSelection(); if (sl && !sl.isCollapsed && String(sl).trim() && box.contains(sl.anchorNode)) return;
+    box.addEventListener("click", e => { if (e.target.closest(".vz-zb,.vz-fltk,.vz-flg,.vz-trb") || moved > 4) return; const sl = getSelection(); if (sl && !sl.isCollapsed && String(sl).trim() && box.contains(sl.anchorNode)) return;
       const a = refAt(e.clientX, e.clientY), dk = !document.documentElement.classList.contains("phone");
-      // a line number, or the pipe itself: its fly through, in the full viewer (pdfview.js), on this sheet
-      if (dk && isPid && a && a.dataset.k === "line"){ e.stopPropagation(); flyTo(a.dataset.t.split("|")[0], null); return; }
-      if (dk && isPid && !a && !e.target.closest(".vz-tg")){ const hit = pipeAt(e.clientX, e.clientY); if (hit){ e.stopPropagation(); flyTo(hit.label, hit.at); return; } }
-      // (a fluid picked in the legend: the bare sheet goes back to every fluid in colour)
+      // a line number, or the pipe itself: the fly through along it, here on this sheet, and its asset page on the left
+      if (dk && isPid && a && a.dataset.k === "line"){ const lab = a.dataset.t.split("|")[0], k = flRefs.findIndex((r, i) => r[6] === "line" && r[0] === 1 && String(r[5]).split("|")[0] === lab && flD && flD[i]);
+        if (k >= 0 && !(T && T.k === k)){ flPick = null; trStart(k, null, 0); } }
+      if (dk && isPid && !a && !e.target.closest(".vz-tg")){ const hit = pipeAt(e.clientX, e.clientY);
+        if (hit){ e.stopPropagation(); if (!(T && T.k === hit.k)){ flPick = null; trStart(hit.k, hit.at); }
+          keepView = { n, z, tx, ty, tap: boxes[refsNow.indexOf(flRefs[hit.k])] || null }; if (window.kcgmOpenTag) kcgmOpenTag(hit.label); setTimeout(() => { keepView = null; }, 2000); return; } }
+      // (the bare sheet: out of the fly through, or back to every fluid in colour, the drawing as it is)
+      if (!a && T){ e.stopPropagation(); trEnd(); return; }
       if (!a && flPick){ e.stopPropagation(); flPickSet(null); return; }
       // (an empty part of the sheet, an asset's page showing: the drawing's own page, the sheet left as it is)
       if (!a){ if (cur && cur.t !== "pid" && !document.documentElement.classList.contains("phone") && window.kcgmOpenTag && !e.target.closest(".vz-tg")){ keepView = { n, z, tx, ty, tap: null, force: true }; setTimeout(() => { if (keepView && keepView.force) keepView = null; }, 2500); kcgmOpenTag(n); } return; }
@@ -168,14 +178,16 @@ window.AssetViz = (() => {
     // ---- coloured lines (as in the full viewer, pdfview.js: the same tick boxes, palette, legend and settings) ----
     const isPid = /-PID-/.test(d.number || ""), FLX = PdfView.fl, flTk = box.querySelector(".vz-fltk"), flLg = box.querySelector(".vz-flg"), flSvg = box.querySelector(".sp-fl");
     let flD = null, flRefs = [], flPick = null;
-    const flyTo = (label, at) => { Pid.open(n, cur.t === "pid" ? null : key); PdfView.want(d.number, label, at); };
     const pipeAt = (x, y) => { if (!flD) return null; const q = stage.getBoundingClientRect(); if (!q.width) return null; let best = null;
       for (const k of Object.keys(flD)){ if (!/^\d+$/.test(k) || !flRefs[+k] || flRefs[+k][0] !== 1) continue;
         const P = flD[k].map(p => [q.left + p[0] / 1e4 * q.width, q.top + p[1] / 1e4 * q.height]);
         for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = x1 - x0, dy = y1 - y0, ll = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ll)), dd = Math.hypot(x0 + t * dx - x, y0 + t * dy - y);
-          if (dd < 10 && (!best || dd < best.d)) best = { d: dd, label: String(flRefs[+k][5]).split("|")[0], at: [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }; } }
+          if (dd < 10 && (!best || dd < best.d)) best = { d: dd, k: +k, label: String(flRefs[+k][5]).split("|")[0], at: [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }; } }
       return best; };
-    const flPickSet = c => { flPick = c; flSvg.classList.toggle("dim", !!c); flSvg.classList.toggle("pk", !!c);
+    // (a line flown through: the rest grey, that one in its colour; the legend out of the way)
+    const flDimT = () => { if (!T){ flLg.style.display = ""; return; } flLg.style.display = "none"; flSvg.classList.add("dim"); flSvg.classList.remove("pk");
+      flSvg.querySelectorAll("polyline").forEach(p => p.classList.toggle("sel", p.dataset.k === String(T.k))); };
+    const flPickSet = c => { if (T) return flDimT(); flPick = c; flSvg.classList.toggle("dim", !!c); flSvg.classList.toggle("pk", !!c);
       flSvg.querySelectorAll("polyline").forEach(p => p.classList.toggle("sel", !!c && p.dataset.fc === c)); flLg.classList.toggle("pk", !!c);
       flLg.querySelectorAll("[data-fc]").forEach(r => r.classList.toggle("on", r.dataset.fc === c)); };
     async function flDraw(){ if (!FLX || !isPid || g !== gen) return; const S = FLX.get(); flTk.hidden = document.documentElement.classList.contains("phone");
@@ -186,26 +198,155 @@ window.AssetViz = (() => {
       const cnt = {}; let h = "", fw = ""; flSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
       Object.keys(flD).forEach(k => { if (!/^\d+$/.test(k)) return; const r = flRefs[+k]; if (!r || r[0] !== 1) return; const c = FLX.fluid(r[5]), col = FLX.FLC[c]; if (!col) return; cnt[c] = (cnt[c] || 0) + 1;
         const pts = flD[k].map(p => (p[0] / 1e4 * W).toFixed(1) + "," + (p[1] / 1e4 * H).toFixed(1)).join(" ");
-        h += `<polyline data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
-        if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-fc="${c}" points="${pts}" style="animation-delay:-${(k * .37 % 1.1).toFixed(2)}s"/>`; });
+        h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
+        if (S.w && flD.fl && flD.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${(k * .37 % 1.1).toFixed(2)}s"/>`; });
       flSvg.innerHTML = h + fw; const cs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a] || a.localeCompare(b));
       flLg.hidden = !cs.length; flLg.classList.toggle("open", S.leg);
       flLg.innerHTML = `<button type="button" class="hd"><b>${S.leg ? "Fluids on this drawing" : "Fluids"}</b>${S.leg ? "" : `<span class="fl-dots">${cs.map(c => `<i style="background:${FLX.FLC[c]}"></i>`).join("")}</span>`}<em>${S.leg ? "Hide ▴" : "Show ▾"}</em></button>`
         + (S.leg ? `<div class="grid">${cs.map(c => `<button type="button" class="row" data-fc="${c}" style="--c:${FLX.FLC[c]}" title="Only ${esc(FLX.FLN[c] || c)} in colour"><i class="sw" style="background:${FLX.FLC[c]}"></i><span class="cd" style="--c:${FLX.FLC[c]}">${c}</span><span class="nm">${esc(FLX.FLN[c] || "")}</span><span class="ct">${cnt[c]}</span></button>`).join("")}</div>` : "");
-      flPickSet(flPick && cnt[flPick] ? flPick : null); }
+      flPickSet(flPick && cnt[flPick] ? flPick : null); flDimT(); }
     flTk.addEventListener("change", e => { const f = e.target.dataset.f; if (f && FLX){ FLX.set(f, e.target.checked); flDraw(); } });
     flLg.addEventListener("click", e => { e.stopPropagation(); const row = e.target.closest("[data-fc]");
       if (row){ flPickSet(flPick === row.dataset.fc ? null : row.dataset.fc); return; }
       if (e.target.closest(".hd") && FLX){ FLX.set("leg", !FLX.get().leg); flDraw(); } });
-    const flEsc = e => { if (!box.isConnected){ removeEventListener("keydown", flEsc, true); return; } if (e.key === "Escape" && flPick && !document.querySelector(".sp-view:not([hidden])")){ e.stopImmediatePropagation(); flPickSet(null); } };
+    const flEsc = e => { if (!box.isConnected){ removeEventListener("keydown", flEsc, true); return; } if (e.key === "Escape" && flPick && !T && !document.querySelector(".sp-view:not([hidden])")){ e.stopImmediatePropagation(); flPickSet(null); } };
     addEventListener("keydown", flEsc, true);
+    // ---- the fly through (desktop), as in pdfview.js: the strip at the foot of the sheet (line number, zoom, Asset, ✕;
+    // the slider along the line with its milestones and the next line arrows at its ends), the trail drawn on the sheet
+    // like a pen's with an arrow where you are; the wheel runs along the line (Ctrl + wheel zooms), ← → a tenth (held a
+    // smooth run), ↑ ↓ the next line downstream / upstream; Esc, ✕ or a click on the bare sheet leave it ----
+    let T = null;
+    const tb = document.createElement("div"); tb.className = "sp-trb dk vz-trb"; tb.hidden = true;
+    tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><span class="sp-trzh" title="Zoom (Ctrl + wheel)"><button type="button" data-zh="-10" aria-label="Further">−</button><span class="sp-trzhb"><input type="range" class="sp-rg sp-trz2" min="0" max="100" step="any" aria-label="Zoom"></span><button type="button" data-zh="10" aria-label="Closer">+</button><b>Zoom</b></span><button type="button" class="sp-tro" title="This line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop flying through">✕</button></div>
+      <div class="sp-trrow"><div class="sp-trnx l"></div><div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="any" aria-label="Along the line"><div class="sp-trln"><span></span><span></span></div><div class="sp-trc"></div></div><div class="sp-trnx r"></div></div>`;
+    box.appendChild(tb);
+    const trl = document.createElementNS("http://www.w3.org/2000/svg", "svg"); trl.setAttribute("class", "sp-trl"); flSvg.after(trl);
+    const sl = tb.querySelector(".sp-tra"), zs = tb.querySelector(".sp-trz2");
+    const zOf = v => Math.pow(10, v / 100), trZ = () => { let v = 55; try { const x = localStorage.getItem("kcgm_trz"); if (x != null) v = +x; } catch (e) {} return v; };
+    const TT = { t: "TEE", v: "VALVE", p: "SP", i: "INSTR", e: "EQUIP", r: "SHEET", l: "SPEC", s: "END", b: "BOARD", x: "TX", d: "DEVICE", a: "RATING", f: "FEEDER" };
+    const TK = { t: "tee", v: "valve", p: "special item", i: "instrument", e: "equipment", r: "continues", l: "next line", s: "end", b: "board", x: "transformer", d: "device", a: "rating", f: "feeder" };
+    const trName = m => { const t = String(m[2] || "").replace(/\s+/g, "");
+      if (m[1] === "t") return (String(m[2] || "").split("-")[1]) || "T" + (T.tn.get(m) || "");
+      if (m[1] === "r") return t.replace(/^2000-/, "").replace(/-PID-PR-|-SLD-EL-/, "-");
+      if (m[1] === "l"){ const sp = q => (String(q || "").split("-")[3] || "?"), me = sp(T.label), nx = sp(t); return m[0] < .5 ? nx + "|" + me : me + "|" + nx; }
+      if (m[1] === "s") return "end"; if (m[1] === "p") return t.replace(/^SP-/, "");
+      return t.replace(/^F\d\d-(?=\d)/, "").replace(/^F\d\d-(?=[A-Z])/, ""); };
+    const trAt = f => { const { P, L } = T, q = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < q) i++;
+      const t = L[i] > L[i - 1] ? (q - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; };
+    const trSub = (a, b) => { const [xa, ya, ia] = trAt(a), [xb, yb, ib] = trAt(b); return [[xa, ya], ...T.P.slice(ia, ib), [xb, yb]]; };
+    function trStart(k, at, f0, as){ const P = flD && flD[k]; if (!P || P.length < 2 || !W) return false; const A = W / H, L = [0];
+      for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
+      const r = /^r\d+$/.test(k) ? flRefs[+String(k).slice(1)] : flRefs[k];
+      T = { k, P, L, label: (flD.lb && flD.lb[k]) || (/^r\d+$/.test(k) ? as || "" : String(r[5]).split("|")[0]), m: (flD.m && flD.m[k]) || [] };
+      T.tn = new Map(T.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, i) => [m, i + 1]));
+      let f = f0 || 0;
+      if (at){ let best = 1e18; for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
+        const t = Math.max(0, Math.min(1, ((at[0] - x0) * A * dx + (at[1] - y0) * dy) / ll)), e2 = ((x0 + t * (x1 - x0) - at[0]) * A) ** 2 + (y0 + t * (y1 - y0) - at[1]) ** 2;
+        if (e2 < best){ best = e2; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
+      TRV = { n: d.number, k, f, as: T.label };
+      tb.querySelector(".sp-trn").textContent = T.label; sl.value = Math.round(f * 1000); zs.value = trZ();
+      tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDimT(); trMarks(); view(); return true; }
+    function trEnd(){ if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flPickSet(flPick); }
+    function view(){ if (!T) return; const f = sl.value / 1000; TRV.f = f;
+      [sl, zs].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%"));
+      z = Math.max(1, Math.min(10, zOf(+zs.value))); const [x, y] = trAt(f), vw = box.clientWidth / kf, vh = (box.clientHeight - tb.offsetHeight) / kf;
+      tx = vw / 2 - x / 1e4 * W * z; ty = vh / 2 - y / 1e4 * H * z; apply(); drawTrail(); }
+    function drawTrail(){ if (!T) return; const s = z * kf, w = Math.max(4, Math.min(9, 3.2 * s)), tw = w * 1.35, sc = q => [q[0] / 1e4 * W, q[1] / 1e4 * H];
+      const pts = P => P.map(q => sc(q).map(v => v.toFixed(1)).join(",")).join(" "), f = sl.value / 1000, at = trAt(f), [dx, dy] = sc(at), i = at[2];
+      trl.setAttribute("viewBox", `0 0 ${W} ${H}`); trl.style.setProperty("--trw", w + "px");
+      { const c = FLX && FLX.FLC[FLX.fluid(T.label)]; if (c) trl.style.setProperty("--hl", c); else trl.style.removeProperty("--hl"); }   // (the line in its fluid's colour, whether or not all lines are coloured)
+      const tr = f > 1e-4 ? pts(trSub(0, f)) : "", [ax, ay] = sc(T.P[i - 1]), [bx, by] = sc(T.P[i]), dd = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / dd, uy = (by - ay) / dd;
+      const L = 2.6 * tw / s, B = 1.1 * tw / s, ex = dx + ux * L * .6, ey = dy + uy * L * .6, bx0 = dx - ux * L * .4, by0 = dy - uy * L * .4;
+      trl.innerHTML = (tr ? `<polyline class="tr" points="${tr}"/><polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "")
+        + `<polygon points="${[[ex, ey], [bx0 - uy * B, by0 + ux * B], [bx0 + uy * B, by0 - ux * B]].map(p => p.map(v => v.toFixed(1)).join(",")).join(" ")}"/>`; }
+    // (the milestones: names read across under the bar, each where it costs least, no callout crossing a name or another)
+    function trMarks(){ const c = tb.querySelector(".sp-trc"), Wd = c.offsetWidth || 400, BB = Math.round(sl.offsetTop + sl.offsetHeight / 2 + 4) || 20, J = BB + 9, RH = 16, R0 = BB + 14, NR = 6, G = 6;
+      const pr = m => ({ r: 0, l: 1, e: 2, b: 2, x: 3, t: 3, i: 4, f: 4, d: 5, p: 5, v: 5, a: 6, s: 6 })[m[1]] ?? 7, rows = [...Array(NR)].map(() => []), legs = [], put = [];
+      const wid = m => (TT[m[1]] || "").length * 5.4 + trName(m).length * 6.9 + 8;
+      const ok = (x, xv, r, a, b) => { if (a < 0 || b > Wd) return false;
+        if (rows[r].some(q => q[0] < b + G && a < q[1] + G)) return false;
+        if (rows.slice(0, r).some(Rw => Rw.some(q => q[0] - 2 < xv && xv < q[1] + 2))) return false;
+        if (legs.some(l => l.r > r && a - 2 < l.xv && l.xv < b + 2)) return false;
+        const lo = Math.min(x, xv), hi = Math.max(x, xv);
+        for (const l of legs){ const lo2 = Math.min(l.x, l.xv), hi2 = Math.max(l.x, l.xv);
+          if (hi - lo > .5 && (lo - 2 < l.x && l.x < hi + 2 || lo - 2 < l.xv && l.xv < hi + 2)) return false;
+          if (hi2 - lo2 > .5 && (lo2 - 2 < x && x < hi2 + 2 || lo2 - 2 < xv && xv < hi2 + 2)) return false; }
+        return true; };
+      [...T.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const x = m[0] * Wd, w = wid(m); let best = null;
+        for (let dd = 0; dd <= 150; dd += 6) for (const sg of dd ? [1, -1] : [1]){ const xv = x + sg * dd;
+          for (let r = 0; r < NR; r++) for (const [a, b] of [[xv + 3, xv + 3 + w], [xv - 3 - w, xv - 3]]){ const cost = r * 22 + dd + (a < xv ? 4 : 0); if (best && cost >= best.cost) continue; if (ok(x, xv, r, a, b)) best = { cost, xv, r, a, b }; } }
+        if (!best) return; rows[best.r].push([best.a, best.b]); legs.push({ x, xv: best.xv, r: best.r }); put.push([m, x, best.a, best.r, best.xv]); });
+      const used = put.reduce((q, p) => Math.max(q, p[3] + 1), 0); tb.querySelector(".sp-trtk").style.paddingBottom = (used * RH + 16) + "px";
+      c.innerHTML = T.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%;top:${BB + 1}px" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
+        + `<svg class="sp-trco" width="${Wd}" height="${R0 + NR * RH}">${put.map(([m, x, a, r, xv]) => { const y = R0 + r * RH + 7, e2 = a > xv ? a - 1 : a + wid(m) + 1;
+            return `<polyline points="${x.toFixed(1)},${BB + 6} ${x.toFixed(1)},${J} ${xv.toFixed(1)},${J} ${xv.toFixed(1)},${y} ${e2.toFixed(1)},${y}"/>`; }).join("")}</svg>`
+        + put.map(([m, x, a, r]) => `<b class="h k-${m[1]}" style="left:${a.toFixed(1)}px;top:${R0 + r * RH}px"><em>${TT[m[1]] || ""}</em> ${esc(trName(m))}</b>`).join(""); }
+    // (the next lines at each end: on this sheet the lines meeting its end, the ones joined across a pump or vessel
+    // (tools/link_lines.py), else the ribbon there, on to the next sheet)
+    function trNbs(dir){ const D = flD, A = W / H, e = dir > 0 ? T.P[T.P.length - 1] : T.P[0], dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]);
+      const segd = (Q, q) => { let m = 1e18; for (let i = 1; i < Q.length; i++){ const [x0, y0] = Q[i - 1], [x1, y1] = Q[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
+        const t = Math.max(0, Math.min(1, ((q[0] - x0) * A * dx + (q[1] - y0) * dy) / ll)); m = Math.min(m, Math.hypot((x0 + t * (x1 - x0) - q[0]) * A, y0 + t * (y1 - y0) - q[1])); } return m; };
+      const out = [], seq = k2 => String(flRefs[k2][5]).split("|")[0].split("-")[1] || "?";
+      if (D.up || D.dn){ const j = (dir < 0 ? D.up : D.dn || {})[T.k]; if (j == null || !flRefs[j]) return [];
+        return [{ rb: j, d: 0, dir, seq: String(flRefs[j][5]).split("|")[0].replace(/^2000-/, "").replace(/-SLD-EL-/, "\n") }]; }
+      Object.keys(D).forEach(k2 => { if (!/^\d+$/.test(k2) || String(k2) === String(T.k) || !flRefs[+k2] || flRefs[+k2][0] !== 1) return; const Q = D[k2], dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e));
+        if (dE < 45) out.push({ k: +k2, pt: dist(Q[0], e) < dist(Q[Q.length - 1], e) ? Q[0] : Q[Q.length - 1], d: dE, seq: seq(+k2) });
+        else { const dI = segd(Q, e); if (dI < 25) out.push({ k: +k2, pt: e, d: dI + 1, seq: seq(+k2) }); } });
+      (D.lk || []).forEach(([k1, e1, k2, e2]) => { const me = dir > 0 ? 1 : 0;
+        for (const [a, ea, b, eb] of [[k1, e1, k2, e2], [k2, e2, k1, e1]]) if (String(a) === String(T.k) && ea === me && D[b] && flRefs[b] && !out.some(o => o.k === b)){ const Q = D[b]; out.push({ k: b, pt: eb ? Q[Q.length - 1] : Q[0], d: 50, seq: seq(b) }); } });
+      if (!out.length){ const em = T.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
+        if (em){ const k2 = flRefs.findIndex((r, i) => r[0] === 1 && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
+      if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(T.k) || !flRefs[+j]) return; const r = flRefs[+j], dd = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
+        if (dd < 300) out.push({ rb: +j, d: dd, dir, seq: String(r[5]).split("|")[0].replace(/^2000-/, "").replace(/-PID-PR-/, "-") }); });
+      return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb) === i).slice(0, 2); }
+    function trNx(){ T.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = tb.querySelector(".sp-trnx." + side), Lb = trNbs(dir); T[dir < 0 ? "nbL" : "nbR"] = Lb; c.classList.toggle("two", Lb.length > 1);
+      c.innerHTML = Lb.map(o => { T.nb.push(o); return `<button type="button" data-i="${T.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(flRefs[o.k][5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
+    function trGo(nb){ if (!nb || !T) return;
+      if (nb.rb != null){ const t = String(flRefs[nb.rb][5]).split("|")[0]; if (!Pid.has(t)) return; TRP = { at: Date.now(), label: T.label, dir: nb.dir || 1, from: d.number }; TRV = null;
+        arrival = { to: t, back: null }; if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); return; }
+      trStart(nb.k, nb.pt); }
+    // arrived on the next sheet: the line the ribbon back carries on, else the one with the same number, from that end
+    function trArrive(){ const tp = TRP; TRP = null; if (!tp || Date.now() - tp.at > 20000 || !flD) return false;
+      const bk = []; flRefs.forEach((r, j) => { if (r[0] === 1 && r[6] === "d" && String(r[5]).split("|").includes(tp.from)) bk.push(j); });
+      let k = null, rbr = null; const j = bk.find(j => flD.rb && flD.rb[j] != null); if (j != null && flD[flD.rb[j]]){ k = /^\d+$/.test(flD.rb[j]) ? +flD.rb[j] : flD.rb[j]; rbr = flRefs[j]; }
+      if (k == null && tp.label){ const C = flRefs.map((r, i) => i).filter(i => flRefs[i][0] === 1 && flRefs[i][6] === "line" && String(flRefs[i][5]).split("|")[0] === tp.label && flD[i]); k = C[0]; rbr = flRefs[bk[0]]; }
+      if (k == null) return false; const P = flD[k], end = rbr ? [rbr[1] + rbr[3] / 2, rbr[2] + rbr[4] / 2] : (tp.dir < 0 ? P[P.length - 1] : P[0]);
+      return trStart(k, end, 0, tp.label); }
+    tb.addEventListener("click", e => { e.stopPropagation(); const b = e.target.closest("button"); if (!b) return;
+      if (b.classList.contains("sp-trx")) return trEnd();
+      if (b.classList.contains("sp-tro")){ if (T && window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: null, force: true }; kcgmOpenTag(T.label); setTimeout(() => { keepView = null; }, 2000); } return; }
+      if (b.dataset.zh){ zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.zh)); try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} view(); return; }
+      if (b.dataset.i != null && T) trGo(T.nb[+b.dataset.i]); });
+    sl.addEventListener("input", () => view()); zs.addEventListener("input", () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} view(); });
+    // the wheel along the line (a free-spinning wheel's stream of small steps each counted), Ctrl + wheel the zoom
+    let wAcc = 0, zAcc = 0, wRaf = 0;
+    box.addEventListener("wheel", e => { if (!T) return; e.preventDefault(); e.stopImmediatePropagation();
+      const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1, dl = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * k; if (e.ctrlKey) zAcc += dl; else wAcc -= dl;   // (up: on downstream)
+      if (!wRaf) wRaf = requestAnimationFrame(() => { wRaf = 0; if (!T) return;
+        if (zAcc){ zs.value = Math.max(0, Math.min(100, +zs.value - zAcc * .05)); zAcc = 0; try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} }
+        if (wAcc){ const len = T.L[T.L.length - 1] * H / 1e4 || 1; sl.value = Math.max(0, Math.min(1000, +sl.value + wAcc / (z * kf) / len * 1000)); wAcc = 0; }
+        view(); }); }, { passive: false, capture: true });
+    // keys: ← → a tenth (held, a fifth of the line a second), ↑ ↓ the next line, Esc out
+    let kHold = null;
+    const trKey = e => { if (!box.isConnected){ removeEventListener("keydown", trKey, true); return; } if (!T || e.ctrlKey || e.altKey || e.metaKey || document.querySelector(".sp-view:not([hidden])")) return;
+      const t = e.target; if (t && (/INPUT|TEXTAREA|SELECT/.test(t.tagName) && t.type !== "range" || t.isContentEditable)) return;
+      const kk = e.key, dir = kk === "ArrowRight" ? 1 : kk === "ArrowLeft" ? -1 : 0;
+      if (dir){ e.preventDefault(); e.stopPropagation(); if (e.repeat || kHold) return; sl.value = Math.max(0, Math.min(1000, +sl.value + dir * 100)); view();
+        kHold = { dir, t0: performance.now() + 300, last: 0, raf: 0 };
+        const run = now => { if (!kHold || !T) return; if (now > kHold.t0){ const dt = kHold.last ? now - kHold.last : 0; kHold.last = now; if (dt){ sl.value = Math.max(0, Math.min(1000, +sl.value + kHold.dir * .2 * dt)); view(); } } kHold.raf = requestAnimationFrame(run); };
+        kHold.raf = requestAnimationFrame(run); return; }
+      if (kk === "ArrowUp" || kk === "ArrowDown"){ e.preventDefault(); e.stopPropagation(); const pk = kk === "ArrowUp" ? T.nbR : T.nbL; if (pk && pk[0]) trGo(pk[0]); return; }
+      if (kk === "Escape"){ e.preventDefault(); e.stopImmediatePropagation(); trEnd(); } };
+    addEventListener("keydown", trKey, true);
+    addEventListener("keyup", e => { if ((e.key === "ArrowRight" || e.key === "ArrowLeft") && kHold){ cancelAnimationFrame(kHold.raf); kHold = null; } });
     PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
       if (g !== gen) return; page = pg;
       const v1 = pg.getViewport({ scale: 1 }), bw = box.clientWidth, bh = Math.max(200, innerHeight - box.getBoundingClientRect().top - 24);
       bb = (await bboxP)[d.file] || [0, 0, 1, 1]; if (g !== gen) return;
       const cw = (bb[2] - bb[0]) * v1.width, ch = (bb[3] - bb[1]) * v1.height;
       sc = Math.min(bw / cw, bh / ch); const vp = pg.getViewport({ scale: sc }); W = vp.width; H = vp.height;
-      vw0 = bw; vh0 = Math.round(ch * sc); box.style.height = vh0 + "px"; stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
+      vw0 = bw; vh0 = Math.round(ch * sc); box.style.height = vh0 + "px"; kf = 1;
+      new ResizeObserver(() => { if (g !== gen || !vw0) return; const k2 = box.clientWidth / vw0; if (Math.abs(k2 - kf) < .002) return; kf = k2; box.style.height = Math.round(vh0 * kf) + "px"; apply(); if (T) view(); }).observe(box); stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
       const tap = held && held.n === n ? held.tap : null; tapNow = tap; if (held && held.n === n && held.z){ z = held.z; tx = held.tx; ty = held.ty; } else { tx = ty = -1e9; } apply(); held = null;
       rz = 0; await sharp(1); if (g !== gen) return; setTimeout(() => { if (g === gen) sharp(); }, 250);   // (then sharpened in the background) const nt = box.querySelector(".vz-note"); if (nt) nt.remove();
       const txl = box.querySelector(".vz-tx"); txl.style.setProperty("--scale-factor", sc);
@@ -214,7 +355,11 @@ window.AssetViz = (() => {
       finder = { box, stage, get z(){ return z; }, n: d.number, g };
       const refsP = Pid.refs().then(R => { if (g !== gen) return; const rf = box.querySelector(".vz-rf");
         const A = W / H; boxes = [];
-        refsNow = (R[d.number] || []).filter(r => r[0] === 1 && r[6] !== "x"); flRefs = R[d.number] || []; flDraw();
+        refsNow = (R[d.number] || []).filter(r => r[0] === 1 && r[6] !== "x"); flRefs = R[d.number] || [];
+        flDraw().then(() => { if (g !== gen) return;
+          // (the fly through carried on: the same sheet with another item on the left, or the next sheet reached)
+          if (TRV && TRV.n === d.number){ const v = TRV; if (!trStart(v.k, v.at || null, v.at ? 0 : v.f, v.as)) TRV = null; }
+          else if (TRP){ TRV = null; trArrive(); } else TRV = null; });
         rf.innerHTML = refsNow.map(r => { const fit = r[7] === "o" || r[7] === "b";   // (fitted to the printed bubble or box: used as is, as in the full screen viewer)
           const rb = r[6] === "d" && Array.isArray(r[8]);   // (a continuation: its ribbon's outline)
           const [l, t, w, h] = rb ? r[8] : fit ? [r[1], r[2], r[3], r[4]] : PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
