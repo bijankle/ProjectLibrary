@@ -25,19 +25,51 @@ def ori(s):
     dx, dy = s[2] - s[0], s[3] - s[1]
     return "h" if abs(dy) < 0.5 else "v" if abs(dx) < 0.5 else "d"
 
-def strokes(p):
-    S = []; G = p.get_drawings()
+def pale(c):
+    """white, or a pale grey: construction lines and masks, not pipe (a coloured pen, however light, is pipe)"""
+    c = c or (1, 1, 1); return min(c) > .72 and max(c) - min(c) < .15
+
+def drawings(p):
+    """the sheet's vector drawing, turned to the page as it is shown (a page set to show turned keeps its drawing unturned)"""
+    G = p.get_drawings()
+    if not p.rotation: return G
+    m = p.rotation_matrix
+    for d in G:
+        d["items"] = [(it[0],) + tuple((q * m) if isinstance(q, pymupdf.Point) else q for q in it[1:]) for it in d["items"]]
+        d["rect"] = d["rect"] * m
+    return G
+
+def straight(it):
+    """a drawing item that is a straight line: a line, or a curve drawn straight (its handles on the chord)"""
+    if it[0] == "l": return (it[1].x, it[1].y), (it[2].x, it[2].y)
+    if it[0] == "c":
+        a, c1, c2, b = it[1], it[2], it[3], it[4]; L0 = math.hypot(b.x - a.x, b.y - a.y)
+        if L0 < 8: return None
+        off = lambda q: abs((b.x - a.x) * (q.y - a.y) - (b.y - a.y) * (q.x - a.x)) / L0
+        if off(c1) < .5 and off(c2) < .5: return (a.x, a.y), (b.x, b.y)
+    return None
+
+def square(t):
+    """a stroke within 3% of level or plumb squared up (a pipe drawn a hair off: 3 pt over 940; a real diagonal is at 45)"""
+    dx, dy = t[2] - t[0], t[3] - t[1]
+    if 0 < abs(dy) <= abs(dx) * .03: y = (t[1] + t[3]) / 2; return (t[0], y, t[2], y)
+    if 0 < abs(dx) <= abs(dy) * .03: x = (t[0] + t[2]) / 2; return (x, t[1], x, t[3])
+    return t
+
+def strokes(p, mw=None):
+    S = []; G = drawings(p)
     # (the pipe pen: 0.6 pt or more; a sheet drawn with a thinner set of pens, its pipes at about 0.48 and its signal
     # lines at 0.24, has hardly any of those, and takes 0.45 pt; one drawn all in a single fine pen, 0.2)
-    long_ = lambda d, mw: sum(1 for it in d["items"] if it[0] == "l" and math.hypot(it[2].x - it[1].x, it[2].y - it[1].y) >= 8) if (d.get("width") or 0) >= mw and sum(d.get("color") or (1, 1, 1)) <= 1.5 else 0
-    mw = next((m for m in (0.6, 0.45) if sum(long_(d, m) for d in G) >= 300), 0.2)   # (a small sheet drawn all in one fine pen: that)
+    long_ = lambda d, mw: sum(1 for it in d["items"] if (ab := straight(it)) and math.dist(*ab) >= 8) if (d.get("width") or 0) >= mw and not pale(d.get("color")) else 0
+    mw = mw or next((m for m in (0.6, 0.45) if sum(long_(d, m) for d in G) >= 300), 0.2)   # (a small sheet drawn all in one fine pen: that)
     for d in G:
         w = d.get("width") or 0; c = d.get("color") or (1, 1, 1)
-        if w < mw or sum(c) > 1.5: continue
+        if w < mw or pale(c): continue
         for it in d["items"]:
-            if it[0] == "l":
-                a, b = it[1], it[2]
-                if math.hypot(b.x - a.x, b.y - a.y) >= 8: S.append((a.x, a.y, b.x, b.y))
+            ab = straight(it)
+            if ab:
+                (ax, ay), (bx, by) = ab
+                if math.hypot(bx - ax, by - ay) >= 8: S.append(square((ax, ay, bx, by)))
     ticks = [t for t in S if L(t) <= 20 and ori(t) in "hv"]
     out = []
     for t in S:
@@ -58,7 +90,7 @@ def strokes(p):
 def arrows(p):
     """the flow arrows on the sheet: small filled triangles, as (centre, unit direction the tip points)"""
     A = []
-    for g in p.get_drawings():
+    for g in drawings(p):
         if g.get("fill") is None or len(g["items"]) != 3 or any(i[0] != "l" for i in g["items"]): continue
         r = g["rect"]
         if not (2 < max(r.width, r.height) < 16): continue
@@ -91,6 +123,13 @@ def trace(S, LBL, r, label, gap=30, tol=1.6, WD=(), splits=True):
         elif not vert and o == "h" and min(s[0], s[2]) - 5 < cx < max(s[0], s[2]) + 5: d = abs(s[1] - cy)
         else: continue
         if d < 25 and (best is None or d < best[0]): best = (d, i)
+    if not best:   # (a label overhanging its pipe's end: the pipe under any part of it)
+        for i, s in enumerate(S):
+            o = ori(s)
+            if vert and o == "v" and min(s[1], s[3]) < r.y1 and max(s[1], s[3]) > r.y0: d = abs(s[0] - cx)
+            elif not vert and o == "h" and min(s[0], s[2]) < r.x1 and max(s[0], s[2]) > r.x0: d = abs(s[1] - cy)
+            else: continue
+            if d < 25 and (best is None or d < best[0]): best = (d, i)
     if not best: return None
     def owner(t):
         o = ori(t); bl = None
@@ -190,6 +229,35 @@ def trace(S, LBL, r, label, gap=30, tol=1.6, WD=(), splits=True):
         for a, b in zip(path, path[1:]): Lc.append(Lc[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
     return path, why, [(d, o or "") for d, o in tees if o != "x"], Lc
 
+def leader(rr, THIN, S, pad=None):
+    """a label's leader: a fine line from the label's end (within 6 pt of its box), followed through its corners to its
+    tip, and the pipe stroke the tip lands on (within 5 pt): a small box there, the way the pipe runs, to trace from"""
+    if pad is None: return leader(rr, THIN, S, 6) or leader(rr, THIN, S, 14)   # (close to the label first; a leader started a little off it after)
+    box = pymupdf.Rect(rr.x0 - pad, rr.y0 - 6, rr.x1 + pad, rr.y1 + 6); inner = pymupdf.Rect(rr.x0 + 1, rr.y0 + 1, rr.x1 - 1, rr.y1 - 1)
+    E = lambda t: [(t[0], t[1]), (t[2], t[3])]
+    for t in THIN:
+        for a, b in (E(t), E(t)[::-1]):
+            if not box.contains(pymupdf.Point(*a)) or box.contains(pymupdf.Point(*b)) or inner.contains(pymupdf.Point(*b)): continue
+            pts, used, tip = [a, b], {t}, b
+            for _ in range(4):   # (on round up to four corners)
+                nx = [u for u in THIN if u not in used and any(math.hypot(e[0] - tip[0], e[1] - tip[1]) < 1.5 for e in E(u))]
+                if len(nx) != 1: break
+                u = nx[0]; used.add(u); tip = max(E(u), key=lambda e: math.hypot(e[0] - tip[0], e[1] - tip[1])); pts.append(tip)
+            if math.hypot(tip[0] - a[0], tip[1] - a[1]) < 12: continue
+            best = None; pv = pts[-2]; ll = math.hypot(tip[0] - pv[0], tip[1] - pv[1]) or 1; ux, uy = (tip[0] - pv[0]) / ll, (tip[1] - pv[1]) / ll
+            for s in S:
+                o = ori(s)
+                for st in range(0, 13, 2):   # (on past the tip up to 12 pt: an arrowhead drawn short of the pipe)
+                    tx, ty = tip[0] + ux * st, tip[1] + uy * st
+                    if o == "v" and min(s[1], s[3]) - 1 < ty < max(s[1], s[3]) + 1: d, q = abs(s[0] - tx), (s[0], ty)
+                    elif o == "h" and min(s[0], s[2]) - 1 < tx < max(s[0], s[2]) + 1: d, q = abs(s[1] - ty), (tx, s[1])
+                    else: continue
+                    if d < 2.5 and (best is None or st + d < best[0]): best = (st + d, q, o)
+            if best:
+                (x, y), o = best[1], best[2]
+                return pymupdf.Rect(x - 1, y - 6, x + 1, y + 6) if o == "v" else pymupdf.Rect(x - 6, y - 1, x + 6, y + 1)
+    return None
+
 def seglen(P):
     return [0] + list(__import__("itertools").accumulate(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(P, P[1:])))
 def point_at(P, d):
@@ -213,20 +281,47 @@ def cut(P, d):
 
 def build(num):
     v = IX[num]; doc = pymupdf.open(os.path.join(R, v["file"])); refs = REFS.get(num, [])
-    out = {}; rb = {}; pages = {}; marks = {}; fl = {}; ptp = {}; teep = {}; rv = {}; TRC = {}
+    out = {}; rb = {}; pages = {}; FINE = {}; WORDS = {}; marks = {}; fl = {}; ptp = {}; teep = {}; rv = {}; TRC = {}
     for k, r in enumerate(refs):
         if r[6] != "line": continue
         pg = r[0] - 1
         if pg not in pages:
             p = doc[pg]
-            if p.rotation: pages[pg] = None; continue
             LBL = [(w[4], pymupdf.Rect(w[:4])) for w in p.get_text("words") if LINE.fullmatch(w[4])]
-            pages[pg] = (p, strokes(p), LBL, arrows(p), [pymupdf.Rect(w[:4]) for w in p.get_text("words") if DRAIN.search(w[4])])
+            THIN = [(it[1].x, it[1].y, it[2].x, it[2].y) for d in drawings(p) if not pale(d.get("color")) for it in d["items"] if it[0] == "l" and math.hypot(it[2].x - it[1].x, it[2].y - it[1].y) >= 3]
+            WORDS[pg] = p.get_text("words")
+            pages[pg] = (p, strokes(p), LBL, arrows(p), [pymupdf.Rect(w[:4]) for w in p.get_text("words") if DRAIN.search(w[4])], THIN)
         if not pages[pg]: continue
-        p, S, LBL, AR, WD = pages[pg]; W, H = p.rect.width, p.rect.height
+        p, S, LBL, AR, WD, THIN = pages[pg]; W, H = p.rect.width, p.rect.height
         rr = pymupdf.Rect(r[1] * W / 1e4, r[2] * H / 1e4, (r[1] + r[3]) * W / 1e4, (r[2] + r[4]) * H / 1e4)
         label = str(r[5]).split("|")[0]
+        # (the label where the sheet's own text has it: a box fitted to part of it, one character, misreads which way it runs)
+        tw = [q for t, q in LBL if t == label and math.hypot((q.x0 + q.x1 - rr.x0 - rr.x1) / 2, (q.y0 + q.y1 - rr.y0 - rr.y1) / 2) < 120]
+        if tw: rr = min(tw, key=lambda q: math.hypot((q.x0 + q.x1 - rr.x0 - rr.x1) / 2, (q.y0 + q.y1 - rr.y0 - rr.y1) / 2))
+        # (turned text the sheet reports as a speck, its first character only: the label laid out upward from there, as
+        # long as its characters at this sheet's usual lettering)
+        cw = sorted(q.width / len(t) for t, q in LBL if q.width > q.height * 2)
+        if cw and max(rr.width, rr.height) < len(label) * cw[len(cw) // 2] * .4:
+            Lx = len(label) * cw[len(cw) // 2]; rr = pymupdf.Rect(rr.x0, rr.y1 - Lx, rr.x1, rr.y1)
         T = trace(S, LBL, rr, label, WD=WD)
+        if not T or len(T[0]) < 2:   # (a label off to one side, a leader drawn from it to its pipe, an arrow at the tip)
+            seed = leader(rr, THIN, S)
+            if seed: T = trace(S, LBL, seed, label, WD=WD)
+        if not T or len(T[0]) < 2:   # (a sheet with two pens for pipe, new lines finer than the old: with the fine pen too)
+            if pg not in FINE: FINE[pg] = strokes(p, -1)
+            T = trace(FINE[pg], LBL, rr, label, WD=WD)
+            if not T or len(T[0]) < 2:
+                seed = leader(rr, THIN, FINE[pg])
+                if seed: T = trace(FINE[pg], LBL, seed, label, WD=WD)
+        if not T or len(T[0]) < 2:   # ("A TO B" beside one drawn pipe, a range of lines drawn once: the pipe B's number sits by)
+            vert = rr.height > rr.width; TOs = [pymupdf.Rect(w[:4]) for w in WORDS[pg] if w[4] == "TO"]
+            near = lambda q, g: (abs((q.x0 + q.x1 - rr.x0 - rr.x1) / 2) < g and min(q.y1, rr.y1) - max(q.y0, rr.y0) > -4) if vert else (abs((q.y0 + q.y1 - rr.y0 - rr.y1) / 2) < g and min(q.x1, rr.x1) - max(q.x0, rr.x0) > -4)
+            span = lambda q: (min(q.y1, rr.y1) - max(q.y0, rr.y0)) / (rr.height or 1) if vert else (min(q.x1, rr.x1) - max(q.x0, rr.x0)) / (rr.width or 1)
+            tight = [t for t, q in LBL if t != label and near(q, 26) and span(q) > .8]   # (the TO printed but not in the sheet's text)
+            if any(near(q, 22) for q in TOs) or tight:
+                for t2, q2 in sorted(((t, q) for t, q in LBL if t != label and near(q, 40)), key=lambda tq: abs((tq[1].x0 + tq[1].x1 - rr.x0 - rr.x1) if vert else (tq[1].y0 + tq[1].y1 - rr.y0 - rr.y1))):
+                    T = trace(S, LBL, q2, t2, WD=WD) or trace(FINE.setdefault(pg, strokes(p, -1)), LBL, q2, t2, WD=WD)
+                    if T and len(T[0]) >= 2: break
         if not T or len(T[0]) < 2: continue
         P, why, tees, Lc = list(T[0]), list(T[1]), list(T[2]), list(T[3])
         # (an end run on into an instrument's bubble, its tapping drawn on from the pipe: cut back to the bubble's edge)
@@ -271,7 +366,7 @@ def build(num):
                 for a, b in zip(A[3], A[3][1:]): A[6].append(A[6][-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
                 break
     for k, (r, label, rr, P, why, tees, Lc, pg) in TRC.items():
-        p, S, LBL, AR, WD = pages[pg]; W, H = p.rect.width, p.rect.height; tot = Lc[-1] or 1
+        p, S, LBL, AR, WD, _ = pages[pg]; W, H = p.rect.width, p.rect.height; tot = Lc[-1] or 1
         # upstream first: the path turned round when the flow arrows on it point back along it
         fw = flow(P, AR)
         if fw < 0: P = P[::-1]; why = why[::-1]; tees = [(tot - d, o) for d, o in tees]; Lc = [tot - x for x in reversed(Lc)]
@@ -353,7 +448,7 @@ def build(num):
         if r[6] != "d" or str(j) in rb: continue
         pg = r[0] - 1
         if pg not in pages or not pages[pg]: continue
-        p, S, LBL, AR, WD = pages[pg]; W, H = p.rect.width, p.rect.height
+        p, S, LBL, AR, WD, _ = pages[pg]; W, H = p.rect.width, p.rect.height
         bb = r[8] if len(r) > 8 and isinstance(r[8], list) else r[1:5]
         bx = pymupdf.Rect(bb[0] * W / 1e4, bb[1] * H / 1e4, (bb[0] + bb[2]) * W / 1e4, (bb[1] + bb[3]) * H / 1e4)
         seed = None
