@@ -242,7 +242,7 @@ window.AssetViz = (() => {
     function trStart(k, at, f0, as){ const P = flD && flD[k]; if (!P || P.length < 2 || !W) return false; const A = W / H, L = [0];
       for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
       const r = /^r\d+$/.test(k) ? flRefs[+String(k).slice(1)] : flRefs[k];
-      T = { k, P, L, label: (flD.lb && flD.lb[k]) || (/^r\d+$/.test(k) ? as || "" : String(r[5]).split("|")[0]), m: (flD.m && flD.m[k]) || [] };
+      T = { t0: Date.now(), k, P, L, label: (flD.lb && flD.lb[k]) || (/^r\d+$/.test(k) ? as || "" : String(r[5]).split("|")[0]), m: (flD.m && flD.m[k]) || [] };
       T.tn = new Map(T.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, i) => [m, i + 1]));
       let f = f0 || 0;
       if (at){ let best = 1e18; for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
@@ -262,7 +262,11 @@ window.AssetViz = (() => {
       { const c = FLX && FLX.FLC[FLX.fluid(T.label)]; if (c) trl.style.setProperty("--hl", c); else trl.style.removeProperty("--hl"); }   // (the line in its fluid's colour, whether or not all lines are coloured)
       const tr = f > 1e-4 ? pts(trSub(0, f)) : "", [ax, ay] = sc(T.P[i - 1]), [bx, by] = sc(T.P[i]), dd = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / dd, uy = (by - ay) / dd;
       const L = 2.6 * tw / s, B = 1.1 * tw / s, ex = dx + ux * L * .6, ey = dy + uy * L * .6, bx0 = dx - ux * L * .4, by0 = dy - uy * L * .4;
-      trl.innerHTML = (tr ? `<polyline class="tr" points="${tr}"/><polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "")
+      // (39A: just after the line is first opened, two rings pulse out from the arrow, three times, so the eye finds it;
+      // gone once the arrow is moved)
+      if (T.fs === undefined) T.fs = f;
+      const el = (Date.now() - T.t0) / 1000, rg = el < 4.5 && Math.abs(f - T.fs) < 1e-4 ? [0, .75].map(o => `<circle class="rg" cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(3.2 * tw / s).toFixed(1)}" style="animation-delay:${(o - el).toFixed(3)}s"/>`).join("") : "";
+      trl.innerHTML = rg + (tr ? `<polyline class="tr" points="${tr}"/><polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "")
         + `<polygon points="${[[ex, ey], [bx0 - uy * B, by0 + ux * B], [bx0 + uy * B, by0 - ux * B]].map(p => p.map(v => v.toFixed(1)).join(",")).join(" ")}"/>`; }
     // (the milestones: names read across under the bar, each where it costs least, no callout crossing a name or another)
     function trMarks(){ const c = tb.querySelector(".sp-trc"), Wd = c.offsetWidth || 400, BB = Math.round(sl.offsetTop + sl.offsetHeight / 2 + 4) || 20, J = BB + 9, RH = 16, R0 = BB + 14, NR = 6, G = 6;

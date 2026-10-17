@@ -521,6 +521,11 @@ window.PdfView = (() => {
     { const [ax, ay] = sc(TR.P[i - 1]), [bx, by] = sc(TR.P[i]), d = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / d, uy = (by - ay) / d;
       const L = 2.6 * tw / s, B = 1.1 * tw / s, tx = dx + ux * L * .6, ty = dy + uy * L * .6, bx0 = dx - ux * L * .4, by0 = dy - uy * L * .4;
       mk = `<polygon points="${[[tx, ty], [bx0 - uy * B, by0 + ux * B], [bx0 + uy * B, by0 - ux * B]].map(p => p.map(v => v.toFixed(1)).join(",")).join(" ")}"/>`; }
+    // (39A: just after the line is first opened, two rings pulse out from the arrow, three times, so the eye finds it;
+    // gone once the arrow is moved)
+    if (TR.fs === undefined) TR.fs = f;
+    { const el = (Date.now() - TR.t0) / 1000; if (el < 4.5 && Math.abs(f - TR.fs) < 1e-4){ const R = 3.2 * tw / s;
+      mk = [0, .75].map(o => `<circle class="rg" cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${R.toFixed(1)}" style="animation-delay:${(o - el).toFixed(3)}s"/>`).join("") + mk; } }
     V.trl.innerHTML = (tr ? `<polyline class="tr" points="${tr}"/>` + (true ? `<polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "") : "") + mk; }
   // a tap on the traced line itself (within 12 px of it)
   function trNear(x, y){ if (!TR || TR.page !== V.page) return false; const q = V.sheet.getBoundingClientRect(); if (!q.width) return false;
