@@ -173,7 +173,11 @@ window.AssetViz = (() => {
       e.stopPropagation();
       const t = a.dataset.t, k = a.dataset.k;
       // a continuation: that drawing becomes the item on the left, with the ribbon back to this one marked (pid-refs way back)
-      if (k === "d"){ if (Pid.has(t)){ arrival = { to: t, back: a.dataset.b ? JSON.parse(a.dataset.b) : null }; if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }
+      // (zoomed in, or flying along a line: the next sheet zoomed onto the way back and the line flown on; at the whole
+      // sheet the next one opens whole too, for hopping sheet to sheet)
+      if (k === "d"){ if (Pid.has(t)){ const zin = !!T || z > 1.001; arrival = { to: t, back: a.dataset.b ? JSON.parse(a.dataset.b) : null, ext: !zin };
+        if (zin && isPid) TRP = { at: Date.now(), label: T ? T.label : null, dir: 1, from: d.number }; TRV = null;
+        if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }
       // a tag on this sheet: its item opens on the left and the sheet stays as you have it (same zoom and place), only the arrow moves
       const tag = t.split("|")[0], bi = [...rfEl.children].indexOf(a); keepView = { n, z, tx, ty, tap: boxes[bi] || null }; if (window.kcgmOpenTag) kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); });
     // ---- coloured lines (as in the full viewer, pdfview.js: the same tick boxes, palette, legend and settings) ----
@@ -370,7 +374,7 @@ window.AssetViz = (() => {
         if (arr){ const aw = W * .018, ah = aw * 1.7;
           const back = [].concat(arr.back).map(j => (R[d.number] || [])[j]).filter(r => r && r[0] === 1);
           pick((i, r) => back.includes(r));   // (its own ribbon turns blue)
-          focus(back.map(r => boxes[refsNow.indexOf(r)]).filter(Boolean)); } });   // (zoomed onto the ribbon back to where you came from)
+          if (!arr.ext) focus(back.map(r => boxes[refsNow.indexOf(r)]).filter(Boolean)); } });   // (zoomed onto the ribbon back to where you came from)
       // the tag tapped (here or in the full screen viewer): the arrow on that very spot
       // (decided once the tag boxes are in: before that every tag looked boxless and got a second box on top of its own)
       if (tap){ refsP.then(() => { if (g !== gen) return; const hitT = ([l, t, w, h]) => tap[0] < l + w && tap[0] + tap[2] > l && tap[1] < t + h && tap[1] + tap[3] > t, own = boxes.some(hitT);   // its own tag box shows it: no second box

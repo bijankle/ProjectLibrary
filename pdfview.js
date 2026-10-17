@@ -260,7 +260,9 @@ window.PdfView = (() => {
       if ((r[6] === "mel" || r[6] === "elec") && /-SLD-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
         if (TR && TR.k === gi && TR.n === cur.number){ trOpen(); return; }
         linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
-      if (r[6] === "d") trPend = { at: Date.now(), label: TR && TR.label, dir: 1, from: cur.number };
+      // (a continuation: zoomed in, the next sheet opens zoomed onto the way back and the line flown on; at the whole
+      // sheet it opens whole too, for hopping sheet to sheet)
+      if (r[6] === "d"){ if (TR || V.zoom > 1.001) trPend = { at: Date.now(), label: TR && TR.label, dir: 1, from: cur.number }; else V.goExt = Date.now(); }
       if (r[6] === "q") pick(r[5].split("|"), e.clientX, e.clientY); else cur.onRef(r[5], r[6] === "d" ? "dwg" : r[6] === "s" ? "sp" : "tag", r[7], bx || null);
     });
     tb.querySelector(".sp-trx").onclick = () => trEnd("x");
@@ -304,6 +306,7 @@ window.PdfView = (() => {
   async function open(o){
     ui(); freeRotate(); const wasOpen = !V.el.hidden; lastNum = wasOpen && cur && cur.number !== o.number ? cur.number : wasOpen ? lastNum : null;
     if (TR) trEnd(); cur = Object.assign({ page: 1, fit: "width" }, o);
+    if (V.goExt && Date.now() - V.goExt < 4000) cur.extent = true; V.goExt = 0;
     V.el.hidden = false; document.body.classList.add("sp-on"); dock();
     { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } }
     V.lc.hidden = desk() || !/-PID-/.test(o.number || ""); V.lc.style.top = (V.body.offsetTop + 10) + "px"; V.lp.hidden = true; V.fl.innerHTML = ""; V.flg.hidden = true; FL.cnt = {}; if (FL.pick) pickEnd();
