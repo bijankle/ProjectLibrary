@@ -619,7 +619,7 @@
         (list.length ? `<div class="lk-vl"></div>` : L.resultsHTML([], q));
       // every result, drawn only near the view (L.vlist); the page scrolls
       if (list.length) L.vlist(document.scrollingElement, body.querySelector(".lk-vl"), list.length, i => L.resultsHTML([list[i]], q).replace('data-i="0"', `data-i="${i}"`).replace('class="lk-row1', `class="lk-row1${i % 2 ? " zb" : ""}`),
-        i => { ctx = lastList; open(list[i], true); }, list.map(it => it.key));
+        i => { ctx = lastList; open(list[i], true, "list"); }, list.map(it => it.key));
       body.querySelectorAll(".lk-pill").forEach(b => b.onclick = () => { only = b.dataset.t; showList(inp.value); });
     };
     // the list an item was opened from (Browse's filtered list, search results); stepping walks it. With no list (a link,
@@ -633,6 +633,9 @@
       if (!it) return; remember(it); showingRecent = false; if (it.go){ it.go(); return; }
       // phone: a drawing opens straight on the sheet (its properties page is for the desktop), the item you came from marked
       if (PHONE() && it.t === "pid" && window.Pid && Pid.has(it.key)){ Pid.open(it.key, cur && cur.t !== "pid" ? cur.key : null); return; }
+      // phone, a line picked from a list: its P&ID at that line, flying along it (the line's page is its Asset button)
+      if (PHONE() && how === "list" && it.t === "line" && window.Pid && window.PdfView && PdfView.want){ const n = L.drawingsOf(it).find(x => /-PID-/.test(x));
+        if (n && Pid.open(n, it.key)){ const d = Pid.info(n); PdfView.want(d.number, it.key); return; } }
       if (push) stack.push({ q: inp.value, scroll: body.scrollTop, it: cur });
       cur = it;
       // the tag to mark on a drawing: the item itself, or on a drawing's own page the item you came from
@@ -733,7 +736,7 @@
     inp.value = opts.initial || ""; if (opts.initial) ensure().then(() => showList(inp.value)); else body.innerHTML = opts.intro || "";
     return { input: inp, search: q => { inp.value = q; ensure().then(() => showList(q)); }, openKey: k => ensure().then(() => open(L.find(norm(k)), true)),
       redraw: () => { if (cur) open(cur, false, "step"); },
-      openItem: (it, list, how) => { stack.length = 0; cur = null; ctx = list || null; open(it, true, how); },
+      openItem: (it, list, how) => { stack.length = 0; cur = null; ctx = list || null; open(it, true, how || (list ? "list" : undefined)); },
       close: () => { stack.length = 0; cur = null; showList(inp.value); }, current: () => cur };
   };
 
