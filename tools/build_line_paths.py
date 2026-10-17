@@ -78,7 +78,7 @@ def flow(P, A):
     return (v > 0) - (v < 0)
 
 DRAIN = re.compile(r"GRADE|DRAIN|VENT|ATM|SUMP|BUND|FUNNEL|TUNDISH", re.I)
-def trace(S, LBL, r, label, gap=30, tol=1.6, WD=()):
+def trace(S, LBL, r, label, gap=30, tol=1.6, WD=(), splits=True):
     cx, cy = (r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2; vert = r.height > r.width
     best = None
     for i, s in enumerate(S):
@@ -117,7 +117,7 @@ def trace(S, LBL, r, label, gap=30, tol=1.6, WD=()):
             for k2, t in enumerate(S):
                 if k2 not in got and k2 not in seen and not onmain(t) and any(near(e, f) for e in ends(S[j]) for f in ends(t)): got.add(k2); q.append(k2)
         return "" if run >= 80 else None
-    split = lambda b: b == "" or b == label   # (the same line going two ways)
+    split = lambda b: splits and (b == "" or b == label)   # (the same line going two ways; splits=False: on past every branch, tools/link_pipes.py)
     for start in ends(S[best[1]]):   # each way from the label: a chain of points
         pts = [start]; i, pt = best[1], start
         while True:

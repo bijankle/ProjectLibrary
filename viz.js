@@ -164,6 +164,7 @@ window.AssetViz = (() => {
         if (k >= 0 && !(T && T.k === k)){ flPick = null; trStart(k, null, 0); } }
       if (dk && isPid && !a && !e.target.closest(".vz-tg")){ const hit = pipeAt(e.clientX, e.clientY);
         if (hit){ e.stopPropagation(); if (!(T && T.k === hit.k)){ flPick = null; trStart(hit.k, hit.at); }
+          if (hit.u) return;   // (an unnumbered pipe: no item to show)
           keepView = { n, z, tx, ty, tap: boxes[refsNow.indexOf(flRefs[hit.k])] || null }; if (window.kcgmOpenTag) kcgmOpenTag(hit.label); setTimeout(() => { keepView = null; }, 2000); return; } }
       // (the bare sheet: out of the fly through, or back to every fluid in colour, the drawing as it is)
       if (!a && T){ e.stopPropagation(); trEnd(); return; }
@@ -183,11 +184,13 @@ window.AssetViz = (() => {
     // ---- coloured lines (as in the full viewer, pdfview.js: the same tick boxes, palette, legend and settings) ----
     const isPid = /-PID-/.test(d.number || ""), FLX = PdfView.fl, flTk = box.querySelector(".vz-fltk"), flLg = box.querySelector(".vz-flg"), flSvg = box.querySelector(".sp-fl");
     let flD = null, flRefs = [], flPick = null;
+    // (a process pipe with no line number, "u<n>": a ref made from its label and where that sits, as in pdfview.js)
+    const isU = k => /^u\d+$/.test(k), refV = k => { if (isU(k)){ const b = flD && flD.ub && flD.ub[k]; return b ? [b[0], b[1], b[2], b[3], b[4], flD.lb[k], "line", null, "u"] : null; } return flRefs[+k]; };
     const pipeAt = (x, y) => { if (!flD) return null; const q = stage.getBoundingClientRect(); if (!q.width) return null; let best = null;
-      for (const k of Object.keys(flD)){ if (!/^\d+$/.test(k) || !flRefs[+k] || flRefs[+k][0] !== 1) continue;
+      for (const k of Object.keys(flD)){ if ((!/^\d+$/.test(k) && !isU(k)) || !refV(k) || refV(k)[0] !== 1) continue;
         const P = flD[k].map(p => [q.left + p[0] / 1e4 * q.width, q.top + p[1] / 1e4 * q.height]);
         for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = x1 - x0, dy = y1 - y0, ll = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ll)), dd = Math.hypot(x0 + t * dx - x, y0 + t * dy - y);
-          if (dd < 10 && (!best || dd < best.d)) best = { d: dd, k: +k, label: String(flRefs[+k][5]).split("|")[0], at: [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }; } }
+          if (dd < 10 && (!best || dd < best.d)) best = { d: dd, k: isU(k) ? k : +k, u: isU(k), label: String(refV(k)[5]).split("|")[0], at: [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }; } }
       return best; };
     // (a line flown through: the rest grey, that one in its colour; the legend out of the way)
     const flDimT = () => { if (!T){ flLg.style.display = ""; return; } flLg.style.display = "none"; flSvg.classList.add("dim"); flSvg.classList.remove("pk");
@@ -241,7 +244,7 @@ window.AssetViz = (() => {
     const trSub = (a, b) => { const [xa, ya, ia] = trAt(a), [xb, yb, ib] = trAt(b); return [[xa, ya], ...T.P.slice(ia, ib), [xb, yb]]; };
     function trStart(k, at, f0, as){ const P = flD && flD[k]; if (!P || P.length < 2 || !W) return false; const A = W / H, L = [0];
       for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
-      const r = /^r\d+$/.test(k) ? flRefs[+String(k).slice(1)] : flRefs[k];
+      const r = /^r\d+$/.test(k) ? flRefs[+String(k).slice(1)] : refV(k);
       T = { t0: Date.now(), k, P, L, label: (flD.lb && flD.lb[k]) || (/^r\d+$/.test(k) ? as || "" : String(r[5]).split("|")[0]), m: (flD.m && flD.m[k]) || [] };
       T.tn = new Map(T.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, i) => [m, i + 1]));
       let f = f0 || 0;
@@ -250,7 +253,7 @@ window.AssetViz = (() => {
         if (e2 < best){ best = e2; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
       TRV = { n: d.number, k, f, as: T.label };
       tb.querySelector(".sp-trn").textContent = T.label; sl.value = Math.round(f * 1000); zs.value = trZ();
-      tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDraw(); trMarks(); view(); return true; }
+      { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = isU(k); } tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDraw(); trMarks(); view(); return true; }
     function trEnd(){ if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
     function view(){ if (!T) return; const f = sl.value / 1000; TRV.f = f;
       [sl, zs].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%"));
@@ -295,21 +298,21 @@ window.AssetViz = (() => {
     function trNbs(dir){ const D = flD, A = W / H, e = dir > 0 ? T.P[T.P.length - 1] : T.P[0], dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]);
       const segd = (Q, q) => { let m = 1e18; for (let i = 1; i < Q.length; i++){ const [x0, y0] = Q[i - 1], [x1, y1] = Q[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
         const t = Math.max(0, Math.min(1, ((q[0] - x0) * A * dx + (q[1] - y0) * dy) / ll)); m = Math.min(m, Math.hypot((x0 + t * (x1 - x0) - q[0]) * A, y0 + t * (y1 - y0) - q[1])); } return m; };
-      const out = [], seq = k2 => String(flRefs[k2][5]).split("|")[0].split("-")[1] || "?";
+      const out = [], seq = k2 => isU(k2) ? String(D.lb[k2]).split("-").slice(0, 2).join("\n") : String(flRefs[k2][5]).split("|")[0].split("-")[1] || "?";
       if (D.up || D.dn){ const j = (dir < 0 ? D.up : D.dn || {})[T.k]; if (j == null || !flRefs[j]) return [];
         return [{ rb: j, d: 0, dir, seq: String(flRefs[j][5]).split("|")[0].replace(/^2000-/, "").replace(/-SLD-EL-/, "\n") }]; }
-      Object.keys(D).forEach(k2 => { if (!/^\d+$/.test(k2) || String(k2) === String(T.k) || !flRefs[+k2] || flRefs[+k2][0] !== 1) return; const Q = D[k2], dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e));
-        if (dE < 45) out.push({ k: +k2, pt: dist(Q[0], e) < dist(Q[Q.length - 1], e) ? Q[0] : Q[Q.length - 1], d: dE, seq: seq(+k2) });
-        else { const dI = segd(Q, e); if (dI < 25) out.push({ k: +k2, pt: e, d: dI + 1, seq: seq(+k2) }); } });
+      Object.keys(D).forEach(k2 => { if ((!/^\d+$/.test(k2) && !isU(k2)) || String(k2) === String(T.k) || !refV(k2) || refV(k2)[0] !== 1) return; const Q = D[k2], dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e)), kk = isU(k2) ? k2 : +k2;
+        if (dE < 45) out.push({ k: kk, pt: dist(Q[0], e) < dist(Q[Q.length - 1], e) ? Q[0] : Q[Q.length - 1], d: dE, seq: seq(kk) });
+        else { const dI = segd(Q, e); if (dI < 25) out.push({ k: kk, pt: e, d: dI + 1, seq: seq(kk) }); } });
       (D.lk || []).forEach(([k1, e1, k2, e2]) => { const me = dir > 0 ? 1 : 0;
-        for (const [a, ea, b, eb] of [[k1, e1, k2, e2], [k2, e2, k1, e1]]) if (String(a) === String(T.k) && ea === me && D[b] && flRefs[b] && !out.some(o => o.k === b)){ const Q = D[b]; out.push({ k: b, pt: eb ? Q[Q.length - 1] : Q[0], d: 50, seq: seq(b) }); } });
+        for (const [a, ea, b, eb] of [[k1, e1, k2, e2], [k2, e2, k1, e1]]) if (String(a) === String(T.k) && ea === me && D[b] && refV(b) && !out.some(o => o.k === b)){ const Q = D[b]; out.push({ k: b, pt: eb ? Q[Q.length - 1] : Q[0], d: 50, seq: seq(b) }); } });
       if (!out.length){ const em = T.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
         if (em){ const k2 = flRefs.findIndex((r, i) => r[0] === 1 && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
       if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(T.k) || !flRefs[+j]) return; const r = flRefs[+j], dd = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
         if (dd < 300) out.push({ rb: +j, d: dd, dir, seq: String(r[5]).split("|")[0].replace(/^2000-/, "").replace(/-PID-PR-/, "-") }); });
       return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb) === i).slice(0, 2); }
     function trNx(){ T.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = tb.querySelector(".sp-trnx." + side), Lb = trNbs(dir); T[dir < 0 ? "nbL" : "nbR"] = Lb; c.classList.toggle("two", Lb.length > 1);
-      c.innerHTML = Lb.map(o => { T.nb.push(o); return `<button type="button" data-i="${T.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(flRefs[o.k][5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
+      c.innerHTML = Lb.map(o => { T.nb.push(o); return `<button type="button" data-i="${T.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(refV(o.k)[5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
     function trGo(nb){ if (!nb || !T) return;
       if (nb.rb != null){ const t = String(flRefs[nb.rb][5]).split("|")[0]; if (!Pid.has(t)) return; TRP = { at: Date.now(), label: T.label, dir: nb.dir || 1, from: d.number }; TRV = null;
         arrival = { to: t, back: null }; if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); return; }
@@ -323,7 +326,7 @@ window.AssetViz = (() => {
       return trStart(k, end, 0, tp.label); }
     tb.addEventListener("click", e => { e.stopPropagation(); const b = e.target.closest("button"); if (!b) return;
       if (b.classList.contains("sp-trx")) return trEnd();
-      if (b.classList.contains("sp-tro")){ if (T && window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: null, force: true }; kcgmOpenTag(T.label); setTimeout(() => { keepView = null; }, 2000); } return; }
+      if (b.classList.contains("sp-tro")){ if (T && !isU(T.k) && window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: null, force: true }; kcgmOpenTag(T.label); setTimeout(() => { keepView = null; }, 2000); } return; }
       if (b.dataset.zh){ zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.zh)); try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} view(); return; }
       if (b.dataset.i != null && T) trGo(T.nb[+b.dataset.i]); });
     sl.addEventListener("input", () => view()); zs.addEventListener("input", () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} view(); });
@@ -347,6 +350,12 @@ window.AssetViz = (() => {
       if (kk === "ArrowUp" || kk === "ArrowDown"){ e.preventDefault(); e.stopPropagation(); const pk = kk === "ArrowUp" ? T.nbR : T.nbL; if (pk && pk[0]) trGo(pk[0]); return; }
       if (kk === "Escape"){ e.preventDefault(); e.stopImmediatePropagation(); trEnd(); } };
     addEventListener("keydown", trKey, true);
+    // (the mouse's side buttons while flying through: forward to the next line, as ↑; back to the one before, as ↓; the
+    // browser's own back and forward held off so the page stays)
+    const trMouse = e => { if (!box.isConnected){ ["mousedown", "mouseup", "auxclick"].forEach(t => removeEventListener(t, trMouse, true)); return; }
+      if (!T || (e.button !== 3 && e.button !== 4)) return; e.preventDefault(); e.stopPropagation();
+      if (e.type === "mouseup"){ const pk = e.button === 4 ? T.nbR : T.nbL; if (pk && pk[0]) trGo(pk[0]); } };
+    ["mousedown", "mouseup", "auxclick"].forEach(t => addEventListener(t, trMouse, true));
     addEventListener("keyup", e => { if ((e.key === "ArrowRight" || e.key === "ArrowLeft") && kHold){ cancelAnimationFrame(kHold.raf); kHold = null; } });
     PdfView.getDoc(d.file).then(doc => doc.getPage(1)).then(async pg => {
       if (g !== gen) return; page = pg;

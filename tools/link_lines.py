@@ -11,7 +11,7 @@ line's end, a closed patch of a vessel's size.
 Where both lines run into the join, or both away from it, one flow is wrong (two suctions, or two discharges): at a
 pump the larger bore is the suction, so the smaller is turned round (path reversed, milestones mirrored).
 """
-import glob, json, math, os, sys
+import glob, json, math, os, re, sys
 import numpy as np, pymupdf
 from scipy import ndimage
 
@@ -90,16 +90,18 @@ def vessels(num, D, keys, pg, free, info, done):
                 for b in O:
                     fa, fb = info[a][0], info[b][0]
                     if fa != fb and (fa in UTIL or fb in UTIL): continue
-                    if (a, b) not in done: out.append([int(a), 1, int(b), 0]); done.add((a, b))
+                    if (a, b) not in done: out.append([int(a) if a.isdigit() else a, 1, int(b) if b.isdigit() else b, 0]); done.add((a, b))
     return out
 
 
 def run(path):
     num = os.path.basename(path)[:-5]; D = json.load(open(path)); refs = REFS.get(num, [])
-    keys = [k for k in D if k.isdigit() and int(k) < len(refs)]
+    # (with the unnumbered process pipes, "u<n>": tools/link_pipes.py; a MECH pipe's bore its first number, its fluid "MECH")
+    U = [k for k in D if re.fullmatch(r"u\d+", k) and k in D.get("ub", {})]
+    keys = [k for k in D if k.isdigit() and int(k) < len(refs)] + U
     if not keys: return 0, 0
-    info = {k: parts(refs[int(k)][5]) for k in keys}
-    pg = {k: refs[int(k)][0] for k in keys}
+    info = {k: (("MECH", int(D["lb"][k].split("-")[0].split("x")[0])) if k in U else parts(refs[int(k)][5])) for k in keys}
+    pg = {k: (D["ub"][k][0] if k in U else refs[int(k)][0]) for k in keys}
     def free(k, e):
         q = D[k][-1 if e else 0]
         for k2 in keys:
@@ -137,8 +139,9 @@ def run(path):
                 flips += 1
                 if s == k: e = 1 - e
                 else: e2 = 1 - e2
-        lk.append([int(k), e, int(k2), e2])
-    lk += vessels(num, D, keys, pg, free, info, {(a, b) for a, _, b, _ in lk} | {(b, a) for a, _, b, _ in lk})
+        lk.append([int(k) if k.isdigit() else k, e, int(k2) if k2.isdigit() else k2, e2])
+    lk += vessels(num, D, keys, pg, free, info, {(str(a), str(b)) for a, _, b, _ in lk} | {(str(b), str(a)) for a, _, b, _ in lk})
+    lk += [j for j in D.get("pj", []) if j not in lk]   # (through a pump, from tools/link_pipes.py)
     if lk: D["lk"] = lk
     elif "lk" in D: del D["lk"]
     json.dump(D, open(path, "w"), separators=(",", ":"))

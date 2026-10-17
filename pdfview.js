@@ -388,13 +388,17 @@ window.PdfView = (() => {
   // trace on to the next sheet: the line that ribbon carries on lights up, the slider at the ribbon's end.
   const LN = {}; let TR = null, trPend = null;
   const LNR = {}, linesFor = n => LN[n] || (LN[n] = fetch("lines/" + n + ".json").then(r => r.ok ? r.json() : {}).then(d => LNR[n] = d).catch(() => { delete LN[n]; return {}; }));
+  // a process pipe with no line number ("u<n>", tools/link_pipes.py: 1200-MECH-CERAMIC from a hopper to its pump) stands
+  // in for a line: a ref made from its label and where that sits ([page, x, y, w, h, label, "line", , "u"])
+  const isU = k => /^u\d+$/.test(k);
+  const refK = (k, D) => { if (isU(k)){ D = D || (cur && LNR[cur.number]) || {}; const b = D.ub && D.ub[k]; return b ? [b[0], b[1], b[2], b[3], b[4], D.lb[k], "line", null, "u"] : null; } return V.refs[+k]; };
   // the traced line under a tap on the sheet (within 10 px of its path), and the spot on the sheet tapped
   function lineAt(x, y){ const D = cur && LNR[cur.number]; if (!D || !V.refs || !V.refs.length) return null; const q = V.sheet.getBoundingClientRect(); if (!q.width) return null;
     let best = null;
-    for (const k of Object.keys(D)){ if (!/^\d+$/.test(k)) continue; const r = V.refs[+k]; if (!r || r[0] !== V.page) continue;
+    for (const k of Object.keys(D)){ if (!/^\d+$/.test(k) && !isU(k)) continue; const r = refK(k, D); if (!r || r[0] !== V.page) continue;
       const P = D[k].map(p => { const [a, b] = trPt(p[0], p[1]); return [q.left + a / 1e4 * q.width, q.top + b / 1e4 * q.height]; });
       for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = x1 - x0, dy = y1 - y0, ll = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ll)), d = Math.hypot(x0 + t * dx - x, y0 + t * dy - y);
-        if (d < 10 && (!best || d < best.d)) best = { k: +k, d }; } }
+        if (d < 10 && (!best || d < best.d)) best = { k: isU(k) ? k : +k, d }; } }
     return best && Object.assign(best, { at: V.rot ? null : [(x - q.left) / q.width * 1e4, (y - q.top) / q.height * 1e4] }); }
   const trZ = () => { let v = 55; try { const x = localStorage.getItem("kcgm_trz"); if (x != null) v = +x; } catch (e) {} return v; };
   const zOf = v => Math.pow(10, v / 100);   // (slider 0 to 100: the whole sheet to ten times)
@@ -404,10 +408,11 @@ window.PdfView = (() => {
     Promise.resolve(LN[cur.number]).then(D => {
       const P = D && D[k]; if (!P || P.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height;
       // (an unnumbered continuation, "r<ribbon>": traced under the number it came with, as if that were printed on its ribbon)
-      const r = /^r\d+$/.test(k) ? (q => [q[0], q[1], q[2], q[3], q[4], as || "", "line"])(V.refs[+k.slice(1)]) : V.refs[k];
+      const r = /^r\d+$/.test(k) ? (q => [q[0], q[1], q[2], q[3], q[4], as || "", "line"])(V.refs[+k.slice(1)]) : refK(k, D);
       const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
       TR = { t0: Date.now(), D, n: cur.number, k, P, L, page: r[0], label: (D.lb && D.lb[k]) || String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
       TR.tn = new Map(TR.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, n) => [m, n + 1]));   // (tees numbered from upstream: T1, T2 …)
+      { const ab = V.tb.querySelector(".sp-tro"); if (ab) ab.hidden = r[8] === "u"; }
       // the slider runs from the line's upstream end (0, where the flow arrows show it, tools/build_line_paths.py); it
       // starts there, or at the end by the ribbon arrived through
       let f = 0;
@@ -535,7 +540,7 @@ window.PdfView = (() => {
   // (the trace kept when its line's page is opened, so Back to the drawing puts it back as it was: the line, where on it,
   // the zoom; in this tab's session storage too, should the page reload in between)
   const TRK = "kcgm_trres";
-  function trOpen(){ if (!TR || !cur.onRef) return; const r = TR.r, b = TR.box, TR0 = TR;
+  function trOpen(){ if (!TR || !cur.onRef || TR.r[8] === "u") return;   // (an unnumbered pipe has no page of its own) const r = TR.r, b = TR.box, TR0 = TR;
     const keep = { n: TR.n, k: TR.k, f: trF(), as: typeof TR.k === "string" ? TR.label : null, box: b || null, at: Date.now() };
     try { sessionStorage.setItem(TRK, JSON.stringify(keep)); } catch (e) {}
     trEnd(); if (r[6] === "d"){ const lb = TR0.D.lb && TR0.D.lb[TR0.k]; if (lb) cur.onRef(lb, "tag", null, null); else cur.onRef(r[5], "dwg", r[7], null); return; }
@@ -600,16 +605,16 @@ window.PdfView = (() => {
     const e = dir > 0 ? TR.P[TR.P.length - 1] : TR.P[0], dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]);
     const segd = (Q, q) => { let m = 1e18; for (let i = 1; i < Q.length; i++){ const [x0, y0] = Q[i - 1], [x1, y1] = Q[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
       const t = Math.max(0, Math.min(1, ((q[0] - x0) * A * dx + (q[1] - y0) * dy) / ll)); m = Math.min(m, Math.hypot((x0 + t * (x1 - x0) - q[0]) * A, y0 + t * (y1 - y0) - q[1])); } return m; };
-    const out = [], seq = k2 => String(V.refs[k2][5]).split("|")[0].split("-")[1] || "?";
+    const out = [], seq = k2 => isU(k2) ? String(D.lb[k2]).split("-").slice(0, 2).join("\n") : String(V.refs[k2][5]).split("|")[0].split("-")[1] || "?";
     if (D.up || D.dn){ const j = (dir < 0 ? D.up : D.dn || {})[TR.k]; if (j == null || !V.refs[j]) return [];
       return [{ rb: j, d: 0, dir, seq: String(V.refs[j][5]).split("|")[0].replace(/^2000-/, "").replace(/-SLD-EL-/, "\n") }]; }
-    Object.keys(D).forEach(k2 => { if (!/^\d+$/.test(k2) || +k2 === TR.k || !V.refs[+k2] || V.refs[+k2][0] !== TR.page) return; const Q = D[k2];
+    Object.keys(D).forEach(k2 => { if ((!/^\d+$/.test(k2) && !isU(k2)) || k2 === String(TR.k) || !refK(k2, D) || refK(k2, D)[0] !== TR.page) return; const Q = D[k2]; const kk = isU(k2) ? k2 : +k2;
       const dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e));
-      if (dE < 45) out.push({ k: +k2, pt: dist(Q[0], e) < dist(Q[Q.length - 1], e) ? Q[0] : Q[Q.length - 1], d: dE, seq: seq(+k2) });
-      else { const dI = segd(Q, e); if (dI < 25) out.push({ k: +k2, pt: e, d: dI + 1, seq: seq(+k2) }); } });
+      if (dE < 45) out.push({ k: kk, pt: dist(Q[0], e) < dist(Q[Q.length - 1], e) ? Q[0] : Q[Q.length - 1], d: dE, seq: seq(kk) });
+      else { const dI = segd(Q, e); if (dI < 25) out.push({ k: kk, pt: e, d: dI + 1, seq: seq(kk) }); } });
     // (joined across a pump, a strainer, a gap: tools/link_lines.py)
     (D.lk || []).forEach(([k1, e1, k2, e2]) => { const me = dir > 0 ? 1 : 0;
-      for (const [a, ea, b, eb] of [[k1, e1, k2, e2], [k2, e2, k1, e1]]) if (String(a) === String(TR.k) && ea === me && D[b] && V.refs[b] && !out.some(o => o.k === b)){ const Q = D[b];
+      for (const [a, ea, b, eb] of [[k1, e1, k2, e2], [k2, e2, k1, e1]]) if (String(a) === String(TR.k) && ea === me && D[b] && refK(b, D) && !out.some(o => o.k === b)){ const Q = D[b];
         out.push({ k: b, pt: eb ? Q[Q.length - 1] : Q[0], d: 50, seq: seq(b) }); } });
     if (!out.length){ const em = TR.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
       if (em){ const k2 = V.refs.findIndex((r, i) => r[0] === TR.page && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
@@ -618,10 +623,10 @@ window.PdfView = (() => {
     return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb) === i).slice(0, 2); }
   function trNx(){ TR.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = V.tb.querySelector(".sp-trnx." + side), L = trNbs(dir); TR[dir < 0 ? "nbL" : "nbR"] = L;
     c.classList.toggle("two", L.length > 1);
-    c.innerHTML = L.map(o => { TR.nb.push(o); return `<button type="button" data-i="${TR.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(V.refs[o.k][5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
+    c.innerHTML = L.map(o => { TR.nb.push(o); return `<button type="button" data-i="${TR.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(refK(o.k)[5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
   function trGo(nb){ if (!nb) return;
     if (nb.rb != null){ const r = V.refs[nb.rb]; trPend = { at: Date.now(), label: TR.label, dir: nb.dir || 1, from: cur.number }; cur.onRef && cur.onRef(r[5], "dwg", r[7], null); return; }
-    const b = boxOf(V.refs[nb.k]), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap();
+    const b = boxOf(refK(nb.k)), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap();
     trace(nb.k, nb.pt, [bx.l, bx.t, bx.w, bx.h]); }
   // arrived through a ribbon tapped on the phone: the line that ribbon carries on, traced from the ribbon's end
   // arrived through a ribbon (tapped, or the arrow at the end of the line slider) on the phone: the line carried on
