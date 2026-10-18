@@ -28,7 +28,7 @@ window.PdfView = (() => {
       <input class="sp-q" type="search" placeholder="Find in this drawing (Ctrl+F)" aria-label="Find in this drawing" autocomplete="off" spellcheck="false">
       <div class="sp-nav sp-finds" hidden><button data-a="fprev" title="Previous match">‹</button><span class="sp-fn"></span><button data-a="fnext" title="Next match">›</button></div>
       <div class="sp-nav"><button data-a="out" title="Zoom out">−</button><button data-a="in" title="Zoom in">+</button></div>
-      <button class="sp-fb" data-a="find" title="Find in this drawing">⌕</button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
+      <button class="sp-fb" data-a="find" title="Find in this drawing"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg></button><button class="sp-rot" data-a="rot" title="Turn to landscape / back">⟲</button><a class="sp-dl" title="Download this PDF">Download</a><button class="sp-x" data-a="close" title="Close">✕</button></div>
       <div class="sp-body"><div class="sp-sheet"><canvas class="sp-bg"></canvas><canvas class="sp-hi"></canvas><svg class="sp-fl"></svg><svg class="sp-trl"></svg><div class="sp-refs"></div><div class="sp-marks"></div><div class="sp-tap"></div><div class="sp-text textLayer"></div><div class="sp-dn"></div></div></div><div class="sp-msg"></div>
       <button class="sp-ze" data-a="fit" title="Zoom extents (whole sheet)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>`;
     // phone, sheet at fit: the room left under the sheet holds a panel (cur.panel fills it: the connected drawings, pid.js)
@@ -54,6 +54,8 @@ window.PdfView = (() => {
         trEnd(); if (cur && cur.onRef) cur.onRef(tag, "tag", null, bx || null); return; }
       const m = TR.m.find(q => q[1] === "t" && String(q[0]) === g.dataset.f && q[2] === g.dataset.t), k = m && teeK(m); if (k != null) trGo({ k, pt: trAt(m[0]) }); }); el.appendChild(tb);
     const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
+    // (phone: the legend and Lines join find and zoom extents in the one row at the top centre, as icon buttons)
+    if (document.documentElement.classList.contains("phone")) requestAnimationFrame(() => { const t = el.querySelector(".sp-top"); if (t && V.lc){ t.prepend(V.lc); t.append(cb); } });
     cb.onclick = () => cur && cur.corner && cur.corner.go();
     // (the P&ID lines chip, top left of the sheet on a phone: colour by fluid, flow animation; and the fluid legend)
     const lc = document.createElement("button"); lc.type = "button"; lc.className = "sp-lc"; lc.hidden = true;
@@ -320,7 +322,8 @@ window.PdfView = (() => {
     if (V.goExt && Date.now() - V.goExt < 4000) cur.extent = true; V.goExt = 0;
     V.el.hidden = false; document.body.classList.add("sp-on"); dock();
     { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } }
-    V.lc.hidden = desk() || !/-PID-/.test(o.number || ""); V.lc.style.top = (V.body.offsetTop + 10) + "px"; V.lp.hidden = true; V.fl.innerHTML = ""; V.flg.hidden = true; FL.cnt = {}; if (FL.pick) pickEnd();
+    V.lc.hidden = desk() || !/-PID-/.test(o.number || ""); V.lc.style.top = (V.body.offsetTop + 10) + "px";
+    if (!desk()) V.el.style.setProperty("--sp-tbar", (V.body.offsetTop + 10) + "px");   // (phone: the find / zoom extents row, top centre, level with Lines and the legend) V.lp.hidden = true; V.fl.innerHTML = ""; V.flg.hidden = true; FL.cnt = {}; if (FL.pick) pickEnd();
     V.ftk.hidden = !desk() || !/-PID-/.test(o.number || ""); V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w;
     V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)

@@ -116,7 +116,7 @@ window.Pid = (() => {
       // P&IDs: Drawing legend opens the first legend sheet (the others in the strip under it); on a legend sheet
       // opened that way, the button leads back to the P&ID
       corner: !/-PID-/.test(d.number) ? null : LEGEND().includes(d.number) ? (o.legendFrom && key(o.legendFrom) ? { html: "↩ " + o.legendFrom.replace(/^2000-/, ""), title: "Back to " + o.legendFrom, go: () => open(o.legendFrom, null, { extent: true }) } : null)
-        : LEGEND().length ? { html: LGI + "Drawing legend", title: "The P&ID symbol legend", go: () => open(LEGEND()[0], null, { extent: true, legendFrom: d.number }) } : null,
+        : LEGEND().length ? { html: LGI + (document.documentElement.classList.contains("phone") ? "Legend" : "Drawing legend"), title: "The P&ID symbol legend", go: () => open(LEGEND()[0], null, { extent: true, legendFrom: d.number }) } : null,
       onRef: (t, k, back, box) => {
         // another drawing: opened with the ribbon back to this one marked (the way back from pid-refs.json), or, when
         // the refs don't know it, this drawing's number found on the sheet
