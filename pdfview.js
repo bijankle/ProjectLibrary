@@ -79,7 +79,7 @@ window.PdfView = (() => {
     document.body.appendChild(el);
     V = { tb, tz, lc, lp, flg, ftk, fl: el.querySelector(".sp-fl"), trl: el.querySelector(".sp-trl"), cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), textEl: el.querySelector(".sp-text"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
-    el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
+    el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1, null, null, null, null, true),
       fprev: () => V.fit ? fitStep(-1) : showHit(V.fi - 1, -1), fnext: () => V.fit ? fitStep(1) : showHit(V.fi + 1, 1), rot, close,
       find: () => { const on = !el.classList.contains("find-on"); el.classList.toggle("find-on", on); const q = el.querySelector(".sp-q"); if (on){ q.focus(); q.select(); } else q.blur();
         // (one browser history step while the find box is open: the phone's swipe back closes it, the keyboard having gone on the first)
@@ -259,6 +259,7 @@ window.PdfView = (() => {
     let hv = null; V.body.addEventListener("mousemove", e => { const a = refAt(e.clientX, e.clientY); if (a === hv) return;
       if (hv) hv.classList.remove("hv"); hv = a; if (a) a.classList.add("hv"); V.body.classList.toggle("on-ref", !!a); });
     V.body.addEventListener("click", e => {
+      if (e.target.closest && e.target.closest("button, .sp-finds")) return;   // (a button over the sheet, zoom extents: not a tap on the sheet, so not out of the fly through)
       if (!e.target.closest || !e.target.closest(".sp-pick")) pickClose(); else return;
       const sel = getSelection(); if (sel && !sel.isCollapsed && String(sel).trim() && V.body.contains(sel.anchorNode)) return;   // (finishing a text selection on the sheet, not a tap; one elsewhere doesn't count)
       const a = refAt(e.clientX, e.clientY);
@@ -455,7 +456,7 @@ window.PdfView = (() => {
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
       { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
       trNx();
-      drawFl(); tb.classList.toggle("dk", desk()); tb.hidden = false; V.tz.hidden = desk(); trWheelOn(); V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
+      drawFl(); tb.classList.toggle("dk", desk()); tb.classList.toggle("hz", !desk()); tb.hidden = false; V.tz.hidden = desk(); trWheelOn(); V.el.classList.add("tracing"); cxFit(); trMarks(); trView();
       // (one browser history step for the trace, after the zoom's own: the phone's back swipe leaves the trace, the drawing
       // staying as it is)
       setTimeout(() => { if (TR && history.state && history.state.sp && !history.state.tr) history.pushState(Object.assign({}, history.state, { tr: 1 }), ""); }, 0);
@@ -511,24 +512,44 @@ window.PdfView = (() => {
       + `<svg class="sp-trco" width="${W}" height="${R0 + NR * RH}">${put.map(([m, x, a, r, xv]) => { const y = R0 + r * RH + 7, e = a > xv ? a - 1 : a + wid(m) + 1;
           return `<polyline points="${x.toFixed(1)},${BB + 6} ${x.toFixed(1)},${J} ${xv.toFixed(1)},${J} ${xv.toFixed(1)},${y} ${e.toFixed(1)},${y}"/>`; }).join("")}</svg>`
       + put.map(([m, x, a, r]) => `<b class="h k-${m[1]}" style="left:${a.toFixed(1)}px;top:${R0 + r * RH}px"><em>${TT[m[1]] || ""}</em> ${esc(trName(m))}</b>`).join(""); }
-  function trMarks(){ if (desk()) return trMarksDesk(); V.tb.querySelector(".sp-trtk").style.paddingBottom = ""; const c = V.tb.querySelector(".sp-trc"), W = c.offsetWidth || 180, LW = 13, OT = 66, BT = OT + 9, BB = OT + 45, D0 = 8, DM = 22, placed = [];
-    const pr = m => ({ r: 0, l: 1, e: 2, b: 2, x: 3, t: 3, i: 4, f: 4, d: 5, p: 5, v: 5, a: 6, s: 6 })[m[1]] ?? 7, named = [];
-    // names kept in the same order as their marks (so no two callouts cross), each as near its mark as the ones beside it
-    // allow: pushed right past the one before, then pulled back from the right edge; a name that can't get within reach
-    // of its mark is left off, the least important first (ribbons, spec changes and equipment before tees, valves …)
-    const lay = S => { const X = S.map(m => m[0] * W), P = X.map(x => Math.max(LW / 2, Math.min(W - LW / 2, x + (x + D0 + LW / 2 > W ? -D0 : D0))));
-      for (let k = 1; k < P.length; k++) P[k] = Math.max(P[k], P[k - 1] + LW);
-      for (let k = P.length - 1; k >= 0; k--) P[k] = Math.min(P[k], k < P.length - 1 ? P[k + 1] - LW : W - LW / 2);
-      return P.every((q, k) => q >= LW / 2 - .01 && Math.abs(q - X[k]) <= DM) ? P : null; };
-    let keep = [];
-    [...TR.m].sort((a, b) => pr(a) - pr(b) || a[0] - b[0]).forEach(m => { const t = [...keep, m].sort((a, b) => a[0] - b[0]); if (lay(t)) keep = t; });
-    const PL = lay(keep) || []; keep.forEach((m, k) => named.push([m, m[0] * W, PL[k]]));
-    // (a callout: out from the mark at 45°, then straight to the row all the names share, so each type sits directly over
-    // its name and the rows read straight across)
-    const ln = (x, lx, y0, up) => { const d = Math.abs(lx - x), e = DM + 2; return `<polyline points="${x.toFixed(1)},${y0} ${lx.toFixed(1)},${(up ? y0 - d : y0 + d).toFixed(1)} ${lx.toFixed(1)},${(up ? y0 - e : y0 + e).toFixed(1)}"/>`; };
-    c.innerHTML = TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
-      + `<svg class="sp-trco" width="${W}" height="${BB + 40}">${named.map(([m, x, lx]) => ln(x, lx, BT, true) + ln(x, lx, BB, false)).join("")}</svg>`
-      + named.map(([m, x, lx]) => `<b class="ty k-${m[1]}" style="left:${lx.toFixed(1)}px;bottom:calc(100% - ${BT - DM - 5}px)">${TT[m[1]] || ""}</b><b class="k-${m[1]}${m[1] === "t" && teeK(m) != null ? " go" : ASK.includes(m[1]) && m[2] ? " go as" : ""}" data-f="${m[0]}" data-t="${esc(m[2] || "")}" style="left:${lx.toFixed(1)}px;top:${BB + DM + 5}px">${esc(trName(m))}</b>`).join(""); }
+  // (phone: a little symbol for the kind, as drawn on a P&ID, beside the name: a valve's bow tie, a tee, an instrument bubble …)
+  const SYM = { t: "M1 2.5h10M6 2.5V10", v: "M1 2l10 6V2L1 8z", i: "M6 1a4 4 0 1 0 0 8a4 4 0 1 0 0-8M2 5h8", p: "M6 1l5 4-5 4-5-4z", e: "M1.5 2h9v6h-9z",
+    r: "M1 2h7l3 3-3 3H1z", l: "M4 1v8M8 1v8M1 5h3M8 5h3", s: "M1 5h7M8 1.5v7M10.5 1.5v7", b: "M1.5 1.5h9v7h-9zM1.5 5h9", x: "M4.3 2a3 3 0 1 0 0 6a3 3 0 1 0 0-6M7.7 2a3 3 0 1 0 0 6a3 3 0 1 0 0-6",
+    d: "M6 1.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7", a: "M2 8l4-6 4 6z", f: "M6 1v8M3 6l3 3 3-3" };
+  const sym = k => SYM[k] ? `<svg class="sy" viewBox="0 0 12 10" width="11" height="9"><path d="${SYM[k]}"/></svg>` : "";
+  // the phone's strip: the names read across in one row under the bar, each on a callout out of its mark at 45° and then
+  // straight down (as on a drawing); spread sideways as far as they need, over the panel's whole width, keeping their order.
+  // Too many for the row: every other one goes in a row over the bar, its callout up; still too many, the least important left off
+  function trMarks(){ if (desk()) return trMarksDesk(); const tb = V.tb, c = tb.querySelector(".sp-trc"), tk = tb.querySelector(".sp-trtk"), sl = tb.querySelector(".sp-tra"), G = 3, LH = 18;
+    const pr = m => ({ r: 0, l: 1, e: 2, b: 2, x: 3, t: 3, i: 4, f: 4, d: 5, p: 5, v: 5, a: 6, s: 6 })[m[1]] ?? 7;
+    const go = m => m[1] === "t" && teeK(m) != null ? " go" : ASK.includes(m[1]) && m[2] ? " go as" : "";
+    const all = TR.m.filter(m => trName(m)).sort((a, b) => a[0] - b[0]);
+    c.innerHTML = all.map((m, n) => `<b class="hl k-${m[1]}${go(m)}" data-n="${n}" data-f="${m[0]}" data-t="${esc(m[2] || "")}" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}">${sym(m[1])}${esc(trName(m))}</b>`).join("");
+    const B = [...c.querySelectorAll("b.hl")], wd = B.map(b => b.offsetWidth), W = c.offsetWidth || 180;
+    const cr = c.getBoundingClientRect(), br = tb.getBoundingClientRect(), lo = br.left + 8 - cr.left, hi = br.right - 8 - cr.left;
+    // (names over a stretch, in order, none touching: those that would touch move as one group, centred on their marks)
+    const spread = ix => { let gs = ix.map(n => ({ n: [n], x: all[n][0] * W, w: wd[n] }));
+      for (let moved = true, k = 0; moved && k < 50; k++){ moved = false;
+        gs.forEach(g => { g.c = g.n.reduce((t, n) => t + all[n][0] * W, 0) / g.n.length; g.c = Math.max(lo + g.w / 2, Math.min(hi - g.w / 2, g.c)); });
+        for (let i = 1; i < gs.length; i++){ const a = gs[i - 1], b = gs[i]; if (a.c + a.w / 2 + G > b.c - b.w / 2){ a.n.push(...b.n); a.w += G + b.w; gs.splice(i, 1); moved = true; break; } } }
+      const P = {}; gs.forEach(g => { let x = g.c - g.w / 2; g.n.forEach(n => { P[n] = x + wd[n] / 2; x += wd[n] + G; }); }); return P; };
+    const fits = ix => ix.reduce((t, n) => t + wd[n] + G, 0) <= hi - lo;
+    let keep = all.map((m, n) => n), rows;
+    for (;;){ if (fits(keep)){ rows = [keep, []]; break; } const a = keep.filter((n, k) => k % 2 === 0), b = keep.filter((n, k) => k % 2);
+      if (fits(a) && fits(b)){ rows = [a, b]; break; }
+      const drop = [...keep].sort((p, q) => pr(all[q]) - pr(all[p]))[0]; keep = keep.filter(n => n !== drop); }
+    const P = Object.assign({}, spread(rows[0]), spread(rows[1])), off = n => Math.abs(P[n] - all[n][0] * W);
+    const dep = r => Math.max(12, Math.min(30, Math.max(0, ...r.map(off)) + 8));   // (deep enough for a 45° callout, flatter past that)
+    const dB = dep(rows[0]), dA = rows[1].length ? dep(rows[1]) : 0, top = rows[1].length ? LH + dA + 2 : 4;
+    tk.style.paddingTop = top + "px"; const T0 = sl.offsetTop + (sl.offsetHeight - 36) / 2, T1 = T0 + 36;
+    tk.style.paddingBottom = Math.max(4, T1 + dB + LH + 4 - (sl.offsetTop + sl.offsetHeight)) + "px";
+    tb.querySelector(".sp-trln").style.top = T0 + "px"; tb.querySelectorAll(".sp-trnx").forEach(x => x.style.marginTop = (x.classList.contains("two") ? T0 - 11 : T0) + "px");
+    const ln = (x, lx, y0, d, up) => { const s = up ? -1 : 1, k = Math.min(Math.abs(lx - x), d - 6);
+      return `<polyline points="${x.toFixed(1)},${y0} ${x.toFixed(1)},${y0 + s * 2} ${lx.toFixed(1)},${(y0 + s * (2 + k)).toFixed(1)} ${lx.toFixed(1)},${y0 + s * d}"/>`; };
+    B.forEach((b, n) => { const r = rows[0].includes(n) ? 0 : rows[1].includes(n) ? 1 : -1; if (r < 0){ b.remove(); return; }
+      b.style.left = P[n].toFixed(1) + "px"; b.style.top = (r ? T0 - dA - LH : T1 + dB) + "px"; });
+    c.insertAdjacentHTML("afterbegin", TR.m.filter(m => m[0] > .005 && m[0] < .995).map(m => `<i class="k-${m[1]}" style="left:${(m[0] * 100).toFixed(1)}%;top:${T0}px" title="${esc(TK[m[1]] + (m[2] ? " " + m[2] : ""))}"></i>`).join("")
+      + `<svg class="sp-trco" width="${W}" height="${T1 + dB + LH}" style="overflow:visible">${rows[0].map(n => ln(all[n][0] * W, P[n], T1, dB, false)).join("")}${rows[1].map(n => ln(all[n][0] * W, P[n], T0, dA, true)).join("")}</svg>`); }
   // the branch line at a tee (a tap on its name flies onto it): the traced line on this sheet with that number, nearest the tee
   function teeK(m){ const D = TR && TR.D; if (!D || !m[2]) return null; const at = trAt(m[0]); let best = null;
     for (const k of Object.keys(D)){ if (String(k) === String(TR.k) || !Array.isArray(D[k]) || !/^(\d+|u\d+|r\d+)$/.test(k)) continue; const r = refK(k, D), lab = /^\d+$/.test(k) ? (r && r[0] === TR.page ? String(r[5]).split("|")[0] : null) : D.lb && D.lb[k];
@@ -879,7 +900,8 @@ window.PdfView = (() => {
     if (!V || V.el.hidden || !history.state || !history.state.sp) return;
     if (Date.now() < hush && V.zoom > 1.001) return;   // (a view put back by ← / → or Back is not a new zoom: no step, or the steps ahead would be lost)
     if (V.zoom > 1.001 && !zIn){ zIn = true; history.pushState(Object.assign({}, history.state, { z: 1 }), ""); }
-    else if (V.zoom <= 1.001 && zIn){ zIn = false; if (history.state.z){ const st = Object.assign({}, history.state); delete st.z; zIgnore = true; history.back(); setTimeout(() => { if (history.state && history.state.sp) history.replaceState(Object.assign({}, st), ""); }, 60); } }
+    else if (V.zoom <= 1.001 && zIn && !TR){   // (flying, the whole sheet: the zoom's step kept, the trace's own above it)
+      zIn = false; if (history.state.z){ const st = Object.assign({}, history.state); delete st.z; zIgnore = true; history.back(); setTimeout(() => { if (history.state && history.state.sp) history.replaceState(Object.assign({}, st), ""); }, 60); } }
   }
   // the panel under the sheet: shown on a phone while the whole sheet is in view and leaves room under it (upright, not
   // typing in the find box), from the sheet's foot down to the buttons; zooming in gives the screen back to the sheet
@@ -1014,11 +1036,12 @@ window.PdfView = (() => {
       c.width = off.width; c.height = off.height; c.getContext("2d").drawImage(off, 0, 0);
       c.style.left = x0 + "px"; c.style.top = y0 + "px"; c.style.width = w + "px"; c.style.height = h + "px"; c.style.visibility = ""; }).catch(() => {});
   }
-  function zoomTo(z, cx, cy, fx0, fy0){
+  function zoomTo(z, cx, cy, fx0, fy0, ext){
     if (V && V.sheet) V.sheet.style.removeProperty("--trk");   // (the pinch's counter-scale off: the sheet is redrawn at the new zoom)
     z = Math.max(1, Math.min(cur.fit === "page" ? 24 : 10, z)); if (!V.pg || Math.abs(z - V.zoom) < .001) return;
     // (flying a line: the zoom you pinch or tap to is the fly through's zoom, kept for the next line clicked)
-    if (TR && V.tz){ const zs = V.tz.querySelector(".sp-trz"); zs.value = Math.max(0, Math.min(100, Math.log10(z) * 100)); try { localStorage.setItem("kcgm_trz", zs.value); } catch (e) {} }
+    // (zoom extents while flying: a look at the whole sheet, the fly through's own zoom kept for the next step along)
+    if (TR && V.tz && !ext){ const zs = V.tz.querySelector(".sp-trz"); zs.value = Math.max(0, Math.min(100, Math.log10(z) * 100)); try { localStorage.setItem("kcgm_trz", zs.value); } catch (e) {} }
     const r = V.body.getBoundingClientRect(); cx = cx == null ? r.left + r.width / 2 : cx; cy = cy == null ? r.top + r.height / 2 : cy;
     // the point under (cx, cy) as a fraction of the page stays under it (measured from the page itself, so the body's padding doesn't matter)
     const q = V.sheet.getBoundingClientRect(), fx = fx0 != null ? fx0 : (cx - q.left) / q.width, fy = fy0 != null ? fy0 : (cy - q.top) / q.height;
