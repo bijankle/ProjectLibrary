@@ -415,6 +415,7 @@ def build(num):
                     if dd < 4 and (best is None or dd < best[0]): best = (dd, j)
             if best: m[2] = str(refs[int(best[1])][5]).split("|")[0]
     # a continuation ribbon carries on the line whose path ends nearest it (within 300 units, about 7 cm at A1)
+    rbE = {}
     for k, r in enumerate(refs):
         if r[6] != "d": continue
         bx = (r[1], r[2], r[1] + r[3], r[2] + r[4]); bestd = None
@@ -422,8 +423,16 @@ def build(num):
             if refs[int(lk)][0] != r[0]: continue
             for e in (P[0], P[-1]):
                 dx = max(bx[0] - e[0], 0, e[0] - bx[2]); dy = max(bx[1] - e[1], 0, e[1] - bx[3]); d = math.hypot(dx, dy)
-                if d < 300 and (bestd is None or d < bestd[0]): bestd = (d, lk)
+                # (level with the ribbon: the line leaves its point, so its end is within the ribbon's height, not a row above or below)
+                ob = r[8] if len(r) > 8 and isinstance(r[8], list) else r[1:5]; ody = max(ob[1] - e[1], 0, e[1] - ob[1] - ob[3])
+                if d < 300 and ody <= 30 and (bestd is None or d < bestd[0]): bestd = (d, lk, 0 if e is P[0] else 1)
+        # (one end of a line carries one ribbon: a nearer ribbon already on that end keeps it)
+        if bestd and any(v[0] == bestd[1] and v[1] == bestd[2] and v[2] <= bestd[0] for v in rbE.values()): bestd = None
         if bestd:
+            for j0 in [j0 for j0, v in rbE.items() if v[0] == bestd[1] and v[1] == bestd[2]]:
+                rbE.pop(j0); rb.pop(j0, None); lb0 = str(refs[int(j0)][5]).split("|")[0]
+                marks[bestd[1]] = [m for m in marks[bestd[1]] if not (m[1] == "r" and m[0] == bestd[2] and m[2] == lb0)]
+            rbE[str(k)] = (bestd[1], bestd[2], bestd[0])
             rb[str(k)] = bestd[1]; P = out[bestd[1]]; e0 = math.hypot(P[0][0] - (r[1] + r[3] / 2), P[0][1] - (r[2] + r[4] / 2)); e1 = math.hypot(P[-1][0] - (r[1] + r[3] / 2), P[-1][1] - (r[2] + r[4] / 2))
             f = 0 if e0 < e1 else 1; marks[bestd[1]] = [m for m in marks[bestd[1]] if not (m[0] == f and m[1] in "ts")] + [[f, "r", str(r[5]).split("|")[0]]]
             # (which way the flow goes there, from the way the ribbon points: towards the line, it comes in from the other

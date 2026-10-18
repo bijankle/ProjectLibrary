@@ -996,6 +996,8 @@ window.PdfView = (() => {
   }
   function zoomTo(z, cx, cy, fx0, fy0){
     z = Math.max(1, Math.min(cur.fit === "page" ? 24 : 10, z)); if (!V.pg || Math.abs(z - V.zoom) < .001) return;
+    // (flying a line: the zoom you pinch or tap to is the fly through's zoom, kept for the next line clicked)
+    if (TR && V.tz){ const zs = V.tz.querySelector(".sp-trz"); zs.value = Math.max(0, Math.min(100, Math.log10(z) * 100)); try { localStorage.setItem("kcgm_trz", zs.value); } catch (e) {} }
     const r = V.body.getBoundingClientRect(); cx = cx == null ? r.left + r.width / 2 : cx; cy = cy == null ? r.top + r.height / 2 : cy;
     // the point under (cx, cy) as a fraction of the page stays under it (measured from the page itself, so the body's padding doesn't matter)
     const q = V.sheet.getBoundingClientRect(), fx = fx0 != null ? fx0 : (cx - q.left) / q.width, fy = fy0 != null ? fy0 : (cy - q.top) / q.height;
@@ -1005,6 +1007,7 @@ window.PdfView = (() => {
     // window), so the point under the cursor stays under it from the first step of zoom, not only once the sheet overflows
     const q3 = V.sheet.getBoundingClientRect(); V.ox = (V.ox || 0) + cx - (q3.left + fx * q3.width); V.oy = (V.oy || 0) + cy - (q3.top + fy * q3.height); slide();
     sharp(); settleSoon();
+    if (TR) drawTrace();   // (the trail and its arrow redrawn for the new zoom: a set size on screen, not blown up with the sheet)
   }
   // the sheet's slide (V.ox, V.oy): lets the page sit off centre (or past the window's edge) so a zoom keeps the point
   // under the cursor where it is; the page always covers the middle of the window, and at fit it is centred again
