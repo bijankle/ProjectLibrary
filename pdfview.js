@@ -337,7 +337,8 @@ window.PdfView = (() => {
     V.el.hidden = false; document.body.classList.add("sp-on"); dock();
     { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } }
     V.lc.hidden = true; V.lc.style.top = (V.body.offsetTop + 10) + "px";
-    if (!desk()) V.el.style.setProperty("--sp-tbar", (V.body.offsetTop + 10) + "px");   // (phone: the find / zoom extents row, top centre, level with Lines and the legend) V.lp.hidden = true; V.fl.innerHTML = ""; V.flg.hidden = true; FL.cnt = {}; if (FL.pick) pickEnd();
+    // (phone: the find / zoom extents row, top centre, level with Lines and the legend; the last drawing's lines gone at once)
+    if (!desk()) V.el.style.setProperty("--sp-tbar", (V.body.offsetTop + 10) + "px"); V.lp.hidden = true; V.fl.innerHTML = ""; V.flg.hidden = true; FL.cnt = {}; if (FL.pick) pickEnd();
     V.ftk.hidden = !/-PID-/.test(o.number || ""); V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w;
     V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
@@ -906,14 +907,15 @@ window.PdfView = (() => {
   const flOn = () => (FL.c || (TR && TR.n === cur.number) || hiOn()) && cur && /-PID-/.test(cur.number || "") && V.pg;   // (a line flown through: it in its colour and the rest grey, whether or not all lines are coloured)
   async function drawFl(){ if (!V || !V.fl) return;
     if (!flOn()){ V.fl.innerHTML = ""; flLeg({}); return; }
-    const me = cur, pn = V.page, D = await linesFor(cur.number); if (cur !== me || V.page !== pn || !V.pg) return;
+    const me = cur, pn = V.page, D = await linesFor(cur.number); if (cur !== me || V.page !== pn || !V.pg || V.pgFor !== me) return;   // (not on the last drawing's page while this one loads)
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, cnt = {}; let h = "", fw = "";
     Object.keys(D).forEach(k => { const rk = /^r\d+$/.test(k) && D.lb && D.lb[k];   // (a ribbon's continuation, under the number it carries)
       const rr = /^r\d+$/.test(k); if (!/^\d+$/.test(k) && !isU(k) && !rr) return; const r = rr ? V.refs[+k.slice(1)] : refK(k, D); if (!r || r[0] !== pn) return; const mech = isU(k) && /-MECH-/.test(D.lb[k]), c = mech ? "MECH" : rr && !rk ? "" : fluid(rk || (isU(k) ? D.lb[k] : r[5])), col = mech ? MECHC : FLC[c] || OTHC; if (!mech && !rr && FLC[c]) cnt[c] = (cnt[c] || 0) + 1;
       const pts = D[k].map(q => { const [x, y] = trPt(q[0], q[1]); return (x / 1e4 * W).toFixed(1) + "," + (y / 1e4 * H).toFixed(1); }).join(" ");
       h += `<polyline data-k="${k}" data-fc="${c}" points="${pts}" style="--c:${col}"/>`;
       if (FL.w && D.fl && D.fl[k]) fw += `<polyline class="fw" data-k="${k}" data-fc="${c}" points="${pts}" style="animation-delay:-${((performance.now() / 1000 + (parseInt(String(k).replace(/\D/g, "")) || 0) * .37) % 1.1).toFixed(3)}s"/>`; });
-    V.fl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.fl.innerHTML = h + fw; V.fl.classList.toggle("c", !!FL.c); flDim(); flLeg(cnt); }   // (Colours ticked: the lines not picked fainter in their own colour, never grey)
+    const was = V.fl.childElementCount; V.fl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.fl.innerHTML = h + fw; if (!was && h && V.fl.animate) V.fl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250, easing: "ease-out" });   // (a new drawing's lines fade in)
+    V.fl.classList.toggle("c", !!FL.c); flDim(); flLeg(cnt); }   // (Colours ticked: the lines not picked fainter in their own colour, never grey)
   // the lines a line runs on into downstream on this sheet: what the next line arrows offer (an end on an end or on its
   // side, a join through a pump or vessel), followed on to the sheet's edge. A line feeding in at the same place is not
   // where the flow goes: left out. D the sheet's lines, refOf a key's ref, A the sheet's width over its height
