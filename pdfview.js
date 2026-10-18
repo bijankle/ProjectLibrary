@@ -122,6 +122,7 @@ window.PdfView = (() => {
       wz.z = z; wz.cx = e.clientX; wz.cy = e.clientY;
       V.sheet.style.transformOrigin = "0 0";
       V.sheet.style.transform = `translate(${e.clientX - wz.q.left - fx * wz.q.width * k}px,${e.clientY - wz.q.top - fy * wz.q.height * k}px) scale(${k})`;
+      V.sheet.style.setProperty("--trk", 1 / k);   // (and the lines and the arrow held at their size while the wheel zooms)
       clearTimeout(wz.t); wz.t = setTimeout(() => { const w = wz; wz = null; const q = V.sheet.getBoundingClientRect(), fx = (w.cx - q.left) / q.width, fy = (w.cy - q.top) / q.height;
         V.sheet.style.transform = ""; zoomTo(w.z, w.cx, w.cy, fx, fy); }, 140);
     }, { passive: false });
@@ -153,9 +154,10 @@ window.PdfView = (() => {
     V.body.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e); if (pin && pts.size === 2){ const [a, b] = [...pts.values()];
       pin.f = Math.max(1, Math.min(zmax(), pin.z * gap(a, b) / pin.d)) / pin.z;   // (never past the zoom limits, so nothing snaps back on lifting)
       // pinch and move at once (as in a photo app): the sheet scales about where the fingers started and follows their midpoint
+      // (the lines and the arrow counter-scaled as the fingers move, so they hold their size throughout, not only once they lift)
       pin.mx = (a.clientX + b.clientX) / 2 - pin.cx; pin.my = (a.clientY + b.clientY) / 2 - pin.cy;
       if (!pin.o){ const q = V.sheet.getBoundingClientRect(); pin.o = `${pin.cx - q.left}px ${pin.cy - q.top}px`; pin.fx = (pin.cx - q.left) / q.width; pin.fy = (pin.cy - q.top) / q.height; }
-      V.sheet.style.transformOrigin = pin.o; V.sheet.style.transform = `translate(${pin.mx}px,${pin.my}px) scale(${pin.f})`; } });
+      V.sheet.style.transformOrigin = pin.o; V.sheet.style.transform = `translate(${pin.mx}px,${pin.my}px) scale(${pin.f})`; V.sheet.style.setProperty("--trk", 1 / pin.f); } });
     let lastTap = null;
     const up = e => { pts.delete(e.pointerId);
       // the pinch ends: the point of the sheet the fingers started on lands where their midpoint finished (one step, so
@@ -533,7 +535,7 @@ window.PdfView = (() => {
   // (redrawn as the slider moves: the drift's delay set from the clock, so it carries on without a restart)
   // it the way the line flows; where you are, an arrow pointing downstream (where the drawing doesn't show the flow,
   // the way the line was traced). In the sheet's own points; the line widths are screen pixels, thicker close up
-  function drawTrace(){ if (!V || !V.trl) return; flDim(); const on = TR && cur && TR.n === cur.number && TR.page === V.page && V.pg;
+  function drawTrace(){ if (!V || !V.trl) return; flDim(); V.sheet.style.removeProperty("--trk"); const on = TR && cur && TR.n === cur.number && TR.page === V.page && V.pg;
     if (!on){ V.trl.innerHTML = ""; return; }
     const vp = V.pg.getViewport({ scale: 1, rotation: V.rot || 0 }), W = vp.width, H = vp.height, s = V.base * V.zoom, w = Math.max(4, Math.min(9, 3.2 * s)), tw = w * 1.35;
     const sc = q => { const [x, y] = trPt(q[0], q[1]); return [x / 1e4 * W, y / 1e4 * H]; };
@@ -995,6 +997,7 @@ window.PdfView = (() => {
       c.style.left = x0 + "px"; c.style.top = y0 + "px"; c.style.width = w + "px"; c.style.height = h + "px"; c.style.visibility = ""; }).catch(() => {});
   }
   function zoomTo(z, cx, cy, fx0, fy0){
+    if (V && V.sheet) V.sheet.style.removeProperty("--trk");   // (the pinch's counter-scale off: the sheet is redrawn at the new zoom)
     z = Math.max(1, Math.min(cur.fit === "page" ? 24 : 10, z)); if (!V.pg || Math.abs(z - V.zoom) < .001) return;
     // (flying a line: the zoom you pinch or tap to is the fly through's zoom, kept for the next line clicked)
     if (TR && V.tz){ const zs = V.tz.querySelector(".sp-trz"); zs.value = Math.max(0, Math.min(100, Math.log10(z) * 100)); try { localStorage.setItem("kcgm_trz", zs.value); } catch (e) {} }
