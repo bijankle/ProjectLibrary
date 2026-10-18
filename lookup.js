@@ -817,7 +817,9 @@
     return { input: inp, search: q => { inp.value = q; ensure().then(() => showList(q)); }, openKey: k => ensure().then(() => open(L.find(norm(k)), true)),
       redraw: () => { if (cur) open(cur, false, "step"); },
       openItem: (it, list, how) => { stack.length = 0; cur = null; ctx = list || null; open(it, true, how || (list ? "list" : undefined)); },
-      close: () => { stack.length = 0; cur = null; showList(inp.value); }, current: () => cur };
+      close: () => { stack.length = 0; cur = null; showList(inp.value); }, current: () => cur,
+      // (the results' type pill, All / Equipment / Instruments …: part of the view a Back step returns to)
+      only: v => { if (v !== undefined) only = v || ""; return only || ""; } };
   };
 
   // ---------- photo text recognition ----------

@@ -123,14 +123,14 @@ window.Browse = (() => {
     Object.values(seen).filter(a => a.length > 1).forEach(a => a.forEach(v => { const sn = m.get(v), words = String(full(v) || "").replace(/\(.*?\)/g, " ").split(/[\s·&/,;:]+/).filter(x => x && !SKIP.test(x));
       const x = words.find(y => !sn.toLowerCase().includes(y.toLowerCase().slice(0, 4))); if (x) m.set(v, sn + " " + (x.length > 6 ? x.slice(0, 5) + "." : x)); }));
     return v => m.get(v) || ""; };
-  function draw(){
+  function draw(quiet){
     // typed text with filters set: the same search as the search box, only among the filtered assets
     let list = rows.filter(r => match(r) && Lookup.inProj(r.it)); const st = nextStep();
     if (path.length && q.trim().length >= 2){ const hit = new Set(Lookup.search(q, 100000)); list = list.filter(r => hit.has(r.it)); }
     if (lk){ if (!ph0) ph0 = lk.input.placeholder;
       lk.input.placeholder = path.length ? "Search in " + path.filter(p => p.v != null).map(p => p.f === "t" ? TN[p.v] : p.v === "?" ? "Other" : p.v).join(" › ") + "…" : ph0; }
     // filters cleared with text still typed: back to the whole app search
-    if (!path.length && q.trim() && lk){ const v = q; q = ""; setTimeout(() => lk.search(v), 0); }
+    if (!path.length && q.trim() && lk && !quiet){ const v = q; q = ""; setTimeout(() => lk.search(v), 0); }
     // the charts on the right (desktop) follow the same filter; a bar can apply the next step or open an item
     if (window.AssetViz) AssetViz.update(list, { type: t(), step: st && st[0], filtered: path.length > 0,
       areaName: v => shortName((B.areas || {})[v] || ""), codeName: v => shortName((B.equip || {})[v] || ""), svcName: v => shortName((B.svc || {})[v] || ""),
@@ -344,7 +344,8 @@ window.Browse = (() => {
   const query = v => { q = v || ""; if (!path.length) return false; if (B){ fromN = 0; shownN = 60; draw(); } return q.trim().length >= 2; };
   // the filter as history keeps it (Back returns to it, also from another page)
   const getPath = () => path.map(p => ({ f: p.f, v: p.v, n: p.n }));
-  const setPath = p => { path = Array.isArray(p) ? p.map(x => Object.assign({}, x)) : []; if (B){ if (path.length && (path[0].f !== "t" || !TN[path[0].v])) path = []; fromN = 0; shownN = 60; draw(); } };
+  // (quiet: a view put back by Back, its own search and item restored by the page, so no search of its own)
+  const setPath = (p, quiet) => { path = Array.isArray(p) ? p.map(x => Object.assign({}, x)) : []; if (B){ if (path.length && (path[0].f !== "t" || !TN[path[0].v])) path = []; fromN = 0; shownN = 60; draw(quiet); } };
   const onChange = fn => { changed = fn; };
   return { reset, query, mount, restore, fit: () => fit(), getPath, setPath, onChange, projCount: p => rows.filter(r => r.it.p === p).length };
 })();

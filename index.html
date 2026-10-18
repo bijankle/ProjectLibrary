@@ -556,10 +556,14 @@ body.searching #homeMain{display:none}
   // ---------- history: every view is an entry, so Back (← and the phone's back) returns to it ----------
   let restoring = false;
   const snap = () => { const it = lk && lk.current && lk.current(); return { s: cur === "settings" ? cur : document.querySelector(".screen.on, #deck.on") ? (document.querySelector("#deck.on") ? "deck" : document.querySelector(".screen.on").id) : "home",
-    item: it ? { k: it.k, t: it.t } : null, path: window.Browse && Browse.getPath ? Browse.getPath() : [], q: lk ? lk.input.value : "" }; };
+    item: it ? { k: it.k, t: it.t } : null, path: window.Browse && Browse.getPath ? Browse.getPath() : [], q: lk ? lk.input.value : "",
+    // (the smaller choices on the view: the results' type pill, and on an item's page the pill showing in each set of pills)
+    o: lk && lk.only ? lk.only() : "", pf: it ? [...document.querySelectorAll(".lk-body .pf")].map(p => (p.querySelector(":scope > .pf-bar > .pf-b.on") || {}).dataset?.p || "") : [] }; };
   let lastSig = "";
   // (a step for every screen, item, filter set and search: Back walks them, between the drawings viewed)
-  const sigOf = st => (st.s || "home") + "|" + (st.item ? st.item.k : "") + "|" + JSON.stringify(st.path || []) + "|" + (st.q || "");
+  const sigOf = st => (st.s || "home") + "|" + (st.item ? st.item.k : "") + "|" + JSON.stringify(st.path || []) + "|" + (st.q || "") + "|" + (st.o || "") + "|" + (st.pf || []).join(",");
+  // (a pill tapped is a step of its own; not one clicked by the app itself, or while a step is being put back)
+  document.addEventListener("click", e => { if (!e.isTrusted || restoring || !e.target.closest || !e.target.closest(".pf-b, .lk-pill") || !e.composedPath().some(n => n.classList && n.classList.contains("lk-body"))) return; nav(true); });   // (the path as it was: a type pill redraws the list it sat in)
   function nav(isNew){ if (restoring || !window.Tabs || !Tabs.push) return; const st = snap(), sig = sigOf(st);
     if (history.state && history.state.sp){ if (sig !== lastSig){ Tabs.push(st); lastSig = sig; } return; }   // (never over a drawing viewer's step)
     if (isNew && sig !== lastSig) Tabs.push(st); else Tabs.replace(st); lastSig = sig; }
@@ -583,12 +587,16 @@ body.searching #homeMain{display:none}
     show("home");
     Lookup.load().then(() => { restoring = true;
       if (window.Browse && Browse.query) Browse.query(st.q || "");   // (the filter panel keeps its own copy of the search: that step's, not the last typed)
-      if (window.Browse && Browse.setPath) Browse.setPath(st.path || []);
+      if (window.Browse && Browse.setPath) Browse.setPath(st.path || [], true);
+      if (lk.only) lk.only(st.o || "");
       lk.input.value = st.q || "";
       const it = st.item && Lookup.find(st.item.k, st.item.t);
       if (it && st.dv && window.AssetViz && AssetViz.restoreView) AssetViz.restoreView(st.dv);
       // (the list for that step's search: closing an item brings back the list it came from, so the search is set after)
-      if (it) lk.openItem(it); else { lk.close(); if (lk.search && lk.input.value !== (st.q || "")) lk.search(st.q || ""); }
+      if (it){ lk.openItem(it);
+        // (each set of pills on the page back at the one it showed)
+        const P = [...document.querySelectorAll(".lk-body .pf")]; (st.pf || []).forEach((p, i) => { const b = p && P[i] && P[i].querySelector(`:scope > .pf-bar > .pf-b[data-p="${CSS.escape(p)}"]`); if (b && !b.classList.contains("on")) b.click(); }); }
+      else { lk.close(); if (lk.search && lk.input.value !== (st.q || "")) lk.search(st.q || ""); }
       done(); }).catch(done);
   }
 
