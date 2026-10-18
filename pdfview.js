@@ -62,11 +62,11 @@ window.PdfView = (() => {
     const lc = document.createElement("button"); lc.type = "button"; lc.className = "sp-lc"; lc.hidden = true;
     lc.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h12" stroke="#1565ff"/><path d="M3 12h15" stroke="#00a651"/><path d="M3 18h12" stroke="#ff9500"/><path d="M18 3l3 3-3 3M18 15l3 3-3 3" stroke="currentColor"/></svg><span>Lines</span>`; el.appendChild(lc);
     const lp = document.createElement("div"); lp.className = "sp-lcp"; lp.hidden = true;
-    lp.innerHTML = `<h6>P&amp;ID lines, all drawings</h6><label><span>Colours</span><input type="checkbox" class="ap-sw" data-f="c"></label><label><span>Flow animation</span><input type="checkbox" class="ap-sw" data-f="w"></label>`; el.appendChild(lp);
+    lp.innerHTML = `<h6>P&amp;ID lines, all drawings</h6><label><span>Colours</span><input type="checkbox" class="ap-sw" data-f="c"></label><label><span>Animation</span><input type="checkbox" class="ap-sw" data-f="w"></label>`; el.appendChild(lp);
     const flg = document.createElement("div"); flg.className = "sp-flg lkC"; flg.hidden = true; el.appendChild(flg);
     // (desktop: the two as tick boxes, always there, under the hand / pointer / whole sheet buttons)
     const ftk = document.createElement("div"); ftk.className = "sp-fltk"; ftk.hidden = true;
-    ftk.innerHTML = `<label><input type="checkbox" data-f="c"><span>Colours</span></label><label><input type="checkbox" data-f="w"><span>Flow animation</span></label>`; el.appendChild(ftk);
+    ftk.innerHTML = `<label><input type="checkbox" data-f="c"><span>Colours</span></label><label><input type="checkbox" data-f="w"><span>Animation</span></label>`; el.appendChild(ftk);
     ftk.addEventListener("click", e => e.stopPropagation());
     ftk.addEventListener("change", e => { const f = e.target.dataset.f; if (!f) return; FL[f] = e.target.checked; try { localStorage.setItem(f === "c" ? "kcgm_flc" : "kcgm_flw", FL[f] ? "1" : "0"); } catch (x) {} if (!FL.c) pickEnd(); drawFl(); });
     lc.onclick = e => { e.stopPropagation(); lp.hidden = !lp.hidden; if (!lp.hidden){ lp.querySelector('[data-f="c"]').checked = FL.c; lp.querySelector('[data-f="w"]').checked = FL.w; const r = lc.getBoundingClientRect(), q = el.getBoundingClientRect(); lp.style.left = (r.left - q.left) + "px"; lp.style.top = (r.bottom - q.top + 5) + "px"; } };
