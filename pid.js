@@ -78,6 +78,8 @@ window.Pid = (() => {
       // a swipe across the whole sheet, or its ‹ › arrows (pdfview.js): on the legend, the next / previous sheet in
       // order; elsewhere the next / previous drawing number of the same kind (2000-F00-PID-PR-10001, then …-10002)
       SW = { num, target: dir => leg ? list[list.indexOf(num) + dir] : inRow(num, dir), go };
+      // (the drawings either side fetched at once, picture first, so a swipe either way slides straight onto the next one)
+      [1, -1].forEach(dir => { const t = SW.target(dir), f = t && (info(t) || {}).file; if (!f) return; const im = new Image(); im.decoding = "async"; im.src = f + ".p1.png"; fetch(f).catch(() => {}); });
       if (window.PdfView && PdfView.arrows) PdfView.arrows();
       // under the sheet: what is on it, a pill per kind with its count (All first), then the tags, one line each; a tag
       // tapped zooms the sheet to it (tap it there to open its page)
@@ -128,7 +130,7 @@ window.Pid = (() => {
       } });
     // the drawings its continuations lead to, fetched quietly in the background (kept on the device), so one opens at once
     refs().then(R => { const seen = new Set(); (R[d.number] || []).forEach(r => { if (r[6] === "d" && seen.size < 8){ const t = info(r[5]); if (t && t.file && !seen.has(t.file)) seen.add(t.file); } });
-      const go = () => seen.forEach(f => fetch(f).catch(() => {})); window.requestIdleCallback ? requestIdleCallback(go, { timeout: 4000 }) : setTimeout(go, 1500); });
+      const go = () => seen.forEach(f => { fetch(f).catch(() => {}); fetch(f + ".p1.png").catch(() => {}); }); window.requestIdleCallback ? requestIdleCallback(go, { timeout: 4000 }) : setTimeout(go, 1500); });
     return true;
   }
   const kind = n => /-PFD-/.test(n) ? "PFD" : /-SLD-/.test(n) ? "SLD" : /-TLD-/.test(n) ? "TLD" : /-SCM-/.test(n) ? "Schematic" : /-BLK-/.test(n) ? "Block diagram" : "P&ID";
