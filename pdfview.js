@@ -176,9 +176,17 @@ window.PdfView = (() => {
       if (e.pointerType !== "touch") return;
       // a swipe across the whole sheet (strip showing): the next drawing (cur.swipe, pid.js); short of one, the sheet slides back
       if (cur.swipe && !V.cx.hidden && pan && !pan.np && !pts.size && e.type === "pointerup"){ const dx = e.clientX - pan.x, dy = e.clientY - pan.y, sw = Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy) && cur.swipe(dx < 0 ? 1 : -1);
-        V.sheet.style.transition = "transform .18s"; V.sheet.style.transform = sw ? `translateX(${dx < 0 ? -V.body.clientWidth : V.body.clientWidth}px)` : "";
-        const was = cur; setTimeout(() => { V.sheet.style.transition = ""; V.sheet.style.transform = ""; if (sw && cur === was) V.sheet.style.opacity = 0; }, 200);   // (hidden until the next drawing is in, unless it is in already)
-        if (sw){ pan = null; lastTap = null; setTimeout(() => cur.swipe(dx < 0 ? 1 : -1, true), 120); return; } }
+        // (out far enough to clear the window whatever the sheet's size: its far edge past the window's near one)
+        const sr = V.sheet.getBoundingClientRect(), br = V.body.getBoundingClientRect(), cur0 = new DOMMatrix(getComputedStyle(V.sheet).transform).m41 || 0;
+        const out = dx < 0 ? cur0 - (sr.right - br.left) - 8 : cur0 + (br.right - sr.left) + 8;
+        V.sheet.style.transition = "transform .18s ease-in"; V.sheet.style.transform = sw ? `translateX(${out}px)` : "";
+        // (swiped: the sheet stays off screen until the next drawing's picture is in, which then slides in from the other
+        // side; the old drawing never shows again in between)
+        if (sw){ const dir = dx < 0 ? 1 : -1; V.swIn = { dir, out: false }; clearTimeout(V.swT); V.swT = setTimeout(swEnter, 2000); pan = null; lastTap = null;
+          // (the next drawing opened once the sheet has left the screen: when its slide ends, or after 450 ms at most)
+          let gone = false; const go = () => { if (gone) return; gone = true; V.sheet.removeEventListener("transitionend", go); if (V.swIn) { V.swIn.out = true; V.sheet.style.opacity = 0; } cur.swipe(dir, true); };
+          V.sheet.addEventListener("transitionend", go); setTimeout(go, 450); return; }
+        setTimeout(() => { if (!V.swIn) V.sheet.style.transition = ""; }, 200); }
       if (pts.size === 1){ panFrom([...pts.values()][0], true); return; }   // more fingers than a pinch, one still down: it carries on panning
       if (pts.size || !pan) return; const g = pan; pan = null;
       const s = g.s, a = s[0], b = s[s.length - 1], dt = b[0] - a[0];
@@ -360,7 +368,7 @@ window.PdfView = (() => {
       if (!(PICS && PICS[key] >= pn)) return; const im = new Image(); im.decoding = "async";
       im.onload = () => { if (cur !== me || V.pgFor === me) return; const cs = getComputedStyle(V.body), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16 - Math.max(0, (parseFloat(cs.paddingTop) || 0) - 8);
         const k = cur.fit === "page" ? Math.min(W / im.width, H / im.height) : W / im.width; V.sheet.style.width = Math.round(im.width * k) + "px"; V.sheet.style.height = Math.round(im.height * k) + "px";
-        V.bg.width = im.width; V.bg.height = im.height; V.bg.getContext("2d").drawImage(im, 0, 0); V.hi.style.visibility = "hidden"; V.msg.hidden = true; V.ox = V.oy = 0; slide(); cxFit(); V.sheet.style.opacity = ""; };
+        V.bg.width = im.width; V.bg.height = im.height; V.bg.getContext("2d").drawImage(im, 0, 0); V.hi.style.visibility = "hidden"; V.msg.hidden = true; V.ox = V.oy = 0; slide(); cxFit(); V.sheet.style.opacity = ""; swEnter(); };
       im.src = `${cur.url.split("?")[0]}.p${pn}.png`; });
     let d; try { d = await getDoc(cur.url); } catch (e) { V.msg.textContent = "Couldn't load the PDF (" + e.message + "). Check the connection."; return; }
     V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
@@ -832,7 +840,7 @@ window.PdfView = (() => {
     if (!fromPop && V.pg && n !== V.page){ const me = REG.get(curId); if (me) me.snap = state(); quiet(); V.page = n; push({ o: me ? me.o : cur, snap: null }); }
     V.page = n; if (TR && TR.page !== n) trEnd();
     V.el.querySelector(".sp-pg").textContent = `${n} / ${d.numPages}`;
-    await picsP; V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true); V.sheet.style.opacity = "";
+    await picsP; V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true); V.sheet.style.opacity = ""; swEnter();
     (window.requestIdleCallback || setTimeout)(() => textLayer(), { timeout: 1200 });   // (the selectable text after the picture is up)
     if (V.afterPage){ const f = V.afterPage; V.afterPage = null; f(); }
     if (cur.find){ const me2 = cur; Promise.resolve(mark(cur.find)).then(() => { if (cur === me2 && !V.fit && !cur.restore && !cur.extent && !fromPop && V.hits && V.hits.length) focusHits(V.hits); }); } drawTap();
@@ -1022,6 +1030,13 @@ window.PdfView = (() => {
   }
   // the sheet's slide (V.ox, V.oy): lets the page sit off centre (or past the window's edge) so a zoom keeps the point
   // under the cursor where it is; the page always covers the middle of the window, and at fit it is centred again
+  // the next drawing after a swipe slides in from the side the finger came from (V.swIn, set by the swipe)
+  function swEnter(){ if (!V || !V.swIn) return;
+    if (!V.swIn.out){ V.sheet.style.opacity = 0; clearTimeout(V.swW); V.swW = setTimeout(swEnter, 40); return; }   // (the old one still on its way out: wait, the new one unseen)
+    const d = V.swIn.dir, st = V.sheet.style; V.swIn = null; clearTimeout(V.swT);
+    st.transition = "none"; st.transform = ""; const sr = V.sheet.getBoundingClientRect(), br = V.body.getBoundingClientRect();
+    st.transform = `translateX(${d > 0 ? br.right - sr.left + 8 : br.left - sr.right - 8}px)`; st.opacity = ""; void V.sheet.offsetWidth;
+    st.transition = "transform .22s ease-out"; st.transform = ""; setTimeout(() => { if (!V.swIn) st.transition = ""; }, 260); }
   function slide(){
     if (V.zoom <= 1.001){ V.ox = V.oy = 0; }
     else { V.sheet.style.left = V.ox ? V.ox + "px" : ""; V.sheet.style.top = V.oy ? V.oy + "px" : "";
