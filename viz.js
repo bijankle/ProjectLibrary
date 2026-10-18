@@ -136,8 +136,9 @@ window.AssetViz = (() => {
     // (kf: the pane widened or narrowed since the sheet was laid out, the divider being dragged: the whole view scaled
     // with it at once, redrawn sharp at the new size when the drag ends)
     let kf = 1;
+    // (and the lines' widths in screen pixels at every step of a zoom, as on the phone: the stage's scale taken back off)
     const apply = () => { z = Math.max(1, Math.min(10, z)); tx = fitAx(tx, bb[0], bb[2], W, vw0 || W); ty = fitAx(ty, bb[1], bb[3], H, vh0 || H);
-      stage.style.transform = `translate(${tx * kf}px,${ty * kf}px) scale(${z * kf})`; stage.style.setProperty("--iz", (1 / z).toFixed(4)); stage.style.setProperty("--rbw", (1.5 / z).toFixed(3) + "px"); clearTimeout(rt); rt = setTimeout(sharp, 180); report(); };
+      stage.style.transform = `translate(${tx * kf}px,${ty * kf}px) scale(${z * kf})`; stage.style.setProperty("--iz", (1 / z).toFixed(4)); stage.style.setProperty("--rbw", (1.5 / z).toFixed(3) + "px"); { const k = z * kf; stage.style.setProperty("--swk", (1 / k).toFixed(4)); stage.style.setProperty("--flw", Math.max(2.2, Math.min(8, 2.4 * k)).toFixed(2) + "px"); } clearTimeout(rt); rt = setTimeout(sharp, 180); report(); };
     // zoom onto boxes ([l, t, w, h] in 1/10000 of the sheet): all of them in view, but never closer than 4x
     const focus = bs => { if (!bs.length) return; const l = Math.min(...bs.map(b => b[0])) / 1e4 * W, t = Math.min(...bs.map(b => b[1])) / 1e4 * H,
       r = Math.max(...bs.map(b => b[0] + b[2])) / 1e4 * W, b = Math.max(...bs.map(q => q[1] + q[3])) / 1e4 * H, vw = box.clientWidth || W, vh = box.clientHeight || H;
