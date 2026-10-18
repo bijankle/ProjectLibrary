@@ -1682,7 +1682,7 @@
    "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 251222,
+   "size": 250027,
    "revs": [
     {
      "rev": "3",
@@ -10380,6 +10380,392 @@
    "date": "2026-04-07",
    "pages": 1,
    "size": 594612
+  },
+  "2000-F24-PID-PR-10024": {
+   "file": "PIDs/2000-F24-PID-PR-10024.pdf",
+   "title": "Plant air, sheet 7",
+   "rev": "MS_1",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 301870,
+   "src": [
+    "2000-F24-PID-PR-10024_MS_1.pdf"
+   ]
+  },
+  "2000-F35-PID-PR-60001": {
+   "file": "PIDs/2000-F35-PID-PR-60001.pdf",
+   "title": "UFG circuit process water distribution",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 563507,
+   "src": [
+    "2000-F35-PID-PR-60001_0_IFI.pdf"
+   ]
+  },
+  "2000-F35-PID-PR-60003": {
+   "file": "PIDs/2000-F35-PID-PR-60003.pdf",
+   "title": "Concentrate filtration, filter no. 1",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 405117,
+   "src": [
+    "2000-F35-PID-PR-60003_0_IFI.pdf"
+   ]
+  },
+  "2000-F35-PID-PR-60005": {
+   "file": "PIDs/2000-F35-PID-PR-60005.pdf",
+   "title": "Concentrate stockpile, loadout and truck washing",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 292624,
+   "src": [
+    "2000-F35-PID-PR-60005_0_IFI.pdf"
+   ]
+  },
+  "2000-F66-PID-PR-60001": {
+   "file": "PIDs/2000-F66-PID-PR-60001.pdf",
+   "title": "Goldroom electrowinning circuit no. 2",
+   "rev": "MS_1",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 596156,
+   "src": [
+    "2000-F66-PID-PR-60001_MS_1.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60013": {
+   "file": "PIDs/2000-F75-PID-PR-60013.pdf",
+   "title": "Gland water distribution, sheet 4",
+   "rev": "MS_1",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 424680,
+   "src": [
+    "2000-F75-PID-PR-60013_MS_1.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60022": {
+   "file": "PIDs/2000-F75-PID-PR-60022.pdf",
+   "title": "Scheme water network, sheet 1",
+   "rev": "MS_1",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 242111,
+   "src": [
+    "2000-F75-PID-PR-60022_MS_1.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60035": {
+   "file": "PIDs/2000-F75-PID-PR-60035.pdf",
+   "title": "Fire water network, sheet 1",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 696622,
+   "src": [
+    "2000-F75-PID-PR-60035_0_IFI.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60036": {
+   "file": "PIDs/2000-F75-PID-PR-60036.pdf",
+   "title": "Fire water network, sheet 2",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 617269,
+   "src": [
+    "2000-F75-PID-PR-60036_0_IFI.pdf"
+   ]
+  },
+  "2000-F81-PID-PR-60011": {
+   "file": "PIDs/2000-F81-PID-PR-60011.pdf",
+   "title": "Area 81 instrument air network, sheet 2",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 1155422,
+   "src": [
+    "2000-F81-PID-PR-60011_0_IFI.pdf"
+   ]
+  },
+  "2000-F00-DCR-PR-10001": {
+   "file": "PIDs/2000-F00-DCR-PR-10001.pdf",
+   "title": "Process design criteria, Stage 1",
+   "rev": "1",
+   "date": "2026-10-18",
+   "pages": 18,
+   "size": 256475,
+   "doc": true,
+   "src": [
+    "2000-F00-DCR-PR-10001_1.pdf"
+   ]
+  },
+  "2000-F00-DSH-EL-11001": {
+   "file": "PIDs/2000-F00-DSH-EL-11001.pdf",
+   "title": "Transportable switchrooms i33kv, 11KV and 415V) datasheet",
+   "rev": "2",
+   "date": "2026-10-18",
+   "pages": 19,
+   "size": 1419564,
+   "doc": true,
+   "src": [
+    "2000-F00-DSH-EL-11001_2.pdf"
+   ]
+  },
+  "2000-F00-DSH-EL-11003": {
+   "file": "PIDs/2000-F00-DSH-EL-11003.pdf",
+   "title": "11KV switchgear datasheet",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 12,
+   "size": 880840,
+   "doc": true,
+   "src": [
+    "2000-F00-DSH-EL-11003_0.pdf"
+   ]
+  },
+  "2000-F00-DSH-EL-11008": {
+   "file": "PIDs/2000-F00-DSH-EL-11008.pdf",
+   "title": "LV motor control centres (mccs) datasheet",
+   "rev": "1",
+   "date": "2026-10-18",
+   "pages": 14,
+   "size": 812648,
+   "doc": true,
+   "src": [
+    "2000-F00-DSH-EL-11008_1.pdf"
+   ]
+  },
+  "2000-F00-DSH-EL-11012": {
+   "file": "PIDs/2000-F00-DSH-EL-11012.pdf",
+   "title": "Essential switchboard AND emergency motor control centres (mccs), datasheet",
+   "rev": "2",
+   "date": "2026-10-18",
+   "pages": 12,
+   "size": 704614,
+   "doc": true,
+   "src": [
+    "2000-F00-DSH-EL-11012_2.pdf"
+   ]
+  },
+  "2000-F00-DSH-ME-11021": {
+   "file": "PIDs/2000-F00-DSH-ME-11021.pdf",
+   "title": "Conveyor weightometers datasheet",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 4,
+   "size": 376849,
+   "doc": true,
+   "src": [
+    "2000-F00-DSH-ME-11021_0.pdf"
+   ]
+  },
+  "2000-F00-DSH-ME-11063A": {
+   "file": "PIDs/2000-F00-DSH-ME-11063A.pdf",
+   "title": "Cyclone FEED PUMP datasheet",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 7,
+   "size": 469083,
+   "doc": true,
+   "src": [
+    "2000-F00-DSH-ME-11063A_0 (1).pdf"
+   ]
+  },
+  "2000-F00-DSH-ME-11087": {
+   "file": "PIDs/2000-F00-DSH-ME-11087.pdf",
+   "title": "SAG MILL BALL charger datasheet",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 6,
+   "size": 1004309,
+   "doc": true,
+   "src": [
+    "2000-F00-DSH-ME-11087_0.pdf"
+   ]
+  },
+  "2000-F00-DSH-PP-VKGD1L1": {
+   "file": "PIDs/2000-F00-DSH-PP-VKGD1L1.pdf",
+   "title": "Pre-cast concrete tunnels datasheet",
+   "rev": "2",
+   "date": "2026-10-18",
+   "pages": 1,
+   "size": 395487,
+   "doc": true,
+   "src": [
+    "2000-F00-DSH-PP-VKGD1L1_2.pdf"
+   ]
+  },
+  "2000-F00-PHL-PR-25001": {
+   "file": "PIDs/2000-F00-PHL-PR-25001.pdf",
+   "title": "Process control philosophy",
+   "rev": "1",
+   "date": "2026-10-18",
+   "pages": 16,
+   "size": 853432,
+   "doc": true,
+   "src": [
+    "2000-F00-PHL-PR-25001_1.pdf"
+   ]
+  },
+  "2000-F00-PHL-PR-40001": {
+   "file": "PIDs/2000-F00-PHL-PR-40001.pdf",
+   "title": "KCGM FIM TSF process control philosophy",
+   "rev": "5",
+   "date": "2026-10-18",
+   "pages": 74,
+   "size": 1105396,
+   "doc": true,
+   "src": [
+    "2000-F00-PHL-PR-40001_5.pdf"
+   ]
+  },
+  "2000-F13-DSH-ME-20002": {
+   "file": "PIDs/2000-F13-DSH-ME-20002.pdf",
+   "title": "SAG MILL datasheet F13-MS-401",
+   "rev": "1",
+   "date": "2026-10-18",
+   "pages": 9,
+   "size": 1164873,
+   "doc": true,
+   "src": [
+    "2000-F13-DSH-ME-20002_1.pdf"
+   ]
+  },
+  "2000-F175-DSH-EL-40001": {
+   "file": "PIDs/2000-F175-DSH-EL-40001.pdf",
+   "title": "Southlakes booster station LV switchroom equipment datasheet F175-SR-701",
+   "rev": "1",
+   "date": "2026-10-18",
+   "pages": 12,
+   "size": 960994,
+   "doc": true,
+   "src": [
+    "2000-F175-DSH-EL-40001_1_APP.pdf"
+   ]
+  },
+  "2000-F175-DSH-EL-40002": {
+   "file": "PIDs/2000-F175-DSH-EL-40002.pdf",
+   "title": "Southlakes booster station LV motor control centre equipment datasheet F175-SW-701",
+   "rev": "1",
+   "date": "2026-10-18",
+   "pages": 10,
+   "size": 1012200,
+   "doc": true,
+   "src": [
+    "2000-F175-DSH-EL-40002_1_APP.pdf"
+   ]
+  },
+  "2000-F23-DSH-EL-40001": {
+   "file": "PIDs/2000-F23-DSH-EL-40001.pdf",
+   "title": "FIM III TSF 33/11 KV fluid filled transformer datasheet",
+   "rev": "C",
+   "date": "2026-10-18",
+   "pages": 6,
+   "size": 694508,
+   "doc": true,
+   "src": [
+    "2000-F23-DSH-EL-40001_C.pdf"
+   ]
+  },
+  "2000-F23-DSH-EL-40002": {
+   "file": "PIDs/2000-F23-DSH-EL-40002.pdf",
+   "title": "FIM III booster station transformer datasheet F23-TR-602",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 5,
+   "size": 620183,
+   "doc": true,
+   "src": [
+    "2000-F23-DSH-EL-40002_0.pdf"
+   ]
+  },
+  "2000-F23-DSH-EL-40003": {
+   "file": "PIDs/2000-F23-DSH-EL-40003.pdf",
+   "title": "FIM III booster station hv/lv switchroom datasheet F23-SR-601",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 14,
+   "size": 1039122,
+   "doc": true,
+   "src": [
+    "2000-F23-DSH-EL-40003_0.pdf"
+   ]
+  },
+  "2000-F23-DSH-EL-40004": {
+   "file": "PIDs/2000-F23-DSH-EL-40004.pdf",
+   "title": "FIM III booster station HV switchboard datasheet F23-SW-601",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 8,
+   "size": 789567,
+   "doc": true,
+   "src": [
+    "2000-F23-DSH-EL-40004_0.pdf"
+   ]
+  },
+  "2000-F23-DSH-EL-40005": {
+   "file": "PIDs/2000-F23-DSH-EL-40005.pdf",
+   "title": "FIM III booster station LV motor control centre datasheet F23-SW-602",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 11,
+   "size": 972279,
+   "doc": true,
+   "src": [
+    "2000-F23-DSH-EL-40005_0.pdf"
+   ]
+  },
+  "2000-F23-DSH-EL-40006": {
+   "file": "PIDs/2000-F23-DSH-EL-40006.pdf",
+   "title": "FIM III booster PUMP variable speed drives datasheet F23-PP-651-VS F23-PP-652-VS",
+   "rev": "0",
+   "date": "2026-10-18",
+   "pages": 5,
+   "size": 615721,
+   "doc": true,
+   "src": [
+    "2000-F23-DSH-EL-40006_0.pdf"
+   ]
+  },
+  "2000-F23-DSH-EL-40007": {
+   "file": "PIDs/2000-F23-DSH-EL-40007.pdf",
+   "title": "FIM III booster station 11KV neutral earthing resistor datasheet",
+   "rev": "B",
+   "date": "2026-10-18",
+   "pages": 4,
+   "size": 548124,
+   "doc": true,
+   "src": [
+    "2000-F23-DSH-EL-40007_B.pdf"
+   ]
+  },
+  "2000-F75-DSH-EL-40002": {
+   "file": "PIDs/2000-F75-DSH-EL-40002.pdf",
+   "title": "Equipment datasheet, 415V TSF switchboard, EL008",
+   "rev": "D",
+   "date": "2026-10-18",
+   "pages": 6,
+   "size": 640021,
+   "doc": true,
+   "src": [
+    "2000-F75-DSH-EL-40002_D.pdf"
+   ]
+  },
+  "2000-F75-DSH-EL-40003": {
+   "file": "PIDs/2000-F75-DSH-EL-40003.pdf",
+   "title": "Equipment datasheet, 415V TSF switchboard, EL008 415V TSF PUMP control panel & LCS",
+   "rev": "D",
+   "date": "2026-10-18",
+   "pages": 5,
+   "size": 585842,
+   "doc": true,
+   "src": [
+    "2000-F75-DSH-EL-40003_D.pdf"
+   ]
   }
  }
 }

@@ -20,7 +20,7 @@
   let dtLoad = null, sideLoad = null, DOCN = new Set();   // the lists held in the app (Sources), by number
   fetch("issues.json").then(r => r.ok ? r.json() : {}).then(d => { Object.values((d.meta && d.meta.docs) || {}).forEach(x => x.number && DOCN.add(norm(x.number))); }).catch(() => {});
   // (the sheet tags and the IOMs are waited for with the search data: a page opened before they arrived had no pills or IOM row)
-  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), fetch("pct/idx.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { PCTI = d; }), fetch("contents.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { CT = d && d.d; CTBY = null; OTBY = null; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build(); otagExtras();
+  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), fetch("ds-links.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { DSL = d; }), fetch("ds-data.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { DSD = d; }), fetch("pct/idx.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { PCTI = d; }), fetch("contents.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { CT = d && d.d; CTBY = null; OTBY = null; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build(); otagExtras();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
     // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
@@ -364,7 +364,7 @@
       if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
         kept.unshift(...dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
           return ns.length ? { l: r.l, v: ns.join(", "), h: ns.map(n => dwgA(n)).join("<br>") } : r; })); }
-      iomRow(it, kept); drawRows(it, kept);
+      iomRow(it, kept); dsRow(it, kept); drawRows(it, kept);
       flagRows(kept, [it.key, ...twins.map(x => x.key)]);
       // MEL equipment with electrical data: two bands, Mechanical (the MEL and the other lists) and Electrical
       const el = kept.filter(r => r.s === "elx");
@@ -376,6 +376,7 @@
       // Control: the process control tables' rows for the tag (pct/, tools/build_pct.py), filled once its shard is loaded
       const ck = PCTI && [it, ...twins].map(x => x.k).find(k => PCTI.k[k]);
       if (ck){ const [a, b] = PCTI.k[ck]; secs.push({ id: "ctl", label: "Control", n: a + b, html: `<div class="lk-ctl" data-k="${esc(ck)}"><div class="lk-ns">Loading the process control tables…</div></div>` }); }
+      const dp = dsPill(it, twins); if (dp) secs.push(dp);
       const sp = window.Spec && [it, ...twins].find(x => Spec.wanted(x));
       if (sp) secs.push({ id: "spec", label: ["line", "spi", "hose"].includes(sp.t) ? "Pipe spec" : "Valve spec", html: `<div class="lk-spec" data-k="${sp.k}" data-t="${sp.t}"><div class="lk-ns">Loading the pipe and valve spec…</div></div>` });
     }
@@ -482,7 +483,7 @@
   let DT = null;
   // IOM manuals (iom.json, tools/build_iom.py): every manual of the item's package, and any manual naming its tag in the
   // title; those that name the tag (or the valve code, make or model) first. A row under the drawings, SharePoint links.
-  let IOM = null, SLDT = null;   // (SLDT: the tags read on each SLD / TLD / block diagram, sld-tags.json)
+  let IOM = null, SLDT = null, DSL = null, DSD = null;   // (DSL: the register's datasheets by tag, ds-links.json; DSD: what the ones in the app say, ds-data.json)   // (SLDT: the tags read on each SLD / TLD / block diagram, sld-tags.json)
   // the schematics a tag is read on (sld-tags.json inverted), a row under the drawings: number and title, opens the sheet
   let SCMBY = null, OTBY = null, CT = null, CTBY = null;   // (CT: what is read on each drawing, contents.json, tools/build_contents.py)
   // every drawing the item is read on (contents.json inverted), merged into its drawing rows by kind: P&ID, PFD, SLD,
@@ -525,6 +526,29 @@
     const SHOW = 4, h = a.slice(0, SHOW).map(one).join("<br>") + (a.length > SHOW ? `<details class="lk-iomm"><summary>${a.length - SHOW} more in package ${esc(pk.join(", "))}</summary>${a.slice(SHOW).map(one).join("<br>")}</details>` : "");
     const i = rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l)); let j = i; if (i >= 0) while (j + 1 < rows.length && /^(P&IDs?|PFD)$/.test(rows[j + 1].l)) j++;
     rows.splice(j + 1, 0, { l: a.length > 1 ? "IOMs" : "IOM", v: a.join(", "), h });
+  }
+  // the equipment's datasheets (ds-links.json, tools/build_ds_links.py), as the IOM row: the ones naming the tag first, then
+  // its parent's (sub equipment: a mill's heater shares the mill's datasheet), then by title phrase, then the package's
+  function dsRow(it, rows){
+    if (!DSL) return; const m = DSL.t[it.key]; if (!m) return;
+    const a = [...(m.d || []), ...(m.s || []), ...(m.f || [])].filter(n => DSL.d[n]), pk = (m.p || []).filter(n => DSL.d[n] && !a.includes(n));
+    if (!a.length && !pk.length) return;
+    const one = n => { const u = DSL.d[n][3], held = window.Pid && Pid.has(n);
+      return (held ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="1" href="#" title="Open in the app">${esc(n)}</a>` : u ? `<a class="sp-a" href="${esc(encodeURI(decodeURI(u)))}" target="_blank" rel="noopener" title="Open in SharePoint">${esc(n)}</a>` : esc(n))
+        + ((m.s || []).includes(n) ? ` <span class="lk-mu">(parent's)</span>` : "") + DI(n); };
+    const SHOW = 4, top = a.slice(0, SHOW), rest = [...a.slice(SHOW), ...pk];
+    const h = (top.length ? top.map(one).join("<br>") : "") + (rest.length ? `<details class="lk-iomm"><summary>${rest.length} more${pk.length ? " in package" : ""}</summary>${rest.map(one).join("<br>")}</details>` : "");
+    const i = rows.findIndex(r => /^IOMs?$/.test(r.l)), j = i >= 0 ? i : rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l));
+    rows.splice(j + 1, 0, { l: a.length + pk.length > 1 ? "Datasheets" : "Datasheet", v: [...a, ...pk].join(", "), h });
+  }
+  // the Datasheet pill: what the datasheets in the app say that the lists don't (ds-data.json), one pill per section
+  function dsPill(it, twins){
+    if (!DSD) return null; const L0 = [it, ...twins].map(x => DSD[x.key]).find(Boolean); if (!L0) return null;
+    const row = f => `<tr><td>${esc(f[0])}</td><td>${esc(f[1])}${f[2] ? ` <span class="lk-mu">${esc(f[2])}</span>` : ""}</td></tr>`;
+    let n = 0; const html = L0.map(d => { const ps = d.p.map((p, i) => { n += p[1].length; return { id: "ds" + i, label: p[0], n: p[1].length, html: `<table class="lk-t lk-ds">${p[1].map(row).join("")}</table>` }; });
+      const held = window.Pid && Pid.has(d.n);
+      return `<div class="lk-dsh">${held ? `<a class="lk-a" data-dwg="${esc(d.n)}" data-page="1" href="#">${esc(d.n)}</a>` : esc(d.n)} Rev ${esc(d.r)}${DI(d.n)}<span class="lk-mu"> · only what the lists don't already say</span></div>` + L.pills(ps, "ds"); }).join("");
+    return { id: "dsh", label: "Datasheet", n, html };
   }
   const dwgA = (n, pg) => window.Pid && Pid.has(n) ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="${pg || 1}" href="#">${esc(Pid.label(n))}</a>` + DI(n) : esc(n);
   function docRows(it, rows){
@@ -820,6 +844,7 @@
 .lk-status{font-size:var(--fb,15px);color:var(--mute);min-height:18px;margin:6px 2px}.lk-status:not(:empty){display:flex;align-items:center;gap:6px;padding:5px 8px;margin:6px 0;background:var(--hd);font-size:var(--fl,13px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--hd2)}.lk-status b{color:var(--ink);letter-spacing:.02em;margin-left:auto;order:2;font-variant-numeric:tabular-nums}
 .lk-hit{display:flex;gap:10px;width:100%;text-align:left;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:12px;padding:10px 11px;margin-bottom:7px;cursor:pointer;font:inherit}
 .lk-hit:hover{border-color:var(--lk-a)}
+.lk-mu{color:var(--mute);font-weight:500}.lk-dsh{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:2px 0 8px;font-weight:700}.lk-ds td:first-child{width:46%;color:var(--mute)}
 .lk-pills{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.lk-pills::-webkit-scrollbar{display:none}:root:not(.phone) .lk-pills{flex-wrap:wrap;overflow:visible}.lk-scoped .lk-row[hidden],.lk-scoped .lk-otd[hidden],.lk-scoped .lk-ot[hidden],.lk-scoped .pf-b[hidden]{display:none!important}.lk-scope{display:none}:root:not(.phone) .lk-scoped .lk-scope:not([hidden]){display:inline-flex;align-items:center;flex:none;margin-left:6px;border:1px solid var(--gold,var(--accent));background:var(--card);color:var(--ink);font:inherit;font-size:var(--fl,13px);font-weight:700;border-radius:var(--sqr,8px);padding:4px 9px;cursor:pointer;white-space:nowrap}.lk-sr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);column-gap:12px;align-items:start}.lk-fc{position:sticky;top:calc(var(--tb,0px) + 8px)}.lk-fo{display:flex;flex-direction:column;gap:4px;margin-top:4px}.lk-fo .bw-o{max-width:none}.lk-fo .bw-o.on{border-color:var(--gold,var(--accent));box-shadow:inset 0 0 0 1px var(--gold,var(--accent));color:var(--ink)}.lk-fo .bw-o em{font-style:normal;font-weight:700;color:var(--ink)}.lk-rc .bw-band b{font-variant-numeric:tabular-nums}
 .lk-pill{flex:none;border:1px solid var(--lk-l);background:var(--lk-c);color:var(--ink);border-radius:99px;padding:5px 10px;font:inherit;font-size:var(--fb,15px);font-weight:700;cursor:pointer;white-space:nowrap}
 .lk-pill i{font-style:normal;font-weight:600;color:var(--mute);margin-left:2px}.lk-pill.on{background:var(--lk-c);box-shadow:inset 0 0 0 1px var(--lk-a);border-color:var(--lk-a);color:color-mix(in srgb,var(--lk-a) 70%,var(--ink))}.lk-pill.on i{color:var(--mute)}

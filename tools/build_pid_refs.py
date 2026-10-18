@@ -129,10 +129,10 @@ for num, d in sorted(ix.items()):
             elif got: add(box, ("|".join(sorted(c[1] for c in got)), "q"))
         # near matches to this drawing's own list items not found yet: single words, two words on a line, and two words
         # stacked (a bubble's letters over its number, SP over MC-001)
-        own = OWN.get(num, {}) if num in CHECKED else {}
+        ownl = OWN.get(num, {}) if num in CHECKED else {}   # (its own list items: not "own", the number, which the next page still needs)
         have = set()
         for f in found: have |= {norm(x) for x in f[1][0].split("|")}
-        rem = {k: v for k, v in own.items() if k not in have}
+        rem = {k: v for k, v in ownl.items() if k not in have}
         if rem:
             cands = [(w[:4], w[4]) for w in words]
             for i, w in enumerate(words):
@@ -142,7 +142,7 @@ for num, d in sorted(ix.items()):
                     elif re.fullmatch(r"[A-Z]{1,4}", w[4]) and len(v[4]) <= 8 and 0 <= v[1] - w[3] < h * .8 and min(w[2], v[2]) - max(w[0], v[0]) > .3 * min(w[2] - w[0], v[2] - v[0]): cands.append(((min(w[0], v[0]), w[1], max(w[2], v[2]), v[3]), w[4] + v[4]))
             for box, txt in cands:
                 k = norm(clean(txt))
-                if k in own: n0 = len(found); add(box, own[k]); rem.pop(k, None); stats["near"] += len(found) - n0; continue   # exact once joined (SP over MC-001), every place it's drawn
+                if k in ownl: n0 = len(found); add(box, ownl[k]); rem.pop(k, None); stats["near"] += len(found) - n0; continue   # exact once joined (SP over MC-001), every place it's drawn
                 if len(k) < 5 or k in KEYS or k in DWG: continue
                 cap = 1 if len(k) <= 9 else 2
                 sc = sorted((lev(k, rk, cap), rk) for rk in rem)

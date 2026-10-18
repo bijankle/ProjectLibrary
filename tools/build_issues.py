@@ -138,6 +138,15 @@ for x in (json.load(open(FXP)) if os.path.exists(FXP) else []):
     add("Valve", "Check", x["new"], f"Tagged {x['old']} (number only, no letters)", CV, f"Drawn as {x['new'][:-len(x['old'])]} {x['old']}", x["pid"],
         f"The app names it {x['new']} from the letters in its bubble on {x['pid']}. Raise with the control valve list owner to add the letters.")
 
+# ---------- the equipment datasheets against the lists (tools/build_datasheets.py, tools/ds_clash.json) ----------
+# A datasheet giving another figure for something a list states (power, voltage, speed, mass …): the list's value stays
+# in the app, the datasheet's is shown here.
+DSC = os.path.join(HERE, "ds_clash.json")
+LK = {"mel": MEL, "elec": "elec", "ins": INS, "cv": CV}
+for x in (json.load(open(DSC)) if os.path.exists(DSC) else []):
+    add("Equipment", "Clash", f"{x['tag']} {x['field'].lower()}", f"{x['rec']} ({x['recf']})", LK.get(x["list"], x["list"]), x["ds"], f"Datasheet {x['doc']} Rev {x['rev']}",
+        "The app keeps the list's value. The datasheet gives another figure: check which is current with the equipment owner.")
+
 meta = {"rule": "Where two documents clash, the one with the more recent revision date is taken as true unless the comment says why not.",
         "sources": {v["title"]: {"doc": doc(k), "date": v["date"], "status": v["status"]} for k, v in REV.items()},
         "docs": REV}

@@ -11,6 +11,7 @@ import pymupdf
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 DOCS = {r"DCR-PR-10002": ("2000-F00-DCR-PR-10002", "PROCESS DESIGN CRITERIA - STAGE 2"),
+        r"DCR-PR-10001": ("2000-F00-DCR-PR-10001", "PROCESS DESIGN CRITERIA - STAGE 1"),
         # the two layout drawings the Layout view was built from (tools/build_layout.py), opened from its map bar
         r"DRG-GE-10100": ("2000-F00-DRG-GE-10100", "GENERAL FIMISTON SITE GENERAL ARRANGEMENT (NEW PLANT)"),
         r"DRG-GE-20001_2\.pdf$": ("2000-F00-DRG-GE-20001", "FIMISTON PROCESS PLANT OVERALL PLANT LAYOUT (OLD PLANT)"),

@@ -247,6 +247,7 @@ window.SourcesList = (() => {
         if (x){ const g = groups(); if (x.dataset.x === "1"){ g.forEach(id => open.add(id)); shut.clear(); }
           else { open.clear(); if (q) g.forEach(id => id[0] === "a" && shut.add(id)); } return draw(); }
         const tb = t.closest("[data-tab]"); if (tb) return setTab(tb.dataset.tab);
+        const rl = t.closest("[data-rl]"); if (rl){ roL = rl.dataset.rl; $(".sl-rot").scrollTop = 0; return roDraw(); }
         const rp = t.closest("[data-ro]"); if (rp){ roG = rp.dataset.ro; $(".sl-rot").scrollTop = 0; return roDraw(); }
         if (t.closest(".sl-rou")) return roDrop();
         if (t.closest(".sl-rod")) return roGet(roList());
@@ -291,7 +292,7 @@ window.SourcesList = (() => {
     }
     // ---------- Ref Only (desktop): documents the drawings and lists mention that aren't in the library (refonly.json,
     // tools/build_refonly.py), grouped by family; titles from the project document register, else as printed ----------
-    let tab = "att", tab0 = "att", RO = null, HELD = {}, OLD = [], roG = "";
+    let tab = "att", tab0 = "att", RO = null, HELD = {}, OLD = [], roG = "", roL = "";   // (roL: "" every document, "y" with a SharePoint link, "n" without)
     const ROG = [["", "All"], ["project", "Project 2000"], ["vendor", "Vendor"], ["legacy", "Legacy KCGM"], ["other", "Other"]];
     // the left side bar serves both tabs: on Ref Only it shows All, the families and the document types (one picked
     // at a time: roG "" | "project" … | "t:SCM"), each with its count; the search box above filters both
@@ -300,16 +301,19 @@ window.SourcesList = (() => {
       const R2 = v !== "att";   // (Ref Only and Old Revs share the table, the side bar filters and the buttons; Old Revs has no Excel)
       $(".sl-tree").hidden = R2; $(".sl-ro").hidden = !R2; $(".sl-sa").hidden = R2; $(".sl-sr").hidden = !R2; el.querySelectorAll(".sl-roc").forEach(x => x.hidden = !R2 || (v === "old" && !x.matches(".sl-rou,.sl-rod")));
       el.querySelectorAll(".sl-tbar .sl-upb").forEach(b => b.hidden = R2);
-      if (roG && v !== tab0) roG = ""; tab0 = v;
+      if (v !== tab0){ roG = ""; roL = ""; } tab0 = v;
       if (R2 && !RO){ $(".sl-rot").innerHTML = `<div class="sl-none">Loading…</div>`; const j = await fetch("refonly.json").then(r => r.ok ? r.json() : {}).catch(() => ({})); RO = j.ref || []; HELD = j.held || {}; OLD = j.old || []; }
       if (R2) roDraw(); }
     const roAll = () => tab === "old" ? OLD : RO;
-    const roList = () => roAll().filter(o => (!roG || (roG.startsWith("t:") ? roType(o) === roG.slice(2) : o.g === roG)) && (!q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in || {}).join(" ") + " " + (o.file || "")).toLowerCase().includes(q)));
+    const roLk = o => !roL || (roL === "y") === !!o.url;
+    const roList = () => roAll().filter(o => roLk(o) && (!roG || (roG.startsWith("t:") ? roType(o) === roG.slice(2) : o.g === roG)) && (!q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in || {}).join(" ") + " " + (o.file || "")).toLowerCase().includes(q)));
     function roDraw(){ if (!RO) return; if (tab === "old") return oldDraw(); const L = roList(), lk = !ghKey();
-      const qOk = o => !q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in || {}).join(" ") + " " + (o.file || "")).toLowerCase().includes(q);
-      const sec = (id, name, all) => { const n = all.filter(qOk).length; return `<div class="sl-sec${roG === id ? " on" : ""}${q && !n ? " sl-z" : ""}" data-ro="${esc(id)}" role="button" tabindex="0"><div class="sl-st"><b>${esc(name)}</b><small>${q ? `${n} of ${all.length} match` : `${all.length.toLocaleString()} document${all.length === 1 ? "" : "s"}`}</small></div></div>`; };
+      const qOk = o => roLk(o) && (!q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in || {}).join(" ") + " " + (o.file || "")).toLowerCase().includes(q));
+      const sec = (id, name, all) => { const n = all.filter(qOk).length; return `<div class="sl-sec${roG === id ? " on" : ""}${q && !n ? " sl-z" : ""}" data-ro="${esc(id)}" role="button" tabindex="0"><div class="sl-st"><b>${esc(name)}</b><small>${q || roL ? `${n} of ${all.length}${q ? " match" : ""}` : `${all.length.toLocaleString()} document${all.length === 1 ? "" : "s"}`}</small></div></div>`; };
       const tc = {}; RO.forEach(o => { const t = roType(o); if (t) (tc[t] = tc[t] || []).push(o); });
       $(".sl-sr").innerHTML = `<div class="sl-h">Everything</div>${sec("", "All Ref Only", RO)}<div class="sl-h">Families</div>` +
+        // (with or without a SharePoint link: on top of the family or type picked, the counts follow it)
+        `<div class="sl-rlk" role="group" aria-label="SharePoint link">${[["", "All"], ["y", "With link"], ["n", "No link"]].map(([v, t]) => `<button type="button" data-rl="${v}" class="${roL === v ? "on" : ""}">${t} <i>${RO.filter(o => !v || (v === "y") === !!o.url).length.toLocaleString()}</i></button>`).join("")}</div>` +
         ROG.slice(1).map(([g, n]) => { const a = RO.filter(o => o.g === g); return a.length ? sec(g, n, a) : ""; }).join("") +
         `<div class="sl-h">Types</div>` + Object.entries(tc).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).map(([t, a]) => sec("t:" + t, `${DT[t] || t} (${t})`, a)).join("");
       const ins = o => { const k = Object.entries(o.in).sort((a, b) => b[1] - a[1]), sh = n => esc(n.replace(/^2000-/, ""));
@@ -570,7 +574,8 @@ window.SourcesList = (() => {
         try { await put(`inbox/refonly/${f.name}`, await b64(f), `Ref Only file from the app: ${f.name}`, PRIV); okN.push(f.name); }
         catch (e){ if (/already uploaded/.test(e.message)){ okN.push(f.name); continue; } bad.push([f.name, e.message]); if (e.fatal) break; } }
       delete b.wrap.dataset.busy; x.textContent = "Close"; z.classList.remove("busy");
-      const got = new Set(okN.map(n => n.toLowerCase().replace(/ \(\d+\)(?=\.[^.]+$)/, ""))), miss = want.filter(([, f]) => !got.has(String(f).toLowerCase()));
+      // (both sides without a browser's " (1)" copy mark: SharePoint's own file can carry one in its name too)
+      const bare = n => String(n).toLowerCase().replace(/ \(\d+\)(?=\.[^.]+$)/, ""), got = new Set(okN.map(bare)), miss = want.filter(([, f]) => !got.has(bare(f)));
       st.className = "up-msg " + (bad.length ? "up-bad" : "up-good");
       st.textContent = `Uploaded ${okN.length} of ${files.length}.` + (bad.length ? ` Not uploaded: ${bad.slice(0, 3).map(y => y[0] + " (" + y[1] + ")").join("; ")}${bad.length > 3 ? ` and ${bad.length - 3} more` : ""}.` : "") + (want.length ? ` ${miss.length ? miss.length + " of the " + want.length + " expected weren't dropped in (a broken SharePoint link or a failed download)." : "All " + want.length + " expected are in."}` : "");
       const mb = b.querySelector(".rd-miss"); mb.hidden = !miss.length && !bad.length;
@@ -616,6 +621,7 @@ window.SourcesList = (() => {
 .sl-side{flex:0 0 var(--slw,330px);min-width:260px;max-width:50%;background:var(--card,var(--panel));border:1px solid var(--line);border-radius:12px;padding:12px;overflow-y:auto;box-sizing:border-box}
 .sl-dt .sl-b{flex-direction:column;gap:1px;width:46px;height:34px;padding:0;border-radius:9px;font-size:10.5px;line-height:1}.sl-dt .sl-b svg{width:14px;height:14px}
 .sl-hb{display:flex;align-items:center;gap:8px;margin:10px 0 0}.sl-hb .sl-b{width:auto;min-width:54px;padding:0 8px}.sl-svn{font-size:12px;color:var(--mute);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sl-rlk{display:flex;gap:3px;padding:4px 4px 6px}.sl-rlk button{flex:1 1 auto;min-width:0;border:1px solid var(--line,#d9dee5);background:var(--card,#fff);color:var(--ink);border-radius:99px;padding:3px 5px;font:inherit;font-size:12px;letter-spacing:-.1px;font-weight:700;cursor:pointer;white-space:nowrap}.sl-rlk button i{font-style:normal;font-weight:600;color:var(--mute);margin-left:2px}.sl-rlk button.on{background:var(--th-t);border-color:var(--th)}.sl-rlk button:hover{border-color:var(--th)}
 .sl-sec{display:flex;align-items:center;gap:8px;padding:4px 8px;margin-bottom:2px;border-radius:9px;cursor:pointer;border:1.5px solid transparent;outline:0}.sl-sec.on{background:var(--th-t);border-color:var(--th)}.sl-sec:hover:not(.on),.sl-sec:focus-visible:not(.on){background:var(--card2,var(--panel2))}
 .sl-st{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px}.sl-st b{display:block;flex:none;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sl-st small{display:block;flex:1;min-width:0;text-align:right;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .sl-pb{display:block;height:3px;border-radius:2px;background:var(--line);margin-top:5px;overflow:hidden}.sl-pb i{display:block;height:100%;background:#2aa765;transition:width .2s}

@@ -130,6 +130,13 @@ def names(page, clip=None):
         if i + 1 < len(ws):
             v = ws[i + 1]
             if PAIR.match(t + " " + re.sub(r"[\W_]+$", "", v[4])) and abs(v[1] - w[1]) < 3: hits.append((pymupdf.Rect(w[:4]) | pymupdf.Rect(v[:4]), t + " " + v[4]))
+        # (the engineer and the owner by their short names, DRA's, NSR in a file name; NORTHERN STAR RESOURCES LIMITED in
+        # capitals, taken whole on its line)
+        if re.search(r"\bDRA\b|\bNSR\b", w[4]) and not any(abs(h[0].x0 - w[0]) < 2 and abs(h[0].y0 - w[1]) < 2 for h in hits): hits.append((pymupdf.Rect(w[:4]), w[4]))
+        if t.upper() == "NORTHERN" and i + 1 < len(ws) and re.sub(r"\W", "", ws[i + 1][4]).upper() == "STAR":
+            j = i + 1
+            while j + 1 < len(ws) and abs(ws[j + 1][1] - w[1]) < 3 and re.sub(r"\W", "", ws[j + 1][4]).upper() in ("RESOURCES", "LIMITED", "LTD", "PTY"): j += 1
+            hits.append((pymupdf.Rect(w[:4]) | pymupdf.Rect(ws[j][:4]), " ".join(x[4] for x in ws[i:j + 1])))
     return hits
 
 def replace(page, hits, fill=WHITE):
@@ -220,11 +227,39 @@ def pdc(doc):
         boxes += [pymupdf.Rect(0, 0, W * .5, w[3] + 2) for w in ws if w[4] == "PROCESS" and w[1] < H * .06]
         whiteout(page, boxes); replace(page, names(page), fill=False)
 
-DOCS = {"2000-F00-DCR-PR-10002": pdc, "pvs": spec}
+def dsh(doc):
+    """An equipment datasheet: on every page the header block (DocuSign line, logo, project / client rows, datasheet
+    title rows, down to the "EQUIPMENT DATASHEET:" line or the "Client Company Name" row; the equipment name and number
+    rows stay); on the first page also the
+    revision and sign off table (names, signatures) down to the procurement package rows."""
+    for i, page in enumerate(doc):
+        W, H = page.rect.width, page.rect.height; ws = page.get_text("words"); boxes = []
+        low = [w for w in ws if w[1] < H * .3]
+        hd = [w for w in low if w[4] in ("DATASHEET:", "Company")]   # (the equipment name and number rows under it stay: they say what it is for)
+        cut = max((w[3] for w in hd), default=H * .09) + 2
+        boxes.append(pymupdf.Rect(0, 0, W, cut))
+        if i == 0:
+            rv = [w for w in ws if w[4] in ("Rev", "REVISION", "DATE", "Date") and w[1] < H * .4 and w[1] > cut - 4]
+            pk = [w for w in ws if w[4].upper().startswith("PROCUREMENT") and w[1] < H * .5]
+            if rv: boxes.append(pymupdf.Rect(0, min(w[1] for w in rv) - 3, W, (min(w[1] for w in pk) - 3) if pk and min(w[1] for w in pk) > min(w[1] for w in rv) else min(w[3] for w in rv) + 60))
+        whiteout(page, boxes); replace(page, names(page), fill=False)
+
+def phl(doc):
+    """A philosophy (or similar report): the cover and the revision history page go; on the rest the logo band along
+    the top (DocuSign line, logo, client name)."""
+    for i, page in enumerate(doc):
+        W, H = page.rect.width, page.rect.height; t = page.get_text()
+        if i == 0 or "REVISION HISTORY" in t[:400].upper(): whiteout(page, [page.rect], pymupdf.PDF_REDACT_LINE_ART_REMOVE_IF_TOUCHED); continue
+        whiteout(page, [pymupdf.Rect(0, 0, W, H * .075)]); replace(page, names(page), fill=False)
+
+DOCS = {"2000-F00-DCR-PR-10002": pdc, "2000-F00-DCR-PR-10001": pdc, "pvs": spec}
+KINDS = [(re.compile(r"-DSH-"), dsh), (re.compile(r"-PHL-"), phl)]   # (by document type, the ones not named above)
 
 def run(path, out=None):
     doc = pymupdf.open(path); base = os.path.splitext(os.path.basename(path))[0]
+    k = next((f for rx, f in KINDS if rx.search(base)), None)
     if base in DOCS: DOCS[base](doc)
+    elif k: k(doc)
     else: drawing(doc, base)
     doc.set_metadata({}); doc.del_xml_metadata()
     # page level XMP and named destinations can carry the CAD file path (project folder, site name): drop them too
