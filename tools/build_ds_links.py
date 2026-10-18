@@ -286,5 +286,37 @@ for t, m in tags.items():   # (a document listed once, at its best level)
     for k in ("d", "s", "f", "p"):
         m[k] = [x for x in m.get(k, []) if not (x in seen or seen.add(x))]
         if not m[k]: m.pop(k, None)
-json.dump({"d": docs, "t": tags}, open(os.path.join(R0, "ds-links.json"), "w"), separators=(",", ":"))
+# ---------- instruments and valves ----------
+# instrument datasheets: the instrument tags in the title (FIT-16001 or FIT16001), and a vendor's instrument datasheet
+# naming a piece of equipment ("INSTRUMENT DATA SHEETS - F13-FA-411") for every instrument on that equipment
+fi = D["types"]["ins"]["f"]; INSK = {nk(r[0]): r[0] for r in D["data"]["ins"]}
+ONEQ = collections.defaultdict(list)
+for r in D["data"]["ins"]:
+    e = r[fi.index("Equipment number")] if len(r) > fi.index("Equipment number") else ""
+    if e: ONEQ[e].append(r[0])
+ITAG = re.compile(r"\b([A-Z]{2,5})[- ]?(\d{4,6}[A-Z]?)\b")
+# valve datasheets: the valve code (VBFD1S1, VKGD1L1) in the number or the title, for every valve of that code
+fm, fc = D["types"]["mv"]["f"], D["types"]["cv"]["f"]
+CODES = {r[fm.index("Spec")] for r in D["data"]["mv"] if len(r) > fm.index("Spec")} | {r[fc.index("Valve class")] for r in D["data"]["cv"] if len(r) > fc.index("Valve class")}
+CODES = {c for c in CODES if re.fullmatch(r"V[A-Z0-9]{4,9}", c or "")}
+vals, xtags = collections.defaultdict(list), collections.defaultdict(list)
+for o in out:
+    if o.get("dead"): continue
+    T = o["t"].upper(); hit = False
+    if o.get("cat") == "instrument":
+        for a_, b_ in ITAG.findall(T):
+            k = INSK.get(nk(a_ + b_))
+            if k and o["n"] not in tags[k]["d"]: tags[k]["d"].append(o["n"]); hit = True
+        for e in o.get("tags", []):
+            for k in ONEQ.get(e, []):
+                if o["n"] not in tags[k]["d"]: tags[k]["d"].append(o["n"]); hit = True
+    for c in {c for c in CODES if re.search(rf"(?<![A-Z0-9]){c}(?![A-Z0-9])", T + " " + o["n"].split("-")[-1])}:
+        if o["n"] not in vals[c]: vals[c].append(o["n"]); hit = True
+    # tags a datasheet names that no list has (renamed or never listed): an asset of their own, with the datasheet
+    if o.get("cat") in ("equipment", "electrical/motor"):
+        for w in o.get("unmatched", []):
+            if re.fullmatch(r"[FT]\d{2,3}-[A-Z]{2,4}-\d{3,4}[A-Z]?", w) and o["n"] not in xtags[w]: xtags[w].append(o["n"]); hit = True
+    if hit: docs[o["n"]] = [o["t"], o.get("rev", ""), o.get("st", ""), o.get("url", "")]
+json.dump({"d": docs, "t": tags, "v": vals, "x": xtags}, open(os.path.join(R0, "ds-links.json"), "w"), separators=(",", ":"))
+print(len(vals), "valve codes,", sum(1 for t in tags if t in INSK.values()), "instruments,", len(xtags), "unlisted tags")
 print(len(docs), "datasheets,", len(tags), "tags,", sum(1 for m in tags.values() if "d" in m), "named,", sum(1 for m in tags.values() if "s" in m and "d" not in m), "as sub equipment ->", os.path.getsize(os.path.join(R0, "ds-links.json")) // 1024, "KB")

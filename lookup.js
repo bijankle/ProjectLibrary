@@ -10,7 +10,7 @@
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // Things that look like a plant code inside any text
   const TAG_RE = /\b(2000-[A-Z0-9]{3,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}|\d{2}-\d{4}-[A-Z0-9]{1,6}-[A-Z0-9]{2,6}-\d{2,4}(?:-[A-Z]{1,3})?|F\d{2,3}[A-Z]{2,4}\d{2,4}[A-Z]{0,4}(?:-[A-Z]{1,4}\d{0,2})?-[A-Z]{1,3}\d{1,2}(?:-[A-Z]{1,2})?|F\d{2,3}[A-Z]{2,4}\d{3,4}[A-Z]?-[A-Z]{2,4}\d{0,2}|F\d{2,3}-[A-Z]{1,4}-\d{2,4}[A-Z]?|F\d{2}-\d{5}|SP-[A-Z]{2}-\d{3}|[A-Z]{1,5} ?\d{5}[A-Z]?)\b/g;
-  const TYPE_ORDER = ["pfd", "mel", "elec", "cable", "ins", "cv", "mv", "line", "spec", "spi", "hose", "ctl", "gloss", "pid", "otag"];
+  const TYPE_ORDER = ["pfd", "mel", "elec", "cable", "ins", "cv", "mv", "line", "spec", "spi", "hose", "ctl", "gloss", "pid", "otag", "dstag"];
   const ICON = {};   // no pictures: each list is named in words (the type line, the pills)
 
   L.addExtra = list => { extras = extras.concat(list); if (DB) indexExtras(list); };
@@ -20,7 +20,7 @@
   let dtLoad = null, sideLoad = null, DOCN = new Set();   // the lists held in the app (Sources), by number
   fetch("issues.json").then(r => r.ok ? r.json() : {}).then(d => { Object.values((d.meta && d.meta.docs) || {}).forEach(x => x.number && DOCN.add(norm(x.number))); }).catch(() => {});
   // (the sheet tags and the IOMs are waited for with the search data: a page opened before they arrived had no pills or IOM row)
-  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), fetch("ds-links.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { DSL = d; }), fetch("ds-data.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { DSD = d; }), fetch("pct/idx.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { PCTI = d; }), fetch("contents.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { CT = d && d.d; CTBY = null; OTBY = null; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build(); otagExtras();
+  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), fetch("ds-links.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { DSL = d; }), fetch("ds-data.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { DSD = d; }), fetch("pct/idx.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { PCTI = d; }), fetch("contents.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { CT = d && d.d; CTBY = null; OTBY = null; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build(); otagExtras(); dsExtras();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
     // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
@@ -79,7 +79,7 @@
   const PAIR = { cv: "ins", hose: "spi" };   // (a second list's entry: the list whose entry is the asset)
   L.kindOf = it => [it.t, ...(it.also || [])].map(t => typeName(t)).join(" · ");
   L.isType = (it, t) => it.t === t || !!(it.also && it.also.includes(t));
-  const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "Drawing" : t === "spec" ? "Pipe & valve spec" : t === "otag" ? "Read on drawings" : DB.types[t].n;
+  const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "Drawing" : t === "spec" ? "Pipe & valve spec" : t === "otag" ? "Read on drawings" : t === "dstag" ? "Named in a datasheet" : DB.types[t].n;
   const textOf = it => it.txt || (it.txt = (it.r ? it.r.join(" ") : it.key + " " + it.name).toLowerCase());
 
   L.search = (q, limit = 60) => {
@@ -416,7 +416,10 @@
       const html = rc ? L.pills([{ id: "rc-c", label: "Continuations", n: cont.length, html: cont.map(one).join("") }, { id: "rc-x", label: "Reference drawings", n: refd.length, html: refd.map(one).join("") }].filter(g => g.n), "rc") : rr.map(one).join("");
       secs.push({ id: "r-refs", label: "References", n: rr.length, html }); }
     // read on drawings, no list has it: the drawings it is on, each opening on that spot
-    if (it.t === "otag") secs.push({ id: "det", label: "Drawings", n: it.dws.length, html: `<div class="lk-ns">Read on these drawings. No list has it, so there is no record to open.</div>` +
+    if (it.t === "dstag"){ const r = []; dsRow(it, r);
+      secs.push({ id: "det", label: "Details", html: `<div class="lk-ns">Named in the datasheet${it.dsx.length > 1 ? "s" : ""} below, but on no equipment list (it may have been renamed).</div><table class="lk-t">${L.rowsHTML(r)}</table>` }); }
+    const otr = []; if (it.t === "otag") dsRow(it, otr);
+    if (it.t === "otag") secs.push({ id: "det", label: "Drawings", n: it.dws.length, html: (otr.length ? `<table class="lk-t">${L.rowsHTML(otr)}</table>` : "") + `<div class="lk-ns">Read on these drawings. No list has it, so there is no record to open.</div>` +
       it.dws.map(d => `<div class="lk-row lk-ot"><a class="lk-a" data-dwg="${esc(d)}" data-find="${esc(it.key)}" href="#">${esc(Pid.label(d))}</a></div>`).join("") });
     // a P&ID: the drawings it joins (P&IDs pill first) and the lines that cross, each split From / To one row below
     const pl = it.t === "pid" && /-PID-/.test(it.key) && L.pidLinks(it.key);
@@ -508,6 +511,11 @@
   }
   // what is read on drawings that no list has (a board, a line the line list leaves out): searchable on its own; its page
   // lists the drawings it is on, each opening on that spot
+  // tags a datasheet names that no list has (renamed, or never listed): an asset of their own, with its datasheets
+  function dsExtras(){
+    if (!DSL || !DSL.x) return;
+    L.addExtra(Object.entries(DSL.x).filter(([t]) => !byKey.has(norm(t))).map(([t, ns]) => ({ t: "dstag", key: t, code: t, name: (DSL.d[ns[0]] || [""])[0] || "Named in a datasheet", words: "datasheet", dsx: ns })));
+  }
   function otagExtras(){
     if (!CT) return; const m = new Map();
     Object.entries(CT).forEach(([d, e]) => (e.o || []).forEach(o => { if (!byKey.has(norm(o))) m.set(o, [...(m.get(o) || []), d]); }));
@@ -515,8 +523,16 @@
   }
   function iomRow(it, rows){
     if (!IOM || !/^(mel|ins|cv)$/.test(it.t)) return;
-    const pk = String(L.get(it, "Package") || "").split(/[\s,/;&]+/).filter(Boolean), ns = new Set(IOM.t[it.key] || []);
-    pk.forEach(p => (IOM.p[p] || IOM.p[p.replace(/[A-Z]$/, "")] || []).forEach(n => ns.add(n)));
+    // (its package, else the packages whose documents name it; a package's manuals from the number series that serves this
+    // item's area only: ME006 10001… is the F12 rock breaker, 25001… the F75 water pump skids, iom.json "s", tools/build_iom.py)
+    const tp = (IOM.tp && IOM.tp[it.key]) || [], area = String(it.key).split("-")[0];
+    const pk = [...new Set([...String(L.get(it, "Package") || "").split(/[\s,/;&]+/).filter(Boolean), ...tp.map(x => x.split(":")[0])])], ns = new Set(IOM.t[it.key] || []);
+    const ser = (p, n) => { const S = IOM.s && (IOM.s[p] || IOM.s[p.replace(/[A-Z]$/, "")]), k = (String(n).match(/-(\d)\d{4}$/) || [])[1];
+      if (!S || !k || !S[k] || S[k].includes(area) || tp.includes(p + ":" + k)) return true;   // (a series nothing places, or this area's: kept)
+      // dropped only when another series that has manuals is the one serving this area
+      const docs = IOM.p[p] || IOM.p[p.replace(/[A-Z]$/, "")] || [];
+      return !Object.keys(S).some(x => x !== k && S[x].includes(area) && docs.some(d => new RegExp("-" + x + "\\d{4}$").test(d))); };
+    pk.forEach(p => (IOM.p[p] || IOM.p[p.replace(/[A-Z]$/, "")] || []).forEach(n => { if (ser(p, n)) ns.add(n); }));
     if (!ns.size) return;
     const words = [it.key, L.get(it, "Valve code"), L.get(it, "Make / model"), L.get(it, "Model")].map(v => String(v || "").toUpperCase().trim()).filter(v => v.length > 3);
     const score = n => (IOM.t[it.key] || []).includes(n) ? 2 : words.some(w => IOM.d[n][0].toUpperCase().includes(w)) ? 1 : 0;
@@ -530,15 +546,24 @@
   // the equipment's datasheets (ds-links.json, tools/build_ds_links.py), as the IOM row: the ones naming the tag first, then
   // its parent's (sub equipment: a mill's heater shares the mill's datasheet), then by title phrase, then the package's
   function dsRow(it, rows){
-    if (!DSL) return; const m = DSL.t[it.key]; if (!m) return;
-    const a = [...(m.d || []), ...(m.s || []), ...(m.f || [])].filter(n => DSL.d[n]), pk = (m.p || []).filter(n => DSL.d[n] && !a.includes(n));
+    if (!DSL) return; const code = /^(mv|cv)$/.test(it.t) ? String(L.get(it, it.t === "mv" ? "Spec" : "Valve class") || "").trim() : "";
+    const m = Object.assign({}, DSL.t[it.key] || {}); if (DSL.x && DSL.x[it.key]) m.d = [...(m.d || []), ...DSL.x[it.key]];   // (named in a datasheet, on no list)
+    if (code && DSL.v && DSL.v[code]) m.d = [...(m.d || []), ...DSL.v[code]];   // (a valve: the datasheets of its valve code)
+    if (!Object.keys(m).length) return;
+    // (the package's: from the number series serving this area, as the IOM row; those whose title names the equipment first)
+    const area = String(it.key).split("-")[0], nm = String(L.get(it, "Equipment name") || "").toUpperCase().replace(/\s+/g, "");
+    const inSer = n => { const v = (n.match(/^2000-([A-Z]{2}\d{3}[A-Z]?(?:\.\d+)?)-[A-Z0-9]{2,4}-(\d)\d{4}$/) || []), S = v[1] && IOM && IOM.s && IOM.s[v[1]];
+      return !S || !S[v[2]] || S[v[2]].includes(area) || !Object.keys(S).some(x => x !== v[2] && S[x].includes(area)); };
+    const named = n => nm.length > 4 && String(DSL.d[n][0]).toUpperCase().replace(/\s+/g, "").includes(nm);
+    let a = [...new Set([...(m.d || []), ...(m.s || []), ...(m.f || [])])].filter(n => DSL.d[n]), pk = (m.p || []).filter(n => DSL.d[n] && !a.includes(n) && inSer(n));
+    a = a.concat(pk.filter(named)); pk = pk.filter(n => !named(n));
     if (!a.length && !pk.length) return;
     const one = n => { const u = DSL.d[n][3], held = window.Pid && Pid.has(n);
       return (held ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="1" href="#" title="Open in the app">${esc(n)}</a>` : u ? `<a class="sp-a" href="${esc(encodeURI(decodeURI(u)))}" target="_blank" rel="noopener" title="Open in SharePoint">${esc(n)}</a>` : esc(n))
         + ((m.s || []).includes(n) ? ` <span class="lk-mu">(parent's)</span>` : "") + DI(n); };
     const SHOW = 4, top = a.slice(0, SHOW), rest = [...a.slice(SHOW), ...pk];
     const h = (top.length ? top.map(one).join("<br>") : "") + (rest.length ? `<details class="lk-iomm"><summary>${rest.length} more${pk.length ? " in package" : ""}</summary>${rest.map(one).join("<br>")}</details>` : "");
-    const i = rows.findIndex(r => /^IOMs?$/.test(r.l)), j = i >= 0 ? i : rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l));
+    const i = rows.findIndex(r => /^IOMs?$/.test(r.l)), j = i >= 0 ? i : rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l));   // (none: at the top)
     rows.splice(j + 1, 0, { l: a.length + pk.length > 1 ? "Datasheets" : "Datasheet", v: [...a, ...pk].join(", "), h });
   }
   // the Datasheet pill: what the datasheets in the app say that the lists don't (ds-data.json), one pill per section

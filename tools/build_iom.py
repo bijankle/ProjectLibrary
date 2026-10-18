@@ -45,6 +45,26 @@ for n, v in sorted(D.items()):
     for pre, first, more in TAG.findall(v[0].upper()):
         for num in [first] + re.findall(r"\d{3,4}[A-Z]?", more):
             if n not in T[pre + num]: T[pre + num].append(n)
-json.dump({"d": D, "p": P, "t": T}, open(os.path.join(R, "iom.json"), "w"), separators=(",", ":"))
+# a package code can cover two scopes, told apart by the number series: ME006 10001… the primary crusher rock breaker,
+# 25001… the TSF water pump skids. Every vendor document of the register (drawings, lists, ITPs, not only manuals) says
+# which plant areas each series serves, by the tags in its titles; an asset page then shows the manuals of the series
+# serving its area. And an item whose list entry has no package gets the packages whose documents name it.
+VDOC = re.compile(r"^2000-([A-Z]{2}\d{3}[A-Z]?(?:\.\d+)?)-[A-Z0-9]{2,4}-(\d)\d{4}$")
+RNG = re.compile(r"\b([FT]\d{2,3})-([A-Z]{2,4})-(\d{2,4})([A-Z]?)\s*(?:TO|THROUGH|-)\s*(?:[FT]\d{2,3}-[A-Z]{2,4}-)?(\d{2,4})\b")
+S, TP = collections.defaultdict(lambda: collections.defaultdict(set)), collections.defaultdict(set)
+for r in rows:
+    n = str(r[3] or "").strip().upper(); st = str(r[5] or "").strip().upper(); m = VDOC.match(n)
+    if not m or st in ("CAN", "SSD"): continue
+    t = str(r[6] or "").upper(); tags = set()
+    for pre, first, more in TAG.findall(t):
+        tags |= {pre + x for x in [first] + re.findall(r"\d{3,4}[A-Z]?", more)}
+    for a_, c_, x0, sfx, x1 in RNG.findall(t):   # (F75-PW-486 TO 488: every one between)
+        if x0.isdigit() and x1.isdigit() and 0 < int(x1) - int(x0) <= 20: tags |= {f"{a_}-{c_}-{str(k).zfill(len(x0))}" for k in range(int(x0), int(x1) + 1)}
+    for tg in tags:
+        S[m.group(1)][m.group(2)].add(tg.split("-")[0]); TP[tg].add(m.group(1) + ":" + m.group(2))
+        if VEND.match(n) and D.get(n) and D[n][2] != "I" and n not in T[tg]: T[tg].append(n)
+S = {p: {k: sorted(v) for k, v in d.items()} for p, d in S.items()}
+TP = {t: sorted(v) for t, v in TP.items()}
+json.dump({"d": D, "p": P, "t": T, "s": S, "tp": TP}, open(os.path.join(R, "iom.json"), "w"), separators=(",", ":"))
 c = collections.Counter(v[2] for v in D.values())
 print(len(D), "IOMs", dict(c), len(P), "packages,", len(T), "tags named,", sum(1 for v in D.values() if v[3]), "with a link")
