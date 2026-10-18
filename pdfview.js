@@ -54,8 +54,9 @@ window.PdfView = (() => {
         trEnd(); if (cur && cur.onRef) cur.onRef(tag, "tag", null, bx || null); return; }
       const m = TR.m.find(q => q[1] === "t" && String(q[0]) === g.dataset.f && q[2] === g.dataset.t), k = m && teeK(m); if (k != null) trGo({ k, pt: trAt(m[0]) }); }); el.appendChild(tb);
     const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
-    // (phone: the legend and Lines join find and zoom extents in the one row at the top centre, as icon buttons)
-    if (document.documentElement.classList.contains("phone")) requestAnimationFrame(() => { const t = el.querySelector(".sp-top"); if (t && V.lc){ t.prepend(V.lc); t.append(cb); } });
+    // (phone: on the left, the Colours / Flow animation tick boxes always showing and the Legend under them; find and
+    // zoom extents on the right)
+    if (document.documentElement.classList.contains("phone")) requestAnimationFrame(() => { if (!V.ftk) return; const pl = document.createElement("div"); pl.className = "sp-pl"; el.appendChild(pl); pl.append(V.ftk, cb); });
     cb.onclick = () => cur && cur.corner && cur.corner.go();
     // (the P&ID lines chip, top left of the sheet on a phone: colour by fluid, flow animation; and the fluid legend)
     const lc = document.createElement("button"); lc.type = "button"; lc.className = "sp-lc"; lc.hidden = true;
@@ -327,9 +328,9 @@ window.PdfView = (() => {
     if (V.goExt && Date.now() - V.goExt < 4000) cur.extent = true; V.goExt = 0;
     V.el.hidden = false; document.body.classList.add("sp-on"); dock();
     { const cb = V.el.querySelector(".sp-lg"), c = cur.corner; cb.hidden = !c; if (c){ cb.innerHTML = c.html; cb.title = c.title || ""; cb.style.top = (V.body.offsetTop + 10) + "px"; } }
-    V.lc.hidden = desk() || !/-PID-/.test(o.number || ""); V.lc.style.top = (V.body.offsetTop + 10) + "px";
+    V.lc.hidden = true; V.lc.style.top = (V.body.offsetTop + 10) + "px";
     if (!desk()) V.el.style.setProperty("--sp-tbar", (V.body.offsetTop + 10) + "px");   // (phone: the find / zoom extents row, top centre, level with Lines and the legend) V.lp.hidden = true; V.fl.innerHTML = ""; V.flg.hidden = true; FL.cnt = {}; if (FL.pick) pickEnd();
-    V.ftk.hidden = !desk() || !/-PID-/.test(o.number || ""); V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w;
+    V.ftk.hidden = !/-PID-/.test(o.number || ""); V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w;
     V.el.querySelector(".sp-tt").textContent = cur.title || "";
     // the drawing number, snug in the page's top left corner (moves with the page; the phone's title chip then leaves it out)
     // (in the sheet's bottom right corner, the drawing's short title under it: cur.sub)
@@ -955,7 +956,7 @@ window.PdfView = (() => {
     if (under){ g.style.left = Math.round(Math.max(s.left, e.left + 6) - e.left) + "px"; g.style.width = Math.round(Math.min(s.width, e.width - 12)) + "px"; g.style.top = Math.round(sb - e.top + 6) + "px"; g.style.bottom = ""; return g.offsetHeight + 6; }
     g.style.left = "8px"; g.style.width = ""; g.style.top = ""; g.style.bottom = Math.round(e.bottom - lim + 8) + "px"; return 0; }
   // (the desktop tick boxes under the hand / pointer / whole sheet buttons)
-  function tkAt(){ const t = V.ftk; if (!t || t.hidden) return; const m = V.el.querySelector(".sp-mode"); if (!m) return; const r = m.getBoundingClientRect(), e = V.el.getBoundingClientRect();
+  function tkAt(){ const t = V.ftk; if (!t || t.hidden || !desk()) return; const m = V.el.querySelector(".sp-mode"); if (!m) return; const r = m.getBoundingClientRect(), e = V.el.getBoundingClientRect();
     if (!r.height){ t.style.visibility = "hidden"; return; } t.style.visibility = ""; t.style.left = Math.round(r.left - e.left) + "px"; t.style.top = Math.round(r.bottom - e.top + 6) + "px"; }
   function cxFit(){
     if (!V || !V.cx) return; const c = V.cx; V.el.classList.toggle("cx-on", false); V.el.querySelectorAll(".sp-arw").forEach(a => a.hidden = true);

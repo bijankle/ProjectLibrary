@@ -1042,7 +1042,12 @@
 .sp-trv,.sp-trzh{display:none!important}
 /* phone: find, zoom extents and the sheets in one row at the top centre, between Lines and the legend, the same buttons
    as the header's (white, rounded, a thin edge); Lines and the legend in the same style */
-:root.phone .sp-view .sp-top{top:var(--sp-tbar,70px);bottom:auto;padding:0;gap:6px;border:0;background:none;box-shadow:none;border-radius:0;z-index:7}
+:root.phone .sp-view .sp-top{top:var(--sp-tbar,70px);bottom:auto;left:auto;right:12px;margin:0;padding:0;gap:6px;border:0;background:none;box-shadow:none;border-radius:0;z-index:7}
+/* phone: the Colours / Flow animation tick boxes always showing top left, and the Legend button under them */
+:root.phone .sp-view .sp-pl{position:absolute;left:12px;top:var(--sp-tbar,70px);z-index:7;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+:root.phone .sp-view.typing .sp-pl,:root.phone .sp-view.tracing .sp-pl{display:none}
+:root.phone .sp-view .sp-pl .sp-fltk{position:static;padding:6px 10px;border:1px solid #b0b5bd;border-radius:10px;box-shadow:0 1px 3px #0002;font:700 12.5px system-ui,sans-serif;gap:6px}
+:root.phone .sp-view .sp-pl .sp-lg{position:static;height:34px;box-sizing:border-box;padding:0 14px;border:1px solid #b0b5bd;border-radius:10px;background:#fff;color:#1f2937;box-shadow:0 1px 3px #0002;font:700 13px system-ui,sans-serif}
 :root.phone .sp-view .sp-top .sp-nav+.sp-nav,:root.phone .sp-view .sp-top .sp-fb{border-left:0}
 :root.phone .sp-view .sp-top button,:root.phone .sp-view .sp-ze{min-width:34px;width:auto;height:34px;padding:0 7px;border:1px solid #b0b5bd;border-radius:10px;background:#fff;color:#1f2937;font-size:19px;box-shadow:0 1px 3px #0002}
 :root.phone .sp-view .sp-ze,:root.phone .sp-view .sp-top .sp-fb{width:34px;min-width:34px;padding:0;display:inline-grid;place-items:center}:root.phone .sp-view .sp-ze svg{width:18px;height:18px}
