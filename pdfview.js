@@ -80,7 +80,10 @@ window.PdfView = (() => {
       msg: el.querySelector(".sp-msg"), refsEl: el.querySelector(".sp-refs"), tapEl: el.querySelector(".sp-tap"), textEl: el.querySelector(".sp-text"), refs: [], page: 1, zoom: 1, pg: null, base: 1, hits: [], fi: 0 };
     el.querySelectorAll("[data-a]").forEach(b => b.onclick = () => ({ prev: () => go(V.page - 1), next: () => go(V.page + 1), in: () => zoomTo(V.zoom * 1.5), out: () => zoomTo(V.zoom / 1.5), fit: () => zoomTo(1),
       fprev: () => V.fit ? fitStep(-1) : showHit(V.fi - 1, -1), fnext: () => V.fit ? fitStep(1) : showHit(V.fi + 1, 1), rot, close,
-      find: () => { const on = !el.classList.contains("find-on"); el.classList.toggle("find-on", on); const q = el.querySelector(".sp-q"); if (on){ q.focus(); q.select(); } else q.blur(); }, back: () => history.back(), fwd: () => history.forward() })[b.dataset.a]());
+      find: () => { const on = !el.classList.contains("find-on"); el.classList.toggle("find-on", on); const q = el.querySelector(".sp-q"); if (on){ q.focus(); q.select(); } else q.blur();
+        // (one browser history step while the find box is open: the phone's swipe back closes it, the keyboard having gone on the first)
+        if (on && history.state && history.state.sp && !history.state.fd) history.pushState(Object.assign({}, history.state, { fd: 1 }), "");
+        else if (!on && history.state && history.state.fd){ fdPop = true; history.back(); } }, back: () => history.back(), fwd: () => history.forward() })[b.dataset.a]());
     // find: Ctrl+F / ⌘F while a drawing is open searches its text (the page is a picture, so the browser's own find can't)
     const q = el.querySelector(".sp-q"); let qt;
     // phone: while typing (keyboard up) only the find box and its count show, so the drawing keeps the rest of the screen
@@ -395,6 +398,7 @@ window.PdfView = (() => {
     if (V.refsEl && V.boxes) [...V.refsEl.children].forEach((a, i) => { const b = V.boxes[i]; if (!b) return; const [l, t, w, hh] = b.map(x => x / 1e4);
       a.classList.toggle("tp", on.some(h => same(h, l, t, w, hh))); });
  }
+  var fdPop = false;
   // ---------- line trace (phone) ----------
   // A tapped line number traces its line (lines/<number>.json, tools/build_line_paths.py), in the app's theme colour. A panel comes up under the sheet with the line slider, which runs the view along the line from one end
   // to the other (a dot where you are, a stronger trail left behind like a pen's), the milestones along it (tees, valves,
@@ -927,6 +931,9 @@ window.PdfView = (() => {
   // a fluid picked in the legend: its lines alone in colour, the rest grey. One browser history step, so Back (the
   // phone's swipe back), Esc or a click on the bare sheet go back to every fluid in colour
   let pkPop = false;
+  // the find box (phone): Back closes it, the viewer stays
+  addEventListener("popstate", e => { if (fdPop){ fdPop = false; e.stopImmediatePropagation(); return; }
+    if (V && V.el.classList.contains("find-on") && !(history.state && history.state.fd)){ e.stopImmediatePropagation(); V.el.classList.remove("find-on", "typing"); const q = V.el.querySelector(".sp-q"); if (q) q.blur(); } }, true);
   function pick1(c){ if (TR) return; const had = !!FL.pick; FL.pick = c; flDim();
     if (!had && history.state && history.state.sp && !history.state.fp) history.pushState(Object.assign({}, history.state, { fp: 1 }), ""); }
   function pickEnd(how){ if (!FL.pick) return; FL.pick = null; flDim();
