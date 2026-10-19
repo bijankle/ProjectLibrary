@@ -364,7 +364,7 @@
       if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
         kept.unshift(...dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
           return ns.length ? { l: r.l, v: ns.join(", "), h: ns.map(n => dwgA(n)).join("<br>") } : r; })); }
-      iomRow(it, kept); dsRow(it, kept); drawRows(it, kept);
+      iomRow(it, kept); dsRow(it, kept); drawRows(it, kept); docsUp(kept);
       flagRows(kept, [it.key, ...twins.map(x => x.key)]);
       // MEL equipment with electrical data: two bands, Mechanical (the MEL and the other lists) and Electrical
       const el = kept.filter(r => r.s === "elx");
@@ -491,21 +491,32 @@
   let SCMBY = null, OTBY = null, CT = null, CTBY = null;   // (CT: what is read on each drawing, contents.json, tools/build_contents.py)
   // every drawing the item is read on (contents.json inverted), merged into its drawing rows by kind: P&ID, PFD, SLD,
   // schematic, block diagram; numbers only, each opens the drawing
-  const DKIND = [["P&ID", /-PID-/], ["PFD", /-PFD-/], ["SLD", /-SLD-/], ["TLD", /-TLD-/], ["Schematic", /-SCM-/], ["Block diagram", /-BLK-/], ["Drawing", /./]];
+  // (named by the kind of document its number says it is: a datasheet, a philosophy, the design criteria are not drawings)
+  const DKIND = [["P&ID", /-PID-/], ["PFD", /-PFD-/], ["SLD", /-SLD-/], ["TLD", /-TLD-/], ["Schematic", /-SCM-/], ["Block diagram", /-BLK-/],
+    ["Datasheet", /-DSH-/], ["Philosophy", /-PHL-/], ["PDC", /-DCR-/], ["Drawing", /-[A-Z]{3}-[A-Z]{2}-/], ["Document", /./]];
   const dkind = d => DKIND.find(([, re]) => re.test(d))[0];
+  const kindL = (k, n) => n > 1 ? ({ Philosophy: "Philosophies", PDC: "PDC" })[k] || k + "s" : k;   // the row's label
+  const rowKind = l => (DKIND.find(([k]) => l === k || l === kindL(k, 2)) || [])[0];
   function ctBy(){ if (!CTBY && CT){ CTBY = new Map(); Object.entries(CT).forEach(([d, e]) => [...(e.k || []), ...(e.o || [])].forEach(k => { const n = norm(k); CTBY.set(n, [...(CTBY.get(n) || []), d]); })); } return CTBY; }
+  // the drawing and document rows together at the top, after the P&IDs, PFD, IOMs and datasheets, in kind order
+  function docsUp(rows){ const top = r => /^(P&IDs?|PFD|IOMs?|Datasheets?)$/.test(r.l), mv = r => !top(r) && rowKind(r.l);
+    const m = rows.filter(mv).sort((a, b) => DKIND.findIndex(([k]) => k === rowKind(a.l)) - DKIND.findIndex(([k]) => k === rowKind(b.l))); if (!m.length) return;
+    for (let i = rows.length - 1; i >= 0; i--) if (mv(rows[i])) rows.splice(i, 1);
+    let k = -1; rows.forEach((r, x) => { if (top(r)) k = x; }); rows.splice(k + 1, 0, ...m); }
   function drawRows(it, rows){
     const by = ctBy(); if (!by) return;
     const found = [...new Set([it, ...(byKey.get(it.k) || [])].flatMap(x => by.get(x.k) || []))].filter(d => d !== it.key && window.Pid && Pid.has(d));
     if (!found.length) return;
-    const DRE2 = /2000-[A-Z0-9]{2,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}/g, lab = r => r.l.replace(/s$/, "");
+    const DRE2 = /2000-[A-Z0-9]{2,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}[A-Z]?/g;
     DKIND.forEach(([kind]) => {
       const add = found.filter(d => dkind(d) === kind); if (!add.length) return;
-      const ri = rows.findIndex(r => lab(r) === kind), had = ri >= 0 ? [...new Set(String(rows[ri].v).match(DRE2) || [])] : [];
+      const ri = rows.findIndex(r => rowKind(r.l) === kind), had = ri >= 0 ? [...new Set(String(rows[ri].v).match(DRE2) || [])] : [];
       const all = [...had, ...add.filter(d => !had.includes(d))]; if (all.length === had.length) return;
-      const row = { l: all.length > 1 ? kind + "s" : kind, v: all.join(", "), h: all.map(d => dwgA(d)).join("<br>") };
+      // (a datasheet row lists the register's too, links and all: the ones read only here go on its end)
+      if (ri >= 0 && kind === "Datasheet"){ rows[ri] = Object.assign({}, rows[ri], { l: "Datasheets", v: all.join(", "), h: rows[ri].h + "<br>" + all.filter(d => !had.includes(d)).map(d => dwgA(d)).join("<br>") }); return; }
+      const row = { l: kindL(kind, all.length), v: all.join(", "), h: all.map(d => dwgA(d)).join("<br>") };
       if (ri >= 0){ rows[ri] = Object.assign({}, rows[ri], row); return; }
-      let k = -1; rows.forEach((r, x) => { if (DKIND.some(([n]) => n === lab(r))) k = x; });
+      let k = -1; rows.forEach((r, x) => { if (rowKind(r.l)) k = x; });
       rows.splice(k + 1, 0, row);
     });
   }
@@ -557,10 +568,12 @@
     const named = n => nm.length > 4 && String(DSL.d[n][0]).toUpperCase().replace(/\s+/g, "").includes(nm);
     let a = [...new Set([...(m.d || []), ...(m.s || []), ...(m.f || [])])].filter(n => DSL.d[n]), pk = (m.p || []).filter(n => DSL.d[n] && !a.includes(n) && inSer(n));
     a = a.concat(pk.filter(named)); pk = pk.filter(n => !named(n));
+    // (a datasheet the tag was read on, already a row of its own: in this one instead)
+    const ri0 = rows.findIndex(r => rowKind(r.l) === "Datasheet"); if (ri0 >= 0){ a = [...a, ...String(rows[ri0].v).split(", ").filter(n => n && !a.includes(n) && !pk.includes(n))]; rows.splice(ri0, 1); }
     if (!a.length && !pk.length) return;
-    const one = n => { const u = DSL.d[n][3], held = window.Pid && Pid.has(n);
+    const one = n => { const u = (DSL.d[n] || [])[3], held = window.Pid && Pid.has(n);
       return (held ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="1" href="#" title="Open in the app">${esc(n)}</a>` : u ? `<a class="sp-a" href="${esc(encodeURI(decodeURI(u)))}" target="_blank" rel="noopener" title="Open in SharePoint">${esc(n)}</a>` : esc(n))
-        + ((m.s || []).includes(n) ? ` <span class="lk-mu">(parent's)</span>` : "") + DI(n); };
+        + ((m.s || []).includes(n) ? ` <span class="lk-mu">(parent's)</span>` : "") + (held || DSL.d[n] ? DI(n) : ""); };
     const SHOW = 4, top = a.slice(0, SHOW), rest = [...a.slice(SHOW), ...pk];
     const h = (top.length ? top.map(one).join("<br>") : "") + (rest.length ? `<details class="lk-iomm"><summary>${rest.length} more${pk.length ? " in package" : ""}</summary>${rest.map(one).join("<br>")}</details>` : "");
     const i = rows.findIndex(r => /^IOMs?$/.test(r.l)), j = i >= 0 ? i : rows.findIndex(r => /^(P&IDs?|PFD)$/.test(r.l));   // (none: at the top)
@@ -585,9 +598,10 @@
       for (let i = rows.length - 1; i >= 0; i--) if (/^PFD$/.test(rows[i].l)) rows.splice(i, 1);
       if (pfds.length) rows.splice(at(), 0, { l: "PFD", v: pfds.join(", "), h: pfds.map(n => dwgA(n)).join("<br>") });
     }
-    const docs = seen.filter(x => !/-P[FI]D-/.test(x[0]));
-    if (docs.length){ const i = at(); rows.splice(i < rows.length ? i + 1 : i, 0, { l: docs.every(x => /-DCR-/.test(x[0])) ? "PDC" : "Documents", v: docs.map(x => x[0]).join(", "),
-      h: docs.map(x => dwgA(x[0], x[1]) + ` (page ${x[1]})`).join("<br>") }); }
+    // the other documents it is read on, a row for each kind (SLDs, Datasheets, Philosophies …), after the P&IDs
+    const docs = seen.filter(x => !/-P[FI]D-/.test(x[0])); let i = at();
+    DKIND.forEach(([kind]) => { const d = docs.filter(x => dkind(x[0]) === kind); if (!d.length) return;
+      rows.splice(i < rows.length ? ++i : i, 0, { l: kindL(kind, d.length), v: d.map(x => x[0]).join(", "), h: d.map(x => dwgA(x[0], x[1]) + (d.length > 1 || x[1] > 1 ? ` (page ${x[1]})` : "")).join("<br>") }); });
   }
   // a PFD sheet's WBS area: the area code most of its equipment starts with (read on the sheet, doc-tags.json, or the
   // equipment list's PFD column)
