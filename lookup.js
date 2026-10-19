@@ -25,7 +25,7 @@
     // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
     return (window.Pid ? Pid.load().then(() => Pid.all().forEach(d => { const k = norm(d.number); if (byKey.has(k)) return;
-      const it = { t: "pid", key: d.number, k, name: Pid.kind(d.number) + " drawing" + (d.title ? ": " + d.title : ""), r: null, p: dwgProj(k) }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => dtLoad).then(() => window.SP ? SP.load() : null).then(() => { done = true; return L; }); }));
+      const it = { t: "pid", key: d.number, k, name: (d.doc ? Pid.kind(d.number) : Pid.kind(d.number).replace(/^Drawing$/, "") + " drawing").trim() + (d.title ? ": " + d.title : ""), r: null, p: dwgProj(k) }; items.push(it); addKey(k, it); })).catch(() => {}) : Promise.resolve()).then(() => dtLoad).then(() => window.SP ? SP.load() : null).then(() => { done = true; return L; }); }));
   L.ready = () => !!DB;
   // Projects: Main plant and the tailings storage facility (TSF). Each list item and P&ID belongs to one (search-data.json:
   // the "Project" field, and tsf_dwg for the drawings; tools/build_tsf.py); the picker shows either or both (kept between
@@ -77,7 +77,8 @@
     return r[1] || "";
   }
   const PAIR = { cv: "ins", hose: "spi" };   // (a second list's entry: the list whose entry is the asset)
-  L.kindOf = it => [it.t, ...(it.also || [])].map(t => typeName(t)).join(" · ");
+  // (a document by the kind its number says: P&ID, SLD, Datasheet, Philosophy …)
+  L.kindOf = it => [it.t, ...(it.also || [])].map(t => t === "pid" ? dkind(it.key) : typeName(t)).join(" · ");
   L.isType = (it, t) => it.t === t || !!(it.also && it.also.includes(t));
   const typeName = t => t === "pfd" ? "On the PFD" : t === "gloss" ? "Glossary" : t === "pid" ? "Drawing" : t === "spec" ? "Pipe & valve spec" : t === "otag" ? "Read on drawings" : t === "dstag" ? "Named in a datasheet" : DB.types[t].n;
   const textOf = it => it.txt || (it.txt = (it.r ? it.r.join(" ") : it.key + " " + it.name).toLowerCase());
@@ -689,7 +690,7 @@
     const status = m => { stat.innerHTML = m || ""; };
     // filter pills: one per list with matches (with counts); the choice is kept while typing
     let only = "", shownN = 80;
-    const PILL = { ctl: "Control tags", pfd: "PFD", mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spec: "Spec", pid: "Drawings", spi: "SPI", hose: "Hoses", gloss: "Glossary" };
+    const PILL0 = { ctl: "Control tags", pfd: "PFD", mel: "Equipment", ins: "Instruments", cv: "Control valves", mv: "Manual valves", line: "Lines", spec: "Spec", pid: "Drawings", spi: "SPI", hose: "Hoses", gloss: "Glossary" };
     const showList = (q, keepN) => {
       if (opts.onList) opts.onList();
       // opts.within(q): a page can take the typing for itself (Assets: with Browse filters set, the search narrows that list)
@@ -698,12 +699,15 @@
       if (q.trim().length < 2){ status(""); body.innerHTML = opts.intro || ""; return; }
       if (!keepN) shownN = 80;
       const all = L.search(q, 100000), counts = {};
-      all.forEach(it => [it.t, ...(it.also || [])].forEach(t => counts[t] = (counts[t] || 0) + 1));
+      // (documents a pill for each kind: P&IDs, SLDs, Datasheets …, "pid:SLD")
+      const pt = (it, t) => t === "pid" ? "pid:" + dkind(it.key) : t;
+      all.forEach(it => [it.t, ...(it.also || [])].forEach(t => { t = pt(it, t); counts[t] = (counts[t] || 0) + 1; }));
       if (only && !counts[only]) only = "";
-      const list = only ? all.filter(it => L.isType(it, only)) : all;
+      const list = only ? all.filter(it => /^pid:/.test(only) ? it.t === "pid" && pt(it, "pid") === only : L.isType(it, only)) : all;
       hits = list; lastList = list;
       status(all.length ? `Results <b>${(only ? list.length : all.length).toLocaleString()}</b>` : "");
-      const types = TYPE_ORDER.filter(t => counts[t]);
+      const types = TYPE_ORDER.flatMap(t => t === "pid" ? DKIND.map(([k]) => "pid:" + k).filter(k => counts[k]) : counts[t] ? [t] : []);
+      const PILL = Object.assign({}, PILL0, Object.fromEntries(DKIND.map(([k]) => ["pid:" + k, kindL(k, 2)])));
       // desktop: as the Assets front page, the asset types down the left (a band over each column) and the results on the right
       if (!PHONE() && types.length){ status("");
         body.innerHTML = `<div class="lk-sr"><div class="lk-fc"><div class="bw-band">Asset type</div><div class="lk-fo"><button class="bw-o lk-pill${only ? "" : " on"}" data-t=""><em>All</em> <span>(${all.length.toLocaleString()})</span></button>${types.map(t => `<button class="bw-o lk-pill${only === t ? " on" : ""}" data-t="${t}"><em>${esc(PILL[t] || typeName(t))}</em> <span>(${counts[t].toLocaleString()})</span></button>`).join("")}</div></div>` +

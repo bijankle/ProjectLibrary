@@ -16,7 +16,7 @@ window.SourcesList = (() => {
   const PRIV = "bijankle/ProjectLibraryPrivate";   // the private repository: Ref Only files dropped back in land in its inbox/refonly for Claude to digest   // the GitHub repository the app is served from and uploads to (one home: Help → API keys shows it)
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const mb = b => { const v = (b || 0) / 1e6; return v === 0 ? "0" : v < 1 ? String(+v.toFixed(2)) : v < 10 ? String(+v.toFixed(1)) : String(Math.round(v)); };
-  const TYPES = [["pid", "P&IDs"], ["pfd", "PFDs"], ["bfd", "BFDs"], ["sld", "SLDs"], ["tld", "TLDs"], ["scm", "Schematics"], ["list", "Lists"], ["report", "Reports"], ["spec", "Specs"], ["dwg", "Drawings"], ["other", "Other"]];
+  const TYPES = [["pid", "P&IDs"], ["pfd", "PFDs"], ["bfd", "BFDs"], ["sld", "SLDs"], ["tld", "TLDs"], ["scm", "Schematics"], ["list", "Lists"], ["report", "Reports"], ["spec", "Specs"], ["dsh", "Datasheets"], ["phl", "Philosophies"], ["dcr", "Design criteria"], ["dwg", "Drawings"], ["other", "Other"]];
   const TN = Object.fromEntries(TYPES);
   // area names for the area pills: the glossary's F codes, first part only ("F13 Milling & Classification")
   const AREA = { F00: "General site", F10: "Primary crushing 1", F12: "Primary crushing", F13: "Milling", F14: "Gravity & ILR", F15: "Mt Charlotte reclaim", F16: "Rougher flotation",
@@ -60,7 +60,7 @@ window.SourcesList = (() => {
     // a drawing that is also a source document (the PDC, the plant layout) joins that document's row
     const JOIN = { "2000-F00-DCR-PR-10002": "pdc", "2000-F00-DRG-GE-20001": "layout" };
     Object.entries(P.pids || {}).forEach(([k, d]) => { if (JOIN[k]) return;
-      const t = /-PID-/.test(k) ? "pid" : /-SLD-/.test(k) ? "sld" : /-TLD-/.test(k) ? "tld" : /-SCM-/.test(k) ? "scm" : /-PFD-/.test(k) ? "pfd" : /-BLK-/.test(k) ? "bfd" : "dwg", area = k.split("-")[1];
+      const t = /-PID-/.test(k) ? "pid" : /-SLD-/.test(k) ? "sld" : /-TLD-/.test(k) ? "tld" : /-SCM-/.test(k) ? "scm" : /-PFD-/.test(k) ? "pfd"   : /-BLK-/.test(k) ? "bfd" : /-DSH-/.test(k) ? "dsh" : /-PHL-/.test(k) ? "phl" : /-DCR-/.test(k) ? "dcr" : "dwg", area = k.split("-")[1];
       out.push({ k, t, number: k, title: d.title || "", rev: d.rev || "", date: d.date || "", area, pdf: d.file, size: d.size, keep: [d.file].concat(Object.keys(off.sz || {}).filter(f => f.startsWith(d.file + ".p"))), tsf: !!d.proj_src, ik: k, revs: d.revs || [] }); });   // (with its sheet pictures)
     const KIND = { List: "list", Report: "report", Specification: "spec", Drawing: "dwg", Reference: "other" };
     Object.entries(meta).forEach(([k, v]) => {

@@ -133,6 +133,6 @@ window.Pid = (() => {
       const go = () => seen.forEach(f => { fetch(f).catch(() => {}); fetch(f + ".p1.png").catch(() => {}); }); window.requestIdleCallback ? requestIdleCallback(go, { timeout: 4000 }) : setTimeout(go, 1500); });
     return true;
   }
-  const kind = n => /-PFD-/.test(n) ? "PFD" : /-SLD-/.test(n) ? "SLD" : /-TLD-/.test(n) ? "TLD" : /-SCM-/.test(n) ? "Schematic" : /-BLK-/.test(n) ? "Block diagram" : "P&ID";
+  const kind = n => /-PFD-/.test(n) ? "PFD" : /-SLD-/.test(n) ? "SLD" : /-TLD-/.test(n) ? "TLD" : /-SCM-/.test(n) ? "Schematic" : /-BLK-/.test(n) ? "Block diagram" : /-DSH-/.test(n) ? "Datasheet" : /-PHL-/.test(n) ? "Philosophy" : /-DCR-/.test(n) ? "PDC" : /-PID-/.test(n) ? "P&ID" : "Drawing";
   return { load, short, printedOn, ready: () => !!IX, has: n => !!(IX && key(n)), info, label, open, kind, refs, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
 })();
