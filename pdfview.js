@@ -299,8 +299,9 @@ window.PdfView = (() => {
     // (desktop: the zoom as a slider across the panel's top row, the same setting)
     const z2 = tb.querySelector(".sp-trz2"); z2.oninput = () => { zs.value = z2.value; zSave(); };
     tb.querySelectorAll("[data-zh]").forEach(b => b.onclick = () => { zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.zh)); zSave(); });
-    tb.querySelector(".sp-tro").onclick = () => trOpen();
-    tb.querySelectorAll(".sp-trnx").forEach(x => x.onclick = e => { const b = e.target.closest("button"); if (b) trGo(TR && TR.nb[+b.dataset.i]); });
+    tb.querySelector(".sp-tro").onclick = () => EQ ? eqOpen() : trOpen();
+    tb.querySelectorAll(".sp-trnx").forEach(x => x.onclick = e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.back){ if (EQ && EQ.from) lnGo(EQ.from.label); return; } trGo(TR && TR.nb[+b.dataset.i]); });
+    tb.querySelector(".sp-trc").addEventListener("click", e => { const b = e.target.closest(".eqo"); if (!b) return; e.stopPropagation(); if (b.dataset.eq) eqGo(b.dataset.eq, null); else if (b.dataset.ln) lnGo(b.dataset.ln); });
     tb.querySelector(".sp-tra").oninput = () => trView();
     return V;
   }
@@ -353,7 +354,7 @@ window.PdfView = (() => {
     // refs: the references printed on the sheet ([page, left, top, width, height, target, kind] in 1/10000 of the sheet,
     // a promise), each a tappable box; onRef(target, kind) acts on a tap.
     V.sheet.classList.add("sp-wait"); V.refs = []; V.refsEl.innerHTML = ""; V.trl.innerHTML = ""; pickClose(); V.tap = o._pop && o._tap || null; V.tapEl.innerHTML = "";
-    V.fit = false; V.fq = ""; V.fset = new Set(); V.fmatch = []; V.fstep = -2;
+    V.fit = false; V.fq = ""; V.fset = new Set(); V.fmatch = []; V.fstep = -2; V.sheet.classList.remove("sp-finding");   // (the last sheet's find gone with it, or every label here showed as found)
     // (the boxes are laid out once this document's page is in: until then V.pg is the last one's, or none)
     const me = cur; if (cur.refs) Promise.resolve(cur.refs).then(a => new Promise(ok => V.pgFor === me ? ok(a) : (V.afterPage = () => ok(a)))).then(a => { if (cur !== me) return; V.refs = a || [];
       V.fit = V.refs.some(r => typeof r[7] === "string");
@@ -379,6 +380,7 @@ window.PdfView = (() => {
     if (cur === me && REG.get(curId) && !REG.get(curId).snap){ REG.get(curId).snap = state(); REG.get(curId).at = REG.get(curId).snap; }
     if (!o._pop && cur.back != null) arrive(me);
     if (!o._pop && trPend) trArrive(me, cur.back); else trPend = null;
+    if (!o._pop && eqPend) eqArrive(me); else eqPend = null;
     if (o._pop || o.restore) trResume(me);   // (back to a drawing left for a traced line's page: the trace as it was)
   }
   // arrived through a continuation: the red arrow on the ribbon pointing back to the drawing you came from (cur.back,
@@ -417,6 +419,43 @@ window.PdfView = (() => {
   // number again also opens the line's page. A ribbon tapped takes the
   // trace on to the next sheet: the line that ribbon carries on lights up, the slider at the ribbon's end.
   const LN = {}; let TR = null, trPend = null;
+  // ---- the equipment stop (as on the desktop, viz.js): a line's end at a tundish, a box, a pump offers it on the strip;
+  // picked, the sheet centres on it at the zoom you have and the strip names it, the line come in on (back) and where
+  // the process goes next (the Smart PFD's next equipment; the lines leaving it where the PFD has none). Its page from
+  // the strip's Asset button ----
+  let EQ = null, EF = null, eqPend = null; const efP = fetch("equip-flow.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(j => EF = j);
+  const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  function eqBox(tag){ const t = nk(tag); return V.refs.findIndex(r => r[0] === V.page && r[6] === "mel" && String(r[5]).split("|").some(x => nk(x) === t)); }
+  function eqShow(tag, from){ const e = (EF && EF[tag]) || {}, bi = eqBox(tag), tb = V.tb, tk = tb.querySelector(".sp-trtk");
+    if (TR){ TR = null; drawTrace(); drawFl(); }
+    EQ = { tag, from, bi }; tb.classList.add("eqm"); tb.classList.toggle("dk", desk()); tb.classList.toggle("hz", !desk()); tb.hidden = false; V.el.classList.add("tracing");
+    tb.querySelector(".sp-trn").innerHTML = `${esc(tag)} <span class="eqn">${esc(e.n || "")}</span>`; tb.querySelectorAll(".sp-trln span").forEach(x => x.textContent = "");
+    { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = false; }
+    const nx = (e.nx || []).map(t => `<button type="button" class="eqo eqe" data-eq="${esc(t)}">${esc(t)}<small>${esc((EF[t] || {}).n || "")}</small></button>`);
+    const go = desk() ? [...nx, ...(e.out || []).map(l => `<button type="button" class="eqo" data-ln="${esc(l)}">${esc(l)}</button>`)]
+      : nx.length ? nx : (e.out || []).map(l => `<button type="button" class="eqo" data-ln="${esc(l)}">${esc(l)}</button>`);   // (phone: the process flow only)
+    tb.querySelector(".sp-trc").innerHTML = go.length ? `<div class="eqs"><b>Next</b>${go.join("")}</div>` : `<div class="eqs"><i>Nothing further on the lists from ${esc(tag)}</i></div>`;
+    tb.querySelector(".sp-trnx.l").innerHTML = from ? `<button type="button" data-back="1" title="Back to ${esc(from.label)}">${esc(from.label.split("-")[1] || from.label)}</button>` : "";
+    tb.querySelector(".sp-trnx.r").innerHTML = ""; tk.style.paddingTop = tk.style.paddingBottom = "";
+    if (bi >= 0){ const b = boxOf(V.refs[bi]); V.tap = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; drawTap(); centreOn((b[0] + b[2] / 2) / 1e4, (b[1] + b[3] / 2) / 1e4); } }
+  // to equipment: here when this sheet has it, else the sheet that does (the zoom carried over)
+  function eqGo(tag, from){ if (eqBox(tag) >= 0) return eqShow(tag, from);
+    Promise.resolve(window.Pid && Pid.refs ? Pid.refs() : {}).then(R => { const t = nk(tag), area = String(tag).split("-")[0];
+      const ds = ((EF && EF[tag] || {}).d || []).filter(x => (R[x] || []).some(r => r[6] === "mel" && String(r[5]).split("|").some(y => nk(y) === t)));
+      const to = ds.sort((a, b) => (b.split("-")[1] === area) - (a.split("-")[1] === area))[0]; if (!to || !cur.onRef) return;
+      eqPend = { tag, z: V.zoom, at: Date.now() }; cur.onRef(to, "dwg", null, null); }); }
+  async function eqArrive(me){ const p = eqPend; eqPend = null; if (!p || Date.now() - p.at > 15000) return;
+    for (let n = 0; n < 60 && cur === me && !(V.pgFor === me && V.refs && V.refs.length); n++) await new Promise(ok => setTimeout(ok, 150));
+    if (cur !== me) return; await efP; const bi = V.refs.findIndex(r => r[6] === "mel" && String(r[5]).split("|").some(x => nk(x) === nk(p.tag))); if (bi < 0) return;
+    if (V.page !== V.refs[bi][0]){ await go(V.refs[bi][0], true); if (cur !== me) return; }
+    V.zoom = p.z || V.zoom; layout(false); eqShow(p.tag, null); sharp(); }
+  // to a line from the equipment: flown here when this sheet has it, else on the sheet that does
+  async function lnGo(lab){ const D = await linesFor(cur.number), k = V.refs.findIndex((r, i) => r[0] === V.page && r[6] === "line" && String(r[5]).split("|")[0] === lab && D[i]);
+    EQ = null; V.tb.classList.remove("eqm");
+    if (k >= 0){ const b = boxOf(V.refs[k]); trace(k, null, [b[0] / 1e4, b[1] / 1e4, b[2] / 1e4, b[3] / 1e4]); return; }
+    const R = await Promise.resolve(window.Pid && Pid.refs ? Pid.refs() : {}), to = Object.keys(R).find(x => /-PID-/.test(x) && x !== cur.number && R[x].some(r => r[6] === "line" && String(r[5]).split("|")[0] === lab));
+    if (to && cur.onRef){ trPend = { at: Date.now(), label: lab, dir: 1, from: cur.number }; cur.onRef(to, "dwg", null, null); } }
+  function eqOpen(){ if (!EQ || !cur.onRef) return; const r = V.refs[EQ.bi], b = r ? boxOf(r) : null; cur.onRef(EQ.tag, "tag", null, b ? { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 } : null); }
   const LNR = {}, linesFor = n => LN[n] || (LN[n] = fetch("lines/" + n + ".json").then(r => r.ok ? r.json() : {}).then(d => LNR[n] = d).catch(() => { delete LN[n]; return {}; }));
   // a process pipe with no line number ("u<n>", tools/link_pipes.py: 1200-MECH-CERAMIC from a hopper to its pump) stands
   // in for a line: a ref made from its label and where that sits ([page, x, y, w, h, label, "line", , "u"])
@@ -608,7 +647,8 @@ window.PdfView = (() => {
   // (the trace kept when its line's page is opened, so Back to the drawing puts it back as it was: the line, where on it,
   // the zoom; in this tab's session storage too, should the page reload in between)
   const TRK = "kcgm_trres";
-  function trOpen(){ if (!TR || !cur.onRef || TR.r[8] === "u") return;   // (an unnumbered pipe has no page of its own) const r = TR.r, b = TR.box, TR0 = TR;
+  // (an unnumbered pipe has no page of its own)
+  function trOpen(){ if (!TR || !cur.onRef || TR.r[8] === "u") return; const r = TR.r, b = TR.box, TR0 = TR;
     const keep = { n: TR.n, k: TR.k, f: trF(), as: typeof TR.k === "string" ? TR.label : null, box: b || null, at: Date.now() };
     try { sessionStorage.setItem(TRK, JSON.stringify(keep)); } catch (e) {}
     trEnd(); if (r[6] === "d"){ const lb = TR0.D.lb && TR0.D.lb[TR0.k]; if (lb) cur.onRef(lb, "tag", null, null); else cur.onRef(r[5], "dwg", r[7], null); return; }
@@ -630,7 +670,7 @@ window.PdfView = (() => {
     if (trPop){ trPop = false; e.stopImmediatePropagation(); return; }   // (the step taken off by ✕)
     // (not the viewer's own steps as a trace is put back, Back to the drawing: the moment after it starts)
     if (TR && Date.now() - (TR.t0 || 0) > 1500 && !(history.state && history.state.tr)){ e.stopImmediatePropagation(); trEnd(true); } }, true);
-  function trEnd(fromPop){ if (!TR && V.tb.hidden) return; TR = null;
+  function trEnd(fromPop){ if (!TR && V.tb.hidden) return; TR = null; if (EQ){ EQ = null; V.tb.classList.remove("eqm"); }
     // (✕ takes the trace's history step off again; the other ways out, opening something, leave it as a plain step)
     if (history.state && history.state.tr){ if (fromPop === "x"){ trPop = true; history.back(); } else if (!fromPop){ const st = Object.assign({}, history.state); delete st.tr; history.replaceState(st, ""); } } V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); drawTrace(); drawFl(); cxFit(); }
   // desktop: the wheel runs the view along the line (down: downstream) and Ctrl + wheel zooms. Free-spinning wheels (MX
@@ -688,11 +728,15 @@ window.PdfView = (() => {
       if (em){ const k2 = V.refs.findIndex((r, i) => r[0] === TR.page && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
     if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(TR.k) || !V.refs[+j]) return; const r = V.refs[+j], d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
       if (d < 300) out.push({ rb: +j, d, dir, seq: String(r[5]).split("|")[0].replace(/^2000-/, "").replace(/-PID-PR-/, "-") }); });
-    return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb) === i).slice(0, 2); }
+    // (the line list's To / From at this end, equipment drawn on this sheet: a stop on the way)
+    { const li = window.Lookup && Lookup.find && Lookup.find(nk(TR.label), "line"), et = li && String(Lookup.get(li, dir > 0 ? "To" : "From") || "").trim();
+      if (et && EF && EF[et] && eqBox(et) >= 0) out.push({ eq: et, d: 5, seq: et }); }
+    return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb && x.eq === o.eq) === i).slice(0, 2); }
   function trNx(){ TR.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = V.tb.querySelector(".sp-trnx." + side), L = trNbs(dir); TR[dir < 0 ? "nbL" : "nbR"] = L;
     c.classList.toggle("two", L.length > 1);
-    c.innerHTML = L.map(o => { TR.nb.push(o); return `<button type="button" data-i="${TR.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.rb != null ? "sheet " + o.seq : String(refK(o.k)[5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
+    c.innerHTML = L.map(o => { TR.nb.push(o); return `<button type="button" data-i="${TR.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.eq ? "equipment " + o.eq : o.rb != null ? "sheet " + o.seq : String(refK(o.k)[5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
   function trGo(nb){ if (!nb) return;
+    if (nb.eq) return eqGo(nb.eq, { k: TR.k, label: TR.label });
     if (nb.rb != null){ const r = V.refs[nb.rb]; trPend = { at: Date.now(), label: TR.label, dir: nb.dir || 1, from: cur.number }; cur.onRef && cur.onRef(r[5], "dwg", r[7], null); return; }
     const b = boxOf(refK(nb.k)), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap();
     trace(nb.k, nb.pt, [bx.l, bx.t, bx.w, bx.h]); }

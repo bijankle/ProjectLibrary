@@ -36,6 +36,9 @@ window.AssetViz = (() => {
   // a line being flown through on the drawing (kept while the item on the left changes, the sheet staying), and one
   // asked for on the next sheet (an arrow at the end of the line strip, into a continuation)
   let TRV = null, TRP = null;
+  // the equipment the fly through strip stopped at, kept while its page opens on the left (EQV), and where the process
+  // goes from each piece of equipment (equip-flow.json, tools/build_equip_flow.py)
+  let EQV = null, EF = null; const efP = fetch("equip-flow.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(j => EF = j);
   const bboxP = fetch("sheet-bbox.json").then(r => r.ok ? r.json() : {}).catch(() => ({}));
   const ORD = new Intl.Collator(undefined, { numeric: true });
   const nk = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -48,7 +51,7 @@ window.AssetViz = (() => {
     // (a kept view waits for the item it was kept for: closing the full screen viewer steps back through the one before)
     if (keepView && keepView.key && nk(keepView.key) !== nk(it.key)){ cur = it; return; }
     const kv = keepView && (own.includes(keepView.n) || keepView.tap || keepView.force) ? keepView : null; keepView = null;
-    if (!kv) TRV = null;   // (an item picked on the left, not from the drawing: its drawing afresh, no fly through)
+    if (!kv){ TRV = null; EQV = null; }   // (an item picked on the left, not from the drawing: its drawing afresh, no fly through)
     cur = it; shown = kv ? kv.n : null; hist = []; lastSig = ""; held = kv; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
   function list(){}
   // Back to an item: its drawing as it was left (index.html keeps it with the history step)
@@ -197,7 +200,7 @@ window.AssetViz = (() => {
           // (force: a line traced from the sheet text alone, no label box to mark: the sheet kept as it is)
           keepView = { n, z, tx, ty, tap: boxes[refsNow.indexOf(flRefs[hit.k])] || null, force: typeof hit.k === "string" }; if (window.kcgmOpenTag) kcgmOpenTag(hit.label); setTimeout(() => { keepView = null; }, 2000); return; } }
       // (the bare sheet: out of the fly through, or back to every fluid in colour, the drawing as it is)
-      if (!a && T){ e.stopPropagation(); trEnd(); return; }
+      if (!a && (T || EQ)){ e.stopPropagation(); trEnd(); return; }
       if (!a && flPick){ e.stopPropagation(); flPickSet(null); return; }
       if (!a && hiB){ e.stopPropagation(); hiB = null; flDraw(); return; }
       // (an empty part of the sheet, an asset's page showing: the drawing's own page, the sheet left as it is)
@@ -307,7 +310,8 @@ window.AssetViz = (() => {
       TRV = { n: d.number, k, f, as: T.label }; T.fit = true;   // (each fly through opens on the whole line)
       tb.querySelector(".sp-trn").textContent = T.label; sl.value = Math.round(f * 1000); zs.value = trZ();
       { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = noPage(k); } tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDraw(); trMarks(); view(); return true; }
-    function trEnd(){ if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
+    function trEnd(){ if (EQ){ EQ = null; EQV = null; tb.classList.remove("eqm"); if (!T){ tb.hidden = true; pick(() => false); return; } }
+      if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
     // the view: a fly through starts on the whole line (zoomed to its extent, a margin round it); after that a zoom
     // (slider, Ctrl + wheel) centres on where you are, and moving along only pans once the marker nears the edge
     function view(){ if (!T) return; const f = sl.value / 1000; TRV.f = f; const vw = box.clientWidth / kf, vh = box.clientHeight / kf;
@@ -381,13 +385,16 @@ window.AssetViz = (() => {
         if (em){ const k2 = flRefs.findIndex((r, i) => r[0] === 1 && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
       if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(T.k) || !flRefs[+j]) return; const r = flRefs[+j], dd = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
         if (dd < 300) out.push({ rb: +j, d: dd, dir, seq: String(r[5]).split("|")[0] }); });
+      // (the line list's To / From at this end, equipment drawn on this sheet: a stop on the way)
+      { const li = window.Lookup && Lookup.find(nk(T.label), "line"), et = li && String(Lookup.get(li, dir > 0 ? "To" : "From") || "").trim();
+        if (et && EF && EF[et] && eqBox(et) >= 0) out.push({ eq: et, d: 5, seq: et }); }
       // (nothing on: the line ends at a piece of equipment, an arrow to its page)
       if (!out.length){ const em = T.m.find(m => (dir > 0 ? m[0] >= .97 : m[0] <= .03) && m[1] === "e" && m[2]); if (em) out.push({ eq: em[2], d: 0, seq: em[2] }); }
       return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb && x.eq === o.eq) === i).slice(0, 2); }
     function trNx(){ T.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = tb.querySelector(".sp-trnx." + side), Lb = trNbs(dir); T[dir < 0 ? "nbL" : "nbR"] = Lb; c.classList.toggle("two", Lb.length > 1);
       c.innerHTML = Lb.map(o => { T.nb.push(o); return `<button type="button" data-i="${T.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.eq ? "equipment " + o.eq + " (opens its page)" : o.rb != null ? "sheet " + o.seq : String(refV(o.k)[5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
     function trGo(nb){ if (!nb || !T) return;
-      if (nb.eq){ if (window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: null, force: true }; kcgmOpenTag(nb.eq); setTimeout(() => { keepView = null; }, 2000); } return; }
+      if (nb.eq) return eqGo(nb.eq, { k: T.k, label: T.label });
       if (nb.rb != null){ const t = String(flRefs[nb.rb][5]).split("|")[0]; if (!Pid.has(t)) return; TRP = { at: Date.now(), label: T.label, dir: nb.dir || 1, from: d.number }; TRV = null;
         arrival = { to: t, back: null }; if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); return; }
       trStart(nb.k, nb.pt); }
@@ -400,6 +407,37 @@ window.AssetViz = (() => {
       if (k == null && tp.label){ const C = flRefs.map((r, i) => i).filter(i => flRefs[i][0] === 1 && flRefs[i][6] === "line" && String(flRefs[i][5]).split("|")[0] === tp.label && flD[i]); k = C[0]; rbr = flRefs[bk[0]]; }
       if (k == null) return false; const P = flD[k], end = rbr ? [rbr[1] + rbr[3] / 2, rbr[2] + rbr[4] / 2] : (tp.dir < 0 ? P[P.length - 1] : P[0]);
       return trStart(k, end, 0, tp.label); }
+    // ---- the equipment stop: a line's end at a tundish, a box, a pump. The sheet centred on it (the zoom kept) and its
+    // page on the left; the strip names it, the line come in on to go back to, and where to go on: everything connected
+    // (the next equipment in the process, from the Smart PFD, and every line the line list has leaving it) ----
+    let EQ = null;
+    function eqBox(tag){ const t = nk(tag); return refsNow.findIndex(r => r[6] === "mel" && String(r[5]).split("|").some(x => nk(x) === t)); }
+    function eqCentre(bi){ const b = boxes[bi]; if (!b) return; const vw = box.clientWidth / kf, vh = box.clientHeight / kf;
+      tx = vw / 2 - (b[0] + b[2] / 2) / 1e4 * W * z; ty = vh / 2 - (b[1] + b[3] / 2) / 1e4 * H * z; apply(); }
+    function eqShow(tag, from){ const e = (EF && EF[tag]) || {}, bi = eqBox(tag);
+      if (T){ T = null; TRV = null; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
+      EQ = { tag, from }; tb.classList.add("eqm"); tb.hidden = false;
+      tb.querySelector(".sp-trn").innerHTML = `${esc(tag)} <span class="eqn">${esc(e.n || "")}</span>`;
+      { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = true; }
+      const go = [...(e.nx || []).map(t => `<button type="button" class="eqo eqe" data-eq="${esc(t)}" title="Next in the process: ${esc((EF[t] || {}).n || t)}">${esc(t)}<small>${esc((EF[t] || {}).n || "")}</small></button>`),
+        ...(e.out || []).map(l => `<button type="button" class="eqo" data-ln="${esc(l)}" title="Line leaving ${esc(tag)}">${esc(l)}</button>`)];
+      tb.querySelector(".sp-trc").innerHTML = go.length ? `<div class="eqs"><b>Next</b>${go.join("")}</div>` : `<div class="eqs"><i>Nothing further on the lists from ${esc(tag)}</i></div>`;
+      tb.querySelector(".sp-trnx.l").innerHTML = from ? `<button type="button" data-back="1" title="Back to ${esc(from.label)}">${esc(from.label)}</button>` : "";
+      tb.querySelector(".sp-trnx.r").innerHTML = ""; tb.querySelector(".sp-trtk").style.paddingBottom = "";
+      if (bi >= 0){ pick(i => i === bi); eqCentre(bi); } }
+    // to equipment: here on this sheet, else the sheet that has it; its page opens on the left, the zoom as it is
+    function eqGo(tag, from){ let bi = eqBox(tag); const zz = z; TRV = null;
+      if (bi >= 0){ const b = boxes[bi], vw = box.clientWidth / kf, vh = box.clientHeight / kf;
+        EQV = { n, tag, from, z: zz }; keepView = { n, z: zz, tx: vw / 2 - (b[0] + b[2] / 2) / 1e4 * W * zz, ty: vh / 2 - (b[1] + b[3] / 2) / 1e4 * H * zz, tap: b, force: true };
+        if (window.kcgmOpenTag) kcgmOpenTag(tag); else eqShow(tag, from); setTimeout(() => { keepView = null; }, 2000); return; }
+      Pid.refs().then(R => { const ds = ((EF && EF[tag] || {}).d || []).filter(x => Pid.has(x)), area = String(tag).split("-")[0], t = nk(tag);
+        const has = x => (R[x] || []).some(r => r[6] === "mel" && String(r[5]).split("|").some(y => nk(y) === t));
+        const to = ds.filter(has).sort((a, b) => (b.split("-")[1] === area) - (a.split("-")[1] === area))[0]; if (!to) return;
+        EQV = { n: to, tag, from: null, z: zz, centre: true }; keepView = { n: to, tap: null, force: true }; if (window.kcgmOpenTag) kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); }); }
+    // to a line from the equipment: flown here when it is drawn on this sheet, else its own page (which flies it)
+    function lnGo(lab){ const k = flRefs.findIndex((r, i) => r[0] === 1 && r[6] === "line" && String(r[5]).split("|")[0] === lab && flD && flD[i]);
+      if (k >= 0){ EQ = null; EQV = null; tb.classList.remove("eqm"); trStart(k, null, 0); keepView = { n, z, tx, ty, tap: boxes[refsNow.indexOf(flRefs[k])] || null }; if (window.kcgmOpenTag) kcgmOpenTag(lab); setTimeout(() => { keepView = null; }, 2000); return; }
+      EQ = null; EQV = null; if (window.kcgmOpenTag) kcgmOpenTag(lab); }
     tb.addEventListener("click", e => { const g = e.target.closest("b.go"); if (g && T){ e.stopPropagation();
       // (an asset named on the strip: out of the fly through, the asset opened with its box on this sheet marked)
       if (g.dataset.g){ const tag = g.dataset.g, bi = refsNow.findIndex(r => r[0] === 1 && String(r[5]).split("|").includes(tag)); trEnd();
@@ -409,6 +447,9 @@ window.AssetViz = (() => {
       if (b.classList.contains("sp-trx")) return trEnd();
       if (b.classList.contains("sp-tro")){ if (T && !noPage(T.k) && window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: null, force: true }; kcgmOpenTag(T.label); setTimeout(() => { keepView = null; }, 2000); } return; }
       if (b.dataset.zh){ zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.zh)); try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} view(); return; }
+      if (b.dataset.eq) return eqGo(b.dataset.eq, null);
+      if (b.dataset.ln) return lnGo(b.dataset.ln);
+      if (b.dataset.back && EQ && EQ.from){ const f = EQ.from; return lnGo(f.label); }
       if (b.dataset.i != null && T) trGo(T.nb[+b.dataset.i]); });
     sl.addEventListener("input", () => view()); zs.addEventListener("input", () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} view(); });
     // the wheel along the line (a free-spinning wheel's stream of small steps each counted), Ctrl + wheel the zoom
@@ -462,6 +503,7 @@ window.AssetViz = (() => {
           // (the fly through carried on: the same sheet with another item on the left, or the next sheet reached)
           if (TRV && TRV.n === d.number){ const v = TRV; if (!trStart(v.k, v.at || null, v.at ? 0 : v.f, v.as)) TRV = null; }
           else if (TRP){ TRV = null; trArrive(); }
+          else if (EQV && EQV.n === d.number){ const v = EQV; efP.then(() => { if (g !== gen) return; if (v.centre){ z = v.z || z; } eqShow(v.tag, v.from); }); }
           // (a line's own page, opened from a list or a link: flying along it straight away, as on the phone)
           else { TRV = null; if (cur && cur.t === "line" && isPid){ const k = flRefs.findIndex((r, i) => r[6] === "line" && r[0] === 1 && String(r[5]).split("|")[0] === cur.key && flD && flD[i]); if (k >= 0) trStart(k, null, 0); } } });
         rf.innerHTML = refsNow.map(r => { const fit = r[7] === "o" || r[7] === "b";   // (fitted to the printed bubble or box: used as is, as in the full screen viewer)
