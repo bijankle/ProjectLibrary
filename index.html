@@ -1002,7 +1002,10 @@ body.searching #homeMain{display:none}
     home: () => { if (window.Browse) Browse.reset(); if (window.AssetViz) AssetViz.home(); window.scrollTo(0, 0); },
     noNav: true,
     onOpen: (it, how) => { if (window.AssetViz) AssetViz.item(it); if (!restoring && cur !== "home") show("home"); nav(how !== "step"); }, onList: () => { if (window.AssetViz) AssetViz.list(); },
-    within: v => window.Browse ? Browse.query(v) : false,   // with Browse filters set, typing narrows the filtered list
+    within: v => window.Browse ? Browse.query(v) : false,
+    // a type pill on the search results hands over to the filters (a document kind to its own filter: pid:SLD to SLDs …)
+    drill: (t, v) => { const D = { "P&ID": "pid", PFD: "pfdd", SLD: "sldd", TLD: "tldd", Schematic: "scmd", "Block diagram": "blkd", Datasheet: "dshd", Philosophy: "phld", PDC: "dcrd", Drawing: "dwgd" };
+      const bt = /^pid:/.test(t) ? D[t.slice(4)] : t; return !!(bt && window.Browse && Browse.drill && Browse.drill(bt, v)); },   // with Browse filters set, typing narrows the filtered list
     // PFD and Layout links: only for tags the Smart PFD or the layout really shows (pfd-tags.json, tools/build_pfd_tags.js)
     // the PFD item it is (or belongs to); else its area: the area's frame on the PFD, its WBS zone on the layout
     views: it => { if (!PT || (it.p === "tsf" && !PT.pfd[it.k])) return null;   // (TSF items are not on the Smart PFD or layout)
@@ -1106,7 +1109,8 @@ body.searching #homeMain{display:none}
     if (t === "quiz"){ openQuiz(); return true; }
     return false; } });
   // ⌂ (from any tab or page): Assets with no search, no filter and no item open
-  function assetsHome(){ if (window.AssetViz) AssetViz.home(); restoring = true; lk.input.value = ""; Browse.reset(); if (lk.current()) lk.close(); show("home"); restoring = false; }
+  // (the search's results cleared too, not only an item open: the front page as it opens)
+  function assetsHome(){ if (window.AssetViz) AssetViz.home(); restoring = true; lk.input.value = ""; Browse.reset(); if (lk.only) lk.only(""); lk.close(); show("home"); restoring = false; }
   // the Quiz tab opens on a card: the deck in progress, or a fresh one with the last choices
   function openQuiz(){ if (run && card) show("deck"); else start(); }
   // Learn: Quiz or Glossary (the last one used is kept)

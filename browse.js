@@ -344,10 +344,14 @@ window.Browse = (() => {
   const reset = () => { if (!path.length && !q) return; path = []; q = ""; if (lk) lk.input.value = ""; if (B) after(); };
   // the search box's text while filters are set (index.html hands it over); returns true when Browse took it
   const query = v => { q = v || ""; if (!path.length) return false; if (B){ fromN = 0; shownN = 60; draw(); } return q.trim().length >= 2; };
+  // a type picked on the search results: the filters take over from there, that type set and the search kept, so the
+  // next steps (equipment code, area …) drill down as they do with nothing searched; false for a type they don't have
+  const drill = (t, v) => { if (!TN[t] || !B) return false; q = v || ""; const hit = new Set(Lookup.search(q, 100000));
+    path = [{ f: "t", v: t, n: rows.filter(r => r.t === t && Lookup.inProj(r.it) && hit.has(r.it)).length }]; after(); return true; };
   // the filter as history keeps it (Back returns to it, also from another page)
   const getPath = () => path.map(p => ({ f: p.f, v: p.v, n: p.n }));
   // (quiet: a view put back by Back, its own search and item restored by the page, so no search of its own)
   const setPath = (p, quiet) => { path = Array.isArray(p) ? p.map(x => Object.assign({}, x)) : []; if (B){ if (path.length && (path[0].f !== "t" || !TN[path[0].v])) path = []; fromN = 0; shownN = 60; draw(quiet); } };
   const onChange = fn => { changed = fn; };
-  return { reset, query, mount, restore, fit: () => fit(), getPath, setPath, onChange, projCount: p => rows.filter(r => r.it.p === p).length };
+  return { reset, query, drill, mount, restore, fit: () => fit(), getPath, setPath, onChange, projCount: p => rows.filter(r => r.it.p === p).length };
 })();

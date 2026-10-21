@@ -717,7 +717,10 @@
       // every result, drawn only near the view (L.vlist); the page scrolls
       if (list.length) L.vlist(document.scrollingElement, body.querySelector(".lk-vl"), list.length, i => L.resultsHTML([list[i]], q).replace('data-i="0"', `data-i="${i}"`).replace('class="lk-row1', `class="lk-row1${i % 2 ? " zb" : ""}`),
         i => { ctx = lastList; open(list[i], true, "list"); }, list.map(it => it.key));
-      body.querySelectorAll(".lk-pill").forEach(b => b.onclick = () => { only = b.dataset.t; showList(inp.value); });
+      body.querySelectorAll(".lk-pill").forEach(b => b.onclick = () => { const t = b.dataset.t;
+        // (a type the page's filters know: they carry on from here, the next filter showing, as with nothing searched)
+        if (t && opts.drill){ only = ""; if (opts.drill(t, inp.value)){ status(""); body.innerHTML = ""; return; } }
+        only = t; showList(inp.value); });
     };
     // the list an item was opened from (Browse's filtered list, search results); stepping walks it. With no list (a link,
     // a drawing, a recent) it is every item of the same kind in tag order
