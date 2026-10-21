@@ -304,14 +304,21 @@ window.AssetViz = (() => {
       if (at){ let best = 1e18; for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
         const t = Math.max(0, Math.min(1, ((at[0] - x0) * A * dx + (at[1] - y0) * dy) / ll)), e2 = ((x0 + t * (x1 - x0) - at[0]) * A) ** 2 + (y0 + t * (y1 - y0) - at[1]) ** 2;
         if (e2 < best){ best = e2; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
-      TRV = { n: d.number, k, f, as: T.label };
+      TRV = { n: d.number, k, f, as: T.label }; T.fit = true;   // (each fly through opens on the whole line)
       tb.querySelector(".sp-trn").textContent = T.label; sl.value = Math.round(f * 1000); zs.value = trZ();
       { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = noPage(k); } tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDraw(); trMarks(); view(); return true; }
     function trEnd(){ if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
-    function view(){ if (!T) return; const f = sl.value / 1000; TRV.f = f;
+    // the view: a fly through starts on the whole line (zoomed to its extent, a margin round it); after that a zoom
+    // (slider, Ctrl + wheel) centres on where you are, and moving along only pans once the marker nears the edge
+    function view(){ if (!T) return; const f = sl.value / 1000; TRV.f = f; const vw = box.clientWidth / kf, vh = box.clientHeight / kf;
+      if (T.fit){ T.fit = false; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; T.P.forEach(q => { x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]); x1 = Math.max(x1, q[0]); y1 = Math.max(y1, q[1]); });
+        z = Math.max(1, Math.min(10, vw * .8 / (Math.max(20, x1 - x0) / 1e4 * W), vh * .8 / (Math.max(20, y1 - y0) / 1e4 * H))); zs.value = Math.max(0, Math.min(100, Math.log10(z) * 100));
+        tx = vw / 2 - (x0 + x1) / 2e4 * W * z; ty = vh / 2 - (y0 + y1) / 2e4 * H * z; }
+      else { const nz = Math.max(1, Math.min(10, zOf(+zs.value))), [x, y] = trAt(f), mid = () => { tx = vw / 2 - x / 1e4 * W * z; ty = vh / 2 - y / 1e4 * H * z; };
+        if (Math.abs(nz - z) > 1e-3){ z = nz; mid(); }
+        else { const sx = tx + x / 1e4 * W * z, sy = ty + y / 1e4 * H * z; if (sx < vw * .12 || sx > vw * .88 || sy < vh * .12 || sy > vh * .88) mid(); } }
       [sl, zs].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%"));
-      z = Math.max(1, Math.min(10, zOf(+zs.value))); const [x, y] = trAt(f), vw = box.clientWidth / kf, vh = box.clientHeight / kf;
-      tx = vw / 2 - x / 1e4 * W * z; ty = vh / 2 - y / 1e4 * H * z; apply(); drawTrail(); }
+      apply(); drawTrail(); }
     function drawTrail(){ if (!T) return; const s = z * kf, w = Math.max(4, Math.min(9, 3.2 * s)), tw = w * 1.35, sc = q => [q[0] / 1e4 * W, q[1] / 1e4 * H];
       const pts = P => P.map(q => sc(q).map(v => v.toFixed(1)).join(",")).join(" "), f = sl.value / 1000, at = trAt(f), [dx, dy] = sc(at), i = at[2];
       trl.setAttribute("viewBox", `0 0 ${W} ${H}`); trl.style.setProperty("--trw", w + "px");
@@ -387,7 +394,9 @@ window.AssetViz = (() => {
     // arrived on the next sheet: the line the ribbon back carries on, else the one with the same number, from that end
     function trArrive(){ const tp = TRP; TRP = null; if (!tp || Date.now() - tp.at > 20000 || !flD) return false;
       const bk = []; flRefs.forEach((r, j) => { if (r[0] === 1 && r[6] === "d" && String(r[5]).split("|").includes(tp.from)) bk.push(j); });
-      let k = null, rbr = null; const j = bk.find(j => flD.rb && flD.rb[j] != null); if (j != null && flD[flD.rb[j]]){ k = /^\d+$/.test(flD.rb[j]) ? +flD.rb[j] : flD.rb[j]; rbr = flRefs[j]; }
+      // (two ribbons back to the same sheet, side by side: the one carrying the very line number flown here comes first)
+      const rbLab = j => { const x = flD.rb && flD.rb[j]; if (x == null) return null; return /^\d+$/.test(x) ? String((flRefs[+x] || [])[5] || "").split("|")[0] : (flD.lb && flD.lb[x]) || null; };
+      let k = null, rbr = null; const same = tp.label ? bk.find(j => rbLab(j) === tp.label) : undefined, j = same != null ? same : bk.find(j => flD.rb && flD.rb[j] != null); if (j != null && flD[flD.rb[j]]){ k = /^\d+$/.test(flD.rb[j]) ? +flD.rb[j] : flD.rb[j]; rbr = flRefs[j]; }
       if (k == null && tp.label){ const C = flRefs.map((r, i) => i).filter(i => flRefs[i][0] === 1 && flRefs[i][6] === "line" && String(flRefs[i][5]).split("|")[0] === tp.label && flD[i]); k = C[0]; rbr = flRefs[bk[0]]; }
       if (k == null) return false; const P = flD[k], end = rbr ? [rbr[1] + rbr[3] / 2, rbr[2] + rbr[4] / 2] : (tp.dir < 0 ? P[P.length - 1] : P[0]);
       return trStart(k, end, 0, tp.label); }

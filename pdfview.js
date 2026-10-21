@@ -451,7 +451,7 @@ window.PdfView = (() => {
           const t = Math.max(0, Math.min(1, ((end[0] - x0) * A * dx + (end[1] - y0) * dy) / ll)), e = ((x0 + t * (x1 - x0) - end[0]) * A) ** 2 + (y0 + t * (y1 - y0) - end[1]) ** 2;
           if (e < best){ best = e; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
       TR.f0 = 0;
-      const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; tb.querySelectorAll(".sp-trln span").forEach(e => e.textContent = TR.label); V.tz.querySelector(".sp-trz").value = trZ(); tb.querySelector(".sp-tra").value = Math.round(f * 1000);
+      const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; tb.querySelectorAll(".sp-trln span").forEach(e => e.textContent = TR.label); V.tz.querySelector(".sp-trz").value = trZ(); TR.fit = true; tb.querySelector(".sp-tra").value = Math.round(f * 1000);   // (each fly through opens on the whole line, trView)
       // (the panel kept above the phone's gesture strip, the swipe along the bottom that switches apps: 64 of the screen's
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
       { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
@@ -562,10 +562,21 @@ window.PdfView = (() => {
     const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; }
   // the part of the path between two fractions along it
   function trSub(a, b){ const [xa, ya, ia] = trAt(a), [xb, yb, ib] = trAt(b); return [[xa, ya], ...TR.P.slice(ia, ib), [xb, yb]]; }
-  function trView(){ if (!TR) return; const tb = V.tb, f = trF();
+  // the view: a fly through starts on the whole line (zoomed to its extent, a margin round it); after that a zoom
+  // (slider, pinch, wheel) centres on where you are, and moving along only pans once the marker nears the edge
+  function trView(){ if (!TR) return; const f = trF(), zs = V.tz.querySelector(".sp-trz");
     trFill();
-    V.zoom = Math.max(1, Math.min(10, zOf(+V.tz.querySelector(".sp-trz").value))); V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false);
-    const [x, y] = trPt(...trAt(f)); centreOn(x / 1e4, y / 1e4); sharp(); drawTrace(); settleSoon(); }
+    const re = z => { V.zoom = z; V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false); };
+    const [x, y] = trPt(...trAt(f));
+    if (TR.fit){ TR.fit = false; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; TR.P.forEach(q => { const [a, b] = trPt(q[0], q[1]); x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, a); y1 = Math.max(y1, b); });
+      re(1); const r0 = V.body.getBoundingClientRect(), hv = viewBottom() - r0.top, sw = V.sheet.offsetWidth, sh = V.sheet.offsetHeight;
+      const z = Math.max(1, Math.min(10, V.body.clientWidth * .8 / (Math.max(20, x1 - x0) / 1e4 * sw), hv * .8 / (Math.max(20, y1 - y0) / 1e4 * sh)));
+      zs.value = Math.max(0, Math.min(100, Math.log10(z) * 100)); trFill(); re(z); centreOn((x0 + x1) / 2e4, (y0 + y1) / 2e4); }
+    else { const nz = Math.max(1, Math.min(10, zOf(+zs.value)));
+      if (Math.abs(nz - V.zoom) > 1e-3){ re(nz); centreOn(x / 1e4, y / 1e4); }
+      else { const q = V.sheet.getBoundingClientRect(), r0 = V.body.getBoundingClientRect(), b = viewBottom(), sx = q.left + x / 1e4 * q.width, sy = q.top + y / 1e4 * q.height;
+        if (sx < r0.left + r0.width * .12 || sx > r0.right - r0.width * .12 || sy < r0.top + (b - r0.top) * .12 || sy > b - (b - r0.top) * .12) centreOn(x / 1e4, y / 1e4); } }
+    sharp(); drawTrace(); settleSoon(); }
   // the trail: the part of the line from its upstream end to where you are now, like a pen's, with dashes drifting down
   // (redrawn as the slider moves: the drift's delay set from the clock, so it carries on without a restart)
   // it the way the line flows; where you are, an arrow pointing downstream (where the drawing doesn't show the flow,
@@ -696,7 +707,11 @@ window.PdfView = (() => {
     let k = null, rbr = null; const bk = [].concat(back == null ? [] : back).filter(j => typeof j === "number");
     // (a single line diagram's ribbons carry no way back: the ones on this sheet naming the sheet just left)
     if (!bk.length && tp.from) V.refs.forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").includes(tp.from)) bk.push(j); });
-    const j = bk.find(j => D.rb && D.rb[j] != null); if (j != null && D[D.rb[j]]){ k = /^\d+$/.test(D.rb[j]) ? +D.rb[j] : D.rb[j]; rbr = V.refs[j]; }
+    // (two ribbons back to the same sheet, side by side: the one carrying the very line number flown here comes first)
+    const rbLab = j => { const x = D.rb && D.rb[j]; if (x == null) return null; return /^\d+$/.test(x) ? String((V.refs[+x] || [])[5] || "").split("|")[0] : (D.lb && D.lb[x]) || null; };
+    const all = []; if (tp.from) V.refs.forEach((r, j) => { if (r[6] === "d" && String(r[5]).split("|").includes(tp.from)) all.push(j); });
+    const same = tp.label ? [...bk, ...all].find(j => rbLab(j) === tp.label) : undefined;
+    const j = same != null ? same : bk.find(j => D.rb && D.rb[j] != null); if (j != null && D[D.rb[j]]){ k = /^\d+$/.test(D.rb[j]) ? +D.rb[j] : D.rb[j]; rbr = V.refs[j]; }
     if (k == null && tp.label){ const C = V.refs.map((r, i) => i).filter(i => V.refs[i][6] === "line" && String(V.refs[i][5]).split("|")[0] === tp.label && D[i]);
       const at = bk.map(j => V.refs[j]).find(Boolean); rbr = at || null;
       const dd = i => { if (!at) return 0; const P = D[i]; return Math.min(...[P[0], P[P.length - 1]].map(q => Math.hypot(q[0] - at[1] - at[3] / 2, q[1] - at[2] - at[4] / 2))); };
@@ -1144,10 +1159,14 @@ window.PdfView = (() => {
     return ov || Math.hypot((o[0] + o[2] - b[0] - b[2]) / 2, (o[1] + o[3] - b[1] - b[3]) / 2) < h * 1.5; }
   function pulse(k){ [...V.marks.children].forEach((m, i) => m.classList.toggle("on", i === k)); }
   // scroll so a sheet point (fractions) sits in the middle of what can be seen: above the phone's find box and buttons
-  function centreOn(fx, fy){
+  // the bottom of the sheet's view on screen: above the trace strip, and on the phone above the bars over the sheet's lower part
+  function viewBottom(){
     let bottom = V.body.getBoundingClientRect().bottom; const r0 = V.body.getBoundingClientRect();
     { const tb = V.tb; if (tb && !tb.hidden && desk()){ const r = tb.getBoundingClientRect(); if (r.height) bottom = Math.min(bottom, r.top); } }   // (desktop: above the trace strip)
     if (document.documentElement.classList.contains("phone")) V.el.querySelectorAll(".sp-q, .sp-top, .sp-trb").forEach(e => { const r = e.getBoundingClientRect(); if (r.height && getComputedStyle(e).display !== "none" && r.top > r0.top + r0.height / 3) bottom = Math.min(bottom, r.top); });
+    return bottom; }
+  function centreOn(fx, fy){
+    const bottom = viewBottom(), r0 = V.body.getBoundingClientRect();
     V.body.scrollLeft = fx * V.sheet.offsetWidth - V.body.clientWidth / 2; V.body.scrollTop = fy * V.sheet.offsetHeight - (bottom - r0.top) / 2;
   }
   // step through the matches: the first Enter shows the whole sheet with all of them; each one after jumps straight
