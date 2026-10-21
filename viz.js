@@ -188,7 +188,9 @@ window.AssetViz = (() => {
       const a = refAt(e.clientX, e.clientY), dk = !document.documentElement.classList.contains("phone");
       // a line number, or the pipe itself: the fly through along it, here on this sheet, and its asset page on the left
       if (dk && isPid && a && a.dataset.k === "line"){ const lab = a.dataset.t.split("|")[0], k = flRefs.findIndex((r, i) => r[6] === "line" && r[0] === 1 && String(r[5]).split("|")[0] === lab && flD && flD[i]);
-        if (k >= 0 && !(T && T.k === k)){ flPick = null; trStart(k, null, 0); } }
+        if (k >= 0){ if (!(T && T.k === k)){ flPick = null; trStart(k, null, 0); }
+          // (its page on the left, the fly through kept: not the tag branch below, which leaves the fly through)
+          e.stopPropagation(); keepView = { n, z, tx, ty, tap: boxes[[...rfEl.children].indexOf(a)] || null }; if (window.kcgmOpenTag) kcgmOpenTag(lab); setTimeout(() => { keepView = null; }, 2000); return; } }
       if (dk && isPid && !a && !e.target.closest(".vz-tg")){ const hit = pipeAt(e.clientX, e.clientY);
         if (hit){ e.stopPropagation(); if (!(T && T.k === hit.k)){ flPick = null; trStart(hit.k, hit.at, 0, hit.label); }
           if (hit.u) return;   // (an unnumbered pipe: no item to show)
@@ -278,7 +280,7 @@ window.AssetViz = (() => {
     const tb = document.createElement("div"); tb.className = "sp-trb dk vz-trb"; tb.hidden = true;
     tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><span class="sp-trzh" title="Zoom (Ctrl + wheel)"><button type="button" data-zh="-10" aria-label="Further">−</button><span class="sp-trzhb"><input type="range" class="sp-rg sp-trz2" min="0" max="100" step="any" aria-label="Zoom"></span><button type="button" data-zh="10" aria-label="Closer">+</button><b>Zoom</b></span><button type="button" class="sp-tro" title="This line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop flying through">✕</button></div>
       <div class="sp-trrow"><div class="sp-trnx l"></div><div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="any" aria-label="Along the line"><div class="sp-trln"><span></span><span></span></div><div class="sp-trc"></div></div><div class="sp-trnx r"></div></div>`;
-    box.appendChild(tb);
+    box.after(tb);   // (under the sheet, not over it)
     const trl = document.createElementNS("http://www.w3.org/2000/svg", "svg"); trl.setAttribute("class", "sp-trl"); flSvg.after(trl);
     const sl = tb.querySelector(".sp-tra"), zs = tb.querySelector(".sp-trz2");
     const zOf = v => Math.pow(10, v / 100), trZ = () => { let v = 55; try { const x = localStorage.getItem("kcgm_trz"); if (x != null) v = +x; } catch (e) {} return v; };
@@ -308,7 +310,7 @@ window.AssetViz = (() => {
     function trEnd(){ if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
     function view(){ if (!T) return; const f = sl.value / 1000; TRV.f = f;
       [sl, zs].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%"));
-      z = Math.max(1, Math.min(10, zOf(+zs.value))); const [x, y] = trAt(f), vw = box.clientWidth / kf, vh = (box.clientHeight - tb.offsetHeight) / kf;
+      z = Math.max(1, Math.min(10, zOf(+zs.value))); const [x, y] = trAt(f), vw = box.clientWidth / kf, vh = box.clientHeight / kf;
       tx = vw / 2 - x / 1e4 * W * z; ty = vh / 2 - y / 1e4 * H * z; apply(); drawTrail(); }
     function drawTrail(){ if (!T) return; const s = z * kf, w = Math.max(4, Math.min(9, 3.2 * s)), tw = w * 1.35, sc = q => [q[0] / 1e4 * W, q[1] / 1e4 * H];
       const pts = P => P.map(q => sc(q).map(v => v.toFixed(1)).join(",")).join(" "), f = sl.value / 1000, at = trAt(f), [dx, dy] = sc(at), i = at[2];
@@ -450,7 +452,9 @@ window.AssetViz = (() => {
         flDraw().then(() => { if (g !== gen) return;
           // (the fly through carried on: the same sheet with another item on the left, or the next sheet reached)
           if (TRV && TRV.n === d.number){ const v = TRV; if (!trStart(v.k, v.at || null, v.at ? 0 : v.f, v.as)) TRV = null; }
-          else if (TRP){ TRV = null; trArrive(); } else TRV = null; });
+          else if (TRP){ TRV = null; trArrive(); }
+          // (a line's own page, opened from a list or a link: flying along it straight away, as on the phone)
+          else { TRV = null; if (cur && cur.t === "line" && isPid){ const k = flRefs.findIndex((r, i) => r[6] === "line" && r[0] === 1 && String(r[5]).split("|")[0] === cur.key && flD && flD[i]); if (k >= 0) trStart(k, null, 0); } } });
         rf.innerHTML = refsNow.map(r => { const fit = r[7] === "o" || r[7] === "b";   // (fitted to the printed bubble or box: used as is, as in the full screen viewer)
           const rb = r[6] === "d" && Array.isArray(r[8]);   // (a continuation: its ribbon's outline)
           const [l, t, w, h] = rb ? r[8] : fit ? [r[1], r[2], r[3], r[4]] : PdfView.grow(r[1], r[2], r[3], r[4], A); boxes.push([l, t, w, h]);
