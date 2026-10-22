@@ -5,7 +5,7 @@ Written to equip-flow.json:
   nx   the next main equipment in the process, from the Smart PFD's streams (pfd-data.js NODES / STREAMS, the node's
        equipment from pfd-equip.js), reagent, water and air streams left out; a node with no equipment is passed through.
        Sub equipment (a tundish on a feed box, named after it: "FLOTATION FEED BOX XANTHATE TUNDISH" on "FLOTATION FEED
-       BOX") takes its parent's.
+       BOX") takes its parent's. Off the PFD: down the line list, each line leaving it followed to the equipment it reaches.
   out / in   the line list's lines From / To it.   d   the P&IDs it is read on (contents.json, pid-refs.json).
   python3 tools/build_equip_flow.py
 """
@@ -66,9 +66,27 @@ for d, refs in REFS.items():
                 k = norm(str(r[5]).split("|")[0])
                 if d not in ON.setdefault(k, []): ON[k].append(d)
 
+# off the Smart PFD: the next equipment down the line list, each line leaving it followed (To a line: that line's To, on
+# until a piece of equipment is reached, six lines at most); a drain to grade or a sampler that names no equipment ends it
+LN0 = SD["types"]["line"]["f"][0]; LBY = {norm(l.get(LN0)): l for l in LINES}; MELN = {norm(t): t for t in MEL}
+EQ_RE = re.compile(r"\bF\d{2,3}-[A-Z]{1,4}-\d{2,4}[A-Z]?\b")
+def down(t):
+    got, todo, seen = [], [norm(l.get(LN0)) for l in LINES if norm(l.get("From")) == norm(t)], set()
+    for _ in range(6):
+        nxt = []
+        for ln in todo:
+            if ln in seen or ln not in LBY: continue
+            seen.add(ln); to = str(LBY[ln].get("To") or "")
+            eq = [MELN[norm(x)] for x in EQ_RE.findall(to) if norm(x) in MELN and norm(x) != norm(t)]
+            if eq: got += [x for x in eq if x not in got]
+            elif norm(to) in LBY: nxt.append(norm(to))
+        if not nxt: break
+        todo = nxt
+    return got
+
 E = {}
 for t, m in MEL.items():
-    pa = parent(t); nx = NX.get(t) or (NX.get(pa, []) if pa else [])
+    pa = parent(t); nx = NX.get(t) or (NX.get(pa, []) if pa else []) or down(t)
     out = [L0 for L0 in (l.get(SD["types"]["line"]["f"][0]) for l in LINES if norm(l.get("From")) == norm(t)) if L0]
     inn = [L0 for L0 in (l.get(SD["types"]["line"]["f"][0]) for l in LINES if norm(l.get("To")) == norm(t)) if L0]
     d = sorted(set(ON.get(norm(t), [])))

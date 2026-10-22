@@ -54,9 +54,12 @@ window.PdfView = (() => {
         trEnd(); if (cur && cur.onRef) cur.onRef(tag, "tag", null, bx || null); return; }
       const m = TR.m.find(q => q[1] === "t" && String(q[0]) === g.dataset.f && q[2] === g.dataset.t), k = m && teeK(m); if (k != null) trGo({ k, pt: trAt(m[0]) }); }); el.appendChild(tb);
     const cb = document.createElement("button"); cb.type = "button"; cb.className = "sp-lg"; cb.hidden = true; el.appendChild(cb);
-    // (phone: on the left, the Colours / Flow animation tick boxes always showing and the Legend under them; find and
-    // zoom extents on the right)
-    if (document.documentElement.classList.contains("phone")) requestAnimationFrame(() => { if (!V.ftk) return; const pl = document.createElement("div"); pl.className = "sp-pl"; el.appendChild(pl); pl.append(V.ftk, cb); });
+    // (phone: on the left, the Colours / Animation tick boxes always showing, then Fluids Legend (the fluid colours, popping
+    // out under the buttons) and Symbols Legend (the P&ID symbol sheet); find and zoom extents on the right)
+    if (document.documentElement.classList.contains("phone")) requestAnimationFrame(() => { if (!V.ftk) return; const pl = document.createElement("div"); pl.className = "sp-pl"; el.appendChild(pl);
+      const fb2 = document.createElement("button"); fb2.type = "button"; fb2.className = "sp-lg sp-fll"; fb2.hidden = true; fb2.textContent = "Fluids Legend";
+      fb2.onclick = e => { e.stopPropagation(); V.flpop = !V.flpop; if (V.flpop){ FL.leg = true; flLeg(FL.cnt || {}); } fb2.classList.toggle("on", !!V.flpop); cxFit(); };
+      pl.append(V.ftk, fb2, cb); });
     cb.onclick = () => cur && cur.corner && cur.corner.go();
     // (the P&ID lines chip, top left of the sheet on a phone: colour by fluid, flow animation; and the fluid legend)
     const lc = document.createElement("button"); lc.type = "button"; lc.className = "sp-lc"; lc.hidden = true;
@@ -74,7 +77,9 @@ window.PdfView = (() => {
     lp.addEventListener("change", e => { const f = e.target.dataset.f; if (!f) return; FL[f] = e.target.checked; try { localStorage.setItem(f === "c" ? "kcgm_flc" : "kcgm_flw", FL[f] ? "1" : "0"); } catch (x) {} drawFl(); });
     flg.addEventListener("click", e => { e.stopPropagation(); const row = e.target.closest("[data-fc]");
       if (row){ const c = row.dataset.fc; if (FL.pick === c) pickEnd("x"); else pick1(c); return; }
-      if (!e.target.closest(".hd")) return; FL.leg = !FL.leg; try { localStorage.setItem("kcgm_flleg", FL.leg ? "1" : "0"); } catch (x) {} flLeg(FL.cnt || {}); });
+      if (!e.target.closest(".hd")) return;
+      if (!desk()){ V.flpop = false; const b = V.el.querySelector(".sp-fll"); if (b) b.classList.remove("on"); cxFit(); return; }   // (phone: its header closes the pop out)
+      FL.leg = !FL.leg; try { localStorage.setItem("kcgm_flleg", FL.leg ? "1" : "0"); } catch (x) {} flLeg(FL.cnt || {}); });
     el.addEventListener("click", e => { if (!lp.hidden && !e.target.closest(".sp-lcp,.sp-lc")) lp.hidden = true; }, true);
     document.body.appendChild(el);
     V = { tb, tz, lc, lp, flg, ftk, fl: el.querySelector(".sp-fl"), trl: el.querySelector(".sp-trl"), cx, el, body: el.querySelector(".sp-body"), sheet: el.querySelector(".sp-sheet"), bg: el.querySelector(".sp-bg"), hi: el.querySelector(".sp-hi"), marks: el.querySelector(".sp-marks"),
@@ -1050,7 +1055,13 @@ window.PdfView = (() => {
       + (FL.leg ? `<div class="grid">${cs.map(c => `<button type="button" class="row${c === FL.pick ? " on" : ""}" data-fc="${c}" style="--c:${FLC[c]}" title="Only ${esc(FLN[c] || c)} in colour"><i class="sw" style="background:${FLC[c]}"></i><span class="cd" style="--c:${FLC[c]}">${c}</span><span class="nm">${esc(FLN[c] || "")}</span>${desk() ? `<span class="ct">${cnt[c]}</span>` : ""}</button>`).join("")}</div>` : "");
     cxFit(); }
   // (under the sheet while the tag list shows; zoomed in, at the foot over the buttons; not while a line is traced)
-  function legAt(under, sb, lim){ const g = V.flg, show = +g.dataset.n > 0 && FL.c && !TR && !V.el.hidden && !V.el.classList.contains("typing"); g.hidden = !show; tkAt(); if (!show) return 0;
+  function legAt(under, sb, lim){ const has = +V.flg.dataset.n > 0 && FL.c && !TR && !V.el.hidden && !V.el.classList.contains("typing"), fb2 = V.el.querySelector(".sp-fll");
+    if (fb2) fb2.hidden = !has;
+    // (phone: only as the Fluids Legend button's pop out, under the buttons on the left)
+    if (!desk()){ const g = V.flg, pl = V.el.querySelector(".sp-pl"), show = has && !!V.flpop && pl; g.hidden = !show; if (!show) return 0;
+      const e = V.el.getBoundingClientRect(), r = pl.getBoundingClientRect(); g.classList.add("fl"); g.classList.remove("dk"); g.style.left = Math.round(r.left - e.left) + "px"; g.style.width = ""; g.style.bottom = "";
+      g.style.top = Math.round(r.bottom - e.top + 6) + "px"; g.style.maxHeight = Math.max(80, Math.round(lim - r.bottom - 14)) + "px"; g.style.overflow = "auto"; return 0; }
+    const g = V.flg, show = has; g.hidden = !show; tkAt(); if (!show) return 0;
     const e = V.el.getBoundingClientRect(), s = V.sheet.getBoundingClientRect(); g.classList.toggle("fl", !under); g.classList.toggle("dk", desk());
     if (desk()){ const lg = V.el.querySelector(".sp-lg"), r = lg && !lg.hidden ? lg.getBoundingClientRect() : null, b = V.body.getBoundingClientRect();
       g.style.left = ""; g.style.width = ""; g.style.bottom = ""; g.style.right = Math.round(e.right - (r ? r.right : b.right - 12)) + "px"; g.style.top = Math.round((r ? r.bottom + 6 : b.top + 10) - e.top) + "px";
