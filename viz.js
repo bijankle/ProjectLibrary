@@ -316,7 +316,8 @@ window.AssetViz = (() => {
     // (slider, Ctrl + wheel) centres on where you are, and moving along only pans once the marker nears the edge
     function view(){ if (!T) return; const f = sl.value / 1000; TRV.f = f; const vw = box.clientWidth / kf, vh = box.clientHeight / kf;
       if (T.fit){ T.fit = false; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; T.P.forEach(q => { x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]); x1 = Math.max(x1, q[0]); y1 = Math.max(y1, q[1]); });
-        z = Math.max(1, Math.min(10, vw * .8 / (Math.max(20, x1 - x0) / 1e4 * W), vh * .8 / (Math.max(20, y1 - y0) / 1e4 * H))); zs.value = Math.max(0, Math.min(100, Math.log10(z) * 100));
+        // (the line's extent, then half that zoom for what is round it; never further out than the whole sheet)
+        z = Math.max(1, Math.min(10, Math.min(vw / (Math.max(20, x1 - x0) / 1e4 * W), vh / (Math.max(20, y1 - y0) / 1e4 * H)) / 2)); zs.value = Math.max(0, Math.min(100, Math.log10(z) * 100));
         tx = vw / 2 - (x0 + x1) / 2e4 * W * z; ty = vh / 2 - (y0 + y1) / 2e4 * H * z; }
       else { const nz = Math.max(1, Math.min(10, zOf(+zs.value))), [x, y] = trAt(f), mid = () => { tx = vw / 2 - x / 1e4 * W * z; ty = vh / 2 - y / 1e4 * H * z; };
         if (Math.abs(nz - z) > 1e-3){ z = nz; mid(); }

@@ -609,7 +609,8 @@ window.PdfView = (() => {
     const [x, y] = trPt(...trAt(f));
     if (TR.fit){ TR.fit = false; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; TR.P.forEach(q => { const [a, b] = trPt(q[0], q[1]); x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, a); y1 = Math.max(y1, b); });
       re(1); const r0 = V.body.getBoundingClientRect(), hv = viewBottom() - r0.top, sw = V.sheet.offsetWidth, sh = V.sheet.offsetHeight;
-      const z = Math.max(1, Math.min(10, V.body.clientWidth * .8 / (Math.max(20, x1 - x0) / 1e4 * sw), hv * .8 / (Math.max(20, y1 - y0) / 1e4 * sh)));
+      // (the line's extent, then half that zoom for what is round it; never further out than the whole sheet)
+      const z = Math.max(1, Math.min(10, Math.min(V.body.clientWidth / (Math.max(20, x1 - x0) / 1e4 * sw), hv / (Math.max(20, y1 - y0) / 1e4 * sh)) / 2));
       zs.value = Math.max(0, Math.min(100, Math.log10(z) * 100)); trFill(); re(z); centreOn((x0 + x1) / 2e4, (y0 + y1) / 2e4); }
     else { const nz = Math.max(1, Math.min(10, zOf(+zs.value)));
       if (Math.abs(nz - V.zoom) > 1e-3){ re(nz); centreOn(x / 1e4, y / 1e4); }
