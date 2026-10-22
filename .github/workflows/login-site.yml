@@ -1,0 +1,15 @@
+# Each publish here also updates the login site: tells bijankle/ProjectLibraryPrivate to rebuild and deploy it
+# (its "Deploy login site" workflow). Needs the secret PRIVATE_DISPATCH_TOKEN (a token that can write to that repository);
+# without it this does nothing.
+name: Update login site
+on: { push: { branches: [main] } }
+jobs:
+  tell:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask the private repository to deploy
+        env: { T: "${{ secrets.PRIVATE_DISPATCH_TOKEN }}" }
+        run: |
+          [ -z "$T" ] && { echo "no PRIVATE_DISPATCH_TOKEN: skipped"; exit 0; }
+          curl -fsS -X POST -H "Authorization: Bearer $T" -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/bijankle/ProjectLibraryPrivate/dispatches -d '{"event_type":"app-updated"}'
