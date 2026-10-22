@@ -287,11 +287,11 @@ window.PdfView = (() => {
       if (FL.pick && (r[6] === "line" || r[6] === "mel" || r[6] === "elec")) pickEnd();
       if (TR && r[6] !== "line" && r[6] !== "d") trEnd();   // (an instrument, equipment, a valve picked while flying: out of the fly through)   // (a fluid picked in the legend is let go: the tap works as on the plain drawing)
       if (r[6] === "line" && /-PID-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
-        if (TR && TR.k === gi && TR.n === cur.number){ trOpen(); return; }
+        if (TR && TR.ks.has(String(gi)) && TR.n === cur.number){ trOpen(gi); return; }
         linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
       // (on a single line diagram the same for a motor, heater or feeder: its supply traced, tools/build_sld_paths.py)
       if ((r[6] === "mel" || r[6] === "elec") && /-SLD-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
-        if (TR && TR.k === gi && TR.n === cur.number){ trOpen(); return; }
+        if (TR && TR.ks.has(String(gi)) && TR.n === cur.number){ trOpen(gi); return; }
         linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
       // (a continuation: zoomed in, the next sheet opens zoomed onto the way back and the line flown on; at the whole
       // sheet it opens whole too, for hopping sheet to sheet)
@@ -480,11 +480,16 @@ window.PdfView = (() => {
   const trF = () => V.tb.querySelector(".sp-tra").value / 1000;
   function trace(k, end, box, as){
     Promise.resolve(LN[cur.number]).then(D => {
-      const P = D && D[k]; if (!P || P.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height;
+      const P0 = D && D[k]; if (!P0 || P0.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height;
       // (an unnumbered continuation, "r<ribbon>": traced under the number it came with, as if that were printed on its ribbon)
       const r = /^r\d+$/.test(k) ? (q => [q[0], q[1], q[2], q[3], q[4], as || "", "line"])(V.refs[+k.slice(1)]) : refK(k, D);
-      const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
-      TR = { t0: Date.now(), D, n: cur.number, k, P, L, page: r[0], label: (D.lb && D.lb[k]) || String(r[5]).split("|")[0], r, box, m: (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]) };
+      // (on through its spec changes, one run: run())
+      const labs = k2 => { const q = String(k2) === String(k) ? r : refK(k2, D), a = []; if (D.lb && D.lb[k2]) a.push(D.lb[k2]); if (q && (String(k2) === String(k) || /^\d+$/.test(k2))) a.push(String(q[5]).split("|")[0]); return a; };
+      const RN = run(D, k, labs, A, k2 => { const q = refK(k2, D); return !!q && q[0] === r[0]; });
+      const P = RN ? RN.P : P0, L = RN ? RN.L : [0]; if (!RN) for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
+      if (RN) RN.segs.forEach(s => { s.r = String(s.k) === String(k) ? r : refK(s.k, D); });
+      TR = { t0: Date.now(), D, n: cur.number, k, P, L, page: r[0], label: (D.lb && D.lb[k]) || String(r[5]).split("|")[0], r, box, m: RN ? RN.m : (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]),
+        segs: RN && RN.segs, ks: new Set(RN ? RN.segs.map(s => String(s.k)) : [String(k)]) };
       TR.tn = new Map(TR.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, n) => [m, n + 1]));   // (tees numbered from upstream: T1, T2 …)
       { const ab = V.tb.querySelector(".sp-tro"); if (ab) ab.hidden = r[8] === "u"; }   // (no page to open)
       // the slider runs from the line's upstream end (0, where the flow arrows show it, tools/build_line_paths.py); it
@@ -494,7 +499,8 @@ window.PdfView = (() => {
         for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
           const t = Math.max(0, Math.min(1, ((end[0] - x0) * A * dx + (end[1] - y0) * dy) / ll)), e = ((x0 + t * (x1 - x0) - end[0]) * A) ** 2 + (y0 + t * (y1 - y0) - end[1]) ** 2;
           if (e < best){ best = e; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
-      TR.f0 = 0;
+      else if (RN) f = RN.segs.find(s => String(s.k) === String(k)).a;   // (a line of the run picked: from its own start)
+      TR.f0 = 0; trSeg(f);
       const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; tb.querySelectorAll(".sp-trln span").forEach(e => e.textContent = TR.label); V.tz.querySelector(".sp-trz").value = trZ(); TR.fit = true; tb.querySelector(".sp-tra").value = Math.round(f * 1000);   // (each fly through opens on the whole line, trView)
       // (the panel kept above the phone's gesture strip, the swipe along the bottom that switches apps: 64 of the screen's
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
@@ -513,10 +519,15 @@ window.PdfView = (() => {
   const short = t => String(t || "").replace(/^\d+-(?=\d{4}-)/, "");
   // milestone names kept short (a long line has many): a tee by the sequence number of the line leaving it, a valve or instrument by its number, equipment without
   // its area (PW-417), a ribbon by the sheet it goes to (F75-10002), the next line by the spec change (PE8|SS1)
+  // (on a run through spec changes: the line under the arrow named in the strip, its page the one opened)
+  function trSeg(f){ if (!TR || !TR.segs) return; const s = runAt(TR.segs, f); if (String(s.k) === String(TR.k) && s.label === TR.label) return;
+    TR.k = s.k; TR.label = s.label; TR.r = s.r; const tb = V.tb; tb.querySelector(".sp-trn").textContent = s.label; tb.querySelectorAll(".sp-trln span").forEach(e => e.textContent = s.label);
+    { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = !s.r || s.r[8] === "u"; } flDim(); }
   function trName(m){ const t = String(m[2] || "").replace(/\s+/g, "");
     if (m[1] === "t") return (String(m[2] || "").split("-")[1]) || "T" + (TR.tn.get(m) || "");   // (the branch line's sequence number, 0967; T1, T2 … where it isn't known)
     if (m[1] === "r") return t.replace(/^2000-/, "").replace(/-PID-PR-|-SLD-EL-/, "-");
-    if (m[1] === "l"){ const sp = n => (String(n || "").split("-")[3] || "?"), me = sp(TR.label), nx = sp(t); return m[0] < .5 ? nx + "|" + me : me + "|" + nx; }
+    if (m[1] === "l"){ const sp = n => (String(n || "").split("-")[3] || "?"); if (m[3]) return sp(m[3]) + "|" + sp(t);   // (a spec change part way along a run: before | after)
+      const me = sp(TR.segs ? TR.segs[m[0] < .5 ? 0 : TR.segs.length - 1].label : TR.label), nx = sp(t); return m[0] < .5 ? nx + "|" + me : me + "|" + nx; }
     if (m[1] === "s") return "end";
     if (m[1] === "p") return t.replace(/^SP-/, "");   // (a special item: SP-MC-002 shown as MC-002 under SP)
     return t.replace(/^F\d\d-(?=\d)/, "").replace(/^F\d\d-(?=[A-Z])/, ""); }
@@ -609,7 +620,7 @@ window.PdfView = (() => {
   // the view: a fly through starts on the whole line (zoomed to its extent, a margin round it); after that a zoom
   // (slider, pinch, wheel) centres on where you are, and moving along only pans once the marker nears the edge
   function trView(){ if (!TR) return; const f = trF(), zs = V.tz.querySelector(".sp-trz");
-    trFill();
+    trFill(); trSeg(f);
     const re = z => { V.zoom = z; V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false); };
     const [x, y] = trPt(...trAt(f));
     if (TR.fit){ TR.fit = false; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; TR.P.forEach(q => { const [a, b] = trPt(q[0], q[1]); x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, a); y1 = Math.max(y1, b); });
@@ -654,10 +665,10 @@ window.PdfView = (() => {
   // the zoom; in this tab's session storage too, should the page reload in between)
   const TRK = "kcgm_trres";
   // (an unnumbered pipe has no page of its own)
-  function trOpen(){ if (!TR || !cur.onRef || TR.r[8] === "u") return; const r = TR.r, b = TR.box, TR0 = TR;
+  function trOpen(gi){ const sg = TR && TR.segs && gi != null && TR.segs.find(s => String(s.k) === String(gi)), r = sg ? sg.r : TR && TR.r; if (!TR || !cur.onRef || !r || r[8] === "u") return; const b = TR.box, TR0 = TR, k0 = sg ? sg.k : TR.k;
     const keep = { n: TR.n, k: TR.k, f: trF(), as: typeof TR.k === "string" ? TR.label : null, box: b || null, at: Date.now() };
     try { sessionStorage.setItem(TRK, JSON.stringify(keep)); } catch (e) {}
-    trEnd(); if (r[6] === "d"){ const lb = TR0.D.lb && TR0.D.lb[TR0.k]; if (lb) cur.onRef(lb, "tag", null, null); else cur.onRef(r[5], "dwg", r[7], null); return; }
+    trEnd(); if (r[6] === "d"){ const lb = TR0.D.lb && TR0.D.lb[k0]; if (lb) cur.onRef(lb, "tag", null, null); else cur.onRef(r[5], "dwg", r[7], null); return; }
     cur.onRef(r[5], "tag", r[7], b || null); }
   async function trResume(me){ let t = null; try { t = JSON.parse(sessionStorage.getItem(TRK) || "null"); } catch (e) {}
     if (!t || t.n !== me.number || Date.now() - t.at > 12 * 3600e3) return;
@@ -748,12 +759,17 @@ window.PdfView = (() => {
     { const li = window.Lookup && Lookup.find && Lookup.find(nk(TR.label), "line"), et = li && String(Lookup.get(li, dir > 0 ? "To" : "From") || "").trim();
       if (et && EF && EF[et] && eqBox(et) >= 0) out.push({ eq: et, d: 5, seq: et }); }
     return out.sort((a, b) => a.d - b.d).filter((o, i, a) => a.findIndex(x => x.k === o.k && x.rb === o.rb && x.eq === o.eq) === i).slice(0, 2); }
-  function trNx(){ TR.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = V.tb.querySelector(".sp-trnx." + side), L = trNbs(dir); TR[dir < 0 ? "nbL" : "nbR"] = L;
+  // (a run through spec changes: what comes next at its ends, from the end piece as it was drawn)
+  function trEnds(dir){ if (!TR.segs) return trNbs(dir); const s = TR.segs[dir > 0 ? TR.segs.length - 1 : 0], sv = [TR.k, TR.label, TR.P, TR.m];
+    TR.k = s.k; TR.label = s.label; TR.P = s.P0; TR.m = s.m0;
+    try { return trNbs(s.rev ? -dir : dir).filter(o => o.k == null || !TR.ks.has(String(o.k))).map(o => Object.assign(o, o.rb != null ? { dir } : {}, { lab: s.label, from: s.k })); }
+    finally { [TR.k, TR.label, TR.P, TR.m] = sv; } }
+  function trNx(){ TR.nb = []; [["l", -1], ["r", 1]].forEach(([side, dir]) => { const c = V.tb.querySelector(".sp-trnx." + side), L = trEnds(dir); TR[dir < 0 ? "nbL" : "nbR"] = L;
     c.classList.toggle("two", L.length > 1);
     c.innerHTML = L.map(o => { TR.nb.push(o); return `<button type="button" data-i="${TR.nb.length - 1}" class="${o.rb != null ? "sh" : ""}${/\n/.test(o.seq) ? " sl" : ""}" title="${dir < 0 ? "Upstream" : "Downstream"}: ${esc(o.eq ? "equipment " + o.eq : o.rb != null ? "sheet " + o.seq : String(refK(o.k)[5]).split("|")[0])}">${esc(o.seq)}</button>`; }).join(""); }); }
   function trGo(nb){ if (!nb) return;
-    if (nb.eq) return eqGo(nb.eq, { k: TR.k, label: TR.label });
-    if (nb.rb != null){ const r = V.refs[nb.rb]; trPend = { at: Date.now(), label: TR.label, dir: nb.dir || 1, from: cur.number }; cur.onRef && cur.onRef(r[5], "dwg", r[7], null); return; }
+    if (nb.eq) return eqGo(nb.eq, { k: nb.from != null ? nb.from : TR.k, label: nb.lab || TR.label });
+    if (nb.rb != null){ const r = V.refs[nb.rb]; trPend = { at: Date.now(), label: nb.lab || TR.label, dir: nb.dir || 1, from: cur.number }; cur.onRef && cur.onRef(r[5], "dwg", r[7], null); return; }
     const b = boxOf(refK(nb.k)), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap();
     trace(nb.k, nb.pt, [bx.l, bx.t, bx.w, bx.h]); }
   // arrived through a ribbon tapped on the phone: the line that ribbon carries on, traced from the ribbon's end
@@ -1028,13 +1044,39 @@ window.PdfView = (() => {
         else if (segd(Q, e) < 25) add(k2, fl[k2] ? 1 : null); });   // (into its side: on from its downstream end, when known)
       (D.lk || []).forEach(([a, ea, b, eb]) => { for (const [x, ex, y, ey] of [[a, ea, b, eb], [b, eb, a, ea]]) if (String(x) === k && ex === ei && D[y]) add(String(y), 1 - ey); }); }
     return out; }
+  // a line's run through its spec changes: where a line ends at a spec break (its "next line" milestone, the line on the
+  // other side meeting that end on this sheet) the fly through carries straight on into it, as it would past a valve,
+  // the pipes joined end to end into one path, the spec change a milestone part way along ([f, "l", next, before]).
+  // D the sheet's lines, labs(k) a key's names (the one shown first), A the sheet's width over its height, ok(k) a key
+  // on this sheet. Null when the line has no spec change at either end
+  function run(D, k0, labs, A, ok){ const dist = (a, b) => Math.hypot((a[0] - b[0]) * A, a[1] - b[1]), seen = new Set([String(k0)]);
+    const mk = (k, rev) => { const P0 = D[k]; return { k: /^\d+$/.test(k) ? +k : k, P0, rev, P: rev ? P0.slice().reverse() : P0, m0: (D.m && D.m[k]) || [], label: labs(k)[0] || "" }; };
+    const segs = [mk(String(k0), false)];
+    // (on from one end of a piece: dir 1 its downstream end as flown, -1 its upstream end)
+    const nx = (s, dir) => { const fe = (dir > 0) !== s.rev, e = fe ? s.P0[s.P0.length - 1] : s.P0[0];
+      const em = s.m0.find(m => m[1] === "l" && m[2] && (fe ? m[0] >= .98 : m[0] <= .02)); if (!em) return null; let best = null;
+      Object.keys(D).forEach(k2 => { if (seen.has(k2) || !/^(\d+|u\d+)$/.test(k2) || !Array.isArray(D[k2]) || D[k2].length < 2 || !ok(k2) || !labs(k2).includes(em[2])) return;
+        const Q = D[k2], dS = dist(Q[0], e), dE = dist(Q[Q.length - 1], e), d0 = Math.min(dS, dE); if (d0 < 45 && (!best || d0 < best.d)) best = { k: k2, d: d0, n0: dS <= dE }; });
+      if (!best) return null; seen.add(best.k); return mk(best.k, dir > 0 ? !best.n0 : best.n0); };
+    for (const dir of [1, -1]){ let s = segs[dir > 0 ? segs.length - 1 : 0]; for (let n = 0; n < 12; n++){ const s2 = nx(s, dir); if (!s2) break; if (dir > 0) segs.push(s2); else segs.unshift(s2); s = s2; } }
+    if (segs.length < 2) return null;
+    const P = []; segs.forEach((s, i) => { let i0 = P.length; s.P.forEach((q, j) => { if (i && !j && dist(q, P[P.length - 1]) < 1e-6){ i0--; return; } P.push(q); }); s.i0 = i0; s.i1 = P.length - 1; });
+    const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + dist(P[i], P[i - 1])); const T = L[L.length - 1] || 1;
+    segs.forEach(s => { s.a = L[s.i0] / T; s.b = L[s.i1] / T; });
+    // (each piece's milestones along the whole run; its "next line" and "end" at a join dropped, the spec change put there)
+    const m = []; segs.forEach((s, i) => { s.m0.forEach(q => { const g = Math.max(0, Math.min(1, s.rev ? 1 - q[0] : q[0])); if ((q[1] === "l" || q[1] === "s") && ((i && g <= .03) || (i < segs.length - 1 && g >= .97))) return;
+        m.push([+(s.a + g * (s.b - s.a)).toFixed(4), ...q.slice(1)]); });
+      if (i) m.push([+((segs[i - 1].b + s.a) / 2).toFixed(4), "l", s.label, segs[i - 1].label]); });
+    return { P, L, m: m.sort((a, b) => a[0] - b[0]), segs }; }
+  // (the piece of a run at a point along it)
+  const runAt = (segs, f) => segs.find((s, i) => i === segs.length - 1 || f < (s.b + segs[i + 1].a) / 2);
   // (a line traced: the rest grey, that one in its colour, the lines it runs on into lighter)
   function flDim(){ if (!V || !V.fl) return; const tr = !!(TR && cur && TR.n === cur.number), on = tr || !!FL.pick; V.fl.classList.toggle("dim", on); V.fl.classList.toggle("pk", !tr && !!FL.pick);
-    V.fl.querySelectorAll(".sel, .nx").forEach(p => p.classList.remove("sel", "nx")); if (on) V.fl.querySelectorAll(tr ? `[data-k="${TR.k}"]` : `[data-fc="${FL.pick}"]`).forEach(p => p.classList.add("sel"));
+    V.fl.querySelectorAll(".sel, .nx").forEach(p => p.classList.remove("sel", "nx")); if (on) V.fl.querySelectorAll(tr ? [...TR.ks].map(k => `[data-k="${k}"]`).join(",") : `[data-fc="${FL.pick}"]`).forEach(p => p.classList.add("sel"));
     const hk = !on ? hiKeys() : []; if (hk.length){ V.fl.classList.add("dim"); hk.forEach(k => V.fl.querySelectorAll(`[data-k="${k}"]`).forEach(p => p.classList.add("sel")));
       const vp = V.pg.getViewport({ scale: 1 }); hk.forEach(k0 => chain(LNR[cur.number], k0, k => refK(k), vp.width / vp.height, V.page).forEach(k => V.fl.querySelectorAll(`[data-k="${k}"]:not(.fw)`).forEach(p => p.classList.add("nx")))); }
-    if (tr && V.pg){ if (!TR.ch){ const vp = V.pg.getViewport({ scale: 1 }); TR.ch = chain(TR.D, TR.k, k => refK(k, TR.D), vp.width / vp.height, TR.page); }
-      TR.ch.forEach(k => V.fl.querySelectorAll(`[data-k="${k}"]:not(.fw)`).forEach(p => p.classList.add("nx"))); }
+    if (tr && V.pg){ if (!TR.ch){ const vp = V.pg.getViewport({ scale: 1 }); TR.ch = chain(TR.D, TR.segs ? TR.segs[TR.segs.length - 1].k : TR.k, k => refK(k, TR.D), vp.width / vp.height, TR.page); }
+      TR.ch.forEach(k => !TR.ks.has(String(k)) && V.fl.querySelectorAll(`[data-k="${k}"]:not(.fw)`).forEach(p => p.classList.add("nx"))); }
     V.flg.querySelectorAll("[data-fc]").forEach(r => r.classList.toggle("on", r.dataset.fc === FL.pick)); V.flg.classList.toggle("pk", !!FL.pick); }
   // a fluid picked in the legend: its lines alone in colour, the rest grey. One browser history step, so Back (the
   // phone's swipe back), Esc or a click on the bare sheet go back to every fluid in colour
@@ -1267,7 +1309,7 @@ window.PdfView = (() => {
     const b = boxOf(V.refs[gi]), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap(); trace(gi, at || null, [bx.l, bx.t, bx.w, bx.h]); }
   // the coloured lines' settings and palette, shared with that drawing
   const flApi = { MECHC, OTHC, FLC, FLN, fluid, get: () => ({ c: FL.c, w: FL.w, leg: FL.leg }), set(f, v){ FL[f] = v; try { localStorage.setItem({ c: "kcgm_flc", w: "kcgm_flw", leg: "kcgm_flleg" }[f], v ? "1" : "0"); } catch (x) {} if (V && !V.el.hidden){ if (V.ftk){ V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w; } drawFl(); } } };
-  return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, arrows, want, fl: flApi, chain,
+  return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, arrows, want, fl: flApi, chain, run, runAt,
     saved: () => { try { return JSON.parse(sessionStorage.getItem(SSK) || "null"); } catch (e) { return null; } },
     // a tag picked from the list under the sheet: zoomed to and marked by its box (pid-refs.json), else found in the text
     find: t => { if (!V || !cur) return; fitFilter(t, true); if (V.fmatch.length){ V.fstep = -1; fitStep(1); return; } fitFilter(""); findText(t, true); }, panelOn: () => !!(V && V.cx && !V.cx.hidden && !V.el.hidden), clearMark: () => { if (V){ V.marks.innerHTML = ""; V.hits = []; V.el.querySelector(".sp-finds").hidden = true; } if (cur) cur.find = null; } };
