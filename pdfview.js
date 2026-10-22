@@ -519,6 +519,13 @@ window.PdfView = (() => {
   const short = t => String(t || "").replace(/^\d+-(?=\d{4}-)/, "");
   // milestone names kept short (a long line has many): a tee by the sequence number of the line leaving it, a valve or instrument by its number, equipment without
   // its area (PW-417), a ribbon by the sheet it goes to (F75-10002), the next line by the spec change (PE8|SS1)
+  // (phone: room under the sheet as deep as the panel over it, so the drawing scrolls up far enough for the arrow to
+  // stay above the panel even at the sheet's bottom edge; taken off when the fly through ends)
+  function trRoom(){ const pad = TR && !desk() ? Math.max(0, Math.round(V.body.getBoundingClientRect().bottom - viewBottom())) : 0, v = pad ? pad + "px" : "";
+    if (V.sheet.style.marginBottom !== v) V.sheet.style.marginBottom = v; }
+  // (phone: the strip names what is nearest the arrow first, so each tee is named as you come to it; renamed as you go)
+  let trNf = -1;
+  function trNames(f){ if (desk() || !TR || Math.abs(f - trNf) < .03) return; trNf = f; trMarks(); }
   // (on a run through spec changes: the line under the arrow named in the strip, its page the one opened)
   function trSeg(f){ if (!TR || !TR.segs) return; const s = runAt(TR.segs, f); if (String(s.k) === String(TR.k) && s.label === TR.label) return;
     TR.k = s.k; TR.label = s.label; TR.r = s.r; const tb = V.tb; tb.querySelector(".sp-trn").textContent = s.label; tb.querySelectorAll(".sp-trln span").forEach(e => e.textContent = s.label);
@@ -590,9 +597,10 @@ window.PdfView = (() => {
       const P = {}; gs.forEach(g => { let x = g.c - g.w / 2; g.n.forEach(n => { P[n] = x + wd[n] / 2; x += wd[n] + G; }); }); return P; };
     const fits = ix => ix.reduce((t, n) => t + wd[n] + G, 0) <= hi - lo;
     let keep = all.map((m, n) => n), rows;
+    // (dropped first: by kind, and how far from the arrow; a tenth of the line away counts as two ranks)
     for (;;){ if (fits(keep)){ rows = [keep, []]; break; } const a = keep.filter((n, k) => k % 2 === 0), b = keep.filter((n, k) => k % 2);
       if (fits(a) && fits(b)){ rows = [a, b]; break; }
-      const drop = [...keep].sort((p, q) => pr(all[q]) - pr(all[p]))[0]; keep = keep.filter(n => n !== drop); }
+      const fa = trF(), sc = n => pr(all[n]) + Math.abs(all[n][0] - fa) * 20, drop = [...keep].sort((p, q) => sc(q) - sc(p))[0]; keep = keep.filter(n => n !== drop); }
     const P = Object.assign({}, spread(rows[0]), spread(rows[1])), off = n => Math.abs(P[n] - all[n][0] * W);
     const dep = r => Math.max(12, Math.min(30, Math.max(0, ...r.map(off)) + 8));   // (deep enough for a 45° callout, flatter past that)
     const dB = dep(rows[0]), dA = rows[1].length ? dep(rows[1]) : 0, top = rows[1].length ? LH + dA + 2 : 4;
@@ -620,7 +628,7 @@ window.PdfView = (() => {
   // the view: a fly through starts on the whole line (zoomed to its extent, a margin round it); after that a zoom
   // (slider, pinch, wheel) centres on where you are, and moving along only pans once the marker nears the edge
   function trView(){ if (!TR) return; const f = trF(), zs = V.tz.querySelector(".sp-trz");
-    trFill(); trSeg(f);
+    trFill(); trSeg(f); trRoom(); trNames(f);
     const re = z => { V.zoom = z; V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false); };
     const [x, y] = trPt(...trAt(f));
     if (TR.fit){ TR.fit = false; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; TR.P.forEach(q => { const [a, b] = trPt(q[0], q[1]); x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, a); y1 = Math.max(y1, b); });
@@ -689,7 +697,7 @@ window.PdfView = (() => {
     if (TR && Date.now() - (TR.t0 || 0) > 1500 && !(history.state && history.state.tr)){ e.stopImmediatePropagation(); trEnd(true); } }, true);
   function trEnd(fromPop){ if (!TR && V.tb.hidden) return; TR = null; if (EQ){ EQ = null; V.tb.classList.remove("eqm"); }
     // (✕ takes the trace's history step off again; the other ways out, opening something, leave it as a plain step)
-    if (history.state && history.state.tr){ if (fromPop === "x"){ trPop = true; history.back(); } else if (!fromPop){ const st = Object.assign({}, history.state); delete st.tr; history.replaceState(st, ""); } } V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); drawTrace(); drawFl(); cxFit(); }
+    if (history.state && history.state.tr){ if (fromPop === "x"){ trPop = true; history.back(); } else if (!fromPop){ const st = Object.assign({}, history.state); delete st.tr; history.replaceState(st, ""); } } V.tb.hidden = true; V.tz.hidden = true; V.el.classList.remove("tracing"); trNf = -1; trRoom(); drawTrace(); drawFl(); cxFit(); }
   // desktop: the wheel runs the view along the line (down: downstream) and Ctrl + wheel zooms. Free-spinning wheels (MX
   // Master) and trackpads send a stream of small deltas: each counts in proportion, no steps, gathered and applied once a
   // frame, a wheel pixel moving the view one screen pixel along the pipe at the zoom shown
