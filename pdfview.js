@@ -42,7 +42,7 @@ window.PdfView = (() => {
     // phone, a line traced (trace below): its number, how far along, open its page, ✕; the zoom and along the line sliders
     const tb = document.createElement("div"); tb.className = "sp-trb"; tb.hidden = true;
     tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><span class="sp-trzh" title="Zoom (Ctrl + wheel)"><button type="button" data-zh="-10" aria-label="Further">−</button><span class="sp-trzhb"><input type="range" class="sp-rg sp-trz2" min="0" max="100" step="any" aria-label="Zoom"></span><button type="button" data-zh="10" aria-label="Closer">+</button><b>Zoom</b></span><button type="button" class="sp-tro" title="Open this line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop tracing">✕</button></div>
-      <div class="sp-trrow"><div class="sp-trnx l"></div><div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="any" aria-label="Along the line"><div class="sp-trln"><span></span><span></span></div><div class="sp-trc"></div></div><div class="sp-trnx r"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
+      <div class="sp-trrow"><div class="sp-trnx l"></div><div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="any" aria-label="Along the line"><div class="sp-trln"><span></span><span></span><button type="button" class="sp-trlb" title="Open this line's asset page"></button></div><div class="sp-trc"></div></div><div class="sp-trnx r"></div></div><div class="sp-tre"><span class="s"></span><span class="sp-trp"></span><span class="e"></span></div>`;
     // (the zoom: an upright slider on the right of the sheet, + at the top, − at the foot)
     const tz = document.createElement("div"); tz.className = "sp-trv"; tz.hidden = true;
     tz.innerHTML = `<button type="button" data-z="10" aria-label="Closer">+</button><span class="sp-trzb"><input type="range" class="sp-trz sp-rg" min="0" max="100" step="any" aria-label="Zoom"></span><button type="button" data-z="-10" aria-label="Further">−</button>`;
@@ -305,6 +305,14 @@ window.PdfView = (() => {
     const z2 = tb.querySelector(".sp-trz2"); z2.oninput = () => { zs.value = z2.value; zSave(); };
     tb.querySelectorAll("[data-zh]").forEach(b => b.onclick = () => { zs.value = Math.max(0, Math.min(100, +zs.value + +b.dataset.zh)); zSave(); });
     tb.querySelector(".sp-tro").onclick = () => EQ ? eqOpen() : trOpen();
+    // (phone: the line's name on the bar is its Asset button)
+    // (a tap opens the page; a drag across it moves along the line, as the slider under it would)
+    { const lb = tb.querySelector(".sp-trlb"), a = tb.querySelector(".sp-tra"); let st = null, drg = false;
+      lb.addEventListener("pointerdown", e => { st = { x: e.clientX, v: +a.value }; drg = false; try { lb.setPointerCapture(e.pointerId); } catch (x) {} });
+      lb.addEventListener("pointermove", e => { if (!st) return; const dx = e.clientX - st.x; if (!drg && Math.abs(dx) < 6) return; drg = true;
+        a.value = Math.max(0, Math.min(1000, st.v + dx / (a.getBoundingClientRect().width || 1) * 1000)); a.dispatchEvent(new Event("input", { bubbles: true })); });
+      lb.addEventListener("pointerup", () => { st = null; }); lb.addEventListener("pointercancel", () => { st = null; });
+      lb.onclick = e => { e.stopPropagation(); if (drg){ drg = false; return; } if (!lb.classList.contains("np")) trOpen(); }; }
     tb.querySelectorAll(".sp-trnx").forEach(x => x.onclick = e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.back){ if (EQ && EQ.from) lnGo(EQ.from.label); return; } trGo(TR && TR.nb[+b.dataset.i]); });
     tb.querySelector(".sp-trc").addEventListener("click", e => { const b = e.target.closest(".eqo"); if (!b) return; e.stopPropagation(); if (b.dataset.eq) eqGo(b.dataset.eq, null); else if (b.dataset.ln) lnGo(b.dataset.ln); });
     tb.querySelector(".sp-tra").oninput = () => trView();
@@ -434,7 +442,7 @@ window.PdfView = (() => {
   function eqShow(tag, from){ const e = (EF && EF[tag]) || {}, bi = eqBox(tag), tb = V.tb, tk = tb.querySelector(".sp-trtk");
     if (TR){ TR = null; drawTrace(); drawFl(); }
     EQ = { tag, from, bi }; tb.classList.add("eqm"); tb.classList.toggle("dk", desk()); tb.classList.toggle("hz", !desk()); tb.hidden = false; V.el.classList.add("tracing");
-    tb.querySelector(".sp-trn").innerHTML = `${esc(tag)} <span class="eqn">${esc(e.n || "")}</span>`; tb.querySelectorAll(".sp-trln span").forEach(x => x.textContent = "");
+    tb.querySelector(".sp-trn").innerHTML = `${esc(tag)} <span class="eqn">${esc(e.n || "")}</span>`; tb.querySelectorAll(".sp-trln span, .sp-trlb").forEach(x => x.textContent = "");
     { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = false; }
     const nx = (e.nx || []).map(t => `<button type="button" class="eqo eqe" data-eq="${esc(t)}">${esc(t)}<small>${esc((EF[t] || {}).n || "")}</small></button>`);
     const go = desk() ? [...nx, ...(e.out || []).map(l => `<button type="button" class="eqo" data-ln="${esc(l)}">${esc(l)}</button>`)]
@@ -491,7 +499,7 @@ window.PdfView = (() => {
       TR = { t0: Date.now(), D, n: cur.number, k, P, L, page: r[0], label: (D.lb && D.lb[k]) || String(r[5]).split("|")[0], r, box, m: RN ? RN.m : (D.m && D.m[k]) || [], fl: !!(D.fl && D.fl[k]),
         segs: RN && RN.segs, ks: new Set(RN ? RN.segs.map(s => String(s.k)) : [String(k)]) };
       TR.tn = new Map(TR.m.filter(m => m[1] === "t").sort((a, b) => a[0] - b[0]).map((m, n) => [m, n + 1]));   // (tees numbered from upstream: T1, T2 …)
-      { const ab = V.tb.querySelector(".sp-tro"); if (ab) ab.hidden = r[8] === "u"; }   // (no page to open)
+      { const ab = V.tb.querySelector(".sp-tro"); if (ab) ab.hidden = r[8] === "u"; V.tb.querySelector(".sp-trlb").classList.toggle("np", r[8] === "u"); }   // (no page to open)
       // the slider runs from the line's upstream end (0, where the flow arrows show it, tools/build_line_paths.py); it
       // starts there, or at the end by the ribbon arrived through
       let f = 0;
@@ -501,7 +509,7 @@ window.PdfView = (() => {
           if (e < best){ best = e; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
       else if (RN) f = RN.segs.find(s => String(s.k) === String(k)).a;   // (a line of the run picked: from its own start)
       TR.f0 = 0; trSeg(f);
-      const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; tb.querySelectorAll(".sp-trln span").forEach(e => e.textContent = TR.label); V.tz.querySelector(".sp-trz").value = trZ(); TR.fit = true; tb.querySelector(".sp-tra").value = Math.round(f * 1000);   // (each fly through opens on the whole line, trView)
+      const tb = V.tb; tb.querySelector(".sp-trn").textContent = TR.label; tb.querySelectorAll(".sp-trln span, .sp-trlb").forEach(e => e.textContent = TR.label); V.tz.querySelector(".sp-trz").value = trZ(); TR.fit = true; tb.querySelector(".sp-tra").value = Math.round(f * 1000);   // (each fly through opens on the whole line, trView)
       // (the panel kept above the phone's gesture strip, the swipe along the bottom that switches apps: 64 of the screen's
       // own points up, however large the app's text size makes a CSS pixel; 40 px at the default size)
       { const z = Math.min(screen.width, screen.height) / Math.min(innerWidth, innerHeight) || 1.6; tb.style.setProperty("--gb", Math.max(40, Math.round(64 / z)) + "px"); }
@@ -528,8 +536,8 @@ window.PdfView = (() => {
   function trNames(f){ if (desk() || !TR || Math.abs(f - trNf) < .03) return; trNf = f; trMarks(); }
   // (on a run through spec changes: the line under the arrow named in the strip, its page the one opened)
   function trSeg(f){ if (!TR || !TR.segs) return; const s = runAt(TR.segs, f); if (String(s.k) === String(TR.k) && s.label === TR.label) return;
-    TR.k = s.k; TR.label = s.label; TR.r = s.r; const tb = V.tb; tb.querySelector(".sp-trn").textContent = s.label; tb.querySelectorAll(".sp-trln span").forEach(e => e.textContent = s.label);
-    { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = !s.r || s.r[8] === "u"; } flDim(); }
+    TR.k = s.k; TR.label = s.label; TR.r = s.r; const tb = V.tb; tb.querySelector(".sp-trn").textContent = s.label; tb.querySelectorAll(".sp-trln span, .sp-trlb").forEach(e => e.textContent = s.label);
+    { const ab = tb.querySelector(".sp-tro"), np = !s.r || s.r[8] === "u"; if (ab) ab.hidden = np; tb.querySelector(".sp-trlb").classList.toggle("np", np); } flDim(); }
   function trName(m){ const t = String(m[2] || "").replace(/\s+/g, "");
     if (m[1] === "t") return (String(m[2] || "").split("-")[1]) || "T" + (TR.tn.get(m) || "");   // (the branch line's sequence number, 0967; T1, T2 … where it isn't known)
     if (m[1] === "r") return t.replace(/^2000-/, "").replace(/-PID-PR-|-SLD-EL-/, "-");
@@ -620,7 +628,14 @@ window.PdfView = (() => {
       if (!best || d0 < best[1]) best = [/^\d+$/.test(k) ? +k : k, d0]; }
     return best && best[0]; }
   function trFill(){ const z2 = V.tb.querySelector(".sp-trz2"); z2.value = V.tz.querySelector(".sp-trz").value;
-    [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz"), z2].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); }
+    [V.tb.querySelector(".sp-tra"), V.tz.querySelector(".sp-trz"), z2].forEach(i => i.parentNode.style.setProperty("--p", (i.value - i.min) / (i.max - i.min) * 100 + "%")); 
+    // (phone: the name button made faint and let go while the slider's knob passes under it, so the knob stays in reach)
+    { const lb = V.tb.querySelector(".sp-trlb"), a = V.tb.querySelector(".sp-tra"); if (lb && lb.offsetWidth){
+      // (the line number without its area, 0719-CON-RL1-250, made smaller till it fits the bar, down to 8 px)
+      if (lb.dataset.fit !== lb.textContent + a.offsetWidth){ const t = lb.textContent; if (/^\d+-\d{4}-/.test(t)) lb.title = t; lb.textContent = t.replace(/^\d+-(?=\d{4}-)/, ""); lb.dataset.fit = lb.textContent + a.offsetWidth;
+        lb.style.fontSize = ""; for (let fs = 10; lb.scrollWidth > lb.clientWidth && fs >= 8.5; fs -= .5) lb.style.fontSize = fs + "px"; }
+      const w = a.offsetWidth || 1, x = (a.value - a.min) / (a.max - a.min) * w;
+      lb.classList.toggle("un", Math.abs(x - w / 2) < lb.offsetWidth / 2 + 6); } } }
   function trAt(f){ const { P, L } = TR, s = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < s) i++;
     const t = L[i] > L[i - 1] ? (s - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; }
   // the part of the path between two fractions along it
@@ -628,7 +643,7 @@ window.PdfView = (() => {
   // the view: a fly through starts on the whole line (zoomed to its extent, a margin round it); after that a zoom
   // (slider, pinch, wheel) centres on where you are, and moving along only pans once the marker nears the edge
   function trView(){ if (!TR) return; const f = trF(), zs = V.tz.querySelector(".sp-trz");
-    trFill(); trSeg(f); trRoom(); trNames(f);
+    trSeg(f); trFill(); trRoom(); trNames(f);
     const re = z => { V.zoom = z; V.ox = V.oy = 0; V.sheet.style.left = V.sheet.style.top = ""; layout(false); };
     const [x, y] = trPt(...trAt(f));
     if (TR.fit){ TR.fit = false; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; TR.P.forEach(q => { const [a, b] = trPt(q[0], q[1]); x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, a); y1 = Math.max(y1, b); });
