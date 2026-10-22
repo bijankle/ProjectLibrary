@@ -214,7 +214,9 @@ window.AssetViz = (() => {
         if (zin && isPid) TRP = { at: Date.now(), label: T ? T.label : null, dir: 1, from: d.number }; TRV = null;
         if (window.kcgmOpenTag) kcgmOpenTag(t); else go(t); } return; }
       // a tag on this sheet: its item opens on the left and the sheet stays as you have it (same zoom and place), only the arrow moves
-      if (T) trEnd();   // (an instrument, equipment, a valve picked while flying along a line: out of the fly through, the sheet kept)
+      // (an instrument, equipment, a valve picked while flying along a line: picked, its page on the left, and the fly
+      // through carries on from where it is, the view as it is)
+      if (T && TRV){ TRV.keep = true; TRV.f = sl.value / 1000; }
       const tag = t.split("|")[0], bi = [...rfEl.children].indexOf(a); keepView = { n, z, tx, ty, tap: boxes[bi] || null }; if (window.kcgmOpenTag) kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); });
     // ---- coloured lines (as in the full viewer, pdfview.js: the same tick boxes, palette, legend and settings) ----
     const isPid = /-PID-/.test(d.number || ""), FLX = PdfView.fl, flTk = el.querySelector(".vz-fltk"), flLg = el.querySelector(".vz-flg"), flSvg = box.querySelector(".sp-fl");
@@ -298,7 +300,7 @@ window.AssetViz = (() => {
     const trAt = f => { const { P, L } = T, q = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < q) i++;
       const t = L[i] > L[i - 1] ? (q - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; };
     const trSub = (a, b) => { const [xa, ya, ia] = trAt(a), [xb, yb, ib] = trAt(b); return [[xa, ya], ...T.P.slice(ia, ib), [xb, yb]]; };
-    function trStart(k, at, f0, as){ const P = flD && flD[k]; if (!P || P.length < 2 || !W) return false; const A = W / H, L = [0];
+    function trStart(k, at, f0, as, keep){ const P = flD && flD[k]; if (!P || P.length < 2 || !W) return false; const A = W / H, L = [0];
       for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot((P[i][0] - P[i - 1][0]) * A, P[i][1] - P[i - 1][1]));
       const r = /^r\d+$/.test(k) ? flRefs[+String(k).slice(1)] : refV(k);
       T = { t0: Date.now(), k, P, L, label: (flD.lb && flD.lb[k]) || (/^r\d+$/.test(k) ? as || "" : String(r[5]).split("|")[0]), m: (flD.m && flD.m[k]) || [] };
@@ -307,8 +309,8 @@ window.AssetViz = (() => {
       if (at){ let best = 1e18; for (let i = 1; i < P.length; i++){ const [x0, y0] = P[i - 1], [x1, y1] = P[i], dx = (x1 - x0) * A, dy = y1 - y0, ll = dx * dx + dy * dy || 1;
         const t = Math.max(0, Math.min(1, ((at[0] - x0) * A * dx + (at[1] - y0) * dy) / ll)), e2 = ((x0 + t * (x1 - x0) - at[0]) * A) ** 2 + (y0 + t * (y1 - y0) - at[1]) ** 2;
         if (e2 < best){ best = e2; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
-      TRV = { n: d.number, k, f, as: T.label }; T.fit = true;   // (each fly through opens on the whole line)
-      tb.querySelector(".sp-trn").textContent = T.label; sl.value = Math.round(f * 1000); zs.value = trZ();
+      TRV = { n: d.number, k, f, as: T.label }; T.fit = !keep;   // (each fly through opens on the whole line; carried on past a tag picked, the view kept)
+      tb.querySelector(".sp-trn").textContent = T.label; sl.value = Math.round(f * 1000); zs.value = keep ? Math.max(0, Math.min(100, Math.log10(z) * 100)) : trZ();   // (carried on: the zoom as it is)
       { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = noPage(k); } tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDraw(); trMarks(); view(); return true; }
     function trEnd(){ if (EQ){ EQ = null; EQV = null; tb.classList.remove("eqm"); if (!T){ tb.hidden = true; pick(() => false); return; } }
       if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
@@ -377,15 +379,22 @@ window.AssetViz = (() => {
       const out = [], seq = k2 => isU(k2) ? String(D.lb[k2]) : /^r\d+$/.test(k2) ? String((D.lb && D.lb[k2]) || "continuation") : String(flRefs[k2][5]).split("|")[0];
       if (D.up || D.dn){ const j = (dir < 0 ? D.up : D.dn || {})[T.k]; if (j == null || !flRefs[j]) return [];
         return [{ rb: j, d: 0, dir, seq: String(flRefs[j][5]).split("|")[0] }]; }
-      Object.keys(D).forEach(k2 => { if ((!/^\d+$/.test(k2) && !isU(k2)) || String(k2) === String(T.k) || !refV(k2) || refV(k2)[0] !== 1) return; const Q = D[k2], dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e)), kk = isU(k2) ? k2 : +k2;
+      // (the same line traced twice, from two of its labels: the twin is this line, not a next one, and a ribbon on it is ours)
+      const lab2 = k2 => /^\d+$/.test(k2) ? (flRefs[k2] ? String(flRefs[k2][5]).split("|")[0] : null) : (D.lb && D.lb[k2]) || null;
+      const twin = new Set([String(T.k)]); Object.keys(D).forEach(k2 => { if (!/^(\d+|u\d+|r\d+)$/.test(k2) || lab2(k2) !== T.label || !Array.isArray(D[k2])) return; const Q = D[k2];
+        if (Q.length > 1 && dist(Q[0], T.P[0]) < 15 && dist(Q[Q.length - 1], T.P[T.P.length - 1]) < 15) twin.add(String(k2)); });
+      Object.keys(D).forEach(k2 => { if ((!/^\d+$/.test(k2) && !isU(k2)) || twin.has(String(k2)) || !refV(k2) || refV(k2)[0] !== 1) return; const Q = D[k2], dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e)), kk = isU(k2) ? k2 : +k2;
         if (dE < 45) out.push({ k: kk, pt: dist(Q[0], e) < dist(Q[Q.length - 1], e) ? Q[0] : Q[Q.length - 1], d: dE, seq: seq(kk) });
         else { const dI = segd(Q, e); if (dI < 25) out.push({ k: kk, pt: e, d: dI + 1, seq: seq(kk) }); } });
       (D.lk || []).forEach(([k1, e1, k2, e2]) => { const me = dir > 0 ? 1 : 0;
         for (const [a, ea, b, eb] of [[k1, e1, k2, e2], [k2, e2, k1, e1]]) if (String(a) === String(T.k) && ea === me && D[b] && refV(b) && !out.some(o => o.k === b)){ const Q = D[b]; out.push({ k: b, pt: eb ? Q[Q.length - 1] : Q[0], d: 50, seq: seq(b) }); } });
       if (!out.length){ const em = T.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
         if (em){ const k2 = flRefs.findIndex((r, i) => r[0] === 1 && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
-      if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(T.k) || !flRefs[+j]) return; const r = flRefs[+j], dd = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
+      if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (!twin.has(String(D.rb[j])) || !flRefs[+j]) return; const r = flRefs[+j], dd = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
         if (dd < 300) out.push({ rb: +j, d: dd, dir, seq: String(r[5]).split("|")[0] }); });
+      // (a pipe traced without a number of its own: a ribbon at its end that no line claims)
+      if (!out.length) flRefs.forEach((r, j) => { if (r[0] !== 1 || r[6] !== "d" || (D.rb && D.rb[j] != null)) return; const dd = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
+        if (dd < 120) out.push({ rb: j, d: dd, dir, seq: String(r[5]).split("|")[0] }); });
       // (the line list's To / From at this end, equipment drawn on this sheet: a stop on the way)
       { const li = window.Lookup && Lookup.find(nk(T.label), "line"), et = li && String(Lookup.get(li, dir > 0 ? "To" : "From") || "").trim();
         if (et && EF && EF[et] && eqBox(et) >= 0) out.push({ eq: et, d: 5, seq: et }); }
@@ -441,7 +450,7 @@ window.AssetViz = (() => {
       EQ = null; EQV = null; if (window.kcgmOpenTag) kcgmOpenTag(lab); }
     tb.addEventListener("click", e => { const g = e.target.closest("b.go"); if (g && T){ e.stopPropagation();
       // (an asset named on the strip: out of the fly through, the asset opened with its box on this sheet marked)
-      if (g.dataset.g){ const tag = g.dataset.g, bi = refsNow.findIndex(r => r[0] === 1 && String(r[5]).split("|").includes(tag)); trEnd();
+      if (g.dataset.g){ const tag = g.dataset.g, bi = refsNow.findIndex(r => r[0] === 1 && String(r[5]).split("|").includes(tag)); if (TRV){ TRV.keep = true; TRV.f = sl.value / 1000; }
         if (window.kcgmOpenTag){ keepView = { n, z, tx, ty, tap: boxes[bi] || null }; kcgmOpenTag(tag); setTimeout(() => { keepView = null; }, 2000); } return; }
       const m = T.m.find(q => q[1] === "t" && String(q[0]) === g.dataset.f && q[2] === g.dataset.t); const k = m && teeKey(m); if (k != null) trGo({ k, pt: trAt(m[0]) }); return; } }, true);
     tb.addEventListener("click", e => { e.stopPropagation(); const b = e.target.closest("button"); if (!b) return;
@@ -454,12 +463,16 @@ window.AssetViz = (() => {
       if (b.dataset.i != null && T) trGo(T.nb[+b.dataset.i]); });
     sl.addEventListener("input", () => view()); zs.addEventListener("input", () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} view(); });
     // the wheel along the line (a free-spinning wheel's stream of small steps each counted), Ctrl + wheel the zoom
-    let wAcc = 0, zAcc = 0, wRaf = 0;
+    let wAcc = 0, zAcc = 0, wRaf = 0, wOver = 0, wHop = 0;   // (wHop: when the wheel last carried on to the next line; one push, one hop)
     box.addEventListener("wheel", e => { if (!T) return; e.preventDefault(); e.stopImmediatePropagation();
       const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1, dl = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * k; if (e.ctrlKey) zAcc += dl; else wAcc -= dl;   // (up: on downstream)
       if (!wRaf) wRaf = requestAnimationFrame(() => { wRaf = 0; if (!T) return;
         if (zAcc){ zs.value = Math.max(0, Math.min(100, +zs.value - zAcc * .05)); zAcc = 0; try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} }
-        if (wAcc){ const len = T.L[T.L.length - 1] * H / 1e4 || 1; sl.value = Math.max(0, Math.min(1000, +sl.value + wAcc / (z * kf) / len * 1000)); wAcc = 0; }
+        if (wAcc){ const len = T.L[T.L.length - 1] * H / 1e4 || 1, v = +sl.value + wAcc / (z * kf) / len * 1000;
+          // (scrolled on past an end: once the push past it adds up, on to what comes next there, as ↑ / ↓ would)
+          if ((v > 1000 && +sl.value >= 999.5) || (v < 0 && +sl.value <= .5)){ if (Date.now() - wHop > 900) wOver += Math.abs(wAcc); if (wOver > 300){ wOver = 0; wAcc = 0; wHop = Date.now(); const pk = v > 1000 ? T.nbR : T.nbL; if (pk && pk[0]){ trGo(pk[0]); return; } } }
+          else wOver = 0;
+          sl.value = Math.max(0, Math.min(1000, v)); wAcc = 0; }
         view(); }); }, { passive: false, capture: true });
     // keys: ← → a tenth (held, a fifth of the line a second), ↑ ↓ the next line, Esc out
     let kHold = null;
@@ -502,7 +515,7 @@ window.AssetViz = (() => {
         refsNow = (R[d.number] || []).filter(r => r[0] === 1 && r[6] !== "x"); flRefs = R[d.number] || [];
         flDraw().then(() => { if (g !== gen) return;
           // (the fly through carried on: the same sheet with another item on the left, or the next sheet reached)
-          if (TRV && TRV.n === d.number){ const v = TRV; if (!trStart(v.k, v.at || null, v.at ? 0 : v.f, v.as)) TRV = null; }
+          if (TRV && TRV.n === d.number){ const v = TRV; if (!trStart(v.k, v.keep ? null : v.at || null, v.keep || !v.at ? v.f : 0, v.as, v.keep)) TRV = null; }
           else if (TRP){ TRV = null; trArrive(); }
           else if (EQV && EQV.n === d.number){ const v = EQV; efP.then(() => { if (g !== gen) return; if (v.centre){ z = v.z || z; } eqShow(v.tag, v.from); }); }
           // (a line's own page, opened from a list or a link: flying along it straight away, as on the phone)

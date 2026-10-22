@@ -677,11 +677,14 @@ window.PdfView = (() => {
   // desktop: the wheel runs the view along the line (down: downstream) and Ctrl + wheel zooms. Free-spinning wheels (MX
   // Master) and trackpads send a stream of small deltas: each counts in proportion, no steps, gathered and applied once a
   // frame, a wheel pixel moving the view one screen pixel along the pipe at the zoom shown
-  let wAcc = 0, zAcc = 0, wRaf = 0;
+  let wAcc = 0, zAcc = 0, wRaf = 0, wOver = 0, wHop = 0;   // (wHop: when the wheel last carried on to the next line; one push, one hop)
   function trWheel(){ wRaf = 0; if (!TR){ wAcc = zAcc = 0; return; }
     if (zAcc){ const z = V.tz.querySelector(".sp-trz"); z.value = Math.max(0, Math.min(100, +z.value - zAcc * .05)); zAcc = 0; try { localStorage.setItem("kcgm_trz", z.value); } catch (e) {} }
-    if (wAcc){ const a = V.tb.querySelector(".sp-tra"), H = V.pg.getViewport({ scale: 1 }).height, len = TR.L[TR.L.length - 1] * H / 1e4 || 1, s = V.base * V.zoom;
-      a.value = Math.max(0, Math.min(1000, +a.value + wAcc / s / len * 1000)); wAcc = 0; }
+    if (wAcc){ const a = V.tb.querySelector(".sp-tra"), H = V.pg.getViewport({ scale: 1 }).height, len = TR.L[TR.L.length - 1] * H / 1e4 || 1, s = V.base * V.zoom, v = +a.value + wAcc / s / len * 1000;
+      // (scrolled on past an end: once the push past it adds up, on to what comes next there, as ↑ / ↓ would)
+      if ((v > 1000 && +a.value >= 999.5) || (v < 0 && +a.value <= .5)){ if (Date.now() - wHop > 900) wOver += Math.abs(wAcc); if (wOver > 300){ wOver = 0; wAcc = 0; wHop = Date.now(); const pk = v > 1000 ? TR.nbR : TR.nbL; if (pk && pk[0]){ trGo(pk[0]); return; } } }
+      else wOver = 0;
+      a.value = Math.max(0, Math.min(1000, v)); wAcc = 0; }
     trView(); }
   // desktop keys while tracing: ← → a tenth of the line each press, held down a smooth run at a fifth of the line a second;
   // ↑ the line downstream, ↓ the line upstream (the first of two at a tee); Esc leaves the trace
@@ -717,7 +720,11 @@ window.PdfView = (() => {
     const out = [], seq = k2 => isU(k2) && /-MECH-/.test(D.lb[k2]) ? String(D.lb[k2]).split("-").slice(0, 2).join("\n") : isU(k2) ? String(D.lb[k2]).split("-")[1] || "?" : String(V.refs[k2][5]).split("|")[0].split("-")[1] || "?";
     if (D.up || D.dn){ const j = (dir < 0 ? D.up : D.dn || {})[TR.k]; if (j == null || !V.refs[j]) return [];
       return [{ rb: j, d: 0, dir, seq: String(V.refs[j][5]).split("|")[0].replace(/^2000-/, "").replace(/-SLD-EL-/, "\n") }]; }
-    Object.keys(D).forEach(k2 => { if ((!/^\d+$/.test(k2) && !isU(k2)) || k2 === String(TR.k) || !refK(k2, D) || refK(k2, D)[0] !== TR.page) return; const Q = D[k2]; const kk = isU(k2) ? k2 : +k2;
+    // (the same line traced twice, from two of its labels: the twin is this line, not a next one, and a ribbon on it is ours)
+    const lab2 = k2 => /^\d+$/.test(k2) ? (V.refs[k2] ? String(V.refs[k2][5]).split("|")[0] : null) : (D.lb && D.lb[k2]) || null;
+    const twin = new Set([String(TR.k)]); Object.keys(D).forEach(k2 => { if (!/^(\d+|u\d+|r\d+)$/.test(k2) || lab2(k2) !== TR.label || !Array.isArray(D[k2])) return; const Q = D[k2];
+      if (Q.length > 1 && dist(Q[0], TR.P[0]) < 15 && dist(Q[Q.length - 1], TR.P[TR.P.length - 1]) < 15) twin.add(String(k2)); });
+    Object.keys(D).forEach(k2 => { if ((!/^\d+$/.test(k2) && !isU(k2)) || twin.has(k2) || !refK(k2, D) || refK(k2, D)[0] !== TR.page) return; const Q = D[k2]; const kk = isU(k2) ? k2 : +k2;
       const dE = Math.min(dist(Q[0], e), dist(Q[Q.length - 1], e));
       if (dE < 45) out.push({ k: kk, pt: dist(Q[0], e) < dist(Q[Q.length - 1], e) ? Q[0] : Q[Q.length - 1], d: dE, seq: seq(kk) });
       else { const dI = segd(Q, e); if (dI < 25) out.push({ k: kk, pt: e, d: dI + 1, seq: seq(kk) }); } });
@@ -727,8 +734,11 @@ window.PdfView = (() => {
         out.push({ k: b, pt: eb ? Q[Q.length - 1] : Q[0], d: 50, seq: seq(b) }); } });
     if (!out.length){ const em = TR.m.find(m => (dir > 0 ? m[0] >= .98 : m[0] <= .02) && (m[1] === "l" || m[1] === "t") && m[2]);
       if (em){ const k2 = V.refs.findIndex((r, i) => r[0] === TR.page && r[6] === "line" && String(r[5]).split("|")[0] === em[2] && D[i]); if (k2 >= 0) out.push({ k: k2, pt: e, d: 0, seq: seq(k2) }); } }
-    if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (String(D.rb[j]) !== String(TR.k) || !V.refs[+j]) return; const r = V.refs[+j], d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
+    if (!out.length) Object.keys(D.rb || {}).forEach(j => { if (!twin.has(String(D.rb[j])) || !V.refs[+j]) return; const r = V.refs[+j], d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
       if (d < 300) out.push({ rb: +j, d, dir, seq: String(r[5]).split("|")[0].replace(/^2000-/, "").replace(/-PID-PR-/, "-") }); });
+    // (a pipe traced without a number of its own: a ribbon at its end that no line claims)
+    if (!out.length) V.refs.forEach((r, j) => { if (r[0] !== TR.page || r[6] !== "d" || (D.rb && D.rb[j] != null)) return; const d = Math.hypot(Math.max(r[1] - e[0], 0, e[0] - r[1] - r[3]), Math.max(r[2] - e[1], 0, e[1] - r[2] - r[4]));
+      if (d < 120) out.push({ rb: j, d, dir, seq: String(r[5]).split("|")[0].replace(/^2000-/, "").replace(/-PID-PR-/, "-") }); });
     // (the line list's To / From at this end, equipment drawn on this sheet: a stop on the way)
     { const li = window.Lookup && Lookup.find && Lookup.find(nk(TR.label), "line"), et = li && String(Lookup.get(li, dir > 0 ? "To" : "From") || "").trim();
       if (et && EF && EF[et] && eqBox(et) >= 0) out.push({ eq: et, d: 5, seq: et }); }
