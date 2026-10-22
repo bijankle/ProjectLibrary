@@ -140,7 +140,7 @@ window.AssetViz = (() => {
     // with it at once, redrawn sharp at the new size when the drag ends)
     let kf = 1;
     // (and the lines' widths in screen pixels at every step of a zoom, as on the phone: the stage's scale taken back off)
-    const apply = () => { z = Math.max(1, Math.min(10, z)); tx = fitAx(tx, bb[0], bb[2], W, vw0 || W); ty = fitAx(ty, bb[1], bb[3], H, vh0 || H);
+    const apply = () => { z = Math.max(1, Math.min(10, z)); tx = fitAx(tx, bb[0], bb[2], W, vw0 || W); ty = fitAx(ty, bb[1], bb[3], H, (box.clientHeight / kf) || vh0 || H);
       stage.style.transform = `translate(${tx * kf}px,${ty * kf}px) scale(${z * kf})`; stage.style.setProperty("--iz", (1 / z).toFixed(4)); stage.style.setProperty("--rbw", (1.5 / z).toFixed(3) + "px"); { const k = z * kf; stage.style.setProperty("--swk", (1 / k).toFixed(4)); stage.style.setProperty("--flw", Math.max(2.2, Math.min(8, 2.4 * k)).toFixed(2) + "px"); } clearTimeout(rt); rt = setTimeout(sharp, 180); report(); };
     // zoom onto boxes ([l, t, w, h] in 1/10000 of the sheet): all of them in view, but never closer than 4x
     const focus = bs => { if (!bs.length) return; const l = Math.min(...bs.map(b => b[0])) / 1e4 * W, t = Math.min(...bs.map(b => b[1])) / 1e4 * H,
@@ -286,6 +286,10 @@ window.AssetViz = (() => {
     tb.innerHTML = `<div class="sp-trh"><b class="sp-trn"></b><span class="sp-trzh" title="Zoom (Ctrl + wheel)"><button type="button" data-zh="-10" aria-label="Further">−</button><span class="sp-trzhb"><input type="range" class="sp-rg sp-trz2" min="0" max="100" step="any" aria-label="Zoom"></span><button type="button" data-zh="10" aria-label="Closer">+</button><b>Zoom</b></span><button type="button" class="sp-tro" title="This line's asset page">Asset</button><button type="button" class="sp-trx" title="Stop flying through">✕</button></div>
       <div class="sp-trrow"><div class="sp-trnx l"></div><div class="sp-trtk"><input type="range" class="sp-tra sp-rg" min="0" max="1000" step="any" aria-label="Along the line"><div class="sp-trln"><span></span><span></span></div><div class="sp-trc"></div></div><div class="sp-trnx r"></div></div>`;
     box.after(tb);   // (under the sheet, not over it)
+    // (flying, the sheet's frame shortened so the strip under it stays on screen; its own height back after)
+    const capH = () => { if (!vh0) return; const nat = Math.round(vh0 * kf); if (tb.hidden){ box.style.height = nat + "px"; return; }
+      const avail = Math.floor(innerHeight - Math.max(0, box.getBoundingClientRect().top) - tb.offsetHeight - 26); box.style.height = Math.max(260, Math.min(nat, avail)) + "px"; };
+    { const onR = () => { if (g !== gen){ removeEventListener("resize", onR); return; } if (!tb.hidden){ capH(); apply(); if (T) view(); } }; addEventListener("resize", onR); }
     const trl = document.createElementNS("http://www.w3.org/2000/svg", "svg"); trl.setAttribute("class", "sp-trl"); flSvg.after(trl);
     const sl = tb.querySelector(".sp-tra"), zs = tb.querySelector(".sp-trz2");
     const zOf = v => Math.pow(10, v / 100), trZ = () => { let v = 55; try { const x = localStorage.getItem("kcgm_trz"); if (x != null) v = +x; } catch (e) {} return v; };
@@ -311,9 +315,9 @@ window.AssetViz = (() => {
         if (e2 < best){ best = e2; f = (L[i - 1] + t * (L[i] - L[i - 1])) / (L[L.length - 1] || 1); } } }
       TRV = { n: d.number, k, f, as: T.label }; T.fit = !keep;   // (each fly through opens on the whole line; carried on past a tag picked, the view kept)
       tb.querySelector(".sp-trn").textContent = T.label; sl.value = Math.round(f * 1000); zs.value = keep ? Math.max(0, Math.min(100, Math.log10(z) * 100)) : trZ();   // (carried on: the zoom as it is)
-      { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = noPage(k); } tb.hidden = false; box.classList.add("vz-tracing"); trNx(); flDraw(); trMarks(); view(); return true; }
-    function trEnd(){ if (EQ){ EQ = null; EQV = null; tb.classList.remove("eqm"); if (!T){ tb.hidden = true; pick(() => false); return; } }
-      if (!T) return; T = null; TRV = null; tb.hidden = true; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
+      { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = noPage(k); } tb.hidden = false; capH(); box.classList.add("vz-tracing"); trNx(); flDraw(); trMarks(); capH(); view(); return true; }
+    function trEnd(){ if (EQ){ EQ = null; EQV = null; tb.classList.remove("eqm"); if (!T){ tb.hidden = true; capH(); apply(); pick(() => false); return; } }
+      if (!T) return; T = null; TRV = null; tb.hidden = true; capH(); apply(); trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
     // the view: a fly through starts on the whole line (zoomed to its extent, a margin round it); after that a zoom
     // (slider, Ctrl + wheel) centres on where you are, and moving along only pans once the marker nears the edge
     function view(){ if (!T) return; const f = sl.value / 1000; TRV.f = f; const vw = box.clientWidth / kf, vh = box.clientHeight / kf;
@@ -426,7 +430,7 @@ window.AssetViz = (() => {
       tx = vw / 2 - (b[0] + b[2] / 2) / 1e4 * W * z; ty = vh / 2 - (b[1] + b[3] / 2) / 1e4 * H * z; apply(); }
     function eqShow(tag, from){ const e = (EF && EF[tag]) || {}, bi = eqBox(tag);
       if (T){ T = null; TRV = null; trl.innerHTML = ""; box.classList.remove("vz-tracing"); flSvg.classList.remove("dim"); flSvg.querySelectorAll(".sel").forEach(q => q.classList.remove("sel")); flDimT(); flDraw(); }
-      EQ = { tag, from }; tb.classList.add("eqm"); tb.hidden = false;
+      EQ = { tag, from }; tb.classList.add("eqm"); tb.hidden = false; capH();
       tb.querySelector(".sp-trn").innerHTML = `${esc(tag)} <span class="eqn">${esc(e.n || "")}</span>`;
       { const ab = tb.querySelector(".sp-tro"); if (ab) ab.hidden = true; }
       const go = [...(e.nx || []).map(t => `<button type="button" class="eqo eqe" data-eq="${esc(t)}" title="Next in the process: ${esc((EF[t] || {}).n || t)}">${esc(t)}<small>${esc((EF[t] || {}).n || "")}</small></button>`),
@@ -502,7 +506,7 @@ window.AssetViz = (() => {
       vw0 = bw; vh0 = Math.round(ch * sc); box.style.height = vh0 + "px"; kf = 1;
       let kb = null;   // (a size that flips straight back, the pane's scrollbar showing and hiding as the sheet grows and shrinks: left as it is, or the sheet shakes)
       new ResizeObserver(() => { if (g !== gen || !vw0) return; const k2 = box.clientWidth / vw0, now = performance.now(); if (Math.abs(k2 - kf) < .002) return;
-        if (kb && Math.abs(k2 - kb[0]) < .002 && now - kb[1] < 900 && Math.abs(k2 - kf) < .04) return; kb = [kf, now]; kf = k2; box.style.height = Math.round(vh0 * kf) + "px"; apply(); if (T) view(); }).observe(box); stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
+        if (kb && Math.abs(k2 - kb[0]) < .002 && now - kb[1] < 900 && Math.abs(k2 - kf) < .04) return; kb = [kf, now]; kf = k2; capH(); apply(); if (T) view(); }).observe(box); stage.style.width = W + "px"; stage.style.height = H + "px"; cv.style.width = W + "px"; cv.style.height = H + "px";
       const tap = held && held.n === n ? held.tap : null; tapNow = tap; if (held && held.n === n && held.z){ z = held.z; tx = held.tx; ty = held.ty; } else { tx = ty = -1e9; } apply(); held = null;
       rz = 0; await sharp(1); if (g !== gen) return; setTimeout(() => { if (g === gen) sharp(); }, 250);   // (then sharpened in the background)
       { const nt = box.querySelector(".vz-note"); if (nt) nt.remove(); }
