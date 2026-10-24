@@ -71,10 +71,10 @@ window.PdfView = (() => {
     const ftk = document.createElement("div"); ftk.className = "sp-fltk"; ftk.hidden = true;
     ftk.innerHTML = `<label><input type="checkbox" data-f="c"><span>Colours</span></label><label><input type="checkbox" data-f="w"><span>Animation</span></label>`; el.appendChild(ftk);
     ftk.addEventListener("click", e => e.stopPropagation());
-    ftk.addEventListener("change", e => { const f = e.target.dataset.f; if (!f) return; FL[f] = e.target.checked; try { localStorage.setItem(f === "c" ? "kcgm_flc" : "kcgm_flw", FL[f] ? "1" : "0"); } catch (x) {} if (!FL.c) pickEnd(); drawFl(); });
+    ftk.addEventListener("change", e => { const f = e.target.dataset.f; if (!f) return; FL[f] = e.target.checked; try { localStorage.setItem(f === "c" ? "kcgm_flc" : "kcgm_flw", FL[f] ? "1" : "0"); } catch (x) {} if (!FL.c) pickEnd(); drawFl(); drawTrace(); });
     lc.onclick = e => { e.stopPropagation(); lp.hidden = !lp.hidden; if (!lp.hidden){ lp.querySelector('[data-f="c"]').checked = FL.c; lp.querySelector('[data-f="w"]').checked = FL.w; const r = lc.getBoundingClientRect(), q = el.getBoundingClientRect(); lp.style.left = (r.left - q.left) + "px"; lp.style.top = (r.bottom - q.top + 5) + "px"; } };
     lp.addEventListener("click", e => e.stopPropagation());
-    lp.addEventListener("change", e => { const f = e.target.dataset.f; if (!f) return; FL[f] = e.target.checked; try { localStorage.setItem(f === "c" ? "kcgm_flc" : "kcgm_flw", FL[f] ? "1" : "0"); } catch (x) {} drawFl(); });
+    lp.addEventListener("change", e => { const f = e.target.dataset.f; if (!f) return; FL[f] = e.target.checked; try { localStorage.setItem(f === "c" ? "kcgm_flc" : "kcgm_flw", FL[f] ? "1" : "0"); } catch (x) {} drawFl(); drawTrace(); });
     flg.addEventListener("click", e => { e.stopPropagation(); const row = e.target.closest("[data-fc]");
       if (row){ const c = row.dataset.fc; if (FL.pick === c) pickEnd("x"); else pick1(c); return; }
       if (!e.target.closest(".hd")) return;
@@ -667,7 +667,9 @@ window.PdfView = (() => {
     const pts = P => P.map(q => sc(q).map(v => v.toFixed(1)).join(",")).join(" ");
     const f = trF(), at = trAt(f), [dx, dy] = sc(at), i = at[2];
     V.trl.setAttribute("viewBox", `0 0 ${W} ${H}`); V.trl.style.setProperty("--trw", w + "px");
-    { const c = /-MECH-/.test(TR.label) ? MECHC : FLC[fluid(TR.label)] || OTHC; if (c) V.trl.style.setProperty("--hl", c); else V.trl.style.removeProperty("--hl"); }   // (the line in its fluid's colour, whether or not all lines are coloured)
+    // (the trail in the line's fluid colour with Colours on, else the plain trail colour; its drifting dashes and the
+    // rings only with Animation on)
+    { const c = FL.c && (/-MECH-/.test(TR.label) ? MECHC : FLC[fluid(TR.label)] || OTHC); if (c) V.trl.style.setProperty("--hl", c); else V.trl.style.removeProperty("--hl"); }
     const tr = f > 1e-4 ? pts(trSub(0, f)) : "";
     let mk;
     { const [ax, ay] = sc(TR.P[i - 1]), [bx, by] = sc(TR.P[i]), d = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / d, uy = (by - ay) / d;
@@ -676,9 +678,9 @@ window.PdfView = (() => {
     // (39A: just after the line is first opened, two rings pulse out from the arrow, three times, so the eye finds it;
     // gone once the arrow is moved)
     if (TR.fs === undefined) TR.fs = f;
-    { const el = (Date.now() - TR.t0) / 1000; if (el < 4.5 && Math.abs(f - TR.fs) < 1e-4){ const R = 3.2 * tw / s;
+    { const el = (Date.now() - TR.t0) / 1000; if (FL.w && el < 4.5 && Math.abs(f - TR.fs) < 1e-4){ const R = 3.2 * tw / s;
       mk = [0, .75].map(o => `<circle class="rg" cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${R.toFixed(1)}" style="animation-delay:${(o - el).toFixed(3)}s"/>`).join("") + mk; } }
-    V.trl.innerHTML = (tr ? `<polyline class="tr" points="${tr}"/>` + (true ? `<polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "") : "") + mk; }
+    V.trl.innerHTML = (tr ? `<polyline class="tr" points="${tr}"/>` + (FL.w ? `<polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "") : "") + mk; }
   // a tap on the traced line itself (within 12 px of it)
   function trNear(x, y){ if (!TR || TR.page !== V.page) return false; const q = V.sheet.getBoundingClientRect(); if (!q.width) return false;
     const P = TR.P.map(p => { const [a, b] = trPt(p[0], p[1]); return [q.left + a / 1e4 * q.width, q.top + b / 1e4 * q.height]; });
@@ -716,13 +718,11 @@ window.PdfView = (() => {
   // desktop: the wheel runs the view along the line (down: downstream) and Ctrl + wheel zooms. Free-spinning wheels (MX
   // Master) and trackpads send a stream of small deltas: each counts in proportion, no steps, gathered and applied once a
   // frame, a wheel pixel moving the view one screen pixel along the pipe at the zoom shown
-  let wAcc = 0, zAcc = 0, wRaf = 0, wOver = 0, wHop = 0;   // (wHop: when the wheel last carried on to the next line; one push, one hop)
+  let wAcc = 0, zAcc = 0, wRaf = 0;
   function trWheel(){ wRaf = 0; if (!TR){ wAcc = zAcc = 0; return; }
     if (zAcc){ const z = V.tz.querySelector(".sp-trz"); z.value = Math.max(0, Math.min(100, +z.value - zAcc * .05)); zAcc = 0; try { localStorage.setItem("kcgm_trz", z.value); } catch (e) {} }
     if (wAcc){ const a = V.tb.querySelector(".sp-tra"), H = V.pg.getViewport({ scale: 1 }).height, len = TR.L[TR.L.length - 1] * H / 1e4 || 1, s = V.base * V.zoom, v = +a.value + wAcc / s / len * 1000;
-      // (scrolled on past an end: once the push past it adds up, on to what comes next there, as ↑ / ↓ would)
-      if ((v > 1000 && +a.value >= 999.5) || (v < 0 && +a.value <= .5)){ if (Date.now() - wHop > 900) wOver += Math.abs(wAcc); if (wOver > 300){ wOver = 0; wAcc = 0; wHop = Date.now(); const pk = v > 1000 ? TR.nbR : TR.nbL; if (pk && pk[0]){ trGo(pk[0]); return; } } }
-      else wOver = 0;
+      // (the wheel stops at the line's ends: on to the next line only by its arrow at the end of the strip)
       a.value = Math.max(0, Math.min(1000, v)); wAcc = 0; }
     trView(); }
   // desktop keys while tracing: ← → a tenth of the line each press, held down a smooth run at a fifth of the line a second;
@@ -1040,7 +1040,7 @@ window.PdfView = (() => {
   // (arrived at the whole sheet through a ribbon: the line it carries here, V.hiB)
   const hiKeys = () => { const D = cur && LNR[cur.number], h = V && V.hiB; if (!D || !h || h.n !== cur.number || (TR && TR.n === cur.number) || FL.pick) return []; return h.b.map(j => D.rb && D.rb[j]).filter(x => x != null && D[x]).map(String); };
   const hiOn = () => hiKeys().length > 0;
-  const flOn = () => (FL.c || (TR && TR.n === cur.number) || hiOn()) && cur && /-PID-/.test(cur.number || "") && V.pg;   // (a line flown through: it in its colour and the rest grey, whether or not all lines are coloured)
+  const flOn = () => FL.c && cur && /-PID-/.test(cur.number || "") && V.pg;   // (Colours off: no line colours at all, a line flown through or picked included)
   async function drawFl(){ if (!V || !V.fl) return;
     if (!flOn()){ V.fl.innerHTML = ""; flLeg({}); return; }
     const me = cur, pn = V.page, D = await linesFor(cur.number); if (cur !== me || V.page !== pn || !V.pg || V.pgFor !== me) return;   // (not on the last drawing's page while this one loads)
@@ -1331,7 +1331,7 @@ window.PdfView = (() => {
     if (V.page !== V.refs[gi][0]) await go(V.refs[gi][0], true);
     const b = boxOf(V.refs[gi]), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap(); trace(gi, at || null, [bx.l, bx.t, bx.w, bx.h]); }
   // the coloured lines' settings and palette, shared with that drawing
-  const flApi = { MECHC, OTHC, FLC, FLN, fluid, get: () => ({ c: FL.c, w: FL.w, leg: FL.leg }), set(f, v){ FL[f] = v; try { localStorage.setItem({ c: "kcgm_flc", w: "kcgm_flw", leg: "kcgm_flleg" }[f], v ? "1" : "0"); } catch (x) {} if (V && !V.el.hidden){ if (V.ftk){ V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w; } drawFl(); } } };
+  const flApi = { MECHC, OTHC, FLC, FLN, fluid, get: () => ({ c: FL.c, w: FL.w, leg: FL.leg }), set(f, v){ FL[f] = v; try { localStorage.setItem({ c: "kcgm_flc", w: "kcgm_flw", leg: "kcgm_flleg" }[f], v ? "1" : "0"); } catch (x) {} if (V && !V.el.hidden){ if (V.ftk){ V.ftk.querySelector('[data-f="c"]').checked = FL.c; V.ftk.querySelector('[data-f="w"]').checked = FL.w; } drawFl(); drawTrace(); } } };
   return { open, close, hide, back, fwd, canFwd, came, state, getDoc, grow, ribbon, nearest, arrows, want, fl: flApi, chain, run, runAt,
     saved: () => { try { return JSON.parse(sessionStorage.getItem(SSK) || "null"); } catch (e) { return null; } },
     // a tag picked from the list under the sheet: zoomed to and marked by its box (pid-refs.json), else found in the text

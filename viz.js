@@ -263,7 +263,8 @@ window.AssetViz = (() => {
       if (g !== gen) return;
       // (an asset picked, an instrument, equipment, a valve: no line colours to draw the eye away from it)
       const asset = !T && !flPick && !hiB && cur && cur.t !== "pid" && cur.t !== "line" && !itemKeys().length;
-      if ((!S.c && !T && !itemKeys().length) || asset || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }   // (a line flown through: drawn, it in colour and the rest grey, even with Colours off)
+      // (Colours off: no line colours at all, a line flown through or picked included)
+      if (!S.c || asset || !W){ flSvg.innerHTML = ""; flLg.hidden = true; flPick = null; return; }
       const cnt = {}; let h = "", fw = ""; flSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
       Object.keys(flD).forEach(k => { const rk = /^r\d+$/.test(k) && flD.lb && flD.lb[k];   // (a ribbon's continuation, under the number it carries)
         const rr = /^r\d+$/.test(k); if (!/^\d+$/.test(k) && !isU(k) && !rr) return; const r = rr ? flRefs[+k.slice(1)] : refV(k); if (!r || r[0] !== 1) return; const mech = isU(k) && /-MECH-/.test(flD.lb[k]), c = mech ? "MECH" : rr && !rk ? "" : FLX.fluid(rk || (isU(k) ? flD.lb[k] : r[5])), col = mech ? FLX.MECHC : FLX.FLC[c] || FLX.OTHC; if (!mech && !rr && FLX.FLC[c]) cnt[c] = (cnt[c] || 0) + 1;
@@ -278,7 +279,7 @@ window.AssetViz = (() => {
       flLg.innerHTML = `<button type="button" class="hd"><b>${S.leg ? "Fluids on this drawing" : "Fluids"}</b>${S.leg ? "" : `<span class="fl-dots">${cs.map(c => `<i style="background:${FLX.FLC[c]}"></i>`).join("")}</span>`}<em>${S.leg ? "Hide ▴" : "Show ▾"}</em></button>`
         + (S.leg ? `<div class="grid">${cs.map(c => `<button type="button" class="row" data-fc="${c}" style="--c:${FLX.FLC[c]}" title="Only ${esc(FLX.FLN[c] || c)} in colour"><i class="sw" style="background:${FLX.FLC[c]}"></i><span class="cd" style="--c:${FLX.FLC[c]}">${c}</span><span class="nm">${esc(FLX.FLN[c] || "")}</span><span class="ct">${cnt[c]}</span></button>`).join("")}</div>` : "");
       flPickSet(flPick && cnt[flPick] ? flPick : null); flDimT(); }
-    flTk.addEventListener("change", e => { const f = e.target.dataset.f; if (f && FLX){ FLX.set(f, e.target.checked); flDraw(); } });
+    flTk.addEventListener("change", e => { const f = e.target.dataset.f; if (f && FLX){ FLX.set(f, e.target.checked); flDraw(); drawTrail(); } });
     flLg.addEventListener("click", e => { e.stopPropagation(); const row = e.target.closest("[data-fc]");
       if (row){ flPickSet(flPick === row.dataset.fc ? null : row.dataset.fc); return; }
       if (e.target.closest(".hd") && FLX){ FLX.set("leg", !FLX.get().leg); flDraw(); } });
@@ -349,14 +350,17 @@ window.AssetViz = (() => {
     function drawTrail(){ if (!T) return; const s = z * kf, w = Math.max(4, Math.min(9, 3.2 * s)), tw = w * 1.35, sc = q => [q[0] / 1e4 * W, q[1] / 1e4 * H];
       const pts = P => P.map(q => sc(q).map(v => v.toFixed(1)).join(",")).join(" "), f = sl.value / 1000, at = trAt(f), [dx, dy] = sc(at), i = at[2];
       trl.setAttribute("viewBox", `0 0 ${W} ${H}`); trl.style.setProperty("--trw", w + "px");
-      { const c = FLX && (/-MECH-/.test(T.label) ? FLX.MECHC : FLX.FLC[FLX.fluid(T.label)] || FLX.OTHC); if (c) trl.style.setProperty("--hl", c); else trl.style.removeProperty("--hl"); }   // (the line in its fluid's colour, whether or not all lines are coloured)
+      // (the trail in the line's fluid colour with Colours on, else the plain trail colour; its drifting dashes and the
+      // rings only with Animation on)
+      const FS = FLX ? FLX.get() : { c: false, w: false };
+      { const c = FLX && FS.c && (/-MECH-/.test(T.label) ? FLX.MECHC : FLX.FLC[FLX.fluid(T.label)] || FLX.OTHC); if (c) trl.style.setProperty("--hl", c); else trl.style.removeProperty("--hl"); }
       const tr = f > 1e-4 ? pts(trSub(0, f)) : "", [ax, ay] = sc(T.P[i - 1]), [bx, by] = sc(T.P[i]), dd = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / dd, uy = (by - ay) / dd;
       const L = 2.6 * tw / s, B = 1.1 * tw / s, ex = dx + ux * L * .6, ey = dy + uy * L * .6, bx0 = dx - ux * L * .4, by0 = dy - uy * L * .4;
       // (39A: just after the line is first opened, two rings pulse out from the arrow, three times, so the eye finds it;
       // gone once the arrow is moved)
       if (T.fs === undefined) T.fs = f;
-      const el = (Date.now() - T.t0) / 1000, rg = el < 4.5 && Math.abs(f - T.fs) < 1e-4 ? [0, .75].map(o => `<circle class="rg" cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(3.2 * tw / s).toFixed(1)}" style="animation-delay:${(o - el).toFixed(3)}s"/>`).join("") : "";
-      trl.innerHTML = rg + (tr ? `<polyline class="tr" points="${tr}"/><polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "")
+      const el = (Date.now() - T.t0) / 1000, rg = FS.w && el < 4.5 && Math.abs(f - T.fs) < 1e-4 ? [0, .75].map(o => `<circle class="rg" cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(3.2 * tw / s).toFixed(1)}" style="animation-delay:${(o - el).toFixed(3)}s"/>`).join("") : "";
+      trl.innerHTML = rg + (tr ? `<polyline class="tr" points="${tr}"/>` + (FS.w ? `<polyline class="fw" points="${tr}" style="animation-delay:-${(performance.now() / 1000 % 1.1).toFixed(3)}s"/>` : "") : "")
         + `<polygon points="${[[ex, ey], [bx0 - uy * B, by0 + ux * B], [bx0 + uy * B, by0 - ux * B]].map(p => p.map(v => v.toFixed(1)).join(",")).join(" ")}"/>`; }
     // (the milestones: names read across under the bar, each where it costs least, no callout crossing a name or another)
     function trMarks(){ const c = tb.querySelector(".sp-trc"), Wd = c.offsetWidth || 400, BB = Math.round(sl.offsetTop + sl.offsetHeight / 2 + 4) || 20, J = BB + 9, RH = 20, R0 = BB + 14, NR = 6, G = 6;
@@ -488,15 +492,13 @@ window.AssetViz = (() => {
       if (b.dataset.i != null && T) trGo(T.nb[+b.dataset.i]); });
     sl.addEventListener("input", () => view()); zs.addEventListener("input", () => { try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} view(); });
     // the wheel along the line (a free-spinning wheel's stream of small steps each counted), Ctrl + wheel the zoom
-    let wAcc = 0, zAcc = 0, wRaf = 0, wOver = 0, wHop = 0;   // (wHop: when the wheel last carried on to the next line; one push, one hop)
+    let wAcc = 0, zAcc = 0, wRaf = 0;
     box.addEventListener("wheel", e => { if (!T) return; e.preventDefault(); e.stopImmediatePropagation();
       const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1, dl = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * k; if (e.ctrlKey) zAcc += dl; else wAcc -= dl;   // (up: on downstream)
       if (!wRaf) wRaf = requestAnimationFrame(() => { wRaf = 0; if (!T) return;
         if (zAcc){ zs.value = Math.max(0, Math.min(100, +zs.value - zAcc * .05)); zAcc = 0; try { localStorage.setItem("kcgm_trz", zs.value); } catch (x) {} }
         if (wAcc){ const len = T.L[T.L.length - 1] * H / 1e4 || 1, v = +sl.value + wAcc / (z * kf) / len * 1000;
-          // (scrolled on past an end: once the push past it adds up, on to what comes next there, as ↑ / ↓ would)
-          if ((v > 1000 && +sl.value >= 999.5) || (v < 0 && +sl.value <= .5)){ if (Date.now() - wHop > 900) wOver += Math.abs(wAcc); if (wOver > 300){ wOver = 0; wAcc = 0; wHop = Date.now(); const pk = v > 1000 ? T.nbR : T.nbL; if (pk && pk[0]){ trGo(pk[0]); return; } } }
-          else wOver = 0;
+          // (the wheel stops at the line's ends: on to the next line only by its arrow at the end of the strip)
           sl.value = Math.max(0, Math.min(1000, v)); wAcc = 0; }
         view(); }); }, { passive: false, capture: true });
     // keys: ← → a tenth (held, a fifth of the line a second), ↑ ↓ the next line, Esc out
