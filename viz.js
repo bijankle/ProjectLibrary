@@ -52,6 +52,9 @@ window.AssetViz = (() => {
     if (keepView && keepView.key && nk(keepView.key) !== nk(it.key)){ cur = it; return; }
     const kv = keepView && (own.includes(keepView.n) || keepView.tap || keepView.force) ? keepView : null; keepView = null;
     if (!kv){ TRV = null; EQV = null; }   // (an item picked on the left, not from the drawing: its drawing afresh, no fly through)
+    // (an asset opened: its drawing marks that asset alone, not every hit of the words searched for; typing again in the
+    // search box, or Ctrl + F, finds on the drawing once more. A drawing opened as itself keeps the find)
+    if (it.t !== "pid") findQ = "";
     cur = it; shown = kv ? kv.n : null; hist = []; lastSig = ""; held = kv; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
   function list(){}
   // Back to an item: its drawing as it was left (index.html keeps it with the history step)
@@ -62,6 +65,10 @@ window.AssetViz = (() => {
   let finder = null, refsNow = [], findQ = "";
   const fnorm = s => String(s || "").toUpperCase().replace(/[\s\-_/.]+/g, "");
   function find(q){ findQ = q || ""; findNow(); }
+  // Ctrl + F with a drawing on show: the search box, its words found on the drawing (every hit in blue)
+  addEventListener("keydown", e => { if (!(e.ctrlKey || e.metaKey) || e.altKey || e.key.toLowerCase() !== "f" || document.documentElement.classList.contains("phone")) return;
+    if (!finder || finder.g !== gen || !finder.box.isConnected || document.querySelector(".sp-view:not([hidden])")) return;
+    const q = document.querySelector(".lk-in"); if (!q) return; e.preventDefault(); q.focus(); q.select(); find(q.value); });
   function findNow(){
     if (!finder || finder.g !== gen) return; const { box, stage } = finder, fd = box.querySelector(".vz-fd"), rf = box.querySelector(".vz-rf"); if (!fd || !rf) return;
     const w = fnorm(findQ); [...rf.children].forEach(i => i.classList.remove("hit")); fd.innerHTML = ""; if (w.length < 2) return;
