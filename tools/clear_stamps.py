@@ -1,7 +1,7 @@
 """The client's red review stamps on electrical drawings (Approved / Approved as Noted / Not Approved / For Information
 Only, then a row with the reviewer's name, signature and date): that signer row cleared to white, whatever it is drawn
-as (text, line art or a picture). Also a file path printed under the frame (L:\\Projects\\... with the drafter's
-folders) cleared. Marked "stampclear" in the PDF keywords; a rerun skips it.
+as (text, line art or a picture). Also the plot stamp's file path printed along an edge of the sheet (L:\\Projects\\... with the drafter's
+folders) cleared. Marked "stampclear" and "pathclear" in the PDF keywords; a rerun skips it.
 
   python3 tools/clear_stamps.py [files…]      (default: every PDF in SLDs/; then tools/build_pics.py)
 """
@@ -26,15 +26,20 @@ def rows(p):
 
 def clear(path):
     d = pymupdf.open(path)
-    if "stampclear" in (d.metadata.get("keywords") or ""): return "done before"
+    kw = d.metadata.get("keywords") or ""
+    if "stampclear" in kw and "pathclear" in kw: return "done before"
     n = 0
     for p in d:
-        for r in rows(p): p.add_redact_annot(r, fill=(1, 1, 1)); n += 1
-        H = p.rect.height
+        if "stampclear" not in kw:
+            for r in rows(p): p.add_redact_annot(r, fill=(1, 1, 1)); n += 1
+        # (the plot stamp: the CAD file's path, with the client's and drafter's folder names and the plotting machine,
+        # printed along any edge of the sheet)
+        W, H = p.rect.width, p.rect.height
         for b in p.get_text("blocks"):
-            if b[1] > H * .965 and re.search(r"[A-Z]:\\|\\Projects\\", b[4]): p.add_redact_annot(pymupdf.Rect(b[:4]) + (-1, -1, 1, 1), fill=(1, 1, 1)); n += 1
+            edge = b[1] > H * .965 or b[3] < H * .035 or b[2] < W * .035 or b[0] > W * .965
+            if edge and re.search(r"[A-Z]:\\|\\Projects\\|\.DWG\b", b[4], re.I): p.add_redact_annot(pymupdf.Rect(b[:4]) + (-1, -1, 1, 1), fill=(1, 1, 1)); n += 1
         p.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_PIXELS, graphics=pymupdf.PDF_REDACT_LINE_ART_REMOVE_IF_COVERED, text=pymupdf.PDF_REDACT_TEXT_REMOVE)
-    md = d.metadata or {}; md["keywords"] = ((md.get("keywords") or "") + " stampclear").strip(); d.set_metadata(md); d.saveIncr()
+    md = d.metadata or {}; md["keywords"] = " ".join(dict.fromkeys(((md.get("keywords") or "") + " stampclear pathclear").split())); d.set_metadata(md); d.saveIncr()
     return f"{n} cleared" if n else "none"
 
 if __name__ == "__main__":
