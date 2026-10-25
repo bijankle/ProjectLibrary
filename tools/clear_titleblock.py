@@ -71,11 +71,48 @@ def find(p, num):
         bx = min(c, key=lambda x: abs(x1 - x - bw * .27))
     return pymupdf.Rect(x0, y0, x1, y1), pymupdf.Rect(bx, y0, x1, y1), bool(left)
 
+def find_px(p):
+    """a scanned sheet (no drawn lines to go by): the same band and box found in its picture. A ruled line is a row of
+    the picture dark from frame to frame; a division a column dark for nearly the band's whole height"""
+    import numpy as np
+    W, H = p.rect.width, p.rect.height; z = 2000 / W
+    pix = p.get_pixmap(matrix=pymupdf.Matrix(z, z), colorspace=pymupdf.csGRAY)
+    a = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w) < 235   # (grey lines count: many sheets are drawn light)
+    def runs(idx):   # neighbouring rows / columns as one line, at its middle
+        out, g = [], []
+        for i in idx:
+            if g and i > g[-1] + 2: out.append(sum(g) / len(g)); g = []
+            g.append(i)
+        if g: out.append(sum(g) / len(g))
+        return out
+    lo = int(pix.h * .55); fr = a[lo:].mean(axis=1)
+    hs = [int(lo + y) for y in runs([i for i, v in enumerate(fr) if v > .4]) if lo + y < pix.h - 4]   # (not the page's own edge)
+    if len(hs) < 2: return None
+    # (the frame's foot, the lowest ruled line; the band's top a line unbroken across the same width: wires stop short)
+    foot = hs[-1]; fx = np.nonzero(a[foot - 1:foot + 2].any(axis=0))[0]
+    if not len(fx): return None
+    fx0, fx1 = int(fx.min()), int(fx.max())
+    whole = lambda y: a[y - 1:y + 2, fx0:fx1 + 1].any(axis=0).mean() > .93
+    tops = [y for y in hs if pix.h * .025 < foot - y < pix.h * .15 and whole(y)]
+    if not tops: return None
+    top = min(tops); y0, y1 = int(top), int(foot)
+    xs =np.nonzero(a[int(top)] | a[int(top) + 1] | a[int(top) - 1])[0]
+    x0, x1 = (int(xs.min()), int(xs.max())) if len(xs) else (0, pix.w - 1)
+    col = a[y0 + 3:y1 - 2, :].mean(axis=0)
+    full = [x for x in runs([i for i, v in enumerate(col) if v > .9]) if x0 + 5 < x < x1 - 5]
+    bw = x1 - x0; ok = lambda x: bw * .12 <= x1 - x <= bw * .5
+    c = [x for x in full if ok(x)]
+    bx = min(c, key=lambda x: abs(x1 - x - bw * .27)) if c else x1 - bw * .27
+    s = 1 / z
+    return pymupdf.Rect(x0 * s, y0 * s, x1 * s, y1 * s), pymupdf.Rect(bx * s, y0 * s, x1 * s, y1 * s), False
+
 def clear(path, num, rev, title, out=None):
     d = pymupdf.open(path); p = d[0]
     if p.rotation: return "rotated"
-    f = find(p, num)
+    f = find(p, num) or find_px(p)
     if not f: return "no band"
+    # (the signing service's envelope number printed above the frame goes too)
+    for w in p.search_for("Docusign Envelope ID") + p.search_for("DocuSign Envelope ID"): p.add_redact_annot(pymupdf.Rect(0, w.y0 - 2, p.rect.width * .5, w.y1 + 2), fill=(1, 1, 1))
     band, box, _ = f
     lw = 1.2
     inner = pymupdf.Rect(band.x0 + lw, band.y0 + lw, band.x1 - lw, band.y1 - lw)

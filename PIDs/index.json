@@ -3427,7 +3427,8 @@
    "rev": "0",
    "date": "2025-11-10",
    "pages": 1,
-   "size": 843556
+   "size": 843556,
+   "tb": 1
   },
   "2000-F19-SLD-EL-10103": {
    "file": "SLDs/2000-F19-SLD-EL-10103.pdf",
@@ -3615,7 +3616,8 @@
    "rev": "3",
    "date": "",
    "pages": 1,
-   "size": 630723
+   "size": 630723,
+   "tb": 1
   },
   "2000-F23-SLD-EL-40011": {
    "file": "SLDs/2000-F23-SLD-EL-40011.pdf",
@@ -3623,7 +3625,8 @@
    "rev": "3",
    "date": "",
    "pages": 1,
-   "size": 630500
+   "size": 630500,
+   "tb": 1
   },
   "2000-F23-SLD-EL-40012": {
    "file": "SLDs/2000-F23-SLD-EL-40012.pdf",
@@ -3631,7 +3634,8 @@
    "rev": "4",
    "date": "",
    "pages": 1,
-   "size": 562448
+   "size": 562448,
+   "tb": 1
   },
   "2000-F24-SLD-EL-10501": {
    "file": "SLDs/2000-F24-SLD-EL-10501.pdf",
@@ -3872,7 +3876,8 @@
    "rev": "1",
    "date": "2025-08-04",
    "pages": 1,
-   "size": 498114
+   "size": 498114,
+   "tb": 1
   },
   "2000-F00-SLD-EL-10001": {
    "file": "SLDs/2000-F00-SLD-EL-10001.pdf",
@@ -3959,7 +3964,8 @@
    "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 445213
+   "size": 445213,
+   "tb": 1
   },
   "2000-F00-SLD-EL-10002": {
    "file": "SLDs/2000-F00-SLD-EL-10002.pdf",
@@ -4038,7 +4044,8 @@
    "rev": "1",
    "date": "2025-11-10",
    "pages": 1,
-   "size": 718630
+   "size": 718630,
+   "tb": 1
   },
   "2000-F22-BLK-IC-10001": {
    "file": "SLDs/2000-F22-BLK-IC-10001.pdf",
@@ -4064,7 +4071,8 @@
    "rev": "6",
    "date": "",
    "pages": 1,
-   "size": 668764
+   "size": 668764,
+   "tb": 1
   },
   "2000-F24-BLK-IC-10501": {
    "file": "SLDs/2000-F24-BLK-IC-10501.pdf",
@@ -4283,7 +4291,8 @@
    "rev": "0",
    "date": "2025-05-28",
    "pages": 1,
-   "size": 1033640
+   "size": 1033640,
+   "tb": 1
   },
   "2000-F175-TLD-EL-40002": {
    "file": "SLDs/2000-F175-TLD-EL-40002.pdf",
@@ -4291,7 +4300,8 @@
    "rev": "0",
    "date": "2025-05-28",
    "pages": 1,
-   "size": 831635
+   "size": 831635,
+   "tb": 1
   },
   "2000-F19-TLD-EL-10002": {
    "file": "SLDs/2000-F19-TLD-EL-10002.pdf",
@@ -4362,7 +4372,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 332443
+   "size": 332443,
+   "tb": 1
   },
   "2000-F23-TLD-EL-40011": {
    "file": "SLDs/2000-F23-TLD-EL-40011.pdf",
@@ -4370,7 +4381,8 @@
    "rev": "2",
    "date": "2026-04-14",
    "pages": 1,
-   "size": 731201
+   "size": 731201,
+   "tb": 1
   },
   "2000-F23-TLD-EL-40012": {
    "file": "SLDs/2000-F23-TLD-EL-40012.pdf",
@@ -4378,7 +4390,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 694379
+   "size": 694379,
+   "tb": 1
   },
   "2000-F23-TLD-EL-40013": {
    "file": "SLDs/2000-F23-TLD-EL-40013.pdf",
@@ -4386,7 +4399,8 @@
    "rev": "1",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 524994
+   "size": 524994,
+   "tb": 1
   },
   "2000-F24-TLD-EL-10501": {
    "file": "SLDs/2000-F24-TLD-EL-10501.pdf",
@@ -4439,7 +4453,8 @@
    "rev": "0",
    "date": "2025-06-13",
    "pages": 1,
-   "size": 368923
+   "size": 368923,
+   "tb": 1
   },
   "2000-F72-TLD-EL-10102": {
    "file": "SLDs/2000-F72-TLD-EL-10102.pdf",
@@ -4717,7 +4732,8 @@
    "rev": "2",
    "date": "2025-08-26",
    "pages": 1,
-   "size": 528288
+   "size": 528288,
+   "tb": 1
   },
   "2000-F12-SCM-EL-10401": {
    "file": "SLDs/2000-F12-SCM-EL-10401.pdf",
@@ -5256,7 +5272,8 @@
    "rev": "1",
    "date": "2025-09-04",
    "pages": 1,
-   "size": 497510
+   "size": 497510,
+   "tb": 1
   },
   "2000-F13-SCM-EL-10356": {
    "file": "SLDs/2000-F13-SCM-EL-10356.pdf",
@@ -5687,7 +5704,8 @@
    "rev": "3",
    "date": "2026-09-11",
    "pages": 1,
-   "size": 551352
+   "size": 551352,
+   "tb": 1
   },
   "2000-F13-SCM-EL-10445": {
    "file": "SLDs/2000-F13-SCM-EL-10445.pdf",
@@ -6217,7 +6235,8 @@
    "rev": "2",
    "date": "2025-09-30",
    "pages": 1,
-   "size": 535088
+   "size": 535088,
+   "tb": 1
   },
   "2000-F13-SCM-EL-10955": {
    "file": "SLDs/2000-F13-SCM-EL-10955.pdf",
@@ -6765,7 +6784,8 @@
    "rev": "3",
    "date": "2026-09-10",
    "pages": 1,
-   "size": 504456
+   "size": 504456,
+   "tb": 1
   },
   "2000-F16-SCM-EL-10223": {
    "file": "SLDs/2000-F16-SCM-EL-10223.pdf",
@@ -7340,7 +7360,8 @@
    "rev": "1",
    "date": "2025-12-10",
    "pages": 1,
-   "size": 970716
+   "size": 970716,
+   "tb": 1
   },
   "2000-F175-SCM-EL-40002": {
    "file": "SLDs/2000-F175-SCM-EL-40002.pdf",
@@ -7348,7 +7369,8 @@
    "rev": "2",
    "date": "2026-01-20",
    "pages": 1,
-   "size": 381544
+   "size": 381544,
+   "tb": 1
   },
   "2000-F175-SCM-EL-40003": {
    "file": "SLDs/2000-F175-SCM-EL-40003.pdf",
@@ -7356,7 +7378,8 @@
    "rev": "0",
    "date": "2025-11-10",
    "pages": 1,
-   "size": 441320
+   "size": 441320,
+   "tb": 1
   },
   "2000-F175-SCM-EL-40004": {
    "file": "SLDs/2000-F175-SCM-EL-40004.pdf",
@@ -7364,7 +7387,8 @@
    "rev": "1",
    "date": "2026-01-20",
    "pages": 1,
-   "size": 450270
+   "size": 450270,
+   "tb": 1
   },
   "2000-F175-SCM-EL-40005": {
    "file": "SLDs/2000-F175-SCM-EL-40005.pdf",
@@ -7372,7 +7396,8 @@
    "rev": "0",
    "date": "2025-05-28",
    "pages": 1,
-   "size": 619457
+   "size": 619457,
+   "tb": 1
   },
   "2000-F175-SCM-EL-40011": {
    "file": "SLDs/2000-F175-SCM-EL-40011.pdf",
@@ -7380,7 +7405,8 @@
    "rev": "1",
    "date": "2025-07-10",
    "pages": 1,
-   "size": 534860
+   "size": 534860,
+   "tb": 1
   },
   "2000-F175-SCM-EL-40012": {
    "file": "SLDs/2000-F175-SCM-EL-40012.pdf",
@@ -7388,7 +7414,8 @@
    "rev": "1",
    "date": "2025-07-10",
    "pages": 1,
-   "size": 567705
+   "size": 567705,
+   "tb": 1
   },
   "2000-F175-SCM-EL-40013": {
    "file": "SLDs/2000-F175-SCM-EL-40013.pdf",
@@ -7396,7 +7423,8 @@
    "rev": "1",
    "date": "2025-07-10",
    "pages": 1,
-   "size": 319086
+   "size": 319086,
+   "tb": 1
   },
   "2000-F175-SCM-EL-40014": {
    "file": "SLDs/2000-F175-SCM-EL-40014.pdf",
@@ -7404,7 +7432,8 @@
    "rev": "1",
    "date": "2025-07-10",
    "pages": 1,
-   "size": 385466
+   "size": 385466,
+   "tb": 1
   },
   "2000-F175-SCM-EL-40015": {
    "file": "SLDs/2000-F175-SCM-EL-40015.pdf",
@@ -7412,7 +7441,8 @@
    "rev": "1",
    "date": "2025-07-10",
    "pages": 1,
-   "size": 476885
+   "size": 476885,
+   "tb": 1
   },
   "2000-F175-SCM-IC-40001": {
    "file": "SLDs/2000-F175-SCM-IC-40001.pdf",
@@ -7420,7 +7450,8 @@
    "rev": "1",
    "date": "2025-08-12",
    "pages": 1,
-   "size": 473196
+   "size": 473196,
+   "tb": 1
   },
   "2000-F175-SCM-IC-40002": {
    "file": "SLDs/2000-F175-SCM-IC-40002.pdf",
@@ -7428,7 +7459,8 @@
    "rev": "3",
    "date": "2026-01-20",
    "pages": 1,
-   "size": 319217
+   "size": 319217,
+   "tb": 1
   },
   "2000-F18-SCM-EL-10201": {
    "file": "SLDs/2000-F18-SCM-EL-10201.pdf",
@@ -7940,7 +7972,8 @@
    "rev": "2",
    "date": "2025-12-30",
    "pages": 1,
-   "size": 749305
+   "size": 749305,
+   "tb": 1
   },
   "2000-F22-SCM-EL-10274": {
    "file": "SLDs/2000-F22-SCM-EL-10274.pdf",
@@ -8236,7 +8269,8 @@
    "rev": "2",
    "date": "2025-10-03",
    "pages": 1,
-   "size": 755551
+   "size": 755551,
+   "tb": 1
   },
   "2000-F23-SCM-EL-10224": {
    "file": "SLDs/2000-F23-SCM-EL-10224.pdf",
@@ -8262,7 +8296,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 756379
+   "size": 756379,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40011": {
    "file": "SLDs/2000-F23-SCM-EL-40011.pdf",
@@ -8270,7 +8305,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 722240
+   "size": 722240,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40012": {
    "file": "SLDs/2000-F23-SCM-EL-40012.pdf",
@@ -8278,7 +8314,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 572787
+   "size": 572787,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40013": {
    "file": "SLDs/2000-F23-SCM-EL-40013.pdf",
@@ -8286,7 +8323,8 @@
    "rev": "1",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 391978
+   "size": 391978,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40014": {
    "file": "SLDs/2000-F23-SCM-EL-40014.pdf",
@@ -8294,7 +8332,8 @@
    "rev": "3",
    "date": "2026-04-14",
    "pages": 1,
-   "size": 445633
+   "size": 445633,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40015": {
    "file": "SLDs/2000-F23-SCM-EL-40015.pdf",
@@ -8302,7 +8341,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 344218
+   "size": 344218,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40016": {
    "file": "SLDs/2000-F23-SCM-EL-40016.pdf",
@@ -8310,7 +8350,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 375709
+   "size": 375709,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40017": {
    "file": "SLDs/2000-F23-SCM-EL-40017.pdf",
@@ -8318,7 +8359,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 375866
+   "size": 375866,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40018": {
    "file": "SLDs/2000-F23-SCM-EL-40018.pdf",
@@ -8326,7 +8368,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 352486
+   "size": 352486,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40019": {
    "file": "SLDs/2000-F23-SCM-EL-40019.pdf",
@@ -8334,7 +8377,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 353421
+   "size": 353421,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40024": {
    "file": "SLDs/2000-F23-SCM-EL-40024.pdf",
@@ -8342,7 +8386,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 356803
+   "size": 356803,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40025": {
    "file": "SLDs/2000-F23-SCM-EL-40025.pdf",
@@ -8350,7 +8395,8 @@
    "rev": "4",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 479587
+   "size": 479587,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40027": {
    "file": "SLDs/2000-F23-SCM-EL-40027.pdf",
@@ -8358,7 +8404,8 @@
    "rev": "3",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 488204
+   "size": 488204,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40028": {
    "file": "SLDs/2000-F23-SCM-EL-40028.pdf",
@@ -8366,7 +8413,8 @@
    "rev": "3",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 457620
+   "size": 457620,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40029": {
    "file": "SLDs/2000-F23-SCM-EL-40029.pdf",
@@ -8374,7 +8422,8 @@
    "rev": "3",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 453685
+   "size": 453685,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40030": {
    "file": "SLDs/2000-F23-SCM-EL-40030.pdf",
@@ -8382,7 +8431,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 347096
+   "size": 347096,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40031": {
    "file": "SLDs/2000-F23-SCM-EL-40031.pdf",
@@ -8390,7 +8440,8 @@
    "rev": "3",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 511488
+   "size": 511488,
+   "tb": 1
   },
   "2000-F23-SCM-IC-10011": {
    "file": "SLDs/2000-F23-SCM-IC-10011.pdf",
@@ -8416,7 +8467,8 @@
    "rev": "3",
    "date": "2026-04-14",
    "pages": 1,
-   "size": 481911
+   "size": 481911,
+   "tb": 1
   },
   "2000-F23-SCM-IC-40002": {
    "file": "SLDs/2000-F23-SCM-IC-40002.pdf",
@@ -8424,7 +8476,8 @@
    "rev": "3",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 558639
+   "size": 558639,
+   "tb": 1
   },
   "2000-F23-SCM-IC-40020": {
    "file": "SLDs/2000-F23-SCM-IC-40020.pdf",
@@ -8432,7 +8485,8 @@
    "rev": "1",
    "date": "2026-06-25",
    "pages": 1,
-   "size": 540316
+   "size": 540316,
+   "tb": 1
   },
   "2000-F24-SCM-EL-10203": {
    "file": "SLDs/2000-F24-SCM-EL-10203.pdf",
@@ -8845,7 +8899,8 @@
    "rev": "3",
    "date": "2026-10-05",
    "pages": 1,
-   "size": 502711
+   "size": 502711,
+   "tb": 1
   },
   "2000-F28-SCM-EL-10222": {
    "file": "SLDs/2000-F28-SCM-EL-10222.pdf",
@@ -10032,7 +10087,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 503084
+   "size": 503084,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40005": {
    "file": "SLDs/2000-F75-SCM-EL-40005.pdf",
@@ -10040,7 +10096,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 448949
+   "size": 448949,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40006": {
    "file": "SLDs/2000-F75-SCM-EL-40006.pdf",
@@ -10048,7 +10105,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 342013
+   "size": 342013,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40111": {
    "file": "SLDs/2000-F75-SCM-EL-40111.pdf",
@@ -10056,7 +10114,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 573038
+   "size": 573038,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40112": {
    "file": "SLDs/2000-F75-SCM-EL-40112.pdf",
@@ -10064,7 +10123,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 527008
+   "size": 527008,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40113": {
    "file": "SLDs/2000-F75-SCM-EL-40113.pdf",
@@ -10072,7 +10132,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 527443
+   "size": 527443,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40114": {
    "file": "SLDs/2000-F75-SCM-EL-40114.pdf",
@@ -10080,7 +10141,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 519879
+   "size": 519879,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40115": {
    "file": "SLDs/2000-F75-SCM-EL-40115.pdf",
@@ -10088,7 +10150,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 518564
+   "size": 518564,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40116": {
    "file": "SLDs/2000-F75-SCM-EL-40116.pdf",
@@ -10096,7 +10159,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 523174
+   "size": 523174,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40117": {
    "file": "SLDs/2000-F75-SCM-EL-40117.pdf",
@@ -10104,7 +10168,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 518251
+   "size": 518251,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40118": {
    "file": "SLDs/2000-F75-SCM-EL-40118.pdf",
@@ -10112,7 +10177,8 @@
    "rev": "1",
    "date": "2026-01-20",
    "pages": 1,
-   "size": 1042667
+   "size": 1042667,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40120": {
    "file": "SLDs/2000-F75-SCM-EL-40120.pdf",
@@ -10120,7 +10186,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 712122
+   "size": 712122,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40122": {
    "file": "SLDs/2000-F75-SCM-EL-40122.pdf",
@@ -10128,7 +10195,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 750225
+   "size": 750225,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40124": {
    "file": "SLDs/2000-F75-SCM-EL-40124.pdf",
@@ -10136,7 +10204,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 666202
+   "size": 666202,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40126": {
    "file": "SLDs/2000-F75-SCM-EL-40126.pdf",
@@ -10144,7 +10213,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 664796
+   "size": 664796,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40128": {
    "file": "SLDs/2000-F75-SCM-EL-40128.pdf",
@@ -10152,7 +10222,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 663531
+   "size": 663531,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40211": {
    "file": "SLDs/2000-F75-SCM-EL-40211.pdf",
@@ -10160,7 +10231,8 @@
    "rev": "0",
    "date": "2025-06-04",
    "pages": 1,
-   "size": 529060
+   "size": 529060,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40212": {
    "file": "SLDs/2000-F75-SCM-EL-40212.pdf",
@@ -10168,7 +10240,8 @@
    "rev": "0",
    "date": "2025-06-10",
    "pages": 1,
-   "size": 548807
+   "size": 548807,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40213": {
    "file": "SLDs/2000-F75-SCM-EL-40213.pdf",
@@ -10176,7 +10249,8 @@
    "rev": "0",
    "date": "2025-06-10",
    "pages": 1,
-   "size": 534896
+   "size": 534896,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40214": {
    "file": "SLDs/2000-F75-SCM-EL-40214.pdf",
@@ -10184,7 +10258,8 @@
    "rev": "0",
    "date": "2025-06-05",
    "pages": 1,
-   "size": 682824
+   "size": 682824,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40216": {
    "file": "SLDs/2000-F75-SCM-EL-40216.pdf",
@@ -10192,7 +10267,8 @@
    "rev": "0",
    "date": "2025-06-05",
    "pages": 1,
-   "size": 692901
+   "size": 692901,
+   "tb": 1
   },
   "2000-F75-SCM-IC-40002": {
    "file": "SLDs/2000-F75-SCM-IC-40002.pdf",
@@ -10200,7 +10276,8 @@
    "rev": "3",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 528077
+   "size": 528077,
+   "tb": 1
   },
   "2000-F75-SCM-IC-40201": {
    "file": "SLDs/2000-F75-SCM-IC-40201.pdf",
@@ -10208,7 +10285,8 @@
    "rev": "1",
    "date": "2026-06-29",
    "pages": 1,
-   "size": 305578
+   "size": 305578,
+   "tb": 1
   },
   "2000-F13-SCM-EL-10301": {
    "file": "SLDs/2000-F13-SCM-EL-10301.pdf",
@@ -10288,7 +10366,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 529818
+   "size": 529818,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40021": {
    "file": "SLDs/2000-F23-SCM-EL-40021.pdf",
@@ -10296,7 +10375,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 534183
+   "size": 534183,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40022": {
    "file": "SLDs/2000-F23-SCM-EL-40022.pdf",
@@ -10304,7 +10384,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 542306
+   "size": 542306,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40023": {
    "file": "SLDs/2000-F23-SCM-EL-40023.pdf",
@@ -10312,7 +10393,8 @@
    "rev": "2",
    "date": "2026-04-14",
    "pages": 1,
-   "size": 539264
+   "size": 539264,
+   "tb": 1
   },
   "2000-F23-SCM-EL-40026": {
    "file": "SLDs/2000-F23-SCM-EL-40026.pdf",
@@ -10320,7 +10402,8 @@
    "rev": "3",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 458942
+   "size": 458942,
+   "tb": 1
   },
   "2000-F28-SCM-EL-10203": {
    "file": "SLDs/2000-F28-SCM-EL-10203.pdf",
@@ -10355,7 +10438,8 @@
    "rev": "2",
    "date": "2025-12-04",
    "pages": 1,
-   "size": 743608
+   "size": 743608,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40001": {
    "file": "SLDs/2000-F75-SCM-EL-40001.pdf",
@@ -10363,7 +10447,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 594145
+   "size": 594145,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40002": {
    "file": "SLDs/2000-F75-SCM-EL-40002.pdf",
@@ -10371,7 +10456,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 592569
+   "size": 592569,
+   "tb": 1
   },
   "2000-F75-SCM-EL-40003": {
    "file": "SLDs/2000-F75-SCM-EL-40003.pdf",
@@ -10379,7 +10465,8 @@
    "rev": "2",
    "date": "2026-04-07",
    "pages": 1,
-   "size": 594612
+   "size": 594612,
+   "tb": 1
   },
   "2000-F24-PID-PR-10024": {
    "file": "PIDs/2000-F24-PID-PR-10024.pdf",
@@ -10766,6 +10853,1917 @@
    "src": [
     "2000-F75-DSH-EL-40003_D.pdf"
    ]
+  },
+  "2000-F00-SCM-EL-10101": {
+   "file": "SLDs/2000-F00-SCM-EL-10101.pdf",
+   "title": "General Fimiston site - F00-SW-010 - F13-TR-014 recycle crushing 415V MCC feeder - schematic diagram",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 447385,
+   "from": [
+    "2000-F00-SCM-EL-10101_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F00-SCM-EL-10115": {
+   "file": "SLDs/2000-F00-SCM-EL-10115.pdf",
+   "title": "General Fimiston site - F00-SW-010 - F28-TR-009 ultra fine grinding 2/3 415V MCC feeder - schematic diagram",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 449419,
+   "from": [
+    "2000-F00-SCM-EL-10115_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F00-SCM-EL-10125": {
+   "file": "SLDs/2000-F00-SCM-EL-10125.pdf",
+   "title": "General Fimiston site - F00-SW-010 - F13-TR-002 SAG mill 415V MCC feeder - schematic diagram",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 447714,
+   "from": [
+    "2000-F00-SCM-EL-10125_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F00-SCM-EL-10137": {
+   "file": "SLDs/2000-F00-SCM-EL-10137.pdf",
+   "title": "General Fimiston site - F00-SW-010 - F16-TR-011 flotation 11kV switchboard feeder - schematic diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 351594,
+   "from": [
+    "2000-F00-SCM-EL-10137_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F00-SCM-EL-10202": {
+   "file": "SLDs/2000-F00-SCM-EL-10202.pdf",
+   "title": "General Fimiston site - F13-SW-120 - F00-DB-001 33kV switchroom l&sp db - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 345138,
+   "from": [
+    "2000-F00-SCM-EL-10202_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F12-SCM-EL-10204": {
+   "file": "SLDs/2000-F12-SCM-EL-10204.pdf",
+   "title": "Primary crushing - F12-SW-001 F12-SW-001 arc flash system schematic diagram",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 475047,
+   "from": [
+    "2000-F12-SCM-EL-10204_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F12-SCM-EL-10234": {
+   "file": "SLDs/2000-F12-SCM-EL-10234.pdf",
+   "title": "Primary crushing - F12-SW-101 - F12-SW-101 415V essential switchboard incomer - schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 516507,
+   "from": [
+    "2000-F12-SCM-EL-10234_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10355": {
+   "file": "SLDs/2000-F13-SCM-EL-10355.pdf",
+   "title": "Milling & classification - F13-SW-102 - F13-SW-102 415V essential switchboard incomer - schematic diagram sheet 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 462895,
+   "from": [
+    "2000-F13-SCM-EL-10355_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10444": {
+   "file": "SLDs/2000-F13-SCM-EL-10444.pdf",
+   "title": "Milling & classification - F13-SW-114 - F13-SW-114 415V essential switchboard incomer - schematic diagram sheet 2",
+   "rev": "3",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 486310,
+   "from": [
+    "2000-F13-SCM-EL-10444_3.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10705": {
+   "file": "SLDs/2000-F13-SCM-EL-10705.pdf",
+   "title": "Milling & classification - F13-SW-120 - F13-DB-005 mill chillers & reag 415V swrm l&sp db - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 347187,
+   "from": [
+    "2000-F13-SCM-EL-10705_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10706": {
+   "file": "SLDs/2000-F13-SCM-EL-10706.pdf",
+   "title": "Milling & classification - F13-SW-120 - f13UPS005-isl 240vac UPS maintenance bypass sw - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 346251,
+   "from": [
+    "2000-F13-SCM-EL-10706_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10708": {
+   "file": "SLDs/2000-F13-SCM-EL-10708.pdf",
+   "title": "Milling & classification - F13-SW-020 - F13-CU-402 chiller 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 342018,
+   "from": [
+    "2000-F13-SCM-EL-10708_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10709": {
+   "file": "SLDs/2000-F13-SCM-EL-10709.pdf",
+   "title": "Milling & classification - F13-SW-020 - F13-CU-403 chiller 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 342109,
+   "from": [
+    "2000-F13-SCM-EL-10709_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10710": {
+   "file": "SLDs/2000-F13-SCM-EL-10710.pdf",
+   "title": "Milling & classification - F13-SW-020 - F13-CU-404 chiller 3 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 341786,
+   "from": [
+    "2000-F13-SCM-EL-10710_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10711": {
+   "file": "SLDs/2000-F13-SCM-EL-10711.pdf",
+   "title": "Milling & classification - F13-SW-020 - F13-CU-405 chiller 4 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 341389,
+   "from": [
+    "2000-F13-SCM-EL-10711_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10712": {
+   "file": "SLDs/2000-F13-SCM-EL-10712.pdf",
+   "title": "Milling & classification - F13-SW-020 - F13-PW-413 cooling water pump 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 431354,
+   "from": [
+    "2000-F13-SCM-EL-10712_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10713": {
+   "file": "SLDs/2000-F13-SCM-EL-10713.pdf",
+   "title": "Milling & classification - F13-SW-020 - F13-PW-414 cooling water pump 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 430479,
+   "from": [
+    "2000-F13-SCM-EL-10713_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10714": {
+   "file": "SLDs/2000-F13-SCM-EL-10714.pdf",
+   "title": "Milling & classification - F13-SW-020 - F13-PW-415 chiller recirculating water pump 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 410944,
+   "from": [
+    "2000-F13-SCM-EL-10714_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10715": {
+   "file": "SLDs/2000-F13-SCM-EL-10715.pdf",
+   "title": "Milling & classification - F13-SW-020 - F13-PW-416 chiller recirculating water pump 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 412390,
+   "from": [
+    "2000-F13-SCM-EL-10715_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10716": {
+   "file": "SLDs/2000-F13-SCM-EL-10716.pdf",
+   "title": "Milling & classification - F13-SW-020 - F13-SW-120 415V essential switchboard feeder - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 349627,
+   "from": [
+    "2000-F13-SCM-EL-10716_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-EL-10954": {
+   "file": "SLDs/2000-F13-SCM-EL-10954.pdf",
+   "title": "Milling & classification - F13-SW-103 - F13-SW-103 415V essential switchboard incomer - schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 514473,
+   "from": [
+    "2000-F13-SCM-EL-10954_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-IC-10201": {
+   "file": "SLDs/2000-F13-SCM-IC-10201.pdf",
+   "title": "Milling & classification - reclaim tunnel - F13-RIO-001 field n-io panel - schematic diagram sheet 1",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 581681,
+   "from": [
+    "2000-F13-SCM-IC-10201_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-IC-10302": {
+   "file": "SLDs/2000-F13-SCM-IC-10302.pdf",
+   "title": "Milling & classification F13-RIO-011 field n-io panel schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 494255,
+   "from": [
+    "2000-F13-SCM-IC-10302_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-IC-10332": {
+   "file": "SLDs/2000-F13-SCM-IC-10332.pdf",
+   "title": "Milling & classification - F13-RIO-012 milling & classification field n-io panel - schematic diagram sheet 2",
+   "rev": "3",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 512537,
+   "from": [
+    "2000-F13-SCM-IC-10332_3.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-IC-10362": {
+   "file": "SLDs/2000-F13-SCM-IC-10362.pdf",
+   "title": "Milling & classification F13-RIO-013 milling & classification field n-io panel schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 533127,
+   "from": [
+    "2000-F13-SCM-IC-10362_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-IC-10602": {
+   "file": "SLDs/2000-F13-SCM-IC-10602.pdf",
+   "title": "Milling & classification F13-RIO-021 SAG mill field n-io panel schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 502203,
+   "from": [
+    "2000-F13-SCM-IC-10602_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-IC-10632": {
+   "file": "SLDs/2000-F13-SCM-IC-10632.pdf",
+   "title": "Milling & classification F13-RIO-022 SAG mill field n-io panel schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 520864,
+   "from": [
+    "2000-F13-SCM-IC-10632_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-IC-10902": {
+   "file": "SLDs/2000-F13-SCM-IC-10902.pdf",
+   "title": "Milling & classification - ball mill F13-RIO-031 ball mill field n-io panel - schematic diagram sheet 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 496465,
+   "from": [
+    "2000-F13-SCM-IC-10902_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F13-SCM-IC-10932": {
+   "file": "SLDs/2000-F13-SCM-IC-10932.pdf",
+   "title": "Milling & classification - ball mill F13-RIO-032 ball mill field n-io panel - schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 529977,
+   "from": [
+    "2000-F13-SCM-IC-10932_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F14-SCM-IC-10202": {
+   "file": "SLDs/2000-F14-SCM-IC-10202.pdf",
+   "title": "Gravity circuit & intensive leaching F14-RIO-001 gravity & ilr field n-io panel schematic diagram sheet 2",
+   "rev": "3",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 515245,
+   "from": [
+    "2000-F14-SCM-IC-10202_3.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F16-SCM-EL-10129": {
+   "file": "SLDs/2000-F16-SCM-EL-10129.pdf",
+   "title": "Rougher & scavenger flotation F16-SW-011 incomer 2 - generator schematic diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 534622,
+   "from": [
+    "2000-F16-SCM-EL-10129_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F16-SCM-EL-10172": {
+   "file": "SLDs/2000-F16-SCM-EL-10172.pdf",
+   "title": "Rougher & scavenger flotation - f16sw011-lcs 11kV switchboard remote switching panel schematic diagram sheet 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 594209,
+   "from": [
+    "2000-F16-SCM-EL-10172_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F16-SCM-EL-10177": {
+   "file": "SLDs/2000-F16-SCM-EL-10177.pdf",
+   "title": "Rougher & scavenger flotation - f16sw011-lcs 11kV switchboard remote switching panel schematic diagram sheet 7",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 588777,
+   "from": [
+    "2000-F16-SCM-EL-10177_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F16-SCM-EL-10178": {
+   "file": "SLDs/2000-F16-SCM-EL-10178.pdf",
+   "title": "Rougher & scavenger flotation - f16sw011-lcs 11kV switchboard remote switching panel schematic diagram sheet 8",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 595401,
+   "from": [
+    "2000-F16-SCM-EL-10178_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F16-SCM-EL-10217": {
+   "file": "SLDs/2000-F16-SCM-EL-10217.pdf",
+   "title": "Rougher & scavenger flotation - F16-SW-104 - F16-SW-104 415V essential switchboard incomer - schematic diagram sheet 2",
+   "rev": "3",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 483650,
+   "from": [
+    "2000-F16-SCM-EL-10217_3.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F16-SCM-EL-10252": {
+   "file": "SLDs/2000-F16-SCM-EL-10252.pdf",
+   "title": "Rougher & scavenger flotation - F16-SW-005 - F16-SW-005 incomer - schematic diagram sheet 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 598052,
+   "from": [
+    "2000-F16-SCM-EL-10252_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F16-SCM-EL-10271": {
+   "file": "SLDs/2000-F16-SCM-EL-10271.pdf",
+   "title": "Rougher & scavenger flotation - F16-SW-008 - F16-SW-008 incomer - schematic and diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 491404,
+   "from": [
+    "2000-F16-SCM-EL-10271_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F16-SCM-IC-10202": {
+   "file": "SLDs/2000-F16-SCM-IC-10202.pdf",
+   "title": "Rougher & scavenger flotation F16-RIO-001 rougher & scavenger field n-io panel schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 451625,
+   "from": [
+    "2000-F16-SCM-IC-10202_0_RNC.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F18-SCM-IC-10232": {
+   "file": "SLDs/2000-F18-SCM-IC-10232.pdf",
+   "title": "Cleaner & cleaner scavenger flotation F18-RIO-002 cleaner flotation field n-io panel schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 454745,
+   "from": [
+    "2000-F18-SCM-IC-10232_0_RNC.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10205": {
+   "file": "SLDs/2000-F21-SCM-EL-10205.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-DB-001 CIL4 415V switchroom l&sp db schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 347934,
+   "from": [
+    "2000-F21-SCM-EL-10205_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10206": {
+   "file": "SLDs/2000-F21-SCM-EL-10206.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - f21UPS001-isl 240vac UPS maintenance bypass sw schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 348771,
+   "from": [
+    "2000-F21-SCM-EL-10206_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10207": {
+   "file": "SLDs/2000-F21-SCM-EL-10207.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-DB-301 CIL4 area l&sp distribution board schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 344907,
+   "from": [
+    "2000-F21-SCM-EL-10207_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10208": {
+   "file": "SLDs/2000-F21-SCM-EL-10208.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-AG-411 CIL4 tank 1 agitator - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 437937,
+   "from": [
+    "2000-F21-SCM-EL-10208_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10210": {
+   "file": "SLDs/2000-F21-SCM-EL-10210.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-AG-413 CIL4 tank 3 agitator - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 438723,
+   "from": [
+    "2000-F21-SCM-EL-10210_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10211": {
+   "file": "SLDs/2000-F21-SCM-EL-10211.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-AG-414 CIL4 tank 4 agitator - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 437824,
+   "from": [
+    "2000-F21-SCM-EL-10211_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10213": {
+   "file": "SLDs/2000-F21-SCM-EL-10213.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-CR-441 CIL4 area maintenance crane schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 411497,
+   "from": [
+    "2000-F21-SCM-EL-10213_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10214": {
+   "file": "SLDs/2000-F21-SCM-EL-10214.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 spare 32a feeder schematic and termination diagram",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 329022,
+   "from": [
+    "2000-F21-SCM-EL-10214_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10219": {
+   "file": "SLDs/2000-F21-SCM-EL-10219.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-PP-471 CIL4 carbon transfer pump 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 473030,
+   "from": [
+    "2000-F21-SCM-EL-10219_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10220": {
+   "file": "SLDs/2000-F21-SCM-EL-10220.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-PP-472 CIL4 carbon transfer pump 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 419687,
+   "from": [
+    "2000-F21-SCM-EL-10220_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10221": {
+   "file": "SLDs/2000-F21-SCM-EL-10221.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-PP-473 CIL4 carbon transfer pump 3 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 420237,
+   "from": [
+    "2000-F21-SCM-EL-10221_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10223": {
+   "file": "SLDs/2000-F21-SCM-EL-10223.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-PP-475 CIL4 carbon transfer pump 5 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 419873,
+   "from": [
+    "2000-F21-SCM-EL-10223_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10225": {
+   "file": "SLDs/2000-F21-SCM-EL-10225.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-PS-414 CIL4 area sump pump 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 421821,
+   "from": [
+    "2000-F21-SCM-EL-10225_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10226": {
+   "file": "SLDs/2000-F21-SCM-EL-10226.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-PS-415 CIL4 area sump pump 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 423036,
+   "from": [
+    "2000-F21-SCM-EL-10226_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10227": {
+   "file": "SLDs/2000-F21-SCM-EL-10227.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-SA-431 CIL4 tails primary sampler - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 465493,
+   "from": [
+    "2000-F21-SCM-EL-10227_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10228": {
+   "file": "SLDs/2000-F21-SCM-EL-10228.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-SA-432 CIL4 tails secondary sampler - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 403608,
+   "from": [
+    "2000-F21-SCM-EL-10228_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10229": {
+   "file": "SLDs/2000-F21-SCM-EL-10229.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-SA-433 CIL4 tails tertiary sampler - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 403552,
+   "from": [
+    "2000-F21-SCM-EL-10229_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10230": {
+   "file": "SLDs/2000-F21-SCM-EL-10230.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-SC-413A CIL4 tank 3 intertank screen 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 434984,
+   "from": [
+    "2000-F21-SCM-EL-10230_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10231": {
+   "file": "SLDs/2000-F21-SCM-EL-10231.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-SC-413B CIL4 tank 3 intertank screen 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 436682,
+   "from": [
+    "2000-F21-SCM-EL-10231_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10232": {
+   "file": "SLDs/2000-F21-SCM-EL-10232.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-SC-414A CIL4 tank 4 intertank screen 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 434044,
+   "from": [
+    "2000-F21-SCM-EL-10232_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10233": {
+   "file": "SLDs/2000-F21-SCM-EL-10233.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-SC-414B CIL4 tank 4 intertank screen 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 435984,
+   "from": [
+    "2000-F21-SCM-EL-10233_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10234": {
+   "file": "SLDs/2000-F21-SCM-EL-10234.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 - F21-PP-491 CIL4 tank 2 oxygen injection pump - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 471959,
+   "from": [
+    "2000-F21-SCM-EL-10234_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10255": {
+   "file": "SLDs/2000-F21-SCM-EL-10255.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-PS-416 CIL4 area sump pump 3 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 423492,
+   "from": [
+    "2000-F21-SCM-EL-10255_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10256": {
+   "file": "SLDs/2000-F21-SCM-EL-10256.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-SC-420 CIL4 carbon sizing screen - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 430337,
+   "from": [
+    "2000-F21-SCM-EL-10256_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10259": {
+   "file": "SLDs/2000-F21-SCM-EL-10259.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-AG-415 CIL4 tank 5 agitator - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 438338,
+   "from": [
+    "2000-F21-SCM-EL-10259_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10260": {
+   "file": "SLDs/2000-F21-SCM-EL-10260.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-AG-416 CIL4 tank 6 agitator - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 440392,
+   "from": [
+    "2000-F21-SCM-EL-10260_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10261": {
+   "file": "SLDs/2000-F21-SCM-EL-10261.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-AG-417 CIL4 tank 7 agitator - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 436619,
+   "from": [
+    "2000-F21-SCM-EL-10261_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10262": {
+   "file": "SLDs/2000-F21-SCM-EL-10262.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-AG-418 CIL4 tank 8 agitator - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 439854,
+   "from": [
+    "2000-F21-SCM-EL-10262_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10269": {
+   "file": "SLDs/2000-F21-SCM-EL-10269.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-PS-417 CIL4 area sump pump 4 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 419722,
+   "from": [
+    "2000-F21-SCM-EL-10269_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10270": {
+   "file": "SLDs/2000-F21-SCM-EL-10270.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-SC-415A CIL4 tank 5 intertank screen 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 434182,
+   "from": [
+    "2000-F21-SCM-EL-10270_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10271": {
+   "file": "SLDs/2000-F21-SCM-EL-10271.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-SC-415B CIL4 tank 5 intertank screen 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 435741,
+   "from": [
+    "2000-F21-SCM-EL-10271_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10272": {
+   "file": "SLDs/2000-F21-SCM-EL-10272.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-SC-416A CIL4 tank 6 intertank screen 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 434662,
+   "from": [
+    "2000-F21-SCM-EL-10272_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10273": {
+   "file": "SLDs/2000-F21-SCM-EL-10273.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-SC-416B CIL4 tank 6 intertank screen 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 436785,
+   "from": [
+    "2000-F21-SCM-EL-10273_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10274": {
+   "file": "SLDs/2000-F21-SCM-EL-10274.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-SC-417A CIL4 tank 7 intertank screen 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 432029,
+   "from": [
+    "2000-F21-SCM-EL-10274_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10275": {
+   "file": "SLDs/2000-F21-SCM-EL-10275.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-SC-417B CIL4 tank 7 intertank screen 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 434081,
+   "from": [
+    "2000-F21-SCM-EL-10275_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10276": {
+   "file": "SLDs/2000-F21-SCM-EL-10276.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-SC-418A CIL4 tank 8 intertank screen 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 435284,
+   "from": [
+    "2000-F21-SCM-EL-10276_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10277": {
+   "file": "SLDs/2000-F21-SCM-EL-10277.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 - F21-SC-418B CIL4 tank 8 intertank screen 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 437499,
+   "from": [
+    "2000-F21-SCM-EL-10277_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F21-SCM-EL-10280": {
+   "file": "SLDs/2000-F21-SCM-EL-10280.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-007 F21-DPS-999 CIL4 intertank scn maint. bay test panel schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 434904,
+   "from": [
+    "2000-F21-SCM-EL-10280_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F22-SCM-EL-10202": {
+   "file": "SLDs/2000-F22-SCM-EL-10202.pdf",
+   "title": "CIL4 - carbon treatment & elution - F22-SW-030 - F22-SW-030 incomer - schematic diagram sheet 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 606107,
+   "from": [
+    "2000-F22-SCM-EL-10202_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F22-SCM-EL-10252": {
+   "file": "SLDs/2000-F22-SCM-EL-10252.pdf",
+   "title": "CIL4 - carbon treatment & elution - F22-SW-031 - F22-SW-031 incomer - schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 611092,
+   "from": [
+    "2000-F22-SCM-EL-10252_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F22-SCM-EL-10273": {
+   "file": "SLDs/2000-F22-SCM-EL-10273.pdf",
+   "title": "CIL4 - carbon treatment & elution - F22-SW-131 - F22-SW-131 415V emergency switchboard incomer - schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 628590,
+   "from": [
+    "2000-F22-SCM-EL-10273_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F23-SCM-EL-10172": {
+   "file": "SLDs/2000-F23-SCM-EL-10172.pdf",
+   "title": "FINAL TAILING HANDLING & STORAGE - F23SW016-LCS - 11kV SWITCHBOARD REMOTE SWITCHING PANEL - SCHEMATIC DIAGRAM SHEET 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 592245,
+   "from": [
+    "2000-F23-SCM-EL-10172_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F23-SCM-EL-10223": {
+   "file": "SLDs/2000-F23-SCM-EL-10223.pdf",
+   "title": "Final tailings handling & storage - F23-SW-123 - F23-SW-023 415V emergency MCC incomer - schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 636018,
+   "from": [
+    "2000-F23-SCM-EL-10223_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F23-SCM-EL-40002": {
+   "file": "SLDs/2000-F23-SCM-EL-40002.pdf",
+   "title": "FIM III booster station F23-SW-601 HV switchboard remote switching panel schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 463341,
+   "from": [
+    "2000-F23-SCM-EL-40002_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F23-SCM-EL-40003": {
+   "file": "SLDs/2000-F23-SCM-EL-40003.pdf",
+   "title": "FIM III booster station F23-SW-601 HV switchboard remote switching panel schematic diagram sheet 3",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 342687,
+   "from": [
+    "2000-F23-SCM-EL-40003_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F23-SCM-IC-10202": {
+   "file": "SLDs/2000-F23-SCM-IC-10202.pdf",
+   "title": "Final tailings handling & storage - F23-RIO-001 final tails pumps field n-io panel - schematic diagram sheet 2",
+   "rev": "1A",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 515927,
+   "from": [
+    "2000-F23-SCM-IC-10202_1A.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F24-SCM-IC-10502": {
+   "file": "SLDs/2000-F24-SCM-IC-10502.pdf",
+   "title": "Air & water services - saline water F24-SW-024 MCC n-io and comms panel schematic diagram sheet 2",
+   "rev": "2A",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 609136,
+   "from": [
+    "2000-F24-SCM-IC-10502_2A.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F28-SCM-EL-10172": {
+   "file": "SLDs/2000-F28-SCM-EL-10172.pdf",
+   "title": "ULTRA FINE GRINDING 2 / 3 - F28SW013-LCS - 11kV SWITCHBOARD REMOTE SWITCHING PANEL - SCHEMATIC DIAGRAM SHEET 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 549706,
+   "from": [
+    "2000-F28-SCM-EL-10172_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F28-SCM-EL-10221": {
+   "file": "SLDs/2000-F28-SCM-EL-10221.pdf",
+   "title": "Ultra fine grinding 2 / 3 - F28-SW-109 - F28-SW-109 415V essential switchboard incomer - schematic diagram sheet 2",
+   "rev": "3",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 483898,
+   "from": [
+    "2000-F28-SCM-EL-10221_3.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F28-SCM-IC-10202": {
+   "file": "SLDs/2000-F28-SCM-IC-10202.pdf",
+   "title": "Ultra fine grinding 2/3 - F28-RIO-001 ultra fine grinding field n-io panel - schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 431436,
+   "from": [
+    "2000-F28-SCM-IC-10202_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F30-SCM-EL-10022": {
+   "file": "SLDs/2000-F30-SCM-EL-10022.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 F30-SA-443 CIL3 tails primary sampler schematic & termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 417011,
+   "from": [
+    "2000-F30-SCM-EL-10022_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F30-SCM-EL-10023": {
+   "file": "SLDs/2000-F30-SCM-EL-10023.pdf",
+   "title": "Flotation tailings CIL4 - F21-SW-006 F30-SA-444 CIL3 tails secondary sampler schematic & termination diagram",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 385391,
+   "from": [
+    "2000-F30-SCM-EL-10023_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F30-SCM-IC-10402": {
+   "file": "SLDs/2000-F30-SCM-IC-10402.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) F30-RIO-401 concentrate leach & adsorption field n-io panel schematic diagram sheet 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 574644,
+   "from": [
+    "2000-F30-SCM-IC-10402_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F30-SCM-IC-10422": {
+   "file": "SLDs/2000-F30-SCM-IC-10422.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) F30-RIO-402 concentrate leach & adsorption field n-io panel schematic diagram sheet 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 573654,
+   "from": [
+    "2000-F30-SCM-IC-10422_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F30-SCM-IC-10442": {
+   "file": "SLDs/2000-F30-SCM-IC-10442.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) F30-RIO-403 concentrate leach & adsorption field n-io panel schematic diagram sheet 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 593770,
+   "from": [
+    "2000-F30-SCM-IC-10442_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F30-SCM-IC-10450": {
+   "file": "SLDs/2000-F30-SCM-IC-10450.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) loop diagram sheet 17 schematic diagram",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 146742,
+   "from": [
+    "2000-F30-SCM-IC-10450_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F30-SCM-IC-10451": {
+   "file": "SLDs/2000-F30-SCM-IC-10451.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) loop diagram sheet 18 schematic diagram",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 155268,
+   "from": [
+    "2000-F30-SCM-IC-10451_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F30-SCM-IC-10452": {
+   "file": "SLDs/2000-F30-SCM-IC-10452.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) loops si30745a, si30745b, si30745c, si30745d schematic diagram",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 337141,
+   "from": [
+    "2000-F30-SCM-IC-10452_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F30-SCM-IC-10470": {
+   "file": "SLDs/2000-F30-SCM-IC-10470.pdf",
+   "title": "Fimiston plant - carbon in leach (CIL3) flotation tails thickening instrument loop diagram sheet 3",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 149882,
+   "from": [
+    "2000-F30-SCM-IC-10470_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10201": {
+   "file": "SLDs/2000-F72-SCM-EL-10201.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-FN-491 pax fan - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 397618,
+   "from": [
+    "2000-F72-SCM-EL-10201_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10202": {
+   "file": "SLDs/2000-F72-SCM-EL-10202.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-661 pax dosing pump 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 441591,
+   "from": [
+    "2000-F72-SCM-EL-10202_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10203": {
+   "file": "SLDs/2000-F72-SCM-EL-10203.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-662 pax dosing pump 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 443521,
+   "from": [
+    "2000-F72-SCM-EL-10203_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10204": {
+   "file": "SLDs/2000-F72-SCM-EL-10204.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-663 pax dosing pump 3 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 444242,
+   "from": [
+    "2000-F72-SCM-EL-10204_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10205": {
+   "file": "SLDs/2000-F72-SCM-EL-10205.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-664 pax dosing pump 4 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 441705,
+   "from": [
+    "2000-F72-SCM-EL-10205_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10206": {
+   "file": "SLDs/2000-F72-SCM-EL-10206.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-665 pax dosing pump 5 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 443223,
+   "from": [
+    "2000-F72-SCM-EL-10206_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10207": {
+   "file": "SLDs/2000-F72-SCM-EL-10207.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PS-430 pax area sump pump - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 385280,
+   "from": [
+    "2000-F72-SCM-EL-10207_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10221": {
+   "file": "SLDs/2000-F72-SCM-EL-10221.pdf",
+   "title": "Reagents mixing & storage - F72-SW-072 F72-SW-072 incomer schematic diagram sheet 1",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 578805,
+   "from": [
+    "2000-F72-SCM-EL-10221_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10222": {
+   "file": "SLDs/2000-F72-SCM-EL-10222.pdf",
+   "title": "Reagents mixing & storage - F72-SW-072 F72-SW-072 incomer schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 615550,
+   "from": [
+    "2000-F72-SCM-EL-10222_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10223": {
+   "file": "SLDs/2000-F72-SCM-EL-10223.pdf",
+   "title": "Reagents mixing & storage - F72-SW-072 F72-SW-172 emergency switchboard feeder schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 455834,
+   "from": [
+    "2000-F72-SCM-EL-10223_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10232": {
+   "file": "SLDs/2000-F72-SCM-EL-10232.pdf",
+   "title": "Reagents mixing & storage - F72-SW-172 F72-SW-172 415V emergency MCC incomer schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 639432,
+   "from": [
+    "2000-F72-SCM-EL-10232_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10251": {
+   "file": "SLDs/2000-F72-SCM-EL-10251.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-666 frother dosing pump 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 444495,
+   "from": [
+    "2000-F72-SCM-EL-10251_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10252": {
+   "file": "SLDs/2000-F72-SCM-EL-10252.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-667 frother dosing pump 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 441918,
+   "from": [
+    "2000-F72-SCM-EL-10252_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10253": {
+   "file": "SLDs/2000-F72-SCM-EL-10253.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-668 frother dosing pump 3 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 445390,
+   "from": [
+    "2000-F72-SCM-EL-10253_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10254": {
+   "file": "SLDs/2000-F72-SCM-EL-10254.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-669 frother dosing pump 4 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 444567,
+   "from": [
+    "2000-F72-SCM-EL-10254_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10255": {
+   "file": "SLDs/2000-F72-SCM-EL-10255.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-670 frother dosing pump 5 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 441771,
+   "from": [
+    "2000-F72-SCM-EL-10255_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10257": {
+   "file": "SLDs/2000-F72-SCM-EL-10257.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PS-425 frother area sump pump - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 414325,
+   "from": [
+    "2000-F72-SCM-EL-10257_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10301": {
+   "file": "SLDs/2000-F72-SCM-EL-10301.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-671 copper sulphate dosing pump 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 466822,
+   "from": [
+    "2000-F72-SCM-EL-10301_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10302": {
+   "file": "SLDs/2000-F72-SCM-EL-10302.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-672 copper sulphate dosing pump 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 469162,
+   "from": [
+    "2000-F72-SCM-EL-10302_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10303": {
+   "file": "SLDs/2000-F72-SCM-EL-10303.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-679 copper sulphate dosing pump 3 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 470468,
+   "from": [
+    "2000-F72-SCM-EL-10303_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10701": {
+   "file": "SLDs/2000-F72-SCM-EL-10701.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-AG-465 flocculant mixing tank agitator - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 401389,
+   "from": [
+    "2000-F72-SCM-EL-10701_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10702": {
+   "file": "SLDs/2000-F72-SCM-EL-10702.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-AT-401 flocculant silo activator - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 400964,
+   "from": [
+    "2000-F72-SCM-EL-10702_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10703": {
+   "file": "SLDs/2000-F72-SCM-EL-10703.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-BW-411 flocculant silo blower - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 399418,
+   "from": [
+    "2000-F72-SCM-EL-10703_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10704": {
+   "file": "SLDs/2000-F72-SCM-EL-10704.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-FE-411 flocculant feeder - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 397780,
+   "from": [
+    "2000-F72-SCM-EL-10704_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10706": {
+   "file": "SLDs/2000-F72-SCM-EL-10706.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-690 flocculant transfer pump - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 415665,
+   "from": [
+    "2000-F72-SCM-EL-10706_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10707": {
+   "file": "SLDs/2000-F72-SCM-EL-10707.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-691 flot tailings thick floc dosing pump 1 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 470665,
+   "from": [
+    "2000-F72-SCM-EL-10707_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10708": {
+   "file": "SLDs/2000-F72-SCM-EL-10708.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-692 flot tailings thick floc dosing pump 2 - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 473262,
+   "from": [
+    "2000-F72-SCM-EL-10708_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10709": {
+   "file": "SLDs/2000-F72-SCM-EL-10709.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-693 conc pre-leach thick floc dosing pump - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 446355,
+   "from": [
+    "2000-F72-SCM-EL-10709_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10710": {
+   "file": "SLDs/2000-F72-SCM-EL-10710.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-694 conc thickener flocculant dosing pump - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 443669,
+   "from": [
+    "2000-F72-SCM-EL-10710_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10712": {
+   "file": "SLDs/2000-F72-SCM-EL-10712.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-696 thickeners standby floc dosing pump - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 446601,
+   "from": [
+    "2000-F72-SCM-EL-10712_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10713": {
+   "file": "SLDs/2000-F72-SCM-EL-10713.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PS-418 flocculant area sump pump - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 413622,
+   "from": [
+    "2000-F72-SCM-EL-10713_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10714": {
+   "file": "SLDs/2000-F72-SCM-EL-10714.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-712 conc belt filter 1 flocculant dosing pu - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 445004,
+   "from": [
+    "2000-F72-SCM-EL-10714_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10715": {
+   "file": "SLDs/2000-F72-SCM-EL-10715.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PP-713 conc belt filter 2 flocculant dosing pu - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 446308,
+   "from": [
+    "2000-F72-SCM-EL-10715_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10717": {
+   "file": "SLDs/2000-F72-SCM-EL-10717.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-PS-420 copper sulphate area sump pump - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 414705,
+   "from": [
+    "2000-F72-SCM-EL-10717_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10718": {
+   "file": "SLDs/2000-F72-SCM-EL-10718.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-FN-441 flocculant silo dehumidifier fan - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 394069,
+   "from": [
+    "2000-F72-SCM-EL-10718_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-EL-10719": {
+   "file": "SLDs/2000-F72-SCM-EL-10719.pdf",
+   "title": "Reagents mixing & storage - F13-SW-020 - F72-XM-441 flocculant silo dehumidifier - schematic and termination diagram",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 397198,
+   "from": [
+    "2000-F72-SCM-EL-10719_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-IC-10502": {
+   "file": "SLDs/2000-F72-SCM-IC-10502.pdf",
+   "title": "Reagents mixing & storage F72-RIO-003 reagents field n-io panel schematic diagram sheet 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 437045,
+   "from": [
+    "2000-F72-SCM-IC-10502_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-IC-10602": {
+   "file": "SLDs/2000-F72-SCM-IC-10602.pdf",
+   "title": "Reagents mixing & storage F72-RIO-004 reagents field n-io panel schematic diagram sheet 2",
+   "rev": "1",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 539526,
+   "from": [
+    "2000-F72-SCM-IC-10602_1.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-IC-10702": {
+   "file": "SLDs/2000-F72-SCM-IC-10702.pdf",
+   "title": "Reagents mixing & storage - acid F72-RIO-002 reagents field n-io panel schematic diagram sheet 2",
+   "rev": "2",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 571375,
+   "from": [
+    "2000-F72-SCM-IC-10702_2.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F72-SCM-IC-10751": {
+   "file": "SLDs/2000-F72-SCM-IC-10751.pdf",
+   "title": "Reagents mixing & storage - F72-JB-401 hydrogen peroxide instrument junction box - schematic diagram",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 344724,
+   "from": [
+    "2000-F72-SCM-IC-10751_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F75-SCM-EL-40119": {
+   "file": "SLDs/2000-F75-SCM-EL-40119.pdf",
+   "title": "FIM III tailings dam F75-SW-556 FIM III TSF switchboard 1 schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 406384,
+   "from": [
+    "2000-F75-SCM-EL-40119_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F75-SCM-EL-40121": {
+   "file": "SLDs/2000-F75-SCM-EL-40121.pdf",
+   "title": "FIM III tailings dam F75-SW-557 FIM III TSF switchboard 2 schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 419025,
+   "from": [
+    "2000-F75-SCM-EL-40121_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F75-SCM-EL-40123": {
+   "file": "SLDs/2000-F75-SCM-EL-40123.pdf",
+   "title": "FIM III tailings dam F75-SW-801 FIM III TSF switchboard 3 schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 390511,
+   "from": [
+    "2000-F75-SCM-EL-40123_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F75-SCM-EL-40125": {
+   "file": "SLDs/2000-F75-SCM-EL-40125.pdf",
+   "title": "FIM III tailings dam F75-SW-802 FIM III TSF switchboard 4 schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 390771,
+   "from": [
+    "2000-F75-SCM-EL-40125_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F75-SCM-EL-40127": {
+   "file": "SLDs/2000-F75-SCM-EL-40127.pdf",
+   "title": "FIM III tailings dam F75-SW-803 FIM III TSF switchboard 5 schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 391591,
+   "from": [
+    "2000-F75-SCM-EL-40127_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F75-SCM-EL-40129": {
+   "file": "SLDs/2000-F75-SCM-EL-40129.pdf",
+   "title": "FIM III tailings dam F75-SW-804 FIM III TSF switchboard 6 schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 391100,
+   "from": [
+    "2000-F75-SCM-EL-40129_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F75-SCM-EL-40215": {
+   "file": "SLDs/2000-F75-SCM-EL-40215.pdf",
+   "title": "FIM II tailings dam F75-SW-560 FIM II TSF cell g switchboard 1 schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 392601,
+   "from": [
+    "2000-F75-SCM-EL-40215_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F75-SCM-EL-40217": {
+   "file": "SLDs/2000-F75-SCM-EL-40217.pdf",
+   "title": "FIM II tailings dam F75-SW-593 FIM II TSF cell g switchboard 2 schematic diagram sheet 2",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 405382,
+   "from": [
+    "2000-F75-SCM-EL-40217_0.pdf"
+   ],
+   "tb": 1
+  },
+  "2000-F75-SCM-IC-40020": {
+   "file": "SLDs/2000-F75-SCM-IC-40020.pdf",
+   "title": "FIM III decant dam 4 F75-RTU-329 - telemetry panel schematic diagram",
+   "rev": "0",
+   "date": "",
+   "status": "",
+   "pages": 1,
+   "size": 360191,
+   "from": [
+    "2000-F75-SCM-IC-40020_0.pdf"
+   ],
+   "tb": 1
   }
  }
 }

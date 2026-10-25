@@ -131,6 +131,62 @@ for dn, (rev, f) in sorted(docs.items()):
                     for k in x:
                         if k not in hs: hs.append(k)
                 c['h'] = hs; c['x'] = [[x.get(k, '') for k in hs] for x in c['x']]
+
+# the compiled PCT tables (sources/pct/lookup/: PCT_Tables_Compiled.xlsx and its PCT_Lookup.html, every table row of 22
+# PCTs, the four EDCR controller PCTs among them). A document the app holds no file of comes in whole from there; one
+# held at the same revision gets the rows and values the reading of its own file missed (the PDF ones most); one held at
+# a newer revision is left as it is
+import base64, gzip
+LKS = {'Analogue Inputs': 'Analogue input', 'Analogue Outputs': 'Analogue output', 'Digital Inputs': 'Digital input', 'Digital Outputs': 'Digital output',
+       'Totalisers': 'Totaliser', 'On/Off Valves': 'On/off valve', 'Control Valves': 'Control valve', 'PID Controllers': 'PID controller',
+       'Drives & Interlocks': 'Drive', 'Sequences': 'Sequence', 'Calculations': 'Calculation', 'Misc': 'Misc', 'Alarm Database': 'Alarm'}
+LKF = os.path.join(RP, 'sources', 'pct', 'lookup', 'PCT_Lookup.html')
+LKADD = collections.Counter()
+if os.path.exists(LKF):
+    LK = json.loads(gzip.decompress(base64.b64decode(re.search(r'const B64="([^"]+)"', open(LKF).read()).group(1))))
+    have = {(c['d'], norm(c['t'])): c for c in REC}
+    TAGOK = re.compile(r'(?=.*[A-Z])[A-Z0-9][A-Z0-9_\-./]{2,39}')
+    seen2 = set()
+    for r in LK['r']:
+        dn, lrev, title = LK['d'][r[4]]
+        if dn in docs and docs[dn][0] != lrev: continue   # (the app's own file is a newer revision)
+        whole = dn not in docs
+        if whole: docs.setdefault('+' + dn, (lrev, ''))
+        sec = LKS.get(LK['t'][r[3]], 'Misc')
+        tags = [t for t in str(r[0]).split() if t]
+        # (two drives on one row, "34HE01 34FN01": a row each, a value with a line per drive split between them)
+        for ti, t in enumerate(tags):
+            if not TAGOK.fullmatch(t.upper()): continue
+            part = lambda v: (v.split('\n')[ti] if len(tags) > 1 and v.count('\n') == len(tags) - 1 else v)
+            f = [[nice(l), tidy(part(val(v)))] for l, v in r[6] if val(v) and not SKIP.match(l) and l != 'Tag Source']
+            x = [{nice(l): tidy(val(v)) for l, v in sr if val(v) and l not in ('Rev',)} for sr in r[7]]
+            pid = next((val(v) for l, v in r[6] if l == 'P&ID' and val(v).startswith('2000-')), '')
+            c = have.get((dn, norm(t)))
+            if c is None:
+                sig = (norm(t), sec, json.dumps(f), json.dumps(x))
+                if sig in seen2: continue   # (the same row in the two issues of one controller's PCT)
+                seen2.add(sig)
+                am = re.search(r'\bF\d{2}\b', next((v for l, v in r[6] if l == 'Area'), '') + ' ' + title)
+                c = {'s': sec, 'd': dn, 'rev': lrev, 'a': am.group(0) if am else dn.split('-')[1], 't': t, 'src': r[1] if r[1] and r[1] != t else '', 'pid': pid, 'f': f, 'h': [], 'x': []}
+                if x:
+                    hs = []
+                    for q in x:
+                        for k in q:
+                            if k not in hs: hs.append(k)
+                    c['h'] = hs; c['x'] = [[q.get(k, '') for k in hs] for q in x]
+                REC.append(c); have[(dn, norm(t))] = c; LKADD['row'] += 1; continue
+            # (held: the values its own reading missed, and its conditions if it read none)
+            txt = norm(' '.join([v for _, v in c['f']] + [v for q in c['x'] for v in q]))
+            for l, v in f:
+                if norm(v) and norm(v) not in txt and l not in [q[0] for q in c['f']]: c['f'].append([l, v]); LKADD['value'] += 1
+            if x and not c['x']:
+                hs = []
+                for q in x:
+                    for k in q:
+                        if k not in hs: hs.append(k)
+                c['h'] = hs; c['x'] = [[q.get(k, '') for k in hs] for q in x]; LKADD['conditions'] += 1
+    docs = {k.lstrip('+'): v for k, v in docs.items()}
+    print('compiled PCT tables:', dict(LKADD))
 def merge(f):
     """one row per quantity: "Range 0 to 40 m3/h", "Alarm Lo 3 (5 s delay)", "Modes Manual, Auto"""
     f = [[re.sub(r'^Manipulated Variable Range', 'Output range', l).replace('Output range Min', 'Output range Min'), v] for l, v in f]

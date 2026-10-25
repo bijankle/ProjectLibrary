@@ -332,10 +332,12 @@
     const k = String(it.key); if (n.toUpperCase().startsWith(k.toUpperCase())) n = n.slice(k.length).replace(/^[\s:,\-]+/, ""); return n; };
   // the text beside a tag in a list: lines say where they run, everything else its name without the tag again
   L.listName = it => it.t === "line" ? L.lineText(it) : headName(it);
+  // the field that names a record: shown under its tag in the header card (every tab), so not again in Details
+  const NAMEF = { mel: "Equipment name", elec: "Equipment name", elx: "Equipment name", ins: "Description", cv: "Location", spi: "Description", hose: "Description" };
   L.itemHTML = (it, opts = {}) => {
     const dwg = it.t === "pid" && window.Pid && Pid.has(it.key) ? Pid.info(it.key) : null;
     let h = `<div class="lk-head"><div class="lk-hs"><div class="lk-kind">${esc(L.kindOf(it))}</div><span class="lk-slot"></span></div><div class="lk-hb">` +
-      `<div class="lk-kr">` + (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + `<span class="lk-vslot"></span></div>` + (it.t === "pid" ? (PHONE() && dwg && dwg.title ? `<div class="lk-name">${esc(dwg.title)}</div>` : "") : it.r && !PHONE() || it.t === "spec" || it.t === "line" ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // records: the table says it (no summary line; the phone's header card names it)
+      `<div class="lk-kr">` + (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + `<span class="lk-vslot"></span></div>` + (it.t === "pid" ? (PHONE() && dwg && dwg.title ? `<div class="lk-name">${esc(dwg.title)}</div>` : "") : (it.r && !PHONE() && !NAMEF[it.t]) || it.t === "spec" || it.t === "line" || !headName(it) ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // (a record with a name field: named here; other records: the table says it)
       `</div></div>`;
     // a drawing: no summary lines (the preview beside it shows the number and title); the phone has no preview, so the title stays there
     if (!dwg && it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
@@ -357,8 +359,7 @@
       // the manual valve list puts words like "Commissioning" in its line number column: that is a note, not a line
       rows.forEach(r => { if (/^line number$/i.test(r.l) && !/\d{2,3}-[A-Z]?\d{3,4}-/.test(r.v)) r.l = "Note"; });
       twins.forEach(x => { const g = DB.types[x.t].f; g.forEach((n, i) => { if (i > 0 && x.r[i]) rows.push({ l: n, v: x.r[i], h: linkify(x.r[i]), s: x.t, k: x.key }); }); });
-      const NAMEF = { mel: "Equipment name", ins: "Description", cv: "Location", spi: "Description", hose: "Description" };   // the phone's header card names it
-      const kept = L.dedupe(rows.filter(r => !inTag(it, r.l) && !(PHONE() && r.l === NAMEF[it.t])), { heads: [it.key, ...twins.map(x => x.key)] });
+      const nmv = headName(it), kept = L.dedupe(rows.filter(r => !inTag(it, r.l) && !(nmv && r.l === NAMEF[it.t] && r.s === it.t)), { heads: [it.key, ...twins.map(x => x.key)] });
       docRows(it, kept);
       // the item's drawings head the Details table, P&ID first then PFD, numbers only
       const DW = /^(P&IDs?|PFD)$/, dws = kept.filter(r => DW.test(r.l)).sort((a, b) => (a.l === "PFD") - (b.l === "PFD"));
@@ -500,8 +501,9 @@
   const rowKind = l => (DKIND.find(([k]) => l === k || l === kindL(k, 2)) || [])[0];
   function ctBy(){ if (!CTBY && CT){ CTBY = new Map(); Object.entries(CT).forEach(([d, e]) => [...(e.k || []), ...(e.o || [])].forEach(k => { const n = norm(k); CTBY.set(n, [...(CTBY.get(n) || []), d]); })); } return CTBY; }
   // the drawing and document rows together at the top, after the P&IDs, PFD, IOMs and datasheets, in kind order
-  function docsUp(rows){ const top = r => /^(P&IDs?|PFD|IOMs?|Datasheets?)$/.test(r.l), mv = r => !top(r) && rowKind(r.l);
-    const m = rows.filter(mv).sort((a, b) => DKIND.findIndex(([k]) => k === rowKind(a.l)) - DKIND.findIndex(([k]) => k === rowKind(b.l))); if (!m.length) return;
+  function docsUp(rows){ const top = r => /^(P&IDs?|PFD|IOMs?|Datasheets?)$/.test(r.l), mv = r => !top(r) && (rowKind(r.l) || /^(Reference|Vendor|General arrangement|GA) drawings?$/i.test(r.l));
+    const ki = r => { const i = DKIND.findIndex(([k]) => k === rowKind(r.l)); return i < 0 ? 99 : i; };   // (a reference drawing after the kinds)
+    const m = rows.filter(mv).sort((a, b) => ki(a) - ki(b)); if (!m.length) return;
     for (let i = rows.length - 1; i >= 0; i--) if (mv(rows[i])) rows.splice(i, 1);
     let k = -1; rows.forEach((r, x) => { if (top(r)) k = x; }); rows.splice(k + 1, 0, ...m); }
   function drawRows(it, rows){
