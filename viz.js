@@ -141,8 +141,12 @@ window.AssetViz = (() => {
       kcgmDv({ key: cur.key, n, z, tx, ty, tap: pi >= 0 && boxes[pi] ? boxes[pi] : (tapNow || null) }); }, 350); lastView = { n, z, tx, ty, tap: null }; };
     let tapNow = null;
     const hbox = (l, t, w, h) => { const [a, b, c, d] = PdfView.grow(l, t, w, h, W / H); return `<i class="sp-hb sp-hbon" style="left:${a / 1e4 * W}px;top:${b / 1e4 * H}px;width:${c / 1e4 * W}px;height:${d / 1e4 * H}px"></i>`; };
-    // (the drawing kept in the window: centred while smaller than it, else no further than its edges)
-    const fitAx = (t, a, b, page, view) => { const lo = a * page * z, hi = b * page * z; return hi - lo <= view ? (view - (hi - lo)) / 2 - lo : Math.min(-lo, Math.max(view - hi, t)); };
+    // (the drawing kept in the window: while smaller than it, centred when first shown or zoomed to its extent (t far
+    // out) and then free to drag about as long as the middle of the window stays over it (so too at the whole sheet, a
+    // touch taller than the window); zoomed in past that, no further than its edges)
+    const fitAx = (t, a, b, page, view) => { const lo = a * page * z, hi = b * page * z;
+      if (hi - lo <= view || z < 1.001) return t < -1e8 ? (view - (hi - lo)) / 2 - lo : Math.min(view / 2 - lo, Math.max(view / 2 - hi, t));
+      return Math.min(-lo, Math.max(view - hi, t)); };
     // (kf: the pane widened or narrowed since the sheet was laid out, the divider being dragged: the whole view scaled
     // with it at once, redrawn sharp at the new size when the drag ends)
     let kf = 1;
