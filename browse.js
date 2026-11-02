@@ -132,7 +132,8 @@ window.Browse = (() => {
     if (lk){ if (!ph0) ph0 = lk.input.placeholder;
       lk.input.placeholder = path.length ? "Search in " + path.filter(p => p.v != null).map(p => p.f === "t" ? TN[p.v] : p.v === "?" ? "Other" : p.v).join(" › ") + "…" : ph0; }
     // filters cleared with text still typed: back to the whole app search
-    if (!path.length && q.trim() && lk && !quiet){ const v = q; q = ""; setTimeout(() => lk.search(v), 0); }
+    // (not over an item's page: a reload or a shared link puts the item back while the panel is still loading)
+    if (!path.length && q.trim() && lk && !quiet && !(lk.current && lk.current())){ const v = q; q = ""; setTimeout(() => lk.search(v), 0); }
     // the charts on the right (desktop) follow the same filter; a bar can apply the next step or open an item
     if (window.AssetViz) AssetViz.update(list, { type: t(), step: st && st[0], filtered: path.length > 0,
       areaName: v => shortName((B.areas || {})[v] || ""), codeName: v => shortName((B.equip || {})[v] || ""), svcName: v => shortName((B.svc || {})[v] || ""),

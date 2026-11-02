@@ -58,7 +58,9 @@ window.AssetViz = (() => {
     cur = it; shown = kv ? kv.n : null; hist = []; lastSig = ""; held = kv; draw(true); if (window.Pid && !Pid.ready()) Pid.load().then(() => { if (cur === it) draw(true); }).catch(() => {}); }
   function list(){}
   // Back to an item: its drawing as it was left (index.html keeps it with the history step)
-  const restoreView = v => { if (!v || !v.n || (window.Pid && Pid.ready() && !Pid.has(v.n))) return; keepView = { n: v.n, z: v.z, tx: v.tx, ty: v.ty, tap: v.tap || null, key: v.key, force: true }; setTimeout(() => { if (keepView && keepView.force) keepView = null; }, 2500); };
+  const restoreView = v => { if (!v || !v.n || (window.Pid && Pid.ready() && !Pid.has(v.n))) return; keepView = { n: v.n, z: v.z, tx: v.tx, ty: v.ty, tap: v.tap || null, key: v.key, force: true };
+    // (a fly through that was on: on again, at the same place, the view kept)
+    if (v.tr && v.tr.k != null) TRV = { n: v.n, k: v.tr.k, f: v.tr.f || 0, as: v.tr.as, keep: true }; setTimeout(() => { if (keepView && keepView.force) keepView = null; }, 2500); };
   const keep = o => { keepView = { n: o.n, tap: o.tap || null, key: o.key || null }; setTimeout(() => { keepView = null; }, 2500); };
   // the Assets search box finds on the drawing on show, literally, as the full screen viewer does: the labels it holds
   // (references whose printed tag has the typed text) in blue, else the sheet's own words that do
@@ -138,7 +140,7 @@ window.AssetViz = (() => {
     const pick = test => { const rf = box.querySelector(".vz-rf"); let n = 0; [...rf.children].forEach((e, i) => { const on = !!(refsNow[i] && test(i, refsNow[i])); e.classList.toggle("pick", on); n += on; }); report(); return n; };
     // this view (sheet, zoom, place, the box picked) into the page's history step, for Back (index.html kcgmDv)
     let dvT = 0; const report = () => { clearTimeout(dvT); dvT = setTimeout(() => { if (g !== gen || !cur || !window.kcgmDv) return; const rf = box.querySelector(".vz-rf"), pi = rf ? [...rf.children].findIndex(e => e.classList.contains("pick")) : -1;
-      kcgmDv({ key: cur.key, n, z, tx, ty, tap: pi >= 0 && boxes[pi] ? boxes[pi] : (tapNow || null) }); }, 350); lastView = { n, z, tx, ty, tap: null }; };
+      kcgmDv({ key: cur.key, n, z, tx, ty, tap: pi >= 0 && boxes[pi] ? boxes[pi] : (tapNow || null), tr: T && TRV ? { k: TRV.k, f: +(+TRV.f).toFixed(4), as: TRV.as } : null }); }, 350); lastView = { n, z, tx, ty, tap: null }; };
     let tapNow = null;
     const hbox = (l, t, w, h) => { const [a, b, c, d] = PdfView.grow(l, t, w, h, W / H); return `<i class="sp-hb sp-hbon" style="left:${a / 1e4 * W}px;top:${b / 1e4 * H}px;width:${c / 1e4 * W}px;height:${d / 1e4 * H}px"></i>`; };
     // (the drawing kept in the window: while smaller than it, centred when first shown or zoomed to its extent (t far

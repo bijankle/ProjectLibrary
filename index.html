@@ -569,6 +569,26 @@ body.searching #homeMain{display:none}
     if (isNew && sig !== lastSig) Tabs.push(st); else Tabs.replace(st); lastSig = sig; }
   // the drawing beside the item, as you have it (sheet, zoom, place, the box picked): kept with this history step so Back returns to it
   window.kcgmDv = dv => { const h = history.state; if (restoring || !h || !h.item || !dv || String(h.item.k).toUpperCase().replace(/[^A-Z0-9]/g, "") !== String(dv.key).toUpperCase().replace(/[^A-Z0-9]/g, "")) return; history.replaceState(Object.assign({}, h, { dv }), ""); };
+  // ---------- a link to this view (File > Copy link; the phone viewer's share button): ?v= carries the view as Back
+  // keeps it (the item, its pills, the drawing with its zoom, place, tag marked and fly through; or the drawing open in
+  // the phone's viewer), so whoever opens it lands on the same view. In the query, not the #, so it survives a sign in ----------
+  const KEEP = ["s", "item", "path", "q", "o", "pf", "dv"], keepOf = st => { const o = {}; KEEP.forEach(k => { if (st && st[k] != null && !(Array.isArray(st[k]) && !st[k].length) && st[k] !== "") o[k] = st[k]; }); return o; };
+  const b64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const unb64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)));
+  window.kcgmViewLink = () => { const h = history.state, sv = h && h.sp && window.PdfView && PdfView.saved && PdfView.saved();
+    const p = sv && sv.n ? { w: { n: sv.n, s: sv.snap || null }, b: sv.base ? keepOf(sv.base) : null } : keepOf(h && h.s ? h : snap());
+    return location.origin + location.pathname + "?v=" + b64(JSON.stringify(p)); };
+  window.kcgmShare = () => { const u = kcgmViewLink(), done = m => Tabs.toast && Tabs.toast(m);
+    if (Tabs.phone && navigator.share) return navigator.share({ title: "Project Library", url: u }).catch(() => {});
+    const t = document.createElement("textarea"); t.value = u; t.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(t); t.select();
+    (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => done("Link to this view copied"), () => { try { document.execCommand("copy"); done("Link to this view copied"); } catch (e) { done("Couldn't copy the link"); } }).finally(() => t.remove()); };
+  function openLink(){ const v = new URLSearchParams(location.search).get("v"); if (!v) return false;
+    let p = null; try { p = JSON.parse(unb64(v)); } catch (e) {}
+    history.replaceState(null, "", location.pathname + location.hash);   // (the address tidied: the link's work is done once opened)
+    if (!p) return false;
+    if (p.w && p.w.n){ const base = p.b && p.b.s ? p.b : { s: "home" }; Tabs.replace(base); restore(base);
+      Promise.resolve(window.Pid && Pid.load && Pid.load()).then(() => setTimeout(() => window.Pid && Pid.open(p.w.n, null, { restore: p.w.s, revive: base }), 400)); return true; }
+    Tabs.replace(p); restore(p); return true; }
   function restore(st){
     if (st && st.sp && !st.s){   // (a drawing viewer step: pdfview.js reopens that view over the page)
       // (after a reload the viewer has forgotten it: the page it was opened from, then the drawing again where it was)
@@ -1126,10 +1146,12 @@ body.searching #homeMain{display:none}
   if (Tabs.phone){ const inp = lk.input, cam = $("lkRoot").querySelector(".lk-cam"), f = $("lkRoot").querySelector("input[type=file]"); inp.id = "lkIn";
     $("lkResults").before($("lkRoot")); Tabs.slot(inp); if (cam){ cam.id = "lkCam"; Tabs.slot(cam); if (f) cam.after(f); } }
   // the project picker lives in the top bar (tabs.js); a search already showing is run again when it changes
-  Lookup.onProj(() => { const v = lk.input.value.trim(); if (v && !lk.current() && !(window.Browse && Browse.query(v))) lk.search(v); });
+  // (not while a view is being put back, a reload or a shared link: the project known at start up would otherwise run the
+  // search again over the item being opened)
+  Lookup.onProj(() => { if (restoring) return; const v = lk.input.value.trim(); if (v && !lk.current() && !(window.Browse && Browse.query(v))) lk.search(v); });
   const openHash = () => { if (location.hash === "#quiz") openQuiz(); else if (location.hash === "#assets") show("home"); else if (location.hash === "#home"){ assetsHome(); history.replaceState(history.state, "", "#assets"); } else if (location.hash === "#gloss") openGloss(); else if (location.hash === "#settings") openSettings(); };
   // back here from another page: the view this entry was left on; else the address (#quiz, #settings…)
-  if (history.state && (history.state.s || history.state.sp)) restore(history.state); else { restoring = true; openHash(); restoring = false; nav(false); }
+  if (openLink()){} else if (history.state && (history.state.s || history.state.sp)) restore(history.state); else { restoring = true; openHash(); restoring = false; nav(false); }
   window.addEventListener("hashchange", openHash);
 })();
 </script>

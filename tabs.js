@@ -126,7 +126,8 @@ window.Tabs = (() => {
   }
   // File: the page's own Excel export where it has one showing (Checks), else not yet
   const exportXls = () => { const b = document.getElementById("xls"); if (b && b.offsetParent) b.click(); else toast("Export comes later"); };
-  function copyLink(){ const ok = () => toast("Link copied"), u = location.href;
+  // (the link opens this very view: index.html's kcgmViewLink, the item, drawing, zoom and place; other pages their address)
+  function copyLink(){ const ok = () => toast("Link to this view copied"), u = window.kcgmViewLink ? kcgmViewLink() : location.href;
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(ok, () => fallback()); else fallback();
     function fallback(){ const t = document.createElement("textarea"); t.value = u; t.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); ok(); } catch (e) { toast("Couldn't copy the link"); } t.remove(); } }
   let toT; function toast(m){ let t = document.getElementById("tbToast"); if (!t){ t = document.createElement("div"); t.id = "tbToast"; t.className = "tb-toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
