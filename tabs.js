@@ -297,7 +297,7 @@ window.Tabs = (() => {
   const THEMES = [["slate", "Slate", "#475569"], ["graphite", "Graphite", "#52525b"], ["navy", "Navy", "#1e3a5f"], ["petrol", "Petrol", "#1f4f5a"], ["olive", "Olive", "#5a5a2e"], ["stone", "Stone", "#7a6a5d"], ["rust", "Rust", "#9a3412"], ["ink", "Ink", "#111827"]];   // as ActionMap
   // the browser tab's icon in the theme colour too (an installed app's home screen icon is fixed at install)
   const tabIcon = () => { const c = (THEMES.find(t => t[0] === lsGet("kcgm_accent", "slate")) || THEMES[0])[2];
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="18" fill="${c}"/><rect x="6" y="6" width="52" height="52" rx="13" fill="none" stroke="#fff" stroke-width="2.5"/><text x="32" y="46" font-size="38" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-weight="800" text-anchor="middle" fill="#fff">P</text></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="${c}"/><path d="M7 32h11M46 32h11" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M19 21v22l13-11zM45 21v22L32 32z" fill="none" stroke="#fff" stroke-width="4.5" stroke-linejoin="round"/></svg>`;   // (the app icon: a gate valve on its line, icon.svg)
     document.querySelectorAll('link[rel="icon"]').forEach(l => l.href = "data:image/svg+xml," + encodeURIComponent(svg)); };
   tabIcon();
   const themeRow = () => { const cur = lsGet("kcgm_accent", "slate"), t = THEMES.find(x => x[0] === cur) || THEMES[0];
