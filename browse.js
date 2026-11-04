@@ -354,5 +354,7 @@ window.Browse = (() => {
   // (quiet: a view put back by Back, its own search and item restored by the page, so no search of its own)
   const setPath = (p, quiet) => { path = Array.isArray(p) ? p.map(x => Object.assign({}, x)) : []; if (B){ if (path.length && (path[0].f !== "t" || !TN[path[0].v])) path = []; fromN = 0; shownN = 60; draw(quiet); } };
   const onChange = fn => { changed = fn; };
+  // (the recent searches synced from the member's other devices, on the sign in site: the chips drawn again)
+  addEventListener("kcgm-recents", () => { if (B && el && el.isConnected) draw(true); });
   return { reset, query, drill, mount, restore, fit: () => fit(), getPath, setPath, onChange, projCount: p => rows.filter(r => r.it.p === p).length };
 })();
