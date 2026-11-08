@@ -338,6 +338,8 @@ window.PdfView = (() => {
     if (!on){   // phone: under the app's two top rows (logo row, search row), down to the bottom; the ✕ sits where the camera was
       const sr = document.querySelector(".ph-sr"), tp = document.querySelector(".ph-top"), r = (sr && sr.offsetHeight ? sr : tp);
       const top = r ? Math.round(r.getBoundingClientRect().bottom) : 0; V.el.classList.toggle("sp-phdock", top > 0); V.el.style.setProperty("--sp-top", top + "px");
+      // (and down to the app's bottom bar, not over it: the five sections stay to hand while a drawing is open)
+      const bn = document.querySelector(".bn"), br = bn && bn.getClientRects().length ? bn.getBoundingClientRect() : null; V.el.style.setProperty("--sp-bot", (br && br.top < innerHeight ? Math.max(0, Math.round(innerHeight - br.top)) : 0) + "px");
       const slot = document.querySelector(".ph-sr .ph-slot"); if (slot && !slot.querySelector(".ph-spx")){ const x = document.createElement("button"); x.type = "button"; x.className = "ph-spx"; x.setAttribute("aria-label", "Close the drawing"); x.textContent = "✕"; x.onclick = () => close(); slot.appendChild(x); }
       document.documentElement.classList.add("sp-open"); return; }
     const tb = document.querySelector(".tb"), top = tb ? Math.round(tb.getBoundingClientRect().bottom) : 0;
@@ -872,6 +874,7 @@ window.PdfView = (() => {
   }
   async function restore(id){
     const v = REG.get(id); if (!v) return; curId = id; fwdBtn(); quiet();
+    if (V.el.hidden && v.out){ await open(Object.assign({}, v.o, { _pop: true, restore: null, extent: true, page: v.snap ? v.snap.page : v.o.page })); return; }   // (left earlier: back at zoom extents)
     if (V.el.hidden || !cur || cur.url !== v.o.url){ await open(Object.assign({}, v.o, { _pop: true, _tap: v.tap, restore: v.snap, page: v.snap ? v.snap.page : v.o.page })); drawTap(); return; }
     const s = v.snap; if (!s) return;
     if (s.page !== V.page) await go(s.page, true);
@@ -953,7 +956,10 @@ window.PdfView = (() => {
     }
   }
   async function unrot(){ if (V) V.rot = 0; if (freed){ freed = false; try { screen.orientation.unlock(); } catch (e) {} } if (!rotated) return; rotated = false; try { screen.orientation.unlock(); } catch (e) {} try { if (document.fullscreenElement && !matchMedia("(display-mode: fullscreen)").matches) await document.exitFullscreen(); } catch (e) {} }
-  function close(fromPop, stepBack){ if (!V || V.el.hidden) return; unrot(); if (TR) trEnd(); V.el.hidden = true; V.cx.hidden = true; try { sessionStorage.removeItem(SSK); } catch (e) {} document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
+  // (left with ✕ or Back: the visit's views are marked, and the drawing reopened later from the history comes in at zoom
+  // extents, not where it was left. Out of the way for a tag tapped on the sheet (hide) is not leaving: Back returns to the spot)
+  function close(fromPop, stepBack){ if (!V || V.el.hidden) return; unrot();
+    { const me = REG.get(curId); if (me && !V.hiding) REG.forEach(x => { if (x.visit === me.visit) x.out = true; }); } if (TR) trEnd(); V.el.hidden = true; V.cx.hidden = true; try { sessionStorage.removeItem(SSK); } catch (e) {} document.body.classList.remove("sp-on"); document.documentElement.classList.remove("sp-open"); clearTimeout(st8);
     if (!fromPop && history.state && history.state.sp){
       if (stepBack){ if (zIn && history.state.z){ zIn = false; history.go(-2); } else history.back(); }
       // (✕: the drawing stays a step in the history, Back from the page returns to it; the page as it was under the viewer is the new step)
@@ -961,7 +967,7 @@ window.PdfView = (() => {
         history.pushState(Object.assign({}, pg || {}, { d: ((pg && pg.d) || 0) + 1 }), ""); } }
     else if (!fromPop) zIn = false; }
   // out of the way for a tag tapped on the sheet, its history step kept: Back from the tag's item reopens this view
-  const hide = () => close(true);
+  const hide = () => { V.hiding = true; try { close(true); } finally { V.hiding = false; } };
   // opened for a searched item: one place on this page, four times closer centred on it; several, zoomed to fit them all
   // (boxes in fractions of the sheet). Not when the drawing itself was what you searched (no find).
   // how close a find result is shown: four times the whole sheet, seven on a phone (narrower, so the tag reads)

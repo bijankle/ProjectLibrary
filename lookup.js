@@ -297,7 +297,7 @@
     const src = r.s && DB.types[r.s] && r.l !== "Source", sa = src ? ` data-s="${esc(r.s)}" data-k="${esc(r.k || "")}" data-l="${esc(r.l)}" data-v="${esc(r.v)}"` : "";
     const ib = ns.length ? `<button type="button" class="lk-di lk-dh" data-n="${ns.join("|")}"${sa} aria-label="Titles of the ${esc(r.l)} documents" title="Titles">i</button>`
       : src ? `<button type="button" class="lk-i"${sa} title="Where this value comes from" aria-label="Source of ${esc(r.l)}">i</button>` : "";
-    return `<tr><td>${esc(r.l)}${ib}</td><td>${v}</td></tr>`; }).join("");
+    return `<tr><td${String(r.l).length <= 24 ? ' class="lk-nw"' : ""}>${esc(r.l)}${ib}</td><td>${v}</td></tr>`; }).join("");   // (a short label keeps to one line: the column takes its width)
   // ---- the source of a value (the i): the list it was read from, its revision, where in it, and SharePoint's copy ----
   const LISTN = { mel: "Mechanical Equipment List", ins: "Instrument List", cv: "Control Valve List", line: "Line List", mv: "Manual Valve List", spi: "Special Piping Items (SPI) List", hose: "Slurry Hose List" };
   const spRev = u => { const m = String(u || "").match(/_((?:MS_)?[0-9A-Z]{1,3})(?:_(?:APP|RNC|RWC|IFC|IFR|AFC|IFA))?\.pdf$/i); return m ? m[1].replace(/^MS_/, "MS_") : ""; };
@@ -948,7 +948,7 @@
 .lk-btn{border:1px solid var(--lk-a);background:none;color:var(--lk-a);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer;margin:6px 0}
 .lk-spec .lk-btn{font-size:var(--fb,15px);padding:6px 10px;margin:6px 0 4px}
 .lk-spec .sp-t{font-size:var(--fb,15px);line-height:1.4;margin:2px 0 4px}.lk-spec .lk-btn span{font-weight:500;opacity:.75;font-size:var(--fb,15px);margin-left:4px}
-.lk-t td:last-child{overflow-wrap:anywhere}.lk-i{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;border-radius:50%;border:1.3px solid currentColor;color:var(--doc-a,#0b63c5);font:italic 700 10px/1 Georgia,serif;cursor:pointer;vertical-align:1px;opacity:.75}.lk-i:hover{opacity:1;background:color-mix(in srgb,var(--doc-a,#0b63c5) 12%,transparent)}
+.lk-t td:last-child{overflow-wrap:anywhere}.lk-t td:first-child{position:relative;width:1%;min-width:7em}@media (min-width:361px){.lk-t td.lk-nw{white-space:nowrap}}.lk-t td:first-child:has(>.lk-i,>.lk-dh){padding-right:27px}.lk-t td:first-child>.lk-i,.lk-t td:first-child>.lk-dh{position:absolute;right:4px;margin:0;top:8px}.lk-t td:first-child>.lk-dh{top:calc(5px + (1lh - 17px) / 2)}.lk-t td:first-child>.lk-i{top:calc(5px + (1lh - 15px) / 2)}.lk-i{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;border-radius:50%;border:1.3px solid currentColor;color:var(--doc-a,#0b63c5);font:italic 700 10px/1 Georgia,serif;cursor:pointer;vertical-align:1px;opacity:.75}.lk-i:hover{opacity:1;background:color-mix(in srgb,var(--doc-a,#0b63c5) 12%,transparent)}
 .lk-src{position:fixed;z-index:1000;background:var(--card,#fff);color:var(--ink,#1d2430);border:1px solid var(--line,#d9dee5);border-radius:10px;box-shadow:0 10px 30px #0004;font-size:var(--fb,15px);line-height:1.4;overflow:hidden}.lk-src[hidden]{display:none}
 .lk-src .hd{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--th,#475569);color:#fff;font-weight:800;font-size:var(--fl,13px);letter-spacing:.3px}.lk-src .x{all:unset;cursor:pointer;font-size:20px;line-height:1;padding:0 2px}
 .lk-src .val{display:flex;gap:10px;align-items:baseline;padding:8px 12px;border-bottom:1px solid var(--line,#d9dee5)}.lk-src .val span{color:var(--mute,#5d6875)}.lk-src .doc{padding:8px 12px;border-bottom:1px solid var(--line,#d9dee5)}.lk-src .doc:last-child{border-bottom:0}
@@ -1026,7 +1026,7 @@
 .sp-mode button{width:34px;height:34px;border:0;border-radius:8px;background:none;color:#1d2430;display:grid;place-items:center;cursor:pointer;padding:0}.sp-mode button.on{background:var(--th-t,#eef1f5);box-shadow:inset 0 0 0 2px var(--th,#475569)}
 :root.phone .sp-mode{display:none}.sp-mode i{width:1px;background:#dde1e6;margin:4px 2px}:root:not(.phone) .sp-dock .sp-ze{display:none!important}.sp-dock .sp-dn{display:none}.sp-dock .sp-tt{font-size:20px!important}:root:not(.phone) .sp-view .sp-nav:not(.sp-finds){display:none}
 .sp-view.sp-hand .sp-body{cursor:grab}.sp-view.sp-hand .sp-body.drag{cursor:grabbing}.sp-view.sp-hand .sp-text{pointer-events:none;user-select:none;-webkit-user-select:none}
-.sp-view.sp-phdock{top:var(--sp-top,0)}.sp-view.sp-phdock .sp-x{display:none!important}.sp-view.sp-phdock .sp-body{padding-top:8px!important}
+.sp-view.sp-phdock{top:var(--sp-top,0);bottom:var(--sp-bot,0)}.sp-view.sp-phdock .sp-x{display:none!important}.sp-view.sp-phdock .sp-body{padding-top:8px!important}
 .ph-spx{display:none;width:42px;height:42px;flex:none;border-radius:50%;border:1.5px solid var(--line);background:var(--card,#fff);color:var(--ink);font-size:18px;font-weight:800;align-items:center;justify-content:center}
 :root.sp-open .ph-spx{display:flex}:root.sp-open .ph-sr .ph-cam,:root.sp-open .ph-sr .ph-upd{display:none!important}
 .sp-back,.sp-fwd{display:none!important}   /* (no arrows in the viewer: back is the app's own) */
