@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION when questions change so phones pick up the new bank.
-const VERSION = "kcgm-v468";
+const VERSION = "kcgm-v469";
 // Documents (spec PDF, drawings, source tables) live in their own cache that app updates keep. The spec and drawings
 // are saved there the first time they're opened; Settings > Offline downloads (offline.js) can fetch any of them.
 const DOCS = "kcgm-docs-5",   // never rename: renaming deletes every download. A rebuilt document is refetched by its
@@ -39,3 +39,35 @@ self.addEventListener("fetch", e => {
   e.respondWith(caches.open(VERSION).then(c => c.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(r => {
     if (r.ok && r.status === 200) c.put(e.request, r.clone()); return r; }))).catch(() => fetch(e.request)));
 });
+
+// ---------- downloads that carry on with the app shut or the phone locked (Background Fetch; offline.js starts them) ----------
+// The page hands the whole list still to fetch (__bgq.json, in DOCS) to the phone's own download manager in one go (shown
+// in the notifications; a service worker may not start one itself, so it can't be done a batch at a time). When it lands
+// every file is filed here (into the 8 caches, versions noted), the list saved every 50 files, so a cut-off still keeps what
+// was filed. A file that failed stays on the list (three tries in all, then named in its errors); the app starts a new
+// download for what's left the next time it is opened.
+const BGQ = () => self.registration.scope + "__bgq.json", BGV = () => self.registration.scope + "__docs_versions.json";
+const jget = async u => { try { const r = await (await caches.open(DOCS)).match(u); return r ? await r.json() : null; } catch (e) { return null; } };
+const jput = async (u, o) => (await caches.open(DOCS)).put(u, new Response(JSON.stringify(o), { headers: { "Content-Type": "application/json" } }));
+async function bgStore(reg){
+  const q = await jget(BGQ()); if (!q) return; const held = (await jget(BGV())) || {}, base = new URL(self.registration.scope).pathname, done = new Set(), retry = new Set();
+  q.tries = q.tries || {}; q.errs = q.errs || [];
+  const save = async () => { q.files = [...q.files.filter(f => !done.has(f) && !retry.has(f)), ...q.files.filter(f => retry.has(f))]; await jput(BGV(), held); await jput(BGQ(), q); };
+  let n = 0;
+  for (const r of await reg.matchAll()){
+    const u = new URL(r.request.url), key = u.origin + u.pathname, f = decodeURIComponent(u.pathname.slice(base.length));
+    try { const res = await r.responseReady; if (!res || !res.ok) throw new Error("server said " + (res ? res.status : "nothing"));
+      const nm = docName(shardOf(u.pathname)); if (nm !== DOCS) await (await caches.open(DOCS)).delete(key);
+      await (await caches.open(nm)).put(key, res); if (q.ver && q.ver[f]) held[f] = q.ver[f]; done.add(f); }
+    catch (e){ if (/quota/i.test((e && e.name) + " " + (e && e.message))){ q.errs.push("the phone has no more room for downloads (" + (e.message || e.name) + ")"); q.stopped = true; break; }
+      q.tries[f] = (q.tries[f] || 0) + 1; if (q.tries[f] >= 3){ done.add(f); q.errs.push(f + ": " + ((e && e.message) || "failed")); } else retry.add(f); }
+    if (++n % 50 === 0) await save();
+  }
+  await save(); return q;
+}
+const bgDone = e => e.waitUntil((async () => { const q = await bgStore(e.registration);
+  try { await e.updateUI({ title: q && q.files && q.files.length && !q.stopped ? "Project Library: some files to finish, open the app to carry on" : "Project Library: downloads saved for offline" }); } catch (x) {} })());
+self.addEventListener("backgroundfetchsuccess", bgDone);
+self.addEventListener("backgroundfetchfail", bgDone);
+self.addEventListener("backgroundfetchabort", e => e.waitUntil((async () => { const q = await jget(BGQ()); if (q){ q.stopped = true; await jput(BGQ(), q); } })()));
+self.addEventListener("backgroundfetchclick", e => e.waitUntil(self.clients.openWindow(self.registration.scope + "issues.html#sources")));

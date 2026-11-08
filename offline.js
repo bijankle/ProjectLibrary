@@ -104,6 +104,54 @@ window.Offline = (() => {
   const inSet = (g, k) => g.set === "core" || g.set === "ess" || (k === "all" && g.set === "all");
   // (not on Wi-Fi: the phone says it's on something else, mobile data mostly; a phone that doesn't say isn't asked)
   const cellular = () => { const c = navigator.connection; return !!(c && ((c.type && !/wifi|ethernet|unknown/.test(c.type)) || c.saveData)); };
+  // ---------- in the background (Background Fetch, Chrome on Android and desktop): the phone's own download manager
+  // carries on with the app shut or the screen locked; sw.js files it all when it lands. The list
+  // still to fetch is __bgq.json beside the files. Elsewhere the download runs in the page, as before.
+  const BG = () => "serviceWorker" in navigator && "BackgroundFetchManager" in window;
+  const QU = () => url("__bgq.json");
+  const qGet = async () => { try { const r = await (await caches.open(CACHE)).match(QU()); return r ? await r.json() : null; } catch (e) { return null; } };
+  const qPut = async q => (await caches.open(CACHE)).put(QU(), new Response(JSON.stringify(q), { headers: { "Content-Type": "application/json" } }));
+  const qDrop = async () => (await caches.open(CACHE)).delete(QU());
+  const swReg = () => Promise.race([navigator.serviceWorker.ready, new Promise((_, n) => setTimeout(() => n(new Error("no service worker")), 4000))]);
+  const bgIds = async () => { try { const r = await swReg(); return (await r.backgroundFetch.getIds()).filter(i => /^kcgm-dl/.test(i)); } catch (e) { return []; } };
+  // the download of everything still on the list, started from the page
+  async function bgNext(){
+    const q = await qGet(); if (!q || !q.files.length || q.stopped) return null; if ((await bgIds()).length) return null;
+    const r = await swReg(), bt = q.files.slice();   // (all of it in one: only the page may start one, so batches would stall with the app shut)
+    q.batch = (q.batch || 0) + 1; q.paused = false; await qPut(q);
+    const left = q.files.reduce((t, f) => t + (q.sz[f] || 0), 0), pc = Math.max(0, Math.min(99, Math.round((q.total - left) / (q.total || 1) * 100)));
+    return r.backgroundFetch.fetch("kcgm-dl-" + Date.now(), bt.map(f => url(f) + "?fresh=1"), { title: `Project Library: downloading ${q.name} (${pc}%)`, icons: [{ src: "icon-v3-192.png", sizes: "192x192", type: "image/png" }] });
+  }
+  async function bgStart(fs, k, name){
+    const st = await check(fs), need = fs.filter(f => st[f] !== "ok"), sz = {}, ver = {}; need.forEach(f => { sz[f] = M.sz[f] || 0; ver[f] = M.ver[f]; });
+    await qPut({ k, name, files: need, sz, ver, total: need.reduce((t, f) => t + sz[f], 0), tries: {}, errs: [], batch: 0, started: Date.now() });
+    try { await bgNext(); } catch (e){ await qDrop(); throw e; }
+  }
+  // stopping: every file already fully downloaded is filed first (stopping at 1 GB keeps the 1 GB), then the rest is cancelled
+  async function bgStop(){ const q = await qGet(); if (q && !q.stopped){ q.stopped = true; await qPut(q); }
+    try { const r = await swReg(), c = await caches.open(CACHE); await loadHeld(c); held = held || {};
+      for (const id of await bgIds()){ const g = await r.backgroundFetch.get(id); if (!g) continue;
+        const recs = await g.matchAll().catch(() => []), wait = new Promise(ok => setTimeout(ok, 400));   // (the finished ones answer at once; the rest are not waited for)
+        const got = await Promise.all(recs.map(rec => Promise.race([rec.responseReady.catch(() => null), wait.then(() => null)]).then(res => [rec, res])));
+        for (const [rec, res] of got){ if (!res || !res.ok) continue;
+          const u = new URL(rec.request.url), key = u.origin + u.pathname, f = decodeURIComponent(u.pathname.slice(new URL(url("./")).pathname.length));
+          try { const cf = cacheOf(f); if (cf !== CACHE) await c.delete(key); await (await caches.open(cf)).put(key, res); if (q && q.ver && q.ver[f]) held[f] = q.ver[f]; } catch (e) {} }
+        await saveHeld(c); await g.abort(); } } catch (e){ if (window.ErrLog) ErrLog.add("offline-bg", "stopping: " + (e.message || e)); }
+    await qDrop(); held = null; }
+  // the list's state for the screen: errors from the service worker go to the error log; a finished list is cleared; a list
+  // whose next batch didn't start (the phone wouldn't from the background) carries on now
+  let stopping = false;
+  async function bgState(){
+    if (!BG()) return null; const q = await qGet(); if (!q) return null; held = null;
+    if (q.errs && q.errs.length){ const m = q.errs.join("; "); try { localStorage.setItem("kcgm_off_err", `${new Date().toLocaleString()}: ${q.errs.length} problem${q.errs.length > 1 ? "s" : ""} in the background download: ${m.slice(0, 300)}`); } catch (x) {}
+      if (window.ErrLog) q.errs.forEach(x => ErrLog.add("offline-bg", x)); q.errs = []; await qPut(q); }
+    const ids = await bgIds();
+    if (q.stopped && ids.length){ if (!stopping){ stopping = true; try { await bgStop(); } finally { stopping = false; } } return null; }   // (a stop the app was closed in the middle of: finished now)
+    if (!q.files.length || q.stopped){ if (!ids.length){ await qDrop(); return null; } }
+    else if (!ids.length && navigator.onLine){ try { await bgNext(); } catch (e){ if (window.ErrLog) ErrLog.add("offline-bg", "couldn't start the next batch: " + (e.message || e)); } }
+    let cur = 0; try { const r = await swReg(); for (const id of await bgIds()){ const g = await r.backgroundFetch.get(id); if (g) cur += g.downloaded || 0; } } catch (e) {}
+    return { q, cur, live: (await bgIds()).length > 0 };
+  }
   async function card(el){
     if (!("caches" in window)) return;
     try { await load(); } catch (e){ return; }
@@ -112,20 +160,27 @@ window.Offline = (() => {
     // (29B: one bar split in two, each half its set and size; one line under it for what's held and the room left)
     el.innerHTML = `<div class="oc-bs">${SETS.map(([k, n, h]) => `<button type="button" class="oc-b" data-k="${k}" title="${esc(h)}"><b>⬇ ${n}</b><span class="oc-s"></span><i class="oc-bar"><i></i></i></button>`).join("")}</div><span class="oc-room"></span>`;
     const stop = { x: false };
-    const paint = async () => { if (!el.isConnected){ PAINT.delete(paint); return; } const st = await check(files("all"));
+    let poll = 0;
+    const paint = async () => { if (!el.isConnected){ PAINT.delete(paint); clearTimeout(poll); return; } const bs = await bgState(); const st = await check(files("all"));
+      el.querySelectorAll(".oc-b").forEach(b => { const on = !!(bs && bs.q.k === b.dataset.k && bs.q.files.length && !bs.q.stopped); b.classList.toggle("bg", on); if (on) b.classList.remove("have"); });
       el.querySelectorAll(".oc-b").forEach(b => { if (b.classList.contains("busy")) return; const fs = files(b.dataset.k), have = tot(fs.filter(f => st[f] === "ok")), all = tot(fs), full = have >= all;
-        b.classList.toggle("have", full); b.querySelector(".oc-s").textContent = full ? `✓ on this phone · ${mb(all)}` : have ? `${mb(have)} of ${mb(all)}` : mb(all);
-        b.disabled = busy && !b.classList.contains("busy"); if (coreBusy && !b.classList.contains("busy")) b.querySelector(".oc-s").textContent = "Getting the app core first…"; });
+        if (b.classList.contains("bg")){ const d = Math.min(all, have + bs.cur); b.querySelector(".oc-s").textContent = `${mb(d)} of ${mb(all)} · ${bs.live ? "in the background" : "waiting"} · tap to stop`; b.querySelector(".oc-bar i").style.width = (d / all * 100).toFixed(1) + "%"; b.disabled = false; return; }
+        b.classList.toggle("have", full); b.querySelector(".oc-s").textContent = full ? `✓ on this phone · ${mb(all)}` : have ? `${mb(have)} of ${mb(all)}` : mb(all); b.querySelector(".oc-bar i").style.width = "0";
+        b.disabled = (busy && !b.classList.contains("busy")) || !!(bs && bs.q.files.length && !bs.q.stopped); if (coreBusy && !b.classList.contains("busy")) b.querySelector(".oc-s").textContent = "Getting the app core first…"; });
       if (navigator.storage && navigator.storage.estimate){ const e = await navigator.storage.estimate().catch(() => null), kept = navigator.storage.persisted ? await navigator.storage.persisted().catch(() => false) : false;
         let le = ""; try { le = localStorage.getItem("kcgm_off_err") || ""; } catch (x) {}
-        if (e) el.querySelector(".oc-room").textContent = `Make the app work with no signal. ${mb(e.usage || 0)} on this device; ${mb(Math.max(0, (e.quota || 0) - (e.usage || 0)))} free.${kept ? " Kept safe from clean-ups." : ""}${le ? " Last stop: " + le : ""}`; } };
+        if (e) el.querySelector(".oc-room").textContent = `Make the app work with no signal. ${mb(e.usage || 0)} on this device; ${mb(Math.max(0, (e.quota || 0) - (e.usage || 0)))} free.${kept ? " Kept safe from clean-ups." : ""}${le ? " Last stop: " + le : ""}`;  }
+      clearTimeout(poll); if (bs) poll = setTimeout(paint, 2500); };
     el.querySelectorAll(".oc-b").forEach(b => b.onclick = async () => {
       if (b.classList.contains("busy")){ stop.x = true; return; }
+      if (b.classList.contains("bg")){ if (confirm("Stop the download? What's downloaded so far is kept.")){ b.classList.add("busy"); b.querySelector(".oc-s").textContent = "Stopping, saving what's here…"; stopping = true; try { await bgStop(); } finally { stopping = false; } b.classList.remove("busy", "bg"); paint(); } return; }
       if (busy) return;
       const fs = files(b.dataset.k), st = await check(fs), need = fs.filter(f => st[f] !== "ok"), size = tot(need);
       if (!need.length) return paint();
       if (cellular() && !confirm(`You're not on Wi-Fi. Download ${mb(size)} over mobile data now?`)) return;
       if (navigator.storage && navigator.storage.persist) await navigator.storage.persist().catch(() => {});
+      if (BG()){ try { await bgStart(fs, b.dataset.k, (SETS.find(x => x[0] === b.dataset.k) || [])[1] || "documents"); try { localStorage.removeItem("kcgm_off_err"); } catch (x) {} return paint(); }
+        catch (e){ if (window.ErrLog) ErrLog.add("offline-bg", "background download not available, downloading in the app: " + (e.message || e)); } }
       busy = true; stop.x = false; b.classList.add("busy"); el.querySelectorAll(".oc-b").forEach(x => x.disabled = x !== b);
       const s0 = tot(fs) - size, all = tot(fs), bar = b.querySelector(".oc-bar i");
       try { await get(fs, f => { const d = s0 + f * size; b.querySelector(".oc-s").textContent = `${mb(d)} of ${mb(all)} · tap to stop`; bar.style.width = (d / all * 100).toFixed(1) + "%"; }, stop); try { localStorage.removeItem("kcgm_off_err"); } catch (x) {} }
