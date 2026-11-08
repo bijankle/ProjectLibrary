@@ -14,11 +14,16 @@ window.Offline = (() => {
   let held = null;
   async function loadHeld(c){ if (held) return held; const r = await c.match(VER()); held = r ? await r.json() : {}; return held; }
   const saveHeld = c => c.put(VER(), new Response(JSON.stringify(held), { headers: { "Content-Type": "application/json" } }));
+  // the files are spread over 8 caches by address (sw.js has the same split), so a phone that drops a cache after a failed
+  // write loses an eighth of the downloads, not all. CACHE itself holds the versions list and the copies saved before the split.
+  const SH = 8, shardOf = p => { let h = 0; for (let i = 0; i < p.length; i++) h = (h * 31 + p.charCodeAt(i)) | 0; return Math.abs(h) % SH; };
+  const docName = i => i ? CACHE + "-s" + i : CACHE, cacheOf = f => docName(shardOf(new URL(url(f)).pathname));
+  const allCaches = () => Promise.all([...Array(SH).keys()].map(i => caches.open(docName(i))));
   // per file: "ok" (current), "old" (an older version is saved), "no" (not saved)
   async function check(files){
     const c = await caches.open(CACHE); await loadHeld(c); const out = {}; let changed = false;
-    // every saved address in one call (a match per file took seconds on a phone, hundreds of files)
-    const saved = new Set((await c.keys()).map(r => r.url.split("?")[0]));
+    // every saved address in one call per cache (a match per file took seconds on a phone, hundreds of files)
+    const saved = new Set((await Promise.all((await allCaches()).map(x => x.keys()))).flat().map(r => r.url.split("?")[0]));
     for (const f of files){
       if (!saved.has(url(f).split("?")[0])){ out[f] = "no"; continue; }
       if (!held[f]){ held[f] = M.ver[f]; changed = true; }   // saved on first open (sw.js): it came straight from the server
@@ -27,18 +32,31 @@ window.Offline = (() => {
     if (changed) await saveHeld(c);
     return out;
   }
+  // each file tried three times (a dropped signal or a server hiccup), then skipped and the rest carried on; the ones
+  // that failed are named at the end and fetched by the next tap. A full phone stops it at once, with the reason.
+  const quota = e => e && (e.name === "QuotaExceededError" || /quota/i.test(e.message || ""));
   async function get(files, prog, stop){
     const c = await caches.open(CACHE), st = await check(files), need = files.filter(f => st[f] !== "ok");
-    const total = need.reduce((t, f) => t + (M.sz[f] || 0), 0) || 1; let done = 0;
+    const total = need.reduce((t, f) => t + (M.sz[f] || 0), 0) || 1; let done = 0, n = 0; const failed = [];
     for (const f of need){
       if (stop.x) throw new Error("stopped");
-      const r = await fetch(fresh(f), { cache: "no-store" }); if (!r.ok) throw new Error(f + " " + r.status);
-      await c.put(url(f), r); held[f] = M.ver[f]; done += M.sz[f] || 0; prog(done / total);
-      if (need.indexOf(f) % 10 === 9) await saveHeld(c);
+      let ok = false, last = null;
+      for (let k = 0; k < 3 && !ok && !stop.x; k++){
+        if (k) await new Promise(r => setTimeout(r, k * 2500));
+        try { const r = await fetch(fresh(f), { cache: "no-store" }); if (!r.ok) throw new Error("server said " + r.status);
+          const cf = cacheOf(f); if (st[f] === "old" && cf !== CACHE) await c.delete(url(f));   // (an older copy saved before the split)
+          await (await caches.open(cf)).put(url(f), r); ok = true; }
+        catch (e){ last = e; if (quota(e)) throw new Error("the phone has no more room for downloads (" + (e.message || e.name) + ")"); }
+      }
+      if (stop.x) throw new Error("stopped");
+      if (!ok){ failed.push(f + ": " + (last && last.message || "failed")); continue; }
+      held[f] = M.ver[f]; done += M.sz[f] || 0; prog(done / total);
+      if (++n % 10 === 0) await saveHeld(c);
     }
     await saveHeld(c);
+    if (failed.length) throw new Error(`${failed.length} file${failed.length > 1 ? "s" : ""} didn't download (${failed[0]}${failed.length > 1 ? " …" : ""}). Everything else is saved; tap again to fetch the rest`);
   }
-  async function drop(files){ const c = await caches.open(CACHE); await loadHeld(c); for (const f of files){ await c.delete(url(f)); delete held[f]; } await saveHeld(c); }
+  async function drop(files){ const c = await caches.open(CACHE); await loadHeld(c); for (const f of files){ await c.delete(url(f)); const cf = cacheOf(f); if (cf !== CACHE) await (await caches.open(cf)).delete(url(f)); delete held[f]; } await saveHeld(c); }
 
   // One row per source: its name, the document number (or drawing count) and "saved / total MB" in grey, and at the right
   // a round download button (■ stops it), or ✓ when it is all on the device (tap ✓ to remove it). While downloading the
@@ -70,7 +88,7 @@ window.Offline = (() => {
       if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
       const st = await check(g.files), base = g.files.filter(f => st[f] === "ok").reduce((t, f) => t + (M.sz[f] || 0), 0), need = g.size - base;
       try { await get(g.files, f => { r.querySelector(".dl-s").textContent = mbs(base + f * need, g.size); r.querySelector(".dl-bar i").style.width = ((base + f * need) / g.size * 100).toFixed(1) + "%"; }, stop); }
-      catch (e){ if (e.message !== "stopped") alert("Download stopped: " + e.message + ". What was saved is kept; tap again to finish."); }
+      catch (e){ if (e.message !== "stopped") await lastErr(e); } 
       busy = false; r.classList.remove("busy"); r.querySelector(".dl-bar i").style.width = "0"; paint(); });
     paint();
   }
@@ -99,7 +117,8 @@ window.Offline = (() => {
         b.classList.toggle("have", full); b.querySelector(".oc-s").textContent = full ? `✓ on this phone · ${mb(all)}` : have ? `${mb(have)} of ${mb(all)}` : mb(all);
         b.disabled = busy && !b.classList.contains("busy"); if (coreBusy && !b.classList.contains("busy")) b.querySelector(".oc-s").textContent = "Getting the app core first…"; });
       if (navigator.storage && navigator.storage.estimate){ const e = await navigator.storage.estimate().catch(() => null), kept = navigator.storage.persisted ? await navigator.storage.persisted().catch(() => false) : false;
-        if (e) el.querySelector(".oc-room").textContent = `Make the app work with no signal. ${mb(e.usage || 0)} on this device; ${mb(Math.max(0, (e.quota || 0) - (e.usage || 0)))} free.${kept ? " Kept safe from clean-ups." : ""}`; } };
+        let le = ""; try { le = localStorage.getItem("kcgm_off_err") || ""; } catch (x) {}
+        if (e) el.querySelector(".oc-room").textContent = `Make the app work with no signal. ${mb(e.usage || 0)} on this device; ${mb(Math.max(0, (e.quota || 0) - (e.usage || 0)))} free.${kept ? " Kept safe from clean-ups." : ""}${le ? " Last stop: " + le : ""}`; } };
     el.querySelectorAll(".oc-b").forEach(b => b.onclick = async () => {
       if (b.classList.contains("busy")){ stop.x = true; return; }
       if (busy) return;
@@ -109,11 +128,15 @@ window.Offline = (() => {
       if (navigator.storage && navigator.storage.persist) await navigator.storage.persist().catch(() => {});
       busy = true; stop.x = false; b.classList.add("busy"); el.querySelectorAll(".oc-b").forEach(x => x.disabled = x !== b);
       const s0 = tot(fs) - size, all = tot(fs), bar = b.querySelector(".oc-bar i");
-      try { await get(fs, f => { const d = s0 + f * size; b.querySelector(".oc-s").textContent = `${mb(d)} of ${mb(all)} · tap to stop`; bar.style.width = (d / all * 100).toFixed(1) + "%"; }, stop); }
-      catch (e){ if (e.message !== "stopped") alert("Download stopped: " + e.message + ". What was saved is kept; tap again to finish."); }
+      try { await get(fs, f => { const d = s0 + f * size; b.querySelector(".oc-s").textContent = `${mb(d)} of ${mb(all)} · tap to stop`; bar.style.width = (d / all * 100).toFixed(1) + "%"; }, stop); try { localStorage.removeItem("kcgm_off_err"); } catch (x) {} }
+      catch (e){ if (e.message !== "stopped") await lastErr(e); } 
       busy = false; b.classList.remove("busy"); bar.style.width = "0"; paint(); });
     PAINT.add(paint); paint();
   }
+  // the reason a download stopped, kept on screen under the buttons (and how full the phone was), until a download finishes
+  async function lastErr(e){ let u = ""; try { const q = await navigator.storage.estimate(); u = ` (${mb(q.usage || 0)} held, ${mb(Math.max(0, (q.quota || 0) - (q.usage || 0)))} free)`; } catch (x) {}
+    const m = `${new Date().toLocaleString()}: ${e.message || e}${u}`; try { localStorage.setItem("kcgm_off_err", m); } catch (x) {}
+    alert("Download stopped: " + (e.message || e) + "."); }
   const PAINT = new Set(); let coreBusy = false;   // (the cards on screen, redrawn when the core download ends)
   // the app core on this device, always: fetched in the background (a few seconds after the app opens, with signal) and
   // brought up to date with every update; never removed
@@ -166,19 +189,20 @@ window.Offline = (() => {
     if (!("caches" in window) || busy) return 0;
     await load(); const c = await caches.open(CACHE); await loadHeld(c);
     const built = M.built ? Date.parse(M.built) : 0, base = url("./"), stale = [];
-    for (const req of await c.keys()){
+    const pairs = (await Promise.all((await allCaches()).map(async x => (await x.keys()).map(req => [x, req])))).flat();
+    for (const [cx, req] of pairs){
       const u = req.url.split("?")[0]; if (!u.startsWith(base) || u === VER()) continue;
       const f = decodeURIComponent(u.slice(base.length)); if (!M.ver[f]) continue;
-      if (held[f]){ if (held[f] !== M.ver[f]) stale.push([f, req]); continue; }
-      const r = await c.match(req), d = r && Date.parse(r.headers.get("date") || "");
+      if (held[f]){ if (held[f] !== M.ver[f]) stale.push([f, req, cx]); continue; }
+      const r = await cx.match(req), d = r && Date.parse(r.headers.get("date") || "");
       if (d && built && d > built + 20 * 60e3){   // (20 minutes after the build: the site was live by then)
         held[f] = M.ver[f]; continue; }
       try { const h = await fetch(fresh(f), { method: "HEAD", cache: "no-store" }), tag = x => x && (x.headers.get("etag") || x.headers.get("last-modified")), et = tag(h), was = tag(r);
-        if (h.ok && et && was && et === was) held[f] = M.ver[f]; else if (h.ok) stale.push([f, req]); } catch (e){ return 0; }   // (offline: try next time)
+        if (h.ok && et && was && et === was) held[f] = M.ver[f]; else if (h.ok) stale.push([f, req, cx]); } catch (e){ return 0; }   // (offline: try next time)
     }
     let n = 0;
-    for (const [f, req] of stale){
-      try { const r = await fetch(fresh(f), { cache: "no-store" }); if (!r.ok) continue; await c.put(req, r); held[f] = M.ver[f]; n++; } catch (e){ break; }
+    for (const [f, req, cx] of stale){
+      try { const r = await fetch(fresh(f), { cache: "no-store" }); if (!r.ok) continue; await cx.put(req, r); held[f] = M.ver[f]; n++; } catch (e){ break; }
     }
     await saveHeld(c); return n;
   }
