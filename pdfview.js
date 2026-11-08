@@ -171,12 +171,12 @@ window.PdfView = (() => {
     const up = e => { pts.delete(e.pointerId);
       // the pinch ends: the point of the sheet the fingers started on lands where their midpoint finished (one step, so
       // it holds whether the sheet scrolls or still sits inside the window)
-      if (pin && pts.size < 2){ const p = pin, z0 = V.zoom; pin = null; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx + p.mx, p.cy + p.my, p.fx, p.fy); cxFit();
+      if (pin && pts.size < 2){ const p = pin, z0 = V.zoom; pin = null; V.userZ = cur; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx + p.mx, p.cy + p.my, p.fx, p.fy); cxFit();
         if (V.zoom === z0){ V.body.scrollLeft -= p.mx; V.body.scrollTop -= p.my; } slide(); sharp(); lastTap = null;
         if (e.pointerType === "touch" && pts.size === 1) panFrom([...pts.values()][0], true); else pan = null; return; }
       // double-tap: in twice as close where tapped; again (zoomed in) back out to the whole sheet
       if (e.pointerType === "touch" && e.type === "pointerup" && !pts.size && pan && !pan.np && Math.hypot(e.clientX - pan.x, e.clientY - pan.y) < 10){
-        const now = performance.now(); if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30){ lastTap = null; pan = null; zoomTo(V.zoom > 1.05 ? 1 : 2, e.clientX, e.clientY); return; }
+        const now = performance.now(); if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30){ lastTap = null; pan = null; V.userZ = cur; zoomTo(V.zoom > 1.05 ? 1 : 2, e.clientX, e.clientY); return; }
         lastTap = { t: now, x: e.clientX, y: e.clientY }; }
       if (e.pointerType !== "touch") return;
       // a swipe across the whole sheet (strip showing): the next drawing (cur.swipe, pid.js); short of one, the sheet slides back
@@ -383,13 +383,17 @@ window.PdfView = (() => {
     picsP.then(() => { if (cur !== me || V.pgFor === me) return; const pn = cur.page || 1, key = cur.url.replace(/^\.\//, "").split("?")[0];
       if (!(PICS && PICS[key] >= pn)) return; const im = new Image(); im.decoding = "async";
       im.onload = () => { if (cur !== me || V.pgFor === me) return; const cs = getComputedStyle(V.body), W = V.body.clientWidth - 16, H = V.body.clientHeight - 16 - Math.max(0, (parseFloat(cs.paddingTop) || 0) - 8);
-        const k = cur.fit === "page" ? Math.min(W / im.width, H / im.height) : W / im.width; V.sheet.style.width = Math.round(im.width * k) + "px"; V.sheet.style.height = Math.round(im.height * k) + "px";
+        const k = cur.fit === "page" ? Math.min(W / im.width, H / im.height) : W / im.width; V.pk = k; V.pw = im.width; V.ph = im.height; V.userZ = null; V.sheet.style.width = Math.round(im.width * k) + "px"; V.sheet.style.height = Math.round(im.height * k) + "px";
         V.bg.width = im.width; V.bg.height = im.height; V.bg.getContext("2d").drawImage(im, 0, 0); V.hi.style.visibility = "hidden"; V.msg.hidden = true; V.ox = V.oy = 0; slide(); cxFit(); V.sheet.style.opacity = ""; swEnter(); };
       im.src = `${cur.url.split("?")[0]}.p${pn}.png`; });
     let d; try { d = await getDoc(cur.url); } catch (e) { V.msg.textContent = "Couldn't load the PDF (" + e.message + "). Check the connection."; return; }
     V.msg.hidden = true; V.el.querySelector(".sp-pages").hidden = d.numPages < 2;
-    V.zoom = 1; await go(cur.page);
-    const r = cur.restore; if (r && cur === me){ quiet(); V.zoom = r.zoom; layout(false); V.body.scrollLeft = r.sl; V.body.scrollTop = r.st; sharp(); }
+    // (pinched or double tapped while the picture was up: the PDF comes in at that zoom, the same spot in the middle)
+    const uz = V.userZ === me ? V.zoom : 1, mid = () => { const q = V.sheet.getBoundingClientRect(), r0 = V.body.getBoundingClientRect(); return [(r0.left + r0.width / 2 - q.left) / q.width, (r0.top + r0.height / 2 - q.top) / q.height]; };
+    const fm = uz > 1 ? mid() : null;
+    V.zoom = uz; await go(cur.page);
+    if (fm && cur === me){ const q = V.sheet.getBoundingClientRect(), r0 = V.body.getBoundingClientRect(); V.body.scrollLeft += q.left + fm[0] * q.width - (r0.left + r0.width / 2); V.body.scrollTop += q.top + fm[1] * q.height - (r0.top + r0.height / 2); slide(); sharp(); }
+    const r = cur.restore; if (r && cur === me && V.userZ !== me){ quiet(); V.zoom = r.zoom; layout(false); V.body.scrollLeft = r.sl; V.body.scrollTop = r.st; sharp(); }
     if (cur === me && REG.get(curId) && !REG.get(curId).snap){ REG.get(curId).snap = state(); REG.get(curId).at = REG.get(curId).snap; }
     if (!o._pop && cur.back != null) arrive(me);
     if (!o._pop && trPend) trArrive(me, cur.back); else trPend = null;
@@ -406,7 +410,7 @@ window.PdfView = (() => {
     const bs = rs.map(r => V.boxes[V.pageRefs.indexOf(r)]).filter(Boolean).map(b => ({ page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }));
     if (!bs.length) return;
     V.tap = Object.assign({}, bs[0], { more: bs.slice(1) }); drawTap();
-    quiet(); if (!me.extent) focusHits(bs, true);   // zoomed onto the ribbon(s) back to where you came from: all in view, never closer than 4x
+    quiet(); if (V.userZ === me){} else if (!me.extent) focusHits(bs, true);   // zoomed onto the ribbon(s) back to where you came from: all in view, never closer than 4x
     else { V.hiB = { n: me.number, b: [].concat(me.back).filter(j => typeof j === "number") }; drawFl(); }   // (at the whole sheet: the line come in on shown, the rest faint)
     const v = REG.get(curId); if (v){ v.tap = V.tap; v.snap = state(); v.at = v.snap; }
   }
@@ -979,7 +983,7 @@ window.PdfView = (() => {
     await picsP; V.pg = await d.getPage(n); V.pgFor = cur; V.body.scrollTo(0, 0); V.size(); layout(true); V.sheet.style.opacity = ""; swEnter();
     (window.requestIdleCallback || setTimeout)(() => textLayer(), { timeout: 1200 });   // (the selectable text after the picture is up)
     if (V.afterPage){ const f = V.afterPage; V.afterPage = null; f(); }
-    if (cur.find){ const me2 = cur; Promise.resolve(mark(cur.find)).then(() => { if (cur === me2 && !V.fit && !cur.restore && !cur.extent && !fromPop && V.hits && V.hits.length) focusHits(V.hits); }); } drawTap();
+    if (cur.find){ const me2 = cur; Promise.resolve(mark(cur.find)).then(() => { if (cur === me2 && V.userZ !== me2 && !V.fit && !cur.restore && !cur.extent && !fromPop && V.hits && V.hits.length) focusHits(V.hits); }); } drawTap();
     const me = REG.get(curId); if (me && !me.snap && !fromPop){ me.snap = state(); me.at = me.snap; }
   }
   // the page's text as an invisible, selectable layer over the picture (PDF.js text layer; OCR'd sheets included),
@@ -1169,7 +1173,7 @@ window.PdfView = (() => {
   // far past a sheet since zoomed out, so a drag could carry the sheet off into empty space.
   function hideHi(){ const c = V.hi.style; c.visibility = "hidden"; c.left = c.top = "0px"; c.width = c.height = "0px"; }
   function sharp(){
-    if (!V.pg) return;
+    if (!V.pg || V.pgFor !== cur) return;   // (not the last drawing's page while this one's PDF is still loading)
     const dpr = devicePixelRatio || 1, s = V.base * V.zoom, sw = V.sheet.offsetWidth, sh = V.sheet.offsetHeight;
     if (V.picW && V.picW >= sw * dpr * .85){ hiGen++; if (hiTask) hiTask.cancel(); hideHi(); return; }   // the picture is detailed enough at this zoom: no PDF drawing
     const x0 = Math.max(0, V.body.scrollLeft - 8), y0 = Math.max(0, V.body.scrollTop - 8);
@@ -1184,19 +1188,21 @@ window.PdfView = (() => {
   }
   function zoomTo(z, cx, cy, fx0, fy0, ext){
     if (V && V.sheet) V.sheet.style.removeProperty("--trk");   // (the pinch's counter-scale off: the sheet is redrawn at the new zoom)
-    z = Math.max(1, Math.min(cur.fit === "page" ? 24 : 10, z)); if (!V.pg || Math.abs(z - V.zoom) < .001) return;
+    z = Math.max(1, Math.min(cur.fit === "page" ? 24 : 10, z)); if ((!V.pg && !(V.pk && V.pgFor !== cur)) || Math.abs(z - V.zoom) < .001) return;
+    // (the PDF still loading: the picture shown first is zoomed instead, and the PDF comes in at that zoom)
+    const pic = !V.pg || V.pgFor !== cur;
     // (flying a line: the zoom you pinch or tap to is the fly through's zoom, kept for the next line clicked)
     // (zoom extents while flying: a look at the whole sheet, the fly through's own zoom kept for the next step along)
     if (TR && V.tz && !ext){ const zs = V.tz.querySelector(".sp-trz"); zs.value = Math.max(0, Math.min(100, Math.log10(z) * 100)); try { localStorage.setItem("kcgm_trz", zs.value); } catch (e) {} }
     const r = V.body.getBoundingClientRect(); cx = cx == null ? r.left + r.width / 2 : cx; cy = cy == null ? r.top + r.height / 2 : cy;
     // the point under (cx, cy) as a fraction of the page stays under it (measured from the page itself, so the body's padding doesn't matter)
     const q = V.sheet.getBoundingClientRect(), fx = fx0 != null ? fx0 : (cx - q.left) / q.width, fy = fy0 != null ? fy0 : (cy - q.top) / q.height;
-    V.zoom = z; layout(false);
+    V.zoom = z; if (pic){ V.sheet.style.width = Math.round(V.pw * V.pk * z) + "px"; V.sheet.style.height = Math.round(V.ph * V.pk * z) + "px"; } else layout(false);
     const q2 = V.sheet.getBoundingClientRect(); V.body.scrollLeft += q2.left + fx * q2.width - cx; V.body.scrollTop += q2.top + fy * q2.height - cy;
     // while the sheet is still smaller than the window one way it can't scroll that way: it slides instead (inside the
     // window), so the point under the cursor stays under it from the first step of zoom, not only once the sheet overflows
     const q3 = V.sheet.getBoundingClientRect(); V.ox = (V.ox || 0) + cx - (q3.left + fx * q3.width); V.oy = (V.oy || 0) + cy - (q3.top + fy * q3.height); slide();
-    sharp(); settleSoon();
+    if (!pic){ sharp(); settleSoon(); }   // (the picture alone: drawn sharp, and kept as a view, once the PDF is in)
     if (TR) drawTrace();   // (the trail and its arrow redrawn for the new zoom: a set size on screen, not blown up with the sheet)
   }
   // the sheet's slide (V.ox, V.oy): lets the page sit off centre (or past the window's edge) so a zoom keeps the point
