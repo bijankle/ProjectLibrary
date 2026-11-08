@@ -121,7 +121,11 @@ window.PdfView = (() => {
       if (Math.abs(w - lastW) < 2 && (Math.abs(h - lastH) < 120 || document.documentElement.classList.contains("phone"))) return; lastW = w; lastH = h; layout(true); }, 250); };
     V.size = () => { lastW = V.body.clientWidth; lastH = V.body.clientHeight; };
     addEventListener("resize", refit); if (screen.orientation) screen.orientation.addEventListener("change", refit);
-    let t; V.body.addEventListener("scroll", () => { clearTimeout(t); t = setTimeout(sharp, 70); settleSoon(); });
+    // (the sharp layer is drawn once the view stops AND the finger is off the glass: drawn while a finger rests mid pan, its
+    // PDF drawing ran on alongside the pan when the finger moved on and made the sheet stutter)
+    let t; const sh = () => { if (V.held){ t = setTimeout(sh, 90); return; } sharp(); };
+    V.sharpSoon = () => { clearTimeout(t); t = setTimeout(sh, 70); };
+    V.body.addEventListener("scroll", () => { V.sharpSoon(); settleSoon(); });
     // wheel zoom: the sheet is scaled smoothly while the wheel turns (about the cursor) and redrawn sharp once it stops
     let wz = null;
     V.body.addEventListener("wheel", e => { if (!e.ctrlKey && cur.fit !== "page") return; e.preventDefault(); if (!V.pg) return;
@@ -144,7 +148,9 @@ window.PdfView = (() => {
     // finger's first moments are not a pan and its lift is never a flick: it waits a moment, then pans with no glide.)
     const panFrom = (e, held) => { cancelAnimationFrame(glide); const now = performance.now(); pan = { x: e.clientX, y: e.clientY, sl: V.body.scrollLeft, st: V.body.scrollTop, s: [[now, e.clientX, e.clientY]], held: held ? now + 160 : 0, np: !!held }; };
     const zmax = () => cur.fit === "page" ? 24 : 10, gap = (a, b) => Math.max(30, Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY));   // (fingers almost touching: a few px of jitter must not read as a big zoom)
-    V.body.addEventListener("pointerdown", e => { if (e.pointerType === "touch" && pts.size === 0) panFrom(e); });
+    V.body.addEventListener("pointerdown", e => { if (e.pointerType !== "touch") return; V.held = true;
+      if (hiTask){ hiTask.cancel(); hiTask = null; V.sharpSoon(); }   // (a sharp drawing under way stops for the finger, and starts again once it lifts)
+      if (pts.size === 0) panFrom(e); });
     // (two fingers down: the panel under the sheet goes at once, not when the pinch ends)
     V.body.addEventListener("pointerdown", e => { pts.set(e.pointerId, e); if (pts.size === 2){ pan = null; V.cx.hidden = true; V.el.classList.remove("cx-on"); const [a, b] = [...pts.values()]; pin = { d: gap(a, b), z: V.zoom, cx: (a.clientX + b.clientX) / 2, cy: (a.clientY + b.clientY) / 2, f: 1, mx: 0, my: 0 }; } });
     // a finger whose lift never arrived (it went down on a tag box or text that was redrawn under it, so its events were
@@ -168,7 +174,7 @@ window.PdfView = (() => {
       if (!pin.o){ const q = V.sheet.getBoundingClientRect(); pin.o = `${pin.cx - q.left}px ${pin.cy - q.top}px`; pin.fx = (pin.cx - q.left) / q.width; pin.fy = (pin.cy - q.top) / q.height; }
       V.sheet.style.transformOrigin = pin.o; V.sheet.style.transform = `translate(${pin.mx}px,${pin.my}px) scale(${pin.f})`; V.sheet.style.setProperty("--trk", 1 / pin.f); } });
     let lastTap = null;
-    const up = e => { pts.delete(e.pointerId);
+    const up = e => { pts.delete(e.pointerId); if (!pts.size) V.held = false;
       // the pinch ends: the point of the sheet the fingers started on lands where their midpoint finished (one step, so
       // it holds whether the sheet scrolls or still sits inside the window)
       if (pin && pts.size < 2){ const p = pin, z0 = V.zoom; pin = null; V.userZ = cur; V.sheet.style.transform = ""; zoomTo(p.z * p.f, p.cx + p.mx, p.cy + p.my, p.fx, p.fy); cxFit();
@@ -202,6 +208,7 @@ window.PdfView = (() => {
         if (Math.hypot(vx, vy) > .02) glide = requestAnimationFrame(step); };
       if (Math.hypot(vx, vy) > .15) glide = requestAnimationFrame(step); };
     V.body.addEventListener("pointerup", up); V.body.addEventListener("pointercancel", up);
+    V.body.addEventListener("touchend", e => { if (!e.touches.length) V.held = false; }, { passive: true });   // (a lift whose pointer event was lost still frees the sharp drawing)
     // mouse: middle button drag pans a drawing
     let dr = null;
     // (the left button selects text like any PDF; holding the middle button pans)

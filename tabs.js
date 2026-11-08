@@ -857,8 +857,11 @@ button:disabled{cursor:default}
       if (S.pad && S.pad.classList) padOff(S.pad); }
   }
   let q = 0; const soon = () => { if (!q) q = requestAnimationFrame(() => { q = 0; scan(); }); };
-  new MutationObserver(ms => { if (ms.some(m => !(m.target.closest && m.target.closest(".fs")) && !(m.type === "attributes" && m.target.classList && m.target.classList.contains("fs")))) soon(); }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "class"] });
+  // (the drawing viewer is no list: its pan and zoom scroll and restyle it every frame, and a scan each frame (screen
+  // probes and style reads over the whole page) made panning a P&ID stutter on the phone)
+  const inV = n => n && n.closest && n.closest(".sp-view");
+  new MutationObserver(ms => { if (ms.some(m => !(m.target.closest && m.target.closest(".fs,.sp-view")) && !(m.type === "attributes" && m.target.classList && m.target.classList.contains("fs")))) soon(); }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "class"] });
   addEventListener("resize", soon);
-  addEventListener("scroll", e => { const s = e.target === document ? document.scrollingElement : e.target; const S = strips.get(s); if (S && !S.on) paint(S); else if (!S) soon(); }, { capture: true, passive: true });
+  addEventListener("scroll", e => { if (inV(e.target)) return; const s = e.target === document ? document.scrollingElement : e.target; const S = strips.get(s); if (S && !S.on) paint(S); else if (!S) soon(); }, { capture: true, passive: true });
   setInterval(soon, 1500);   // (a list shown by a tab switch with no change to watch)
 })();
