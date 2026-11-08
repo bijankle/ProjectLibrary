@@ -136,6 +136,7 @@ window.Offline = (() => {
   // the reason a download stopped, kept on screen under the buttons (and how full the phone was), until a download finishes
   async function lastErr(e){ let u = ""; try { const q = await navigator.storage.estimate(); u = ` (${mb(q.usage || 0)} held, ${mb(Math.max(0, (q.quota || 0) - (q.usage || 0)))} free)`; } catch (x) {}
     const m = `${new Date().toLocaleString()}: ${e.message || e}${u}`; try { localStorage.setItem("kcgm_off_err", m); } catch (x) {}
+    if (window.ErrLog) ErrLog.add("offline", (e.message || e) + u, e.stack);
     alert("Download stopped: " + (e.message || e) + "."); }
   const PAINT = new Set(); let coreBusy = false;   // (the cards on screen, redrawn when the core download ends)
   // the app core on this device, always: fetched in the background (a few seconds after the app opens, with signal) and
