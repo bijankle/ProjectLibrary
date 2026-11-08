@@ -104,6 +104,7 @@
   // ---------- rendering ----------
   // a drawing in the app: its number links straight to the drawing; any other known code links to its page
   // a document the app doesn't hold opens SharePoint (sp.js); a list held in the app opens in Sources
+  // (a drawing's link with an ⓘ shows its bare number: the revision is in the ⓘ's callout)
   // ⓘ beside a document link: a tap shows the document's title and revision in a small callout under it (so the right
   // one of several, say ten IOMs on one pump, is picked before anything opens). Titles: the drawing index, the IOM list,
   // the documents held in Sources, else the project register (sp-titles.json, loaded on the first tap)
@@ -133,7 +134,7 @@
   addEventListener("resize", popClose);   // (it scrolls with the page)
   let LINKRE = null;
   const linkify = v => esc(v).replace(LINKRE || (LINKRE = new RegExp(TAG_RE.source + (window.SP ? "|" + SP.DOC.source : ""), "g")), m => { const k = norm(m);
-    if (/-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc(Pid.label(m))}</a>` + DI(m);
+    if (/-(PID|PFD|SLD|TLD|SCM|BLK)-/.test(m) && window.Pid && Pid.has(m)) return `<a class="lk-a" data-dwg="${m}" href="#" title="Open the drawing">${esc((Pid.info(m) || {}).number || m)}</a>` + DI(m);
     if (byKey.has(k)) return `<a class="lk-a" data-k="${k}">${m}</a>`;
     if (window.SP && SP.url(m)) return SP.a(m) + DI(m);
     if (/^2000-/.test(m) && DOCN.has(k)) return `<a class="lk-a lk-doc" href="issues.html#sources" title="Open in Sources">${m}</a>` + DI(m);
@@ -601,7 +602,7 @@
       return `<div class="lk-dsh">${held ? `<a class="lk-a" data-dwg="${esc(d.n)}" data-page="1" href="#">${esc(d.n)}</a>` : esc(d.n)} Rev ${esc(d.r)}${DI(d.n)}<span class="lk-mu"> · only what the lists don't already say</span></div>` + L.pills(ps, "ds"); }).join("");
     return { id: "dsh", label: "Datasheet", n, html };
   }
-  const dwgA = (n, pg) => window.Pid && Pid.has(n) ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="${pg || 1}" href="#">${esc(Pid.label(n))}</a>` + DI(n) : esc(n);
+  const dwgA = (n, pg) => window.Pid && Pid.has(n) ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="${pg || 1}" href="#">${esc((Pid.info(n) || {}).number || n)}</a>` + DI(n) : esc(n);
   function docRows(it, rows){
     const seen = (DT && DT[it.key]) || [];
     const at = () => { const i = rows.findIndex(r => /^P&IDs?$/.test(r.l)); return i < 0 ? rows.length : i; };
