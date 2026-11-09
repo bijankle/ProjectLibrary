@@ -296,6 +296,10 @@ window.SourcesList = (() => {
     const ROG = [["", "All"], ["project", "Project 2000"], ["vendor", "Vendor"], ["legacy", "Legacy KCGM"], ["other", "Other"]];
     // the left side bar serves both tabs: on Ref Only it shows All, the families and the document types (one picked
     // at a time: roG "" | "project" … | "t:SCM"), each with its count; the search box above filters both
+    // (why a document is in Old Revs, from the project document register: tools/build_refonly.py)
+    const whyK = o => { const w = o.why || "up rev"; return /^superseded/.test(w) ? "sup" : w === "cancelled" ? "can" : /^continuation/.test(w) ? "cont" : /unknown/.test(w) ? "unk" : "up"; };
+    const WHY = { up: "Needs an up rev", unk: "Rev unknown in the app", cont: "Continuations not in the app", sup: "Superseded by another number", can: "Cancelled" };
+    const whyTxt = o => { const k = whyK(o); return k === "up" ? `Up rev: ${o.app} → ${o.rev}` : k === "unk" ? `Rev unknown in the app; register: ${o.rev}` : k === "cont" ? `Not in the app; continues from ${(o.on || []).join(", ")}` : k === "sup" ? `Superseded by ${o.by || ""}` : "Cancelled in the register"; };
     const roType = o => { if (o.iom) return "IOM"; if (o.pct) return "PCT"; const m = /^\d{4}-[A-Z]\d+-([A-Z]{3})-/.exec(o.n); return m ? m[1] : ""; };
     async function setTab(v){ tab = v; el.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
       const R2 = v !== "att";   // (Ref Only and Old Revs share the table, the side bar filters and the buttons; Old Revs has no Excel)
@@ -306,7 +310,7 @@ window.SourcesList = (() => {
       if (R2) roDraw(); }
     const roAll = () => tab === "old" ? OLD : RO;
     const roLk = o => !roL || (roL === "y") === !!o.url;
-    const roList = () => roAll().filter(o => roLk(o) && (!roG || (roG.startsWith("t:") ? roType(o) === roG.slice(2) : o.g === roG)) && (!q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in || {}).join(" ") + " " + (o.file || "")).toLowerCase().includes(q)));
+    const roList = () => roAll().filter(o => roLk(o) && (!roG || (roG.startsWith("t:") ? roType(o) === roG.slice(2) : roG.startsWith("w:") ? whyK(o) === roG.slice(2) : o.g === roG)) && (!q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in || {}).join(" ") + " " + (o.file || "")).toLowerCase().includes(q)));
     function roDraw(){ if (!RO) return; if (tab === "old") return oldDraw(); const L = roList(), lk = !ghKey();
       const qOk = o => roLk(o) && (!q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + Object.keys(o.in || {}).join(" ") + " " + (o.file || "")).toLowerCase().includes(q));
       const sec = (id, name, all) => { const n = all.filter(qOk).length; return `<div class="sl-sec${roG === id ? " on" : ""}${q && !n ? " sl-z" : ""}" data-ro="${esc(id)}" role="button" tabindex="0"><div class="sl-st"><b>${esc(name)}</b><small>${q || roL ? `${n} of ${all.length}${q ? " match" : ""}` : `${all.length.toLocaleString()} document${all.length === 1 ? "" : "s"}`}</small></div></div>`; };
@@ -324,18 +328,19 @@ window.SourcesList = (() => {
           `<td class="sl-ra"><button type="button" class="sl-ib sl-upb" data-up="n:${esc(o.n)}" title="Upload ${esc(o.n)}">${ICO.up}</button></td></tr>`).join("") + `</tbody></table>` +
         (L.length ? "" : `<div class="sl-none">Nothing matches.</div>`);
       el.querySelectorAll(".sl-rot .sl-upb").forEach(b => setLock(b, lk)); const tb = $(".sl-rtb"); if (tb && window.TSort) TSort.keep(tb, "refonly"); }
-    // ---------- Old Revs (desktop): documents in the app with a newer file on SharePoint (refonly.json "old", from the
-    // library's file list, tools/doclist.py). The doc number opens the newer file; PDFs downloads the ones shown, Upload
+    // ---------- Old Revs (desktop): documents in the app behind the project document register (refonly.json "old",
+    // tools/build_refonly.py), and the P&IDs drawings continue onto that the app lacks. The doc number opens the newer file; PDFs downloads the ones shown, Upload
     // takes them back in (the private repository's inbox, for Claude to put in the app in place of the old one) ----------
     function oldDraw(){
       const qOk = o => !q || (o.n + " " + o.n.replace(/^2000-/, "") + " " + o.t + " " + o.file).toLowerCase().includes(q), L = roList();
       const sec = (id, name, all) => { const n = all.filter(qOk).length; return `<div class="sl-sec${roG === id ? " on" : ""}${q && !n ? " sl-z" : ""}" data-ro="${esc(id)}" role="button" tabindex="0"><div class="sl-st"><b>${esc(name)}</b><small>${q ? `${n} of ${all.length} match` : `${all.length.toLocaleString()} document${all.length === 1 ? "" : "s"}`}</small></div></div>`; };
       const tc = {}; OLD.forEach(o => { const t = roType(o); if (t) (tc[t] = tc[t] || []).push(o); });
-      $(".sl-sr").innerHTML = `<div class="sl-h">Everything</div>${sec("", "All Old Revs", OLD)}<div class="sl-h">Types</div>` +
+      const wc = {}; OLD.forEach(o => (wc[whyK(o)] = wc[whyK(o)] || []).push(o));
+      $(".sl-sr").innerHTML = `<div class="sl-h">Everything</div>${sec("", "All Old Revs", OLD)}<div class="sl-h">Why, from the register</div>` + Object.keys(WHY).filter(k => wc[k]).map(k => sec("w:" + k, WHY[k], wc[k])).join("") + `<div class="sl-h">Types</div>` +
         Object.entries(tc).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).map(([t, a]) => sec("t:" + t, `${DT[t] || t} (${t})`, a)).join("");
-      $(".sl-rot").innerHTML = `<table class="sl-rtb"><thead><tr><th>Doc number</th><th>Title</th><th>Rev in app</th><th>Latest on SharePoint</th><th>Modified</th></tr></thead><tbody>` +
-        L.map(o => `<tr><td class="sl-rk"><a class="sl-spn sp-a" href="${esc(o.url)}" target="_blank" rel="noopener" title="Open the latest file in SharePoint">${esc(o.n)}</a></td><td>${esc(o.t || "")}</td><td>${esc(o.app)}</td><td>${esc(o.file)}</td><td style="white-space:nowrap">${esc(o.mod || "")}</td></tr>`).join("") + `</tbody></table>` +
-        (L.length ? "" : `<div class="sl-none">${OLD.length ? "Nothing matches." : "Every document in the app is the latest on SharePoint."}</div>`);
+      $(".sl-rot").innerHTML = `<table class="sl-rtb"><thead><tr><th>Doc number</th><th>Title</th><th>Rev in app</th><th>Latest on SharePoint</th><th>Why</th></tr></thead><tbody>` +
+        L.map(o => `<tr><td class="sl-rk"><a class="sl-spn sp-a" href="${esc(o.url)}" target="_blank" rel="noopener" title="Open the latest file in SharePoint">${esc(o.n)}</a></td><td>${esc(o.t || "")}</td><td>${esc(o.app)}</td><td>${esc(o.file)}</td><td>${esc(whyTxt(o))}</td></tr>`).join("") + `</tbody></table>` +
+        (L.length ? "" : `<div class="sl-none">${OLD.length ? "Nothing matches." : "Every document in the app is at the register's current revision."}</div>`);
       const tb = $(".sl-rtb"); if (tb && window.TSort) TSort.keep(tb, "oldrevs"); }
     // the Excel download: the rows as shown (pill, search and sort), one tidy table with columns to sort and filter by,
     // the doc number a link to its SharePoint copy; a second sheet counts them by family and type

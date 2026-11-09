@@ -30,10 +30,15 @@ def latest():
         c = json.load(open(cache)); FILES.update(c.get("F", {})); return c["L"]
     import openpyxl
     from urllib.parse import quote
-    rows = openpyxl.load_workbook(src, read_only=True).worksheets[0].iter_rows(values_only=True)
-    hd = [str(x or "").strip() for x in next(rows)]; col = {h: i for i, h in enumerate(hd)}
-    best = {}; files = {}
-    for row in rows:
+    # (several exports: the newest says where each document is now; an older one only adds documents the newest doesn't
+    # list at all, an export that came out short)
+    def allrows():
+        for xi, x in enumerate(reversed(xs)):
+            rows = openpyxl.load_workbook(x, read_only=True).worksheets[0].iter_rows(values_only=True)
+            hd = [str(v or "").strip() for v in next(rows)]
+            for row in rows: yield xi, {h: i for i, h in enumerate(hd)}, row
+    best = {}; files = {}; tier = {}
+    for xi, col, row in allrows():
         name = str(row[col["Name"]] or "").strip().split("\n")[-1].strip(); path = str(row[col["Path"]] or "").strip().strip("/")
         if (row[col.get("Item Type", -1)] if "Item Type" in col else "Item") != "Item" or "." not in name or not path: continue
         stem, ext = name.rsplit(".", 1); ext = ext.lower()
@@ -46,7 +51,9 @@ def latest():
         mod = str(row[col["Modified"]] or "")[:19]; files[name.lower()] = mod
         sup = "/superseded" in ("/" + path).lower()
         url = "https://nsrltd.sharepoint.com/" + quote(path + "/" + name)
-        k = nk(num); e = {"n": num, "rev": rev, "st": st, "url": url, "file": name, "sup": sup, "mod": mod}
+        k = nk(num)
+        if tier.setdefault(k, xi) != xi: continue   # (listed in a newer export: an older one has no say)
+        e = {"n": num, "rev": rev, "st": st, "url": url, "file": name, "sup": sup, "mod": mod}
         # the newest file wins: one outside a Superseded folder, a PDF (the drawing the app shows), then the latest
         # modified date, then the highest revision
         # (a file marked SSD, superseded, or CAN, cancelled, or a copy named "... old", only when there's nothing else)

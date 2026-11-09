@@ -103,23 +103,57 @@ for o in out:
         o['url'], o['rev'] = d['url'], d['rev']
 appRev = {k: v.get('rev', '') for k, v in P.items()}; appRev.update({v['number']: v.get('rev', '') for v in meta.values() if v.get('number')})
 appT = {k: v.get('title', '') for k, v in P.items()}; appT.update({v['number']: v.get('full') or v.get('title', '') for v in meta.values() if v.get('number')})
+# Old Revs: the documents in the app behind the project document register's current revision (tools/reglatest.py: the
+# register decides, an as-built set _MS counting as its drawing's latest issue, a redline markup the app holds as the issue
+# it marks up). Also listed: one the register says another number replaced or cancelled, and one whose revision the app
+# never recorded (the first combined P&ID set) where the register has an issue on SharePoint. Not in the register: the
+# library's file list decides, as before.
+from reglatest import current as regcur, base as rbase
+from urllib.parse import unquote
+RC = regcur()
+def apprev(n):
+    a = str(appRev.get(n, '')).strip().upper()
+    if a: return a
+    for f in (P.get(n, {}).get('from') or P.get(n, {}).get('src') or []):
+        m = re.match(re.escape(n) + r'_((?:MS[-_A-Z0-9]*?_)?[0-9A-Z]{1,3})(?:_[A-Z]{3})?\.pdf$', f, re.I)
+        if m: return m.group(1).upper()
+    return ''
 old = []
 for n, h in hd.items():
+    c = RC.get(nkk(n)); a = apprev(n)
+    if c:
+        if c['url']: h['url'] = c['url']
+        h['srev'] = c['rev']
+        why = ('superseded by ' + c['by']) if c['by'] else 'cancelled' if c['can'] else '' if not a else 'up rev' if revkey(rbase(c['rev'])) > revkey(rbase(a)) else ''
+        if not why and not a and c['url']: why = 'rev unknown in app'
+        if not why: continue
+        u = c['url'] or c.get('alt', ''); f = unquote(u.rsplit('/', 1)[-1]) if u else ''
+        if not c['url'] and u: f = f'{f} (rev {c["rev"]} not on SharePoint yet)'
+        old.append({'n': n, 'g': h['g'], 't': appT.get(n, '') or c['title'], 'app': a or '?', 'rev': c['rev'], 'st': c['st'], 'url': u, 'file': f, 'mod': '', 'why': why, 'by': c['by'],
+                    'have': (P.get(n, {}).get('from') or P.get(n, {}).get('src') or [''])[0]})
+        continue
     d = DL.get(nkk(n))
     if not d: continue
     h['url'] = d['url']; h['srev'] = d['rev']
-    a = str(appRev.get(n, '')).strip()
-    # newer: the app's own source file is on SharePoint with an older date than the latest file; else (a list, or a
-    # renamed file) the latest revision is higher than the app's
     src = [f.lower() for f in (P.get(n, {}).get('from') or P.get(n, {}).get('src') or [])]
-    if a and not any(f in doclist.FILES for f in src):   # (no source file name kept: the files of the app's revision)
+    if a and not any(f in doclist.FILES for f in src):
         pre = (n + '_' + a).lower(); src = [f for f in doclist.FILES if f.startswith(pre + '.') or f.startswith(pre + '_')]
     sm = [doclist.FILES[f] for f in src if f in doclist.FILES]
-    # (the app's file marked superseded or cancelled: any other latest file replaces it, whatever the dates)
     bad = any(re.search(r'_(ssd|can)(_|\.)', f) for f in src)
-    # (an MS issue on SharePoint over a numbered revision in the app: newer whatever the dates)
     newer = (d['file'].lower() not in src and (bad or d['mod'] > max(sm) or revkey(d['rev'])[0] == 3 > revkey(a)[0])) if sm else bool(a) and revkey(d['rev']) > revkey(a)
-    if newer: old.append({'n': n, 'g': h['g'], 't': appT.get(n, '') or h.get('rt', ''), 'app': a, 'rev': d['rev'], 'st': d['st'], 'url': d['url'], 'file': d['file'], 'mod': d['mod'][:10], 'have': (P.get(n, {}).get('from') or P.get(n, {}).get('src') or [''])[0]})
+    if newer: old.append({'n': n, 'g': h['g'], 't': appT.get(n, '') or h.get('rt', ''), 'app': a, 'rev': d['rev'], 'st': d['st'], 'url': d['url'], 'file': d['file'], 'mod': d['mod'][:10], 'why': 'up rev', 'have': (P.get(n, {}).get('from') or P.get(n, {}).get('src') or [''])[0]})
+# P&IDs a drawing in the app continues onto that the app doesn't hold, but the register does: listed with the Old Revs
+# too, so one list holds everything to fetch from SharePoint and upload (the upload adds them, tools/swap_revs.py)
+for o in out:
+    c = RC.get(nkk(o['n']))
+    if '-PID-' in o['n'] and c and not c['can'] and not c['by'] and any('-PID-' in m for m in (o.get('in') or {})):
+        u = c['url'] or c.get('alt', ''); f = unquote(u.rsplit('/', 1)[-1]) if u else ''
+        old.append({'n': o['n'], 'g': o.get('g', 'project'), 't': c['title'], 'app': '—', 'rev': c['rev'], 'st': c['st'], 'url': u, 'file': f, 'mod': '', 'why': 'continuation, not in app', 'by': '', 'have': '',
+                    'on': sorted(m for m in o['in'] if '-PID-' in m)[:4]})
+# (Ref Only too: the register's current issue and its link where it has one)
+for o in out:
+    c = RC.get(nkk(o['n']))
+    if c and c['url']: o['url'], o['rev'], o['st'] = c['url'], c['rev'], c['st']
 old.sort(key=lambda o: o['n'])
 print('Old revs', len(old), 'SharePoint links from the file list:', sum(1 for o in out if DL.get(nkk(o['n']))), 'of', len(out))
 json.dump({'ref': out, 'held': hd, 'old': old}, open(R + '/refonly.json', 'w'), separators=(',', ':'))

@@ -93,17 +93,19 @@ window.AssetViz = (() => {
       .map(x => [x.number, +SH.exec(x.title)[1]]).sort((a, c) => a[1] - c[1] || a[0].localeCompare(c[0])).map(x => x[0]); };
   const sheetOf = n => { const m = SH.exec((Pid.info(n) || {}).title || ""); return m ? +m[1] : null; };
   let HELDV = null;
+  // (a redline or greenline markup of an issue is that issue: MS-RLM1_1 is at MS_1)
+  const bsr = r => String(r || "").toUpperCase().replace(/[-_](?:RLM|GLM)\d*/g, "");
   async function titleBlock(tb, n, d){
     const held = await (HELDV || (HELDV = fetch("sp-held.json").then(r => r.ok ? r.json() : {}).catch(() => ({})))); if (!tb.isConnected) return;
     const num = d.number || n, raw = held[num] || (window.SP ? (SP.url(num) || "") : ""), url = raw ? (window.SP ? SP.view(raw) : raw) : "";
     const m = String(raw).match(/_((?:MS_)?[0-9A-Z]{1,3})(?:_(?:APP|RNC|RWC|IFC|IFR|AFC|IFA))?\.pdf$/i), sr = m ? m[1] : "", rev = String(d.rev || "");
     const st = !sr ? `<span class="q">Not in the document register's SharePoint links: check the register for the latest revision.</span>`
       : !rev ? `<span class="warn">The app has no revision recorded for this copy. SharePoint's latest file is ${esc(sr)}: check it there.</span>`
-      : sr.toUpperCase() === rev.toUpperCase() ? `<span class="ok">✓ Same revision as the latest file in SharePoint (${esc(sr)})</span>`
+      : bsr(sr) === bsr(rev) ? `<span class="ok">✓ Same revision as the latest file in SharePoint (${esc(sr)})</span>`
       : `<span class="warn">SharePoint's latest file is ${esc(sr)}: this copy is ${esc(rev || "unknown")}. Check SharePoint.</span>`;
     // (one strip, as a drawing's header reads: number_rev, then the title; the number opens SharePoint's latest file, its
     // tint and the mark after it say whether that is the revision shown here, the words in its tooltip)
-    const k = !sr ? "q" : sr.toUpperCase() === rev.toUpperCase() ? "ok" : "warn", why = st.replace(/<[^>]+>/g, ""), nr = esc(num + (rev ? "_" + rev : ""));
+    const k = !sr ? "q" : bsr(sr) === bsr(rev) ? "ok" : "warn", why = st.replace(/<[^>]+>/g, ""), nr = esc(num + (rev ? "_" + rev : ""));
     const no = url ? `<a class="${k}" href="${esc(url)}" target="_blank" rel="noopener" title="Open the latest file in SharePoint. ${esc(why)}">${nr}</a>` : `<b class="${k}" title="${esc(why)}">${nr}</b>`;
     const mk = `<span class="m ${k}" title="${esc(why)}">${k === "ok" ? '<svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.3l2.3 2.3 4.7-5"/></svg>' : k === "warn" ? "!" : "?"}</span>`, v = tb.dataset.v || "c";
     tb.innerHTML = v === "b" ? `<div class="c n">${no}${mk}</div><div class="c t"><b>${esc(d.title || "")}</b></div>`
