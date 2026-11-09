@@ -107,7 +107,7 @@ def run(path):
         for k2 in keys:
             if k2 != k and pg[k2] == pg[k] and segd(D[k2], q) < NEAR: return False
         for j, kk in (D.get("rb") or {}).items():
-            if str(kk) == k:
+            if str(kk) == k and int(j) < len(refs):   # (a pointer past the sheet's links, left by an older build: ignored)
                 r = refs[int(j)]
                 if math.hypot(max(r[1] - q[0], 0, q[0] - r[1] - r[3]), max(r[2] - q[1], 0, q[1] - r[2] - r[4])) < 300: return False
         return True

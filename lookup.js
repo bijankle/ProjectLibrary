@@ -20,7 +20,7 @@
   let dtLoad = null, sideLoad = null, DOCN = new Set();   // the lists held in the app (Sources), by number
   fetch("issues.json").then(r => r.ok ? r.json() : {}).then(d => { Object.values((d.meta && d.meta.docs) || {}).forEach(x => x.number && DOCN.add(norm(x.number))); }).catch(() => {});
   // (the sheet tags and the IOMs are waited for with the search data: a page opened before they arrived had no pills or IOM row)
-  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), fetch("ds-links.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { DSL = d; }), fetch("ds-data.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { DSD = d; }), fetch("pct/idx.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { PCTI = d; }), fetch("contents.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { CT = d && d.d; CTBY = null; OTBY = null; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build(); otagExtras(); dsExtras();
+  L.load = () => loading || (sideLoad = Promise.all([fetch("sld-tags.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { SLDT = d; SCMBY = null; OTBY = null; }), fetch("iom.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { IOM = d; }), fetch("iso.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { ISO = d; }), fetch("ds-links.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { DSL = d; }), fetch("ds-data.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { DSD = d; }), fetch("pct/idx.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { PCTI = d; }), fetch("contents.json").then(r => r.ok ? r.json() : null).catch(() => null).then(d => { CT = d && d.d; CTBY = null; OTBY = null; })]), dtLoad = fetch("doc-tags.json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { DT = d; }), loading = fetch("search-data.json").then(r => { if (!r.ok) throw new Error("search data " + r.status); return r.json(); }).then(d => sideLoad.then(() => d)).then(d => { DB = d; build(); otagExtras(); dsExtras();
     if (window.Spec) Spec.load().then(() => L.addExtra(Spec.extras())).catch(() => {});   // piping classes and valve datasheets become searchable
     // drawings in the app (small index, waited for so a drawing number in a record links to the drawing straight away);
     // drawings no list refers to (e.g. PFD sheets) become search results of their own
@@ -310,7 +310,7 @@
     return `<tr><td${String(r.l).length <= 24 ? ' class="lk-nw"' : ""}>${esc(r.l)}${ib}</td><td><div class="lk-cv">${v}</div></td></tr>`; }).join("");   // (a short label keeps to one line: the column takes its width)
   // ---- the source of a value (the i): the list it was read from, its revision, where in it, and SharePoint's copy ----
   const LISTN = { mel: "Mechanical Equipment List", ins: "Instrument List", cv: "Control Valve List", line: "Line List", mv: "Manual Valve List", spi: "Special Piping Items (SPI) List", hose: "Slurry Hose List" };
-  const spRev = u => { const m = String(u || "").match(/_((?:MS_)?[0-9A-Z]{1,3})(?:_(?:APP|RNC|RWC|IFC|IFR|AFC|IFA))?\.pdf$/i); return m ? m[1].replace(/^MS_/, "MS_") : ""; };
+  const spRev = u => { const m = String(u || "").match(/_((?:MS_)?[0-9A-Z]{1,3})(?:_(?:APP|RNC|RWC|IFC|IFR|AFC|IFA|IFI|IFU|AAN|RSP|ASB|AFU|AFT|IFP|IFT|RES|NAR|MWC|ICR|CLS))?\.pdf$/i); return m ? m[1].replace(/^MS_/, "MS_") : ""; };
   L.srcDocs = (t, k) => { const T = DB.types[t]; if (!T) return [];
     if (/^\d{4}-/.test(T.doc || "")){   // (one list, or two, as the hose lists: "2000-F00-LST-PP-10032 / 12032")
       const ns = String(T.doc).split(" / ").map((x, i, a) => i ? a[0].replace(/\d+$/, x) : x), rv = String(T.rev || "").split(" / ");
@@ -387,7 +387,7 @@
       if (dws.length){ for (let i = kept.length - 1; i >= 0; i--) if (DW.test(kept[i].l)) kept.splice(i, 1);
         kept.unshift(...dws.map(r => { const ns = [...new Set(String(r.v).match(/2000-[A-Z0-9]{2,6}-P[FI]D-[A-Z]{2}-\d{4,5}/g) || [])];
           return ns.length ? { l: r.l, v: ns.join(", "), h: ns.map(n => dwgA(n)).join("<br>") } : r; })); }
-      iomRow(it, kept); dsRow(it, kept); drawRows(it, kept); docsUp(kept);
+      iomRow(it, kept); dsRow(it, kept); isoRow(it, kept); drawRows(it, kept); docsUp(kept);
       flagRows(kept, [it.key, ...twins.map(x => x.key)]);
       // MEL equipment with electrical data: two bands, Mechanical (the MEL and the other lists) and Electrical
       const el = kept.filter(r => r.s === "elx");
@@ -509,6 +509,17 @@
   let DT = null;
   // IOM manuals (iom.json, tools/build_iom.py): every manual of the item's package, and any manual naming its tag in the
   // title; those that name the tag (or the valve code, make or model) first. A row under the drawings, SharePoint links.
+  // piping isometrics (iso.json, tools/build_isos.py): a line's sheets, each opening the register's current file on
+  // SharePoint; shown on the line's page, and on an item that names a line (a valve's or instrument's line number)
+  let ISO = null;
+  function isoRow(it, rows){
+    if (!ISO) return; const ln = it.t === "line" ? [it.key] : rows.filter(r => /^line number$/i.test(r.l)).flatMap(r => String(r.v).toUpperCase().match(/\d{2,3}-[A-Z]?\d{3,5}-[A-Z0-9.]+-[A-Z0-9.]+-\d+(?:\.\d+)?/g) || []);
+    const got = [...new Set(ln.map(x => String(x).toUpperCase()))].map(k => [k, ISO.l[k]]).filter(x => x[1]); if (!got.length) return;
+    const one = s => `<a class="sp-a" href="${esc(ISO.p[s[3]] + "/" + encodeURIComponent(s[4]))}" target="_blank" rel="noopener" title="${esc(s[5])} Rev ${esc(s[1])} ${esc(s[2])}: open in SharePoint">Sheet ${esc(s[0])}</a>`;
+    const h = got.map(([k, ss]) => (got.length > 1 || it.t !== "line" ? `<span class="lk-mu">${esc(k)}:</span> ` : "") + ss.map(one).join(", ")).join("<br>");
+    const n = got.reduce((t, x) => t + x[1].length, 0), i = rows.findIndex(r => /^(Datasheets?|IOMs?|P&IDs?|PFD)$/.test(r.l));
+    rows.splice(i + 1, 0, { l: n > 1 ? "Isometrics" : "Isometric", v: got.map(([k, ss]) => ss.map(s => s[5]).join(", ")).join(", "), h });
+  }
   let IOM = null, SLDT = null, DSL = null, DSD = null;   // (DSL: the register's datasheets by tag, ds-links.json; DSD: what the ones in the app say, ds-data.json)   // (SLDT: the tags read on each SLD / TLD / block diagram, sld-tags.json)
   // the schematics a tag is read on (sld-tags.json inverted), a row under the drawings: number and title, opens the sheet
   let SCMBY = null, OTBY = null, CT = null, CTBY = null;   // (CT: what is read on each drawing, contents.json, tools/build_contents.py)
@@ -522,7 +533,7 @@
   const rowKind = l => (DKIND.find(([k]) => l === k || l === kindL(k, 2)) || [])[0];
   function ctBy(){ if (!CTBY && CT){ CTBY = new Map(); Object.entries(CT).forEach(([d, e]) => [...(e.k || []), ...(e.o || [])].forEach(k => { const n = norm(k); CTBY.set(n, [...(CTBY.get(n) || []), d]); })); } return CTBY; }
   // the drawing and document rows together at the top, after the P&IDs, PFD, IOMs and datasheets, in kind order
-  function docsUp(rows){ const top = r => /^(P&IDs?|PFD|IOMs?|Datasheets?)$/.test(r.l), mv = r => !top(r) && (rowKind(r.l) || /^(Reference|Vendor|General arrangement|GA) drawings?$/i.test(r.l));
+  function docsUp(rows){ const top = r => /^(P&IDs?|PFD|IOMs?|Datasheets?|Isometrics?)$/.test(r.l), mv = r => !top(r) && (rowKind(r.l) || /^(Reference|Vendor|General arrangement|GA) drawings?$/i.test(r.l));
     const ki = r => { const i = DKIND.findIndex(([k]) => k === rowKind(r.l)); return i < 0 ? 99 : i; };   // (a reference drawing after the kinds)
     const m = rows.filter(mv).sort((a, b) => ki(a) - ki(b)); if (!m.length) return;
     for (let i = rows.length - 1; i >= 0; i--) if (mv(rows[i])) rows.splice(i, 1);

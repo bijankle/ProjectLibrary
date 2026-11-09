@@ -98,7 +98,7 @@ window.AssetViz = (() => {
   async function titleBlock(tb, n, d){
     const held = await (HELDV || (HELDV = fetch("sp-held.json").then(r => r.ok ? r.json() : {}).catch(() => ({})))); if (!tb.isConnected) return;
     const num = d.number || n, raw = held[num] || (window.SP ? (SP.url(num) || "") : ""), url = raw ? (window.SP ? SP.view(raw) : raw) : "";
-    const m = String(raw).match(/_((?:MS_)?[0-9A-Z]{1,3})(?:_(?:APP|RNC|RWC|IFC|IFR|AFC|IFA))?\.pdf$/i), sr = m ? m[1] : "", rev = String(d.rev || "");
+    const m = String(raw).match(/_((?:MS_)?[0-9A-Z]{1,3})(?:_(?:APP|RNC|RWC|IFC|IFR|AFC|IFA|IFI|IFU|AAN|RSP|ASB|AFU|AFT|IFP|IFT|RES|NAR|MWC|ICR|CLS))?\.pdf$/i), sr = m ? m[1] : "", rev = String(d.rev || "");
     const st = !sr ? `<span class="q">Not in the document register's SharePoint links: check the register for the latest revision.</span>`
       : !rev ? `<span class="warn">The app has no revision recorded for this copy. SharePoint's latest file is ${esc(sr)}: check it there.</span>`
       : bsr(sr) === bsr(rev) ? `<span class="ok">✓ Same revision as the latest file in SharePoint (${esc(sr)})</span>`

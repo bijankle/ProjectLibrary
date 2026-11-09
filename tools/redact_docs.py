@@ -257,10 +257,16 @@ KINDS = [(re.compile(r"-DSH-"), dsh), (re.compile(r"-PHL-"), phl)]   # (by docum
 
 def run(path, out=None):
     doc = pymupdf.open(path); base = os.path.splitext(os.path.basename(path))[0]
+    # a page stored turned (/Rotate 270, as some issues come from the CAD plot): straightened first, looking the same, so
+    # the band and boxes found in the sheet's own coordinates are cleared where they are on screen (a turned page had its
+    # title block left and a white strip drawn down the sheet instead)
+    for pg in doc:
+        if pg.rotation: pg.remove_rotation()
     k = next((f for rx, f in KINDS if rx.search(base)), None)
     if base in DOCS: DOCS[base](doc)
     elif k: k(doc)
     else: drawing(doc, base)
+    from strip_signatures import strip; strip(doc)   # (signature fields: their names and the form behind them)
     doc.set_metadata({}); doc.del_xml_metadata()
     # page level XMP and named destinations can carry the CAD file path (project folder, site name): drop them too
     for pg in doc: doc.xref_set_key(pg.xref, "Metadata", "null")
