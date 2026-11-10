@@ -250,7 +250,7 @@ window.SourcesList = (() => {
         const rl = t.closest("[data-rl]"); if (rl){ roL = rl.dataset.rl; $(".sl-rot").scrollTop = 0; return roDraw(); }
         const rp = t.closest("[data-ro]"); if (rp){ roG = rp.dataset.ro; $(".sl-rot").scrollTop = 0; return roDraw(); }
         if (t.closest(".sl-rou")) return roDrop();
-        if (t.closest(".sl-rod")) return roGet(roList());
+        if (t.closest(".sl-rod")) return roGet(roList().filter(o => whyK(o) !== "wait"));   // (nothing newer to fetch for those)
         if (t.closest(".sl-roc")) return roXlsx();
         const om = t.closest("[data-om]"); if (om) return openDoc(DOCS.find(d => d.number === om.dataset.om || d.ik === om.dataset.om));
         const ub = t.closest(".sl-upb"); if (ub) return pickUp(ub.dataset.up);
@@ -297,9 +297,9 @@ window.SourcesList = (() => {
     // the left side bar serves both tabs: on Ref Only it shows All, the families and the document types (one picked
     // at a time: roG "" | "project" … | "t:SCM"), each with its count; the search box above filters both
     // (why a document is in Old Revs, from the project document register: tools/build_refonly.py)
-    const whyK = o => { const w = o.why || "up rev"; return /^superseded/.test(w) ? "sup" : w === "cancelled" ? "can" : /^continuation/.test(w) ? "cont" : /unknown/.test(w) ? "unk" : /^legacy/.test(w) ? "leg" : "up"; };
-    const WHY = { up: "Needs an up rev", leg: "Legacy drawing in the app", unk: "Rev unknown in the app", cont: "Continuations not in the app", sup: "Superseded by another number", can: "Cancelled" };
-    const whyTxt = o => { const k = whyK(o); return k === "up" ? `Up rev: ${o.app} → ${o.rev}` : k === "leg" ? `The app holds the older drawing (${String(o.app).replace(/^legacy /, "")}); register: ${o.rev}` : k === "unk" ? `Rev unknown in the app; register: ${o.rev}` : k === "cont" ? `Not in the app; continues from ${(o.on || []).join(", ")}` : k === "sup" ? `Superseded by ${o.by || ""}` : "Cancelled in the register"; };
+    const whyK = o => { const w = o.why || "up rev"; return /^superseded/.test(w) ? "sup" : w === "cancelled" ? "can" : /^continuation/.test(w) ? "cont" : /unknown/.test(w) ? "unk" : /^legacy/.test(w) ? "leg" : /not on SharePoint/.test(w) ? "wait" : "up"; };
+    const WHY = { up: "Needs an up rev", leg: "Legacy drawing in the app", unk: "Rev unknown in the app", cont: "Continuations not in the app", wait: "Newer issue not on SharePoint yet", sup: "Superseded by another number", can: "Cancelled" };
+    const whyTxt = o => { const k = whyK(o); return k === "up" ? `Up rev: ${o.app} → ${o.rev}` : k === "leg" ? `The app holds the older drawing (${String(o.app).replace(/^legacy /, "")}); register: ${o.rev}` : k === "unk" ? `Rev unknown in the app; register: ${o.rev}` : k === "cont" ? `Not in the app; continues from ${(o.on || []).join(", ")}` : k === "sup" ? `Superseded by ${o.by || ""}` : k === "wait" ? `Register: ${o.rev}, not on SharePoint yet (the app holds ${o.app}, SharePoint's newest)` : "Cancelled in the register"; };
     const roType = o => { if (o.iom) return "IOM"; if (o.pct) return "PCT"; const m = /^\d{4}-[A-Z]\d+-([A-Z]{3})-/.exec(o.n); return m ? m[1] : ""; };
     async function setTab(v){ tab = v; el.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
       const R2 = v !== "att";   // (Ref Only and Old Revs share the table, the side bar filters and the buttons; Old Revs has no Excel)

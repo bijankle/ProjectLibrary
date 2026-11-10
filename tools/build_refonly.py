@@ -133,6 +133,8 @@ for n, h in hd.items():
         if not why and not a and c['url']: why = 'rev unknown in app'
         if not why: continue
         u = c['url'] or c.get('alt', ''); f = unquote(u.rsplit('/', 1)[-1]) if u else ''
+        # (the register has a newer issue, but SharePoint's newest file is the one the app holds: nothing to fetch yet)
+        if why == 'up rev' and not c['url'] and a and rbase(str(c.get('altrev', ''))).upper() == rbase(a): why = 'not on SharePoint yet'
         if not c['url'] and u: f = f'{f} (rev {c["rev"]} not on SharePoint yet)'
         old.append({'n': n, 'g': h['g'], 't': appT.get(n, '') or c['title'], 'app': a or (('legacy ' + lg) if lg else '?'), 'rev': c['rev'], 'st': c['st'], 'url': u, 'file': f, 'mod': '', 'why': why, 'by': c['by'],
                     'have': (P.get(n, {}).get('from') or P.get(n, {}).get('src') or [''])[0]})
