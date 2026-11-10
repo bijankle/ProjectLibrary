@@ -134,5 +134,6 @@ window.Pid = (() => {
     return true;
   }
   const kind = n => /-PFD-/.test(n) ? "PFD" : /-SLD-/.test(n) ? "SLD" : /-TLD-/.test(n) ? "TLD" : /-SCM-/.test(n) ? "Schematic" : /-BLK-/.test(n) ? "Block diagram" : /-DSH-/.test(n) ? "Datasheet" : /-PHL-/.test(n) ? "Philosophy" : /-DCR-/.test(n) ? "PDC" : /-PID-/.test(n) ? "P&ID" : "Drawing";
-  return { load, short, printedOn, ready: () => !!IX, has: n => !!(IX && key(n)), info, label, open, kind, refs, all: () => IX ? Object.keys(IX.pids).map(info) : [] };
+  return { load, short, printedOn, ready: () => !!IX, has: n => !!(IX && key(n) && !IX.pids[key(n)].sp), info, label, open, kind, refs, all: () => IX ? Object.keys(IX.pids).filter(k => !IX.pids[k].sp).map(info) : [] };
+  // (sp: an electrical drawing (SLD, TLD, schematic): known here for its title and tags, opened in SharePoint, not held in the app)
 })();

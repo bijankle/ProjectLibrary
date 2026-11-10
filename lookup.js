@@ -361,7 +361,7 @@
       `<div class="lk-kr">` + (dwg ? `<a class="lk-key lk-dwg" data-dwg="${esc(dwg.number)}" href="#" title="Open the drawing">${esc(it.key)}</a>` : `<div class="lk-key">${esc(it.key)}</div>`) + `<span class="lk-vslot"></span></div>` + (it.t === "pid" ? (PHONE() && dwg && dwg.title ? `<div class="lk-name">${esc(dwg.title)}</div>` : "") : (it.r && !PHONE() && !NAMEF[it.t]) || it.t === "spec" || it.t === "line" || !headName(it) ? "" : `<div class="lk-name">${linkify(headName(it))}</div>`) +   // (a record with a name field: named here; other records: the table says it)
       `</div></div>`;
     // a drawing: no summary lines (the preview beside it shows the number and title); the phone has no preview, so the title stays there
-    if (!dwg && it.t === "pid") h += `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
+    if (!dwg && it.t === "pid") h += window.Pid && (Pid.info(it.key) || {}).sp ? `<div class="lk-ns">Electrical drawings open in SharePoint: ${window.SP && SP.url(it.key) ? SP.a(it.key) : esc(it.key)}</div>` : `<div class="lk-ns">This drawing isn't loaded in the app yet.</div>`;
     const pfd = opts.pfd && opts.pfd(it);
     if (pfd) h += `<button class="lk-btn" data-pfd="1">${esc(pfd.label)}</button>`;
     if (it.t === "pfd" || it.t === "gloss"){ h += it.html || `<p>${esc(it.text || "")}</p>`; }
@@ -564,7 +564,7 @@
     let k = -1; rows.forEach((r, x) => { if (top(r)) k = x; }); rows.splice(k + 1, 0, ...m); }
   function drawRows(it, rows){
     const by = ctBy(); if (!by) return;
-    const found = [...new Set([it, ...(byKey.get(it.k) || [])].flatMap(x => by.get(x.k) || []))].filter(d => d !== it.key && window.Pid && Pid.has(d));
+    const found = [...new Set([it, ...(byKey.get(it.k) || [])].flatMap(x => by.get(x.k) || []))].filter(d => d !== it.key && window.Pid && (Pid.has(d) || (Pid.info(d) || {}).sp));   // (electrical: shown, linked to SharePoint)
     if (!found.length) return;
     const DRE2 = /2000-[A-Z0-9]{2,6}-[A-Z]{3}-[A-Z]{2}-\d{4,5}[A-Z]?/g;
     DKIND.forEach(([kind]) => {
@@ -647,7 +647,7 @@
       return `<div class="lk-dsh">${held ? `<a class="lk-a" data-dwg="${esc(d.n)}" data-page="1" href="#">${esc(d.n)}</a>` : esc(d.n)} Rev ${esc(d.r)}${DI(d.n)}<span class="lk-mu"> · only what the lists don't already say</span></div>` + L.pills(ps, "ds"); }).join("");
     return { id: "dsh", label: "Datasheet", n, html };
   }
-  const dwgA = (n, pg) => window.Pid && Pid.has(n) ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="${pg || 1}" href="#">${esc((Pid.info(n) || {}).number || n)}</a>` + DI(n) : esc(n);
+  const dwgA = (n, pg) => window.Pid && Pid.has(n) ? `<a class="lk-a" data-dwg="${esc(n)}" data-page="${pg || 1}" href="#">${esc((Pid.info(n) || {}).number || n)}</a>` + DI(n) : window.SP && SP.url(n) ? SP.a(n) + DI(n) : esc(n);   // (an electrical drawing: its SharePoint copy)
   function docRows(it, rows){
     const seen = (DT && DT[it.key]) || [];
     const at = () => { const i = rows.findIndex(r => /^P&IDs?$/.test(r.l)); return i < 0 ? rows.length : i; };

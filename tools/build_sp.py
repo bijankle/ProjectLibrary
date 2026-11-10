@@ -35,7 +35,7 @@ for k, c in current().items():
     if c["url"]: REG[k] = (REG[k][0] if k in REG else c["n"], c["url"], c["rev"])
 ix = json.load(open(os.path.join(R, "PIDs", "index.json")))["pids"]
 iss = json.load(open(os.path.join(R, "issues.json")))
-held = {nk(k) for k in ix} | {nk(v.get("number", "")) for v in iss["meta"]["docs"].values()} | {nk("2000-F00-STS-PP-10001")}
+held = {nk(k) for k, v in ix.items() if not v.get("sp")} | {nk(v.get("number", "")) for v in iss["meta"]["docs"].values()} | {nk("2000-F00-STS-PP-10001")}
 DOC = re.compile(r"(?<![A-Z0-9])(?:2000(?:-[A-Z0-9.]{2,10}){3,4}|\d{2,3}[\\/-][A-Z][\\/-]\d{4}(?:-\d{3})?|[A-Z0-9]{2,6}(?:-[A-Z0-9]{2,6}){2,5})(?![A-Z0-9])")
 found = set()
 def scan(text):
@@ -47,7 +47,7 @@ for f in ("search-data.json", "issues.json", "refonly.json", "doc-tags.json", "f
     if os.path.exists(p): scan(open(p).read())
 # printed references on the drawings
 refs = json.load(open(os.path.join(R, "pid-refs.json")))
-for n in list(refs): refs[n] = [r for r in refs[n] if r[6] != "s"]
+for n in list(refs): refs[n] = [r for r in refs[n] if r[6] != "s" or (len(r) > 7 and r[7] == "e")]   # (kept: links to electrical drawings, "e")
 added = 0
 for num, v in ix.items():
     if not re.search(r"-(PID|PFD|SLD|BLK)-", num) or not os.path.exists(os.path.join(R, v["file"])): continue
@@ -61,6 +61,8 @@ for num, v in ix.items():
             out.append([pi + 1, round(w[0] / W * 1e4), round(w[1] / H * 1e4), round((w[2] - w[0]) / W * 1e4), round((w[3] - w[1]) / H * 1e4), REG[k][0], "s", "t"])
     if out: refs.setdefault(num, []).extend(out); added += len(out)
 json.dump(refs, open(os.path.join(R, "pid-refs.json"), "w"), separators=(",", ":"))
+# (electrical drawings, SharePoint links only: index "sp"; their links go with the others)
+found |= {nk(k) for k, v in ix.items() if v.get("sp") and nk(k) in REG}
 sp = {REG[k][0]: REG[k][1] for k in sorted(found)}
 json.dump(sp, open(os.path.join(R, "sp.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 # the documents the app holds: their SharePoint address too, kept apart (sp-held.json) so text links to them still

@@ -120,6 +120,7 @@ def apprev(n):
     return ''
 old = []
 for n, h in hd.items():
+    if P.get(n, {}).get('sp'): continue   # (an electrical drawing: its link opens SharePoint's latest, nothing to up rev)
     c = RC.get(nkk(n)); a = apprev(n)
     if c:
         if c['url']: h['url'] = c['url']

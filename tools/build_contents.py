@@ -67,7 +67,12 @@ out = {}
 # merged with this reading, so the reference tables still feed the Reference drawings pill)
 try: PREV = json.load(open(os.path.join(R, "contents.json")))["d"]
 except Exception: PREV = {}
+# (electrical drawings, index "sp": SharePoint links only, no file here; what was read off them before is kept)
+PREV = json.load(open(os.path.join(R, "contents.json"))).get("d", {}) if os.path.exists(os.path.join(R, "contents.json")) else {}
 for num, v in ix.items():
+    if v.get("sp"):
+        if num in PREV: out[num] = PREV[num]
+        continue
     keys, oth, docs = set(), set(), set()
     for r in refs.get(num, []):   # the tag boxes already on the sheet
         if r[6] == "d": docs.update(str(r[5]).split("|"))
