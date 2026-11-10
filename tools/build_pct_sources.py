@@ -81,12 +81,15 @@ for dn, (rev, f) in sorted(docs.items()):
         meta.append({"name": s["name"], "hdr": s["hdr"], "n": len(rows), "c": len(rows[0]), "chunks": n})
     path = os.path.join(R, "sources", key + ".xlsx"); out.save(path)
     date = max(dates) if dates else ""
+    # (a revision issued as a PDF only and keyed into a copy of the workbook before it: the PDF's cover date and status)
+    st = ""
+    if "_from_PDF" in f: date, st = {"2000-F35-LST-PR-10001_4": ("2026-10-26", "As Built (SP1)")}.get(dn + "_" + rev, (date, ""))
     six[key] = {"chunk": CH, "xlsx": f"sources/{key}.xlsx", "fname": f"{dn} {title} Rev {rev} (tables).xlsx",
                 "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
                 "from": "PDF" if f.lower().endswith(".pdf") else "XLSX", "sheets": meta, "size": os.path.getsize(path)}
-    revs[key] = {"title": "PCT " + dn.split("-")[1], "full": title, "number": dn, "kind": "List", "rev": rev, "date": date, "status": "", "pct": 1,
+    revs[key] = {"title": "PCT " + dn.split("-")[1], "full": title, "number": dn, "kind": "List", "rev": rev, "date": date, "status": st, "pct": 1,
                  "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
-                 "history": [{"rev": rev, "date": date, "status": ""}], "note": ("Process Control Tables PDF (as issued; the tables read from it)" if f.lower().endswith(".pdf") else "Process Control Tables workbook (" + os.path.basename(f).split("_", 1)[1].rsplit(".", 1)[0] + ")"), "project": ""}
+                 "history": [{"rev": rev, "date": date, "status": st}], "note": ("Process Control Tables PDF, its changes keyed into the previous revision's workbook (the PDF reads poorly)" if "_from_PDF" in f else "Process Control Tables PDF (as issued; the tables read from it)" if f.lower().endswith(".pdf") else "Process Control Tables workbook (" + os.path.basename(f).split("_", 1)[1].rsplit(".", 1)[0] + ")"), "project": ""}
     print(key, dn, rev, date, title, len(sheets), "sheets")
 json.dump(six, open(SIX, "w"), ensure_ascii=False, indent=1)
 json.dump(revs, open(REVF, "w"), ensure_ascii=False, indent=1)

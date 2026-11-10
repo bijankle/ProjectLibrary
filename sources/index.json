@@ -155,57 +155,19 @@
  "line": {
   "chunk": 5000,
   "xlsx": "sources/line.xlsx",
-  "fname": "2000-F00-LST-PP-10001 Line List Rev 1 (tables).xlsx",
-  "how": "Every sheet of the original except the cover page, rebuilt from the cell values",
-  "from": "XLSX",
+  "fname": "2000-F00-LST-PP-10001 Line List Rev 2 (tables).xlsx",
+  "how": "The line table of the PDF (cover page left out), one row per line",
+  "from": "PDF",
   "sheets": [
    {
     "name": "Line List",
-    "hdr": 5,
-    "n": 4578,
-    "c": 52,
-    "chunks": 1
-   },
-   {
-    "name": "Guide for Use - Do Not Print",
-    "n": 21,
-    "c": 3,
-    "chunks": 1
-   },
-   {
-    "name": "List Inputs - Do Not Print",
-    "hdr": 1,
-    "n": 95,
-    "c": 13,
-    "chunks": 1
-   },
-   {
-    "name": "Pipe Length Pivot",
-    "hdr": 2,
-    "n": 3104,
-    "c": 2,
-    "chunks": 1
-   },
-   {
-    "name": "Pipe Length",
-    "n": 4792,
-    "c": 7,
-    "chunks": 1
-   },
-   {
-    "name": "MTO Data",
-    "n": 136996,
-    "c": 17,
-    "chunks": 28
-   },
-   {
-    "name": "Model-Area",
-    "n": 136,
-    "c": 5,
+    "hdr": 0,
+    "n": 3184,
+    "c": 22,
     "chunks": 1
    }
   ],
-  "size": 9372570
+  "size": 315638
  },
  "mv": {
   "chunk": 5000,
@@ -1540,34 +1502,6 @@
     "chunks": 1
    },
    {
-    "name": "2. Analogue Output",
-    "hdr": 5,
-    "n": 6,
-    "c": 10,
-    "chunks": 1
-   },
-   {
-    "name": "3. Digital Input",
-    "hdr": 5,
-    "n": 171,
-    "c": 12,
-    "chunks": 1
-   },
-   {
-    "name": "4. Digital Output",
-    "hdr": 5,
-    "n": 42,
-    "c": 11,
-    "chunks": 1
-   },
-   {
-    "name": "5. Totalisers",
-    "hdr": 5,
-    "n": 7,
-    "c": 11,
-    "chunks": 1
-   },
-   {
     "name": "6. OnOff Valves",
     "hdr": 5,
     "n": 36,
@@ -1601,30 +1535,9 @@
     "n": 7,
     "c": 12,
     "chunks": 1
-   },
-   {
-    "name": "11. Calculation",
-    "hdr": 5,
-    "n": 17,
-    "c": 16,
-    "chunks": 1
-   },
-   {
-    "name": "12. Misc",
-    "hdr": 5,
-    "n": 32,
-    "c": 10,
-    "chunks": 1
-   },
-   {
-    "name": "13. Alarm Database",
-    "hdr": 5,
-    "n": 231,
-    "c": 14,
-    "chunks": 1
    }
   ],
-  "size": 82294
+  "size": 32748
  },
  "pct1310001": {
   "chunk": 5000,
@@ -1753,12 +1666,12 @@
     "chunks": 1
    }
   ],
-  "size": 678362
+  "size": 678359
  },
  "pct1410001": {
   "chunk": 5000,
   "xlsx": "sources/pct1410001.xlsx",
-  "fname": "2000-F14-LST-PR-10001 Process Control Tables - Gravity Circuit & Intensive Leaching Rev 3 (tables).xlsx",
+  "fname": "2000-F14-LST-PR-10001 Process Control Tables - Gravity Circuit & Intensive Leaching (Area F14) and Electrowinning & Goldroom (Area F66) Rev 3 (tables).xlsx",
   "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
   "from": "PDF",
   "sheets": [
@@ -1785,7 +1698,7 @@
    },
    {
     "name": "3. Digital Input",
-    "hdr": 5,
+    "hdr": 0,
     "n": 43,
     "c": 12,
     "chunks": 1
@@ -1795,13 +1708,6 @@
     "hdr": 5,
     "n": 15,
     "c": 12,
-    "chunks": 1
-   },
-   {
-    "name": "5. Totalisers",
-    "hdr": 5,
-    "n": 9,
-    "c": 11,
     "chunks": 1
    },
    {
@@ -1821,14 +1727,7 @@
    {
     "name": "7. Control Valves",
     "hdr": 5,
-    "n": 11,
-    "c": 23,
-    "chunks": 1
-   },
-   {
-    "name": "8. PID Cont",
-    "hdr": 5,
-    "n": 11,
+    "n": 16,
     "c": 49,
     "chunks": 1
    },
@@ -1836,7 +1735,7 @@
     "name": "10. Sequence",
     "hdr": 5,
     "n": 6,
-    "c": 12,
+    "c": 11,
     "chunks": 1
    },
    {
@@ -1861,7 +1760,7 @@
     "chunks": 1
    }
   ],
-  "size": 57064
+  "size": 48390
  },
  "pct1610001": {
   "chunk": 5000,
@@ -1983,7 +1882,7 @@
     "chunks": 1
    }
   ],
-  "size": 534912
+  "size": 534910
  },
  "pct1910001": {
   "chunk": 5000,
@@ -2014,13 +1913,6 @@
     "chunks": 1
    },
    {
-    "name": "5. Totalisers",
-    "hdr": 5,
-    "n": 7,
-    "c": 12,
-    "chunks": 1
-   },
-   {
     "name": "6. OnOff Valves",
     "hdr": 5,
     "n": 6,
@@ -2032,13 +1924,6 @@
     "hdr": 5,
     "n": 6,
     "c": 23,
-    "chunks": 1
-   },
-   {
-    "name": "8. PID Cont",
-    "hdr": 5,
-    "n": 6,
-    "c": 49,
     "chunks": 1
    },
    {
@@ -2065,7 +1950,7 @@
    {
     "name": "12. Misc",
     "hdr": 5,
-    "n": 41,
+    "n": 30,
     "c": 11,
     "chunks": 1
    },
@@ -2077,7 +1962,7 @@
     "chunks": 1
    }
   ],
-  "size": 36730
+  "size": 28258
  },
  "pct2110101": {
   "chunk": 5000,
@@ -2185,7 +2070,7 @@
     "chunks": 1
    }
   ],
-  "size": 157089
+  "size": 157087
  },
  "pct2210101": {
   "chunk": 5000,
@@ -2293,7 +2178,7 @@
     "chunks": 1
    }
   ],
-  "size": 146843
+  "size": 146845
  },
  "pct2310001": {
   "chunk": 5000,
@@ -2659,7 +2544,7 @@
     "chunks": 1
    }
   ],
-  "size": 138152
+  "size": 138151
  },
  "pct2810101": {
   "chunk": 5000,
@@ -2680,34 +2565,6 @@
     "hdr": 5,
     "n": 49,
     "c": 35,
-    "chunks": 1
-   },
-   {
-    "name": "2. Analogue Output",
-    "hdr": 5,
-    "n": 6,
-    "c": 10,
-    "chunks": 1
-   },
-   {
-    "name": "3. Digital Input",
-    "hdr": 5,
-    "n": 35,
-    "c": 12,
-    "chunks": 1
-   },
-   {
-    "name": "4. Digital Output",
-    "hdr": 5,
-    "n": 7,
-    "c": 11,
-    "chunks": 1
-   },
-   {
-    "name": "5. Totalisers",
-    "hdr": 5,
-    "n": 7,
-    "c": 11,
     "chunks": 1
    },
    {
@@ -2734,33 +2591,12 @@
    {
     "name": "9. Drives",
     "hdr": 5,
-    "n": 267,
+    "n": 266,
     "c": 26,
-    "chunks": 1
-   },
-   {
-    "name": "11. Calculation",
-    "hdr": 5,
-    "n": 48,
-    "c": 16,
-    "chunks": 1
-   },
-   {
-    "name": "12. Misc",
-    "hdr": 5,
-    "n": 13,
-    "c": 10,
-    "chunks": 1
-   },
-   {
-    "name": "13. Alarm Database",
-    "hdr": 5,
-    "n": 139,
-    "c": 14,
     "chunks": 1
    }
   ],
-  "size": 78703
+  "size": 48107
  },
  "pct3010001": {
   "chunk": 5000,
@@ -2861,7 +2697,7 @@
     "chunks": 1
    }
   ],
-  "size": 52057
+  "size": 52056
  },
  "pct3010101": {
   "chunk": 5000,
@@ -2885,31 +2721,10 @@
     "chunks": 1
    },
    {
-    "name": "2. Analogue Output",
-    "hdr": 5,
-    "n": 8,
-    "c": 11,
-    "chunks": 1
-   },
-   {
     "name": "3. Digital Input",
     "hdr": 5,
-    "n": 37,
+    "n": 33,
     "c": 13,
-    "chunks": 1
-   },
-   {
-    "name": "5. Totalisers",
-    "hdr": 5,
-    "n": 8,
-    "c": 12,
-    "chunks": 1
-   },
-   {
-    "name": "6. OnOff Valves",
-    "hdr": 5,
-    "n": 72,
-    "c": 22,
     "chunks": 1
    },
    {
@@ -2932,23 +2747,9 @@
     "n": 238,
     "c": 26,
     "chunks": 1
-   },
-   {
-    "name": "12. Misc",
-    "hdr": 5,
-    "n": 13,
-    "c": 11,
-    "chunks": 1
-   },
-   {
-    "name": "13. Alarm Database",
-    "hdr": 5,
-    "n": 139,
-    "c": 14,
-    "chunks": 1
    }
   ],
-  "size": 68740
+  "size": 44479
  },
  "pct3010201": {
   "chunk": 5000,
@@ -2972,34 +2773,6 @@
     "chunks": 1
    },
    {
-    "name": "2. Analogue Output",
-    "hdr": 5,
-    "n": 21,
-    "c": 11,
-    "chunks": 1
-   },
-   {
-    "name": "3. Digital Input",
-    "hdr": 5,
-    "n": 82,
-    "c": 15,
-    "chunks": 1
-   },
-   {
-    "name": "4. Digital Output",
-    "hdr": 5,
-    "n": 43,
-    "c": 12,
-    "chunks": 1
-   },
-   {
-    "name": "5. Totalisers",
-    "hdr": 5,
-    "n": 6,
-    "c": 12,
-    "chunks": 1
-   },
-   {
     "name": "6. OnOff Valves",
     "hdr": 5,
     "n": 98,
@@ -3008,13 +2781,6 @@
    },
    {
     "name": "7. Control Valves",
-    "hdr": 5,
-    "n": 6,
-    "c": 23,
-    "chunks": 1
-   },
-   {
-    "name": "8. PID Cont",
     "hdr": 5,
     "n": 42,
     "c": 38,
@@ -3037,19 +2803,12 @@
    {
     "name": "11. Calculation",
     "hdr": 5,
-    "n": 131,
+    "n": 109,
     "c": 21,
-    "chunks": 1
-   },
-   {
-    "name": "12. Misc",
-    "hdr": 5,
-    "n": 7,
-    "c": 11,
     "chunks": 1
    }
   ],
-  "size": 209273
+  "size": 181031
  },
  "pct3020001": {
   "chunk": 5000,
@@ -3070,34 +2829,6 @@
     "hdr": 5,
     "n": 350,
     "c": 41,
-    "chunks": 1
-   },
-   {
-    "name": "2. Analogue Output",
-    "hdr": 5,
-    "n": 22,
-    "c": 11,
-    "chunks": 1
-   },
-   {
-    "name": "3. Digital Input",
-    "hdr": 5,
-    "n": 83,
-    "c": 15,
-    "chunks": 1
-   },
-   {
-    "name": "4. Digital Output",
-    "hdr": 5,
-    "n": 44,
-    "c": 12,
-    "chunks": 1
-   },
-   {
-    "name": "5. Totalisers",
-    "hdr": 5,
-    "n": 6,
-    "c": 12,
     "chunks": 1
    },
    {
@@ -3124,7 +2855,7 @@
    {
     "name": "9. Drives",
     "hdr": 5,
-    "n": 971,
+    "n": 942,
     "c": 34,
     "chunks": 1
    },
@@ -3138,24 +2869,17 @@
    {
     "name": "11. Calculation",
     "hdr": 5,
-    "n": 135,
+    "n": 115,
     "c": 21,
-    "chunks": 1
-   },
-   {
-    "name": "12. Misc",
-    "hdr": 5,
-    "n": 7,
-    "c": 11,
     "chunks": 1
    }
   ],
-  "size": 213176
+  "size": 183744
  },
  "pct3510001": {
   "chunk": 5000,
   "xlsx": "sources/pct3510001.xlsx",
-  "fname": "2000-F35-LST-PR-10001 Process Control Tables - Concentrate Handling & Filtration Rev 3 (tables).xlsx",
+  "fname": "2000-F35-LST-PR-10001 Process Control Tables - Concentrate Handling & Filtration Rev 4 (tables).xlsx",
   "how": "Every control table of the original workbook rebuilt from the cell values (cover, contents, comment sheets and list copies left out; sign off columns blanked)",
   "from": "XLSX",
   "sheets": [
@@ -3258,7 +2982,7 @@
     "chunks": 1
    }
   ],
-  "size": 38574
+  "size": 38558
  },
  "pct7210001": {
   "chunk": 5000,
@@ -3380,7 +3104,7 @@
     "chunks": 1
    }
   ],
-  "size": 128450
+  "size": 128449
  },
  "pct7210101": {
   "chunk": 5000,
@@ -3404,24 +3128,10 @@
     "chunks": 1
    },
    {
-    "name": "2. Analogue Output",
-    "hdr": 5,
-    "n": 21,
-    "c": 10,
-    "chunks": 1
-   },
-   {
     "name": "3. Digital Input",
-    "hdr": 5,
+    "hdr": 0,
     "n": 133,
     "c": 13,
-    "chunks": 1
-   },
-   {
-    "name": "4. Digital Output",
-    "hdr": 5,
-    "n": 34,
-    "c": 11,
     "chunks": 1
    },
    {
@@ -3429,13 +3139,6 @@
     "hdr": 5,
     "n": 57,
     "c": 22,
-    "chunks": 1
-   },
-   {
-    "name": "5. Totalisers",
-    "hdr": 5,
-    "n": 8,
-    "c": 11,
     "chunks": 1
    },
    {
@@ -3465,22 +3168,8 @@
     "n": 47,
     "c": 16,
     "chunks": 1
-   },
-   {
-    "name": "12. Misc",
-    "hdr": 5,
-    "n": 38,
-    "c": 10,
-    "chunks": 1
-   },
-   {
-    "name": "13. Alarm Database",
-    "hdr": 5,
-    "n": 274,
-    "c": 14,
-    "chunks": 1
    }
   ],
-  "size": 122445
+  "size": 85730
  }
 }

@@ -790,10 +790,21 @@
   "2000-F12-PID-PR-10001": {
    "file": "PIDs/2000-F12-PID-PR-10001.pdf",
    "title": "Primary crushing, sheet 1, Stage 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 456075
+   "size": 476089,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F12-PID-PR-10001_Rev2.pdf",
+     "size": 456075
+    }
+   ],
+   "src": [
+    "2000-F12-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F12-PID-PR-10002": {
    "file": "PIDs/2000-F12-PID-PR-10002.pdf",
@@ -823,10 +834,21 @@
   "2000-F12-PID-PR-10003": {
    "file": "PIDs/2000-F12-PID-PR-10003.pdf",
    "title": "Primary crushing, sheet 3, Stage 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 149133
+   "size": 177712,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F12-PID-PR-10003_Rev2.pdf",
+     "size": 149133
+    }
+   ],
+   "src": [
+    "2000-F12-PID-PR-10003_MS_1.pdf"
+   ]
   },
   "2000-F13-PID-PR-10001": {
    "file": "PIDs/2000-F13-PID-PR-10001.pdf",
@@ -881,10 +903,21 @@
   "2000-F13-PID-PR-10003": {
    "file": "PIDs/2000-F13-PID-PR-10003.pdf",
    "title": "SAG and ball milling, sheet 2, Stage 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 384968
+   "size": 332474,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F13-PID-PR-10003_Rev2.pdf",
+     "size": 384968
+    }
+   ],
+   "src": [
+    "2000-F13-PID-PR-10003_MS_1.pdf"
+   ]
   },
   "2000-F13-PID-PR-10004": {
    "file": "PIDs/2000-F13-PID-PR-10004.pdf",
@@ -1152,18 +1185,40 @@
   "2000-F14-PID-PR-10003": {
    "file": "PIDs/2000-F14-PID-PR-10003.pdf",
    "title": "Intensive cyanidation, Stage 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 318087
+   "size": 301064,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F14-PID-PR-10003_Rev2.pdf",
+     "size": 318087
+    }
+   ],
+   "src": [
+    "2000-F14-PID-PR-10003_MS_1.pdf"
+   ]
   },
   "2000-F16-PID-PR-10001": {
    "file": "PIDs/2000-F16-PID-PR-10001.pdf",
    "title": "Rougher flotation, sheet 1, Stage 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 378019
+   "size": 343501,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F16-PID-PR-10001_Rev2.pdf",
+     "size": 378019
+    }
+   ],
+   "src": [
+    "2000-F16-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F16-PID-PR-10002": {
    "file": "PIDs/2000-F16-PID-PR-10002.pdf",
@@ -1187,10 +1242,21 @@
   "2000-F16-PID-PR-10003": {
    "file": "PIDs/2000-F16-PID-PR-10003.pdf",
    "title": "Scavenger flotation, sheet 1, Stage 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 502009
+   "size": 369119,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F16-PID-PR-10003_Rev2.pdf",
+     "size": 502009
+    }
+   ],
+   "src": [
+    "2000-F16-PID-PR-10003_MS_1.pdf"
+   ]
   },
   "2000-F16-PID-PR-10004": {
    "file": "PIDs/2000-F16-PID-PR-10004.pdf",
@@ -1214,10 +1280,21 @@
   "2000-F16-PID-PR-10005": {
    "file": "PIDs/2000-F16-PID-PR-10005.pdf",
    "title": "Onstream sulphur analyser, Stage 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 318451
+   "size": 260122,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F16-PID-PR-10005_Rev2.pdf",
+     "size": 318451
+    }
+   ],
+   "src": [
+    "2000-F16-PID-PR-10005_MS_1.pdf"
+   ]
   },
   "2000-F16-PID-PR-10006": {
    "file": "PIDs/2000-F16-PID-PR-10006.pdf",
@@ -1285,26 +1362,59 @@
   "2000-F175-PID-PR-40002": {
    "file": "PIDs/2000-F175-PID-PR-40002.pdf",
    "title": "Saline water, borefields saline dam transfer pumps",
-   "rev": "0",
+   "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 190635
+   "size": 318051,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F175-PID-PR-40002_Rev0.pdf",
+     "size": 190635
+    }
+   ],
+   "src": [
+    "2000-F175-PID-PR-40002_2.pdf"
+   ]
   },
   "2000-F18-PID-PR-10001": {
    "file": "PIDs/2000-F18-PID-PR-10001.pdf",
    "title": "Cleaner flotation cell, sheet 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 400045
+   "size": 362283,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F18-PID-PR-10001_Rev2.pdf",
+     "size": 400045
+    }
+   ],
+   "src": [
+    "2000-F18-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F18-PID-PR-10002": {
    "file": "PIDs/2000-F18-PID-PR-10002.pdf",
    "title": "Cleaner flotation cell, sheet 2",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 154506
+   "size": 183081,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F18-PID-PR-10002_Rev2.pdf",
+     "size": 154506
+    }
+   ],
+   "src": [
+    "2000-F18-PID-PR-10002_MS_1.pdf"
+   ]
   },
   "2000-F18-PID-PR-10003": {
    "file": "PIDs/2000-F18-PID-PR-10003.pdf",
@@ -1328,28 +1438,61 @@
   "2000-F18-PID-PR-10004": {
    "file": "PIDs/2000-F18-PID-PR-10004.pdf",
    "title": "Cleaner scavenger flotation, sheet 2",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 176558
+   "size": 166693,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F18-PID-PR-10004_Rev2.pdf",
+     "size": 176558
+    }
+   ],
+   "src": [
+    "2000-F18-PID-PR-10004_MS_1.pdf"
+   ]
   },
   "2000-F19-PID-PR-10001": {
    "file": "PIDs/2000-F19-PID-PR-10001.pdf",
    "title": "FIM SAG milling",
-   "rev": "1",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 454702,
-   "ocr": 1
+   "size": 503406,
+   "ocr": 1,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F19-PID-PR-10001_Rev1.pdf",
+     "size": 454702
+    }
+   ],
+   "src": [
+    "2000-F19-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F19-PID-PR-10006": {
    "file": "PIDs/2000-F19-PID-PR-10006.pdf",
    "title": "Ball charging system",
-   "rev": "1",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 206973,
-   "ocr": 1
+   "size": 220255,
+   "ocr": 1,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F19-PID-PR-10006_Rev1.pdf",
+     "size": 206973
+    }
+   ],
+   "src": [
+    "2000-F19-PID-PR-10006_MS_1.pdf"
+   ]
   },
   "2000-F19-PID-PR-10007": {
    "file": "PIDs/2000-F19-PID-PR-10007.pdf",
@@ -1376,7 +1519,7 @@
    "rev": "1",
    "date": "",
    "pages": 1,
-   "size": 708153,
+   "size": 706557,
    "src": [
     "2000-F21-PID-PR-10001_1_APP.pdf"
    ]
@@ -1622,10 +1765,21 @@
   "2000-F24-PID-PR-10005": {
    "file": "PIDs/2000-F24-PID-PR-10005.pdf",
    "title": "Potable water, sheet 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 472267
+   "size": 337609,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10005_Rev2.pdf",
+     "size": 472267
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10005_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10006": {
    "file": "PIDs/2000-F24-PID-PR-10006.pdf",
@@ -1649,10 +1803,21 @@
   "2000-F24-PID-PR-10007": {
    "file": "PIDs/2000-F24-PID-PR-10007.pdf",
    "title": "Plant air, sheet 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 426252
+   "size": 360923,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10007_Rev2.pdf",
+     "size": 426252
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10007_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10008": {
    "file": "PIDs/2000-F24-PID-PR-10008.pdf",
@@ -1701,10 +1866,21 @@
   "2000-F24-PID-PR-10010": {
    "file": "PIDs/2000-F24-PID-PR-10010.pdf",
    "title": "Process water, sheet 2",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 305660
+   "size": 232810,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10010_Rev2.pdf",
+     "size": 305660
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10010_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10011": {
    "file": "PIDs/2000-F24-PID-PR-10011.pdf",
@@ -1728,18 +1904,40 @@
   "2000-F24-PID-PR-10012": {
    "file": "PIDs/2000-F24-PID-PR-10012.pdf",
    "title": "Plant air, sheet 4",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 379661
+   "size": 302434,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10012_Rev2.pdf",
+     "size": 379661
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10012_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10013": {
    "file": "PIDs/2000-F24-PID-PR-10013.pdf",
    "title": "Plant air, sheet 5",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 232241
+   "size": 206194,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10013_Rev2.pdf",
+     "size": 232241
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10013_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10014": {
    "file": "PIDs/2000-F24-PID-PR-10014.pdf",
@@ -1752,10 +1950,21 @@
   "2000-F24-PID-PR-10015": {
    "file": "PIDs/2000-F24-PID-PR-10015.pdf",
    "title": "Fire water, sheet 2",
-   "rev": "1",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 167857
+   "size": 151077,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10015_Rev1.pdf",
+     "size": 167857
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10015_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10016": {
    "file": "PIDs/2000-F24-PID-PR-10016.pdf",
@@ -1825,10 +2034,21 @@
   "2000-F24-PID-PR-10020": {
    "file": "PIDs/2000-F24-PID-PR-10020.pdf",
    "title": "Raw water, sheet 3",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 211167
+   "size": 216448,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10020_Rev2.pdf",
+     "size": 211167
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10020_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10022": {
    "file": "PIDs/2000-F24-PID-PR-10022.pdf",
@@ -1852,10 +2072,21 @@
   "2000-F24-PID-PR-10023": {
    "file": "PIDs/2000-F24-PID-PR-10023.pdf",
    "title": "Fire water, sheet 4",
-   "rev": "1",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 424869
+   "size": 240883,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F24-PID-PR-10023_Rev1.pdf",
+     "size": 424869
+    }
+   ],
+   "src": [
+    "2000-F24-PID-PR-10023_MS_1.pdf"
+   ]
   },
   "2000-F24-PID-PR-10025": {
    "file": "PIDs/2000-F24-PID-PR-10025.pdf",
@@ -2022,10 +2253,21 @@
   "2000-F28-PID-PR-10002": {
    "file": "PIDs/2000-F28-PID-PR-10002.pdf",
    "title": "Concentrate ultra fine grinding 2, sheet 2",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 418156
+   "size": 390773,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F28-PID-PR-10002_Rev2.pdf",
+     "size": 418156
+    }
+   ],
+   "src": [
+    "2000-F28-PID-PR-10002_MS_1.pdf"
+   ]
   },
   "2000-F28-PID-PR-10003": {
    "file": "PIDs/2000-F28-PID-PR-10003.pdf",
@@ -2087,19 +2329,41 @@
   "2000-F30-PID-PR-10001": {
    "file": "PIDs/2000-F30-PID-PR-10001.pdf",
    "title": "Flotation tailings thickening no. 3",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 794870,
-   "ocr": 1
+   "size": 410833,
+   "ocr": 1,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F30-PID-PR-10001_Rev2.pdf",
+     "size": 794870
+    }
+   ],
+   "src": [
+    "2000-F30-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F30-PID-PR-10002": {
    "file": "PIDs/2000-F30-PID-PR-10002.pdf",
    "title": "Concentrate thickener underflow pumps",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 225462
+   "size": 214995,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F30-PID-PR-10002_Rev2.pdf",
+     "size": 225462
+    }
+   ],
+   "src": [
+    "2000-F30-PID-PR-10002_MS_1.pdf"
+   ]
   },
   "2000-F30-PID-PR-10003": {
    "file": "PIDs/2000-F30-PID-PR-10003.pdf",
@@ -2121,11 +2385,22 @@
   "2000-F30-PID-PR-10005": {
    "file": "PIDs/2000-F30-PID-PR-10005.pdf",
    "title": "Leach and adsorption, CIL2",
-   "rev": "1",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 631460,
-   "ocr": 1
+   "size": 576501,
+   "ocr": 1,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F30-PID-PR-10005_Rev1.pdf",
+     "size": 631460
+    }
+   ],
+   "src": [
+    "2000-F30-PID-PR-10005_MS_1.pdf"
+   ]
   },
   "2000-F30-PID-PR-10006": {
    "file": "PIDs/2000-F30-PID-PR-10006.pdf",
@@ -2146,11 +2421,21 @@
   "2000-F30-PID-PR-10008": {
    "file": "PIDs/2000-F30-PID-PR-10008.pdf",
    "title": "Leach and adsorption, CIL3, sheet 1",
-   "rev": "",
+   "rev": "0",
    "date": "",
    "pages": 1,
-   "size": 434998,
-   "legacy": "FME-30-PI-438 Rev 5"
+   "size": 456051,
+   "revs": [
+    {
+     "rev": "",
+     "date": "",
+     "file": "PIDs/rev/2000-F30-PID-PR-10008_Legacy.pdf",
+     "size": 434998
+    }
+   ],
+   "src": [
+    "2000-F30-PID-PR-10008_0_APP.pdf"
+   ]
   },
   "2000-F30-PID-PR-10009": {
    "file": "PIDs/2000-F30-PID-PR-10009.pdf",
@@ -2164,11 +2449,21 @@
   "2000-F30-PID-PR-10010": {
    "file": "PIDs/2000-F30-PID-PR-10010.pdf",
    "title": "Carbon safety screens",
-   "rev": "",
+   "rev": "0",
    "date": "",
    "pages": 1,
-   "size": 655939,
-   "legacy": "FME-30-PI-440 Rev 6"
+   "size": 760063,
+   "revs": [
+    {
+     "rev": "",
+     "date": "",
+     "file": "PIDs/rev/2000-F30-PID-PR-10010_Legacy.pdf",
+     "size": 655939
+    }
+   ],
+   "src": [
+    "2000-F30-PID-PR-10010_0_APP.pdf"
+   ]
   },
   "2000-F30-PID-PR-10011": {
    "file": "PIDs/2000-F30-PID-PR-10011.pdf",
@@ -2215,20 +2510,40 @@
   "2000-F30-PID-PR-10018": {
    "file": "PIDs/2000-F30-PID-PR-10018.pdf",
    "title": "CIL3 tank oxygen injection system",
-   "rev": "",
+   "rev": "0",
    "date": "",
    "pages": 1,
-   "size": 305576,
-   "legacy": "30\\PI\\1500 Rev 4"
+   "size": 295014,
+   "revs": [
+    {
+     "rev": "",
+     "date": "",
+     "file": "PIDs/rev/2000-F30-PID-PR-10018_Legacy.pdf",
+     "size": 305576
+    }
+   ],
+   "src": [
+    "2000-F30-PID-PR-10018_0_APP.pdf"
+   ]
   },
   "2000-F30-PID-PR-10019": {
    "file": "PIDs/2000-F30-PID-PR-10019.pdf",
    "title": "CIL3 tank G",
-   "rev": "",
+   "rev": "0",
    "date": "",
    "pages": 1,
-   "size": 310270,
-   "legacy": "30\\PI\\1600 Rev 1"
+   "size": 352049,
+   "revs": [
+    {
+     "rev": "",
+     "date": "",
+     "file": "PIDs/rev/2000-F30-PID-PR-10019_Legacy.pdf",
+     "size": 310270
+    }
+   ],
+   "src": [
+    "2000-F30-PID-PR-10019_0_APP.pdf"
+   ]
   },
   "2000-F30-PID-PR-10020": {
    "file": "PIDs/2000-F30-PID-PR-10020.pdf",
@@ -2268,11 +2583,22 @@
   "2000-F34-PID-PR-10001": {
    "file": "PIDs/2000-F34-PID-PR-10001.pdf",
    "title": "Ultra fine grinding classification area",
-   "rev": "1",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 356834,
-   "ocr": 1
+   "size": 483751,
+   "ocr": 1,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F34-PID-PR-10001_Rev1.pdf",
+     "size": 356834
+    }
+   ],
+   "src": [
+    "2000-F34-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F34-PID-PR-10002": {
    "file": "PIDs/2000-F34-PID-PR-10002.pdf",
@@ -2296,11 +2622,22 @@
   "2000-F35-PID-PR-10001": {
    "file": "PIDs/2000-F35-PID-PR-10001.pdf",
    "title": "Concentrates filtration, deslime area",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 721357,
-   "ocr": 1
+   "size": 503524,
+   "ocr": 1,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F35-PID-PR-10001_Rev2.pdf",
+     "size": 721357
+    }
+   ],
+   "src": [
+    "2000-F35-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F35-PID-PR-10002": {
    "file": "PIDs/2000-F35-PID-PR-10002.pdf",
@@ -2330,29 +2667,60 @@
   "2000-F35-PID-PR-10003": {
    "file": "PIDs/2000-F35-PID-PR-10003.pdf",
    "title": "Concentrate thickener area",
-   "rev": "1",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 530517,
-   "ocr": 1
+   "size": 517334,
+   "ocr": 1,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F35-PID-PR-10003_Rev1.pdf",
+     "size": 530517
+    }
+   ],
+   "src": [
+    "2000-F35-PID-PR-10003_MS_1.pdf"
+   ]
   },
   "2000-F35-PID-PR-10004": {
    "file": "PIDs/2000-F35-PID-PR-10004.pdf",
    "title": "Concentrate filter no. 1",
-   "rev": "",
+   "rev": "1",
    "date": "",
    "pages": 1,
-   "size": 270961,
-   "legacy": "FME-35-PI-445 Rev 5"
+   "size": 309306,
+   "revs": [
+    {
+     "rev": "",
+     "date": "",
+     "file": "PIDs/rev/2000-F35-PID-PR-10004_Legacy.pdf",
+     "size": 270961
+    }
+   ],
+   "src": [
+    "2000-F35-PID-PR-10004_1_APP.pdf"
+   ]
   },
   "2000-F35-PID-PR-10005": {
    "file": "PIDs/2000-F35-PID-PR-10005.pdf",
    "title": "Concentrate filter belt no. 2",
-   "rev": "",
+   "rev": "1",
    "date": "",
    "pages": 1,
-   "size": 322433,
-   "legacy": "FME-35-PI-446 Rev 5"
+   "size": 365785,
+   "revs": [
+    {
+     "rev": "",
+     "date": "",
+     "file": "PIDs/rev/2000-F35-PID-PR-10005_Legacy.pdf",
+     "size": 322433
+    }
+   ],
+   "src": [
+    "2000-F35-PID-PR-10005_1_APP.pdf"
+   ]
   },
   "2000-F35-PID-PR-10006": {
    "file": "PIDs/2000-F35-PID-PR-10006.pdf",
@@ -2412,10 +2780,21 @@
   "2000-F65-PID-PR-10002": {
    "file": "PIDs/2000-F65-PID-PR-10002.pdf",
    "title": "Acid wash and elution circuit 2",
-   "rev": "0",
+   "rev": "1",
    "date": "",
    "pages": 1,
-   "size": 310700
+   "size": 405684,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F65-PID-PR-10002_Rev0.pdf",
+     "size": 310700
+    }
+   ],
+   "src": [
+    "2000-F65-PID-PR-10002_1.pdf"
+   ]
   },
   "2000-F65-PID-PR-10003": {
    "file": "PIDs/2000-F65-PID-PR-10003.pdf",
@@ -2491,10 +2870,21 @@
   "2000-F66-PID-PR-10004": {
    "file": "PIDs/2000-F66-PID-PR-10004.pdf",
    "title": "Electrowinning circuit 2",
-   "rev": "1",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 342204
+   "size": 517839,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F66-PID-PR-10004_Rev1.pdf",
+     "size": 342204
+    }
+   ],
+   "src": [
+    "2000-F66-PID-PR-10004_MS_1.pdf"
+   ]
   },
   "2000-F66-PID-PR-10005": {
    "file": "PIDs/2000-F66-PID-PR-10005.pdf",
@@ -2508,19 +2898,41 @@
   "2000-F66-PID-PR-10006": {
    "file": "PIDs/2000-F66-PID-PR-10006.pdf",
    "title": "Gravity circuit, Acacia reactor area",
-   "rev": "1",
+   "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 381806,
-   "ocr": 1
+   "size": 515840,
+   "ocr": 1,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F66-PID-PR-10006_Rev1.pdf",
+     "size": 381806
+    }
+   ],
+   "src": [
+    "2000-F66-PID-PR-10006_2_SSD.pdf"
+   ]
   },
   "2000-F71-PID-PR-10001": {
    "file": "PIDs/2000-F71-PID-PR-10001.pdf",
    "title": "Cyanide piping, CIL2, CIL3 and elution circuit",
-   "rev": "0",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 525720
+   "size": 437780,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F71-PID-PR-10001_Rev0.pdf",
+     "size": 525720
+    }
+   ],
+   "src": [
+    "2000-F71-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F71-PID-PR-10002": {
    "file": "PIDs/2000-F71-PID-PR-10002.pdf",
@@ -2558,10 +2970,21 @@
   "2000-F72-PID-PR-10004": {
    "file": "PIDs/2000-F72-PID-PR-10004.pdf",
    "title": "Flocculant, sheet 1",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 370229
+   "size": 297086,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F72-PID-PR-10004_Rev2.pdf",
+     "size": 370229
+    }
+   ],
+   "src": [
+    "2000-F72-PID-PR-10004_MS_1.pdf"
+   ]
   },
   "2000-F72-PID-PR-10005": {
    "file": "PIDs/2000-F72-PID-PR-10005.pdf",
@@ -2590,10 +3013,21 @@
   "2000-F72-PID-PR-10008": {
    "file": "PIDs/2000-F72-PID-PR-10008.pdf",
    "title": "Copper sulphate",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 358860
+   "size": 306360,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F72-PID-PR-10008_Rev2.pdf",
+     "size": 358860
+    }
+   ],
+   "src": [
+    "2000-F72-PID-PR-10008_MS_1.pdf"
+   ]
   },
   "2000-F72-PID-PR-10009": {
    "file": "PIDs/2000-F72-PID-PR-10009.pdf",
@@ -2617,10 +3051,21 @@
   "2000-F72-PID-PR-10010": {
    "file": "PIDs/2000-F72-PID-PR-10010.pdf",
    "title": "Potassium amyl xanthate (PAX)",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 490428
+   "size": 407536,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F72-PID-PR-10010_Rev2.pdf",
+     "size": 490428
+    }
+   ],
+   "src": [
+    "2000-F72-PID-PR-10010_MS_1.pdf"
+   ]
   },
   "2000-F72-PID-PR-10011": {
    "file": "PIDs/2000-F72-PID-PR-10011.pdf",
@@ -2641,18 +3086,40 @@
   "2000-F72-PID-PR-10013": {
    "file": "PIDs/2000-F72-PID-PR-10013.pdf",
    "title": "Antiscalant, sheet 2",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 41112
+   "size": 115459,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F72-PID-PR-10013_Rev2.pdf",
+     "size": 41112
+    }
+   ],
+   "src": [
+    "2000-F72-PID-PR-10013_MS_1.pdf"
+   ]
   },
   "2000-F72-PID-PR-10014": {
    "file": "PIDs/2000-F72-PID-PR-10014.pdf",
    "title": "Hydrogen peroxide",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 529575
+   "size": 467323,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F72-PID-PR-10014_Rev2.pdf",
+     "size": 529575
+    }
+   ],
+   "src": [
+    "2000-F72-PID-PR-10014_MS_1.pdf"
+   ]
   },
   "2000-F72-PID-PR-10015": {
    "file": "PIDs/2000-F72-PID-PR-10015.pdf",
@@ -2673,19 +3140,41 @@
   "2000-F75-PID-PR-10001": {
    "file": "PIDs/2000-F75-PID-PR-10001.pdf",
    "title": "Water management and tailings",
-   "rev": "1",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 365626
+   "size": 191792,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F75-PID-PR-10001_Rev1.pdf",
+     "size": 365626
+    }
+   ],
+   "src": [
+    "2000-F75-PID-PR-10001_MS_1.pdf"
+   ]
   },
   "2000-F75-PID-PR-10002": {
    "file": "PIDs/2000-F75-PID-PR-10002.pdf",
    "title": "Saline water pumps",
-   "rev": "2",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 325442,
-   "ocr": 1
+   "size": 242809,
+   "ocr": 1,
+   "revs": [
+    {
+     "rev": "2",
+     "date": "",
+     "file": "PIDs/rev/2000-F75-PID-PR-10002_Rev2.pdf",
+     "size": 325442
+    }
+   ],
+   "src": [
+    "2000-F75-PID-PR-10002_MS_1.pdf"
+   ]
   },
   "2000-F75-PID-PR-10003": {
    "file": "PIDs/2000-F75-PID-PR-10003.pdf",
@@ -2698,10 +3187,21 @@
   "2000-F75-PID-PR-10007": {
    "file": "PIDs/2000-F75-PID-PR-10007.pdf",
    "title": "Gland water system",
-   "rev": "1",
+   "rev": "MS_1",
    "date": "",
    "pages": 1,
-   "size": 355347
+   "size": 486655,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F75-PID-PR-10007_Rev1.pdf",
+     "size": 355347
+    }
+   ],
+   "src": [
+    "2000-F75-PID-PR-10007_MS_1.pdf"
+   ]
   },
   "2000-F75-PID-PR-10008": {
    "file": "PIDs/2000-F75-PID-PR-10008.pdf",
@@ -2758,10 +3258,21 @@
   "2000-F75-PID-PR-25005": {
    "file": "PIDs/2000-F75-PID-PR-25005.pdf",
    "title": "Raw sewage",
-   "rev": "1",
+   "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 115544
+   "size": 145372,
+   "revs": [
+    {
+     "rev": "1",
+     "date": "",
+     "file": "PIDs/rev/2000-F75-PID-PR-25005_Rev1.pdf",
+     "size": 115544
+    }
+   ],
+   "src": [
+    "2000-F75-PID-PR-25005_2.pdf"
+   ]
   },
   "2000-F75-PID-PR-25006": {
    "file": "PIDs/2000-F75-PID-PR-25006.pdf",
@@ -2983,20 +3494,40 @@
   "2000-F75-PID-PR-40027": {
    "file": "PIDs/2000-F75-PID-PR-40027.pdf",
    "title": "TSF extension, paddock E",
-   "rev": "",
+   "rev": "1",
    "date": "",
    "pages": 1,
-   "size": 122555,
-   "legacy": "75\\PI\\5312 Rev D"
+   "size": 243167,
+   "revs": [
+    {
+     "rev": "",
+     "date": "",
+     "file": "PIDs/rev/2000-F75-PID-PR-40027_Legacy.pdf",
+     "size": 122555
+    }
+   ],
+   "src": [
+    "2000-F75-PID-PR-40027_1.pdf"
+   ]
   },
   "2000-F75-PID-PR-40028": {
    "file": "PIDs/2000-F75-PID-PR-40028.pdf",
    "title": "FIM 2 TSF extension, outfall piping",
-   "rev": "",
+   "rev": "1",
    "date": "",
    "pages": 1,
-   "size": 124660,
-   "legacy": "75\\PI\\5313 Rev D"
+   "size": 246676,
+   "revs": [
+    {
+     "rev": "",
+     "date": "",
+     "file": "PIDs/rev/2000-F75-PID-PR-40028_Legacy.pdf",
+     "size": 124660
+    }
+   ],
+   "src": [
+    "2000-F75-PID-PR-40028_1.pdf"
+   ]
   },
   "2000-F75-PID-PR-40029": {
    "file": "PIDs/2000-F75-PID-PR-40029.pdf",
@@ -3011,11 +3542,21 @@
   "2000-F75-PID-PR-40030": {
    "file": "PIDs/2000-F75-PID-PR-40030.pdf",
    "title": "FIM II paddock E and F decant system",
-   "rev": "",
+   "rev": "1",
    "date": "",
    "pages": 1,
-   "size": 315979,
-   "legacy": "75-PI-5315-SK-103 Rev A"
+   "size": 6165449,
+   "revs": [
+    {
+     "rev": "",
+     "date": "",
+     "file": "PIDs/rev/2000-F75-PID-PR-40030_Legacy.pdf",
+     "size": 315979
+    }
+   ],
+   "src": [
+    "2000-F75-PID-PR-40030_1.pdf"
+   ]
   },
   "2000-F75-PID-PR-40031": {
    "file": "PIDs/2000-F75-PID-PR-40031.pdf",
@@ -3039,11 +3580,22 @@
   "2000-F81-PID-PR-10001": {
    "file": "PIDs/2000-F81-PID-PR-10001.pdf",
    "title": "Plant services LPG system",
-   "rev": "0",
+   "rev": "2",
    "date": "",
    "pages": 1,
-   "size": 172597,
-   "ocr": 1
+   "size": 244842,
+   "ocr": 1,
+   "revs": [
+    {
+     "rev": "0",
+     "date": "",
+     "file": "PIDs/rev/2000-F81-PID-PR-10001_Rev0.pdf",
+     "size": 172597
+    }
+   ],
+   "src": [
+    "2000-F81-PID-PR-10001_2.pdf"
+   ]
   },
   "2000-F81-PID-PR-10002": {
    "file": "PIDs/2000-F81-PID-PR-10002.pdf",
@@ -13306,6 +13858,237 @@
    "size": 329492,
    "src": [
     "2000-F81-PID-PR-60010_0_IFI.pdf"
+   ]
+  },
+  "2000-F25-PID-PR-60000": {
+   "file": "PIDs/2000-F25-PID-PR-60000.pdf",
+   "title": "Rougher flotation & conditioning rought & flotation & conditioning",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 910825,
+   "src": [
+    "2000-F25-PID-PR-60000_0_IFI.pdf"
+   ]
+  },
+  "2000-F26-PID-PR-60005": {
+   "file": "PIDs/2000-F26-PID-PR-60005.pdf",
+   "title": "Flotation area b, mt charlotte scavenger flotation no.1",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 325702,
+   "src": [
+    "2000-F26-PID-PR-60005_0_IFI.pdf"
+   ]
+  },
+  "2000-F30-PID-PR-60002": {
+   "file": "PIDs/2000-F30-PID-PR-60002.pdf",
+   "title": "Leach & adsorption, cil 1",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 523938,
+   "src": [
+    "2000-F30-PID-PR-60002_0_IFI.pdf"
+   ]
+  },
+  "2000-F65-PID-PR-60004": {
+   "file": "PIDs/2000-F65-PID-PR-60004.pdf",
+   "title": "Carbon treatment & elution acid wash & elution circuit no.2",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 704317,
+   "src": [
+    "2000-F65-PID-PR-60004_0_IFI.pdf"
+   ]
+  },
+  "2000-F65-PID-PR-60008": {
+   "file": "PIDs/2000-F65-PID-PR-60008.pdf",
+   "title": "Carbon treatment & elution lean eluate circuit",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 522931,
+   "src": [
+    "2000-F65-PID-PR-60008_0_IFI.pdf"
+   ]
+  },
+  "2000-F66-PID-PR-60002": {
+   "file": "PIDs/2000-F66-PID-PR-60002.pdf",
+   "title": "Goldroom & goldroom compound, goldroom",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 233842,
+   "src": [
+    "2000-F66-PID-PR-60002_0_IFI.pdf"
+   ]
+  },
+  "2000-F66-PID-PR-60008": {
+   "file": "PIDs/2000-F66-PID-PR-60008.pdf",
+   "title": "Goldroom & goldroom compounding, electrowinning circuit no. 2",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 512669,
+   "src": [
+    "2000-F66-PID-PR-60008_0_IFI.pdf"
+   ]
+  },
+  "2000-F70-PID-PR-60004": {
+   "file": "PIDs/2000-F70-PID-PR-60004.pdf",
+   "title": "Reagents (area a) flocculant storage, mixing, dist, sheet 2",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 321724,
+   "src": [
+    "2000-F70-PID-PR-60004_0_IFI.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60002": {
+   "file": "PIDs/2000-F75-PID-PR-60002.pdf",
+   "title": "Water treatment, bore water dam no. 1 (north dam) discharges",
+   "rev": "1",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 364948,
+   "src": [
+    "2000-F75-PID-PR-60002_1_IFI.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60007": {
+   "file": "PIDs/2000-F75-PID-PR-60007.pdf",
+   "title": "Tank, circuit water",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 349903,
+   "src": [
+    "2000-F75-PID-PR-60007_0_IFI.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60011": {
+   "file": "PIDs/2000-F75-PID-PR-60011.pdf",
+   "title": "Gland water distribution, sheet 2",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 694082,
+   "src": [
+    "2000-F75-PID-PR-60011_0_IFI.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60012": {
+   "file": "PIDs/2000-F75-PID-PR-60012.pdf",
+   "title": "Gland water distribution, sheet 3",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 296596,
+   "src": [
+    "2000-F75-PID-PR-60012_0_IFI.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60015": {
+   "file": "PIDs/2000-F75-PID-PR-60015.pdf",
+   "title": "Washdown water distribution, sheet 1",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 293600,
+   "src": [
+    "2000-F75-PID-PR-60015_0_IFI.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60025": {
+   "file": "PIDs/2000-F75-PID-PR-60025.pdf",
+   "title": "Scheme water network, sheet 4",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 428557,
+   "src": [
+    "2000-F75-PID-PR-60025_0_IFI.pdf"
+   ]
+  },
+  "2000-F75-PID-PR-60026": {
+   "file": "PIDs/2000-F75-PID-PR-60026.pdf",
+   "title": "Scheme water network, sheet 5",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 588751,
+   "src": [
+    "2000-F75-PID-PR-60026_0_IFI.pdf"
+   ]
+  },
+  "2000-F78-PID-PR-60003": {
+   "file": "PIDs/2000-F78-PID-PR-60003.pdf",
+   "title": "Mercury scrubber, rto heat exchanger",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 197663,
+   "src": [
+    "2000-F78-PID-PR-60003_0_IFI.pdf"
+   ]
+  },
+  "2000-F81-PID-PR-60000": {
+   "file": "PIDs/2000-F81-PID-PR-60000.pdf",
+   "title": "Air services, flotation air",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 236910,
+   "src": [
+    "2000-F81-PID-PR-60000_0_IFI.pdf"
+   ]
+  },
+  "2000-F81-PID-PR-60012": {
+   "file": "PIDs/2000-F81-PID-PR-60012.pdf",
+   "title": "Instrument air network, sheet 3",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 739567,
+   "src": [
+    "2000-F81-PID-PR-60012_0_IFI.pdf"
+   ]
+  },
+  "2000-F81-PID-PR-60013": {
+   "file": "PIDs/2000-F81-PID-PR-60013.pdf",
+   "title": "Instrument air network, sheet 4",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 906801,
+   "src": [
+    "2000-F81-PID-PR-60013_0_IFI.pdf"
+   ]
+  },
+  "2000-F81-PID-PR-60015": {
+   "file": "PIDs/2000-F81-PID-PR-60015.pdf",
+   "title": "Instrument air network, sheet 6",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 658260,
+   "src": [
+    "2000-F81-PID-PR-60015_0_IFI.pdf"
+   ]
+  },
+  "2000-F81-PID-PR-60016": {
+   "file": "PIDs/2000-F81-PID-PR-60016.pdf",
+   "title": "Instrument air network, sheet 7",
+   "rev": "0",
+   "date": "2026-11-10",
+   "pages": 1,
+   "size": 987963,
+   "src": [
+    "2000-F81-PID-PR-60016_0_IFI.pdf"
    ]
   }
  }

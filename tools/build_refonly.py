@@ -102,6 +102,9 @@ for o in out:
         if d['rev'] != o['rev']: o['st'] = d['st']
         o['url'], o['rev'] = d['url'], d['rev']
 appRev = {k: v.get('rev', '') for k, v in P.items()}; appRev.update({v['number']: v.get('rev', '') for v in meta.values() if v.get('number')})
+# (the pipe spec: its revision is the spec viewer's, spec/index.json)
+try: _sm = json.load(open(R + '/spec/index.json'))['meta']; appRev[_sm['doc']] = _sm.get('rev', '')
+except Exception: pass
 appT = {k: v.get('title', '') for k, v in P.items()}; appT.update({v['number']: v.get('full') or v.get('title', '') for v in meta.values() if v.get('number')})
 # Old Revs: the documents in the app behind the project document register's current revision (tools/reglatest.py: the
 # register decides, an as-built set _MS counting as its drawing's latest issue, a redline markup the app holds as the issue

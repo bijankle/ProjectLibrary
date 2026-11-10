@@ -36,12 +36,13 @@ for f in files:
     if not m or m.group(1) not in ix: print("not a held P&ID / PFD:", os.path.basename(f)); continue
     n, rev = m.groups(); v = ix[n]
     if v.get("rev") == rev: print("already in:", n, rev); continue
-    old = v["file"]; dst = f"{os.path.dirname(old)}/rev/{n}_Rev{v.get('rev') or '0'}.pdf"; os.makedirs(os.path.join(R, os.path.dirname(dst)), exist_ok=True)
+    old = v["file"]; dst = f"{os.path.dirname(old)}/rev/{n}_" + ("Legacy" if v.get("legacy") and not v.get("rev") else f"Rev{v.get('rev') or '0'}") + ".pdf"; os.makedirs(os.path.join(R, os.path.dirname(dst)), exist_ok=True)
     shutil.move(os.path.join(R, old), os.path.join(R, dst))
     for p in glob.glob(os.path.join(R, old) + ".p*.png"): os.remove(p)
     v.setdefault("revs", []).append({"rev": v.get("rev", ""), "date": v.get("date", ""), "file": dst, "size": os.path.getsize(os.path.join(R, dst))})
     shutil.copy(f, os.path.join(R, old))
     v.update(rev=rev, src=[os.path.basename(f)], size=os.path.getsize(os.path.join(R, old)), pages=pymupdf.open(os.path.join(R, old)).page_count)
+    v.pop("legacy", None)   # (the 2000 issue now: no longer the older drawing it was renumbered from)
     done.append(n)
 json.dump(D, open(os.path.join(R, "PIDs", "index.json"), "w"), indent=1, ensure_ascii=False)
 if added: json.dump(dict(sorted(TITLES.items())), open(os.path.join(R, "tools", "titles.json"), "w"), indent=1, ensure_ascii=False)
@@ -66,11 +67,11 @@ run("tools/fix_backrefs.py")   # (the ways back into the swapped sheets: their r
 dt1 = json.load(open(os.path.join(R, "doc-tags.json"))); dt0.update({k: v for k, v in dt1.items() if k not in dt0})
 json.dump(dt0, open(os.path.join(R, "doc-tags.json"), "w"), separators=(",", ":"))
 for t in ("build_pics.py", "build_bbox.py", "build_contents.py", "build_refonly.py"): run("tools/" + t)
-if added:   # (their pipelines traced, joined across the sheets, the ribbon pairs read by fluid, the Checks redone)
-    run("tools/build_line_paths.py", *added)
+if done:   # (every swapped sheet's pipelines traced again, its tag links being new; joined across the sheets, the ribbon pairs read by fluid, the Checks redone)
+    run("tools/build_line_paths.py", *done)
     for t in ("fix_line_breaks.py", "link_pipes.py"): run("tools/" + t)
     run("tools/pair_ribbons.py"); run("tools/link_lines.py", "."); run("tools/build_routes.py", "."); run("tools/checks_auto.py")
-run("tools/build_offline.py")
+run("tools/build_sp.py"); run("tools/build_offline.py")
 for f in files:
     if any(os.path.basename(f).startswith(n + "_") for n in done):
         subprocess.run(["git", "mv", f, os.path.join(RP, "inbox", "pids", os.path.basename(f))], cwd=RP)

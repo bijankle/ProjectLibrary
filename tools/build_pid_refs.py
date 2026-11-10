@@ -90,7 +90,7 @@ def lev(a, b, cap):
 
 out, stats, LAB = {}, {"d": 0, "near": 0}, {}
 for num, d in sorted(ix.items()):
-    if d.get("layout"): continue   # the layout drawings open as plain PDFs
+    if d.get("layout") or d.get("sp"): continue   # the layout drawings open as plain PDFs; the electrical ones are SharePoint only
     doc = pymupdf.open(os.path.join(ROOT, d["file"])); own = norm(num); refs = []
     for pno, page in enumerate(doc, 1):
         W, H = page.rect.width, page.rect.height

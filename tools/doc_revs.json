@@ -68,9 +68,9 @@
   "full": "Line List",
   "number": "2000-F00-LST-PP-10001",
   "kind": "List",
-  "rev": "1",
-  "date": "2025-10-24",
-  "status": "General and Testing Requirements Updates",
+  "rev": "2",
+  "date": "2026-10-12",
+  "status": "SP1 As Built",
   "used": "Pipe line search (size, spec, from and to)",
   "history": [
    {
@@ -82,6 +82,11 @@
     "rev": "1",
     "date": "2025-10-24",
     "status": "General and Testing Requirements Updates"
+   },
+   {
+    "rev": "2",
+    "date": "2026-10-12",
+    "status": "SP1 As Built"
    }
   ],
   "note": "The Line List data sheet header reads Revision 2 but is undated; the cover page's latest dated revision is Rev 1."
@@ -1205,7 +1210,7 @@
  },
  "pct1410001": {
   "title": "PCT F14",
-  "full": "Process Control Tables - Gravity Circuit & Intensive Leaching",
+  "full": "Process Control Tables - Gravity Circuit & Intensive Leaching (Area F14) and Electrowinning & Goldroom (Area F66)",
   "number": "2000-F14-LST-PR-10001",
   "kind": "List",
   "rev": "3",
@@ -1468,19 +1473,19 @@
   "full": "Process Control Tables - Concentrate Handling & Filtration",
   "number": "2000-F35-LST-PR-10001",
   "kind": "List",
-  "rev": "3",
-  "date": "2026-03-19",
-  "status": "",
+  "rev": "4",
+  "date": "2026-10-26",
+  "status": "As Built (SP1)",
   "pct": 1,
   "used": "Control data on each asset's page: ranges, set points, alarms, interlocks, permissives, controllers",
   "history": [
    {
-    "rev": "3",
-    "date": "2026-03-19",
-    "status": ""
+    "rev": "4",
+    "date": "2026-10-26",
+    "status": "As Built (SP1)"
    }
   ],
-  "note": "Process Control Tables workbook (3_Area_F35_PCT)",
+  "note": "Process Control Tables PDF, its changes keyed into the previous revision's workbook (the PDF reads poorly)",
   "project": ""
  },
  "pct7210001": {
