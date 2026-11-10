@@ -321,7 +321,8 @@ window.AssetViz = (() => {
     const trAt = f => { const { P, L } = T, q = f * L[L.length - 1]; let i = 1; while (i < L.length - 1 && L[i] < q) i++;
       const t = L[i] > L[i - 1] ? (q - L[i - 1]) / (L[i] - L[i - 1]) : 0; return [P[i - 1][0] + t * (P[i][0] - P[i - 1][0]), P[i - 1][1] + t * (P[i][1] - P[i - 1][1]), i]; };
     const trSub = (a, b) => { const [xa, ya, ia] = trAt(a), [xb, yb, ib] = trAt(b); return [[xa, ya], ...T.P.slice(ia, ib), [xb, yb]]; };
-    function trStart(k, at, f0, as, keep){ const P0 = flD && flD[k]; if (!P0 || P0.length < 2 || !W) return false; const A = W / H;
+    function trStart(k, at, f0, as, keep){ if (window.KCGM_FLY !== true) return false;   // (the fly through, switched off for now: pdfview.js FLY)
+      const P0 = flD && flD[k]; if (!P0 || P0.length < 2 || !W) return false; const A = W / H;
       const r = /^r\d+$/.test(k) ? flRefs[+String(k).slice(1)] : refV(k);
       // (on through its spec changes, one run, as past a valve: PdfView.run)
       const labs = k2 => { const a = []; if (flD.lb && flD.lb[k2]) a.push(flD.lb[k2]); if (String(k2) === String(k) && /^r\d+$/.test(k)) a.push(as || ""); else if (/^\d+$/.test(k2) && flRefs[+k2]) a.push(String(flRefs[+k2][5]).split("|")[0]); return a; };

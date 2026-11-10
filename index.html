@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-content">
 <script src="errlog.js"></script>
 <script>
+// the fly through along a line (pdfview.js trace, viz.js trStart): off for now; set true to bring it back as it was
+window.KCGM_FLY = false;
 // App size (textsize.js) set before the first paint, so every page opens at the chosen size: on a phone the page is
 // laid out narrower (screen width / size) and the zoom is locked there, like Ctrl + scroll in a browser.
 window.kcgmViewport = function(z){ try {

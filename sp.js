@@ -22,9 +22,11 @@ window.SP = (() => {
     }
     return u + (u.includes("?") ? "&" : "?") + "web=1";
   };
-  const url = n => view(N.get(nk(n)) || "");
+  // (the file's address tidied first, then made the viewer's: tidying the viewer address encoded it twice, %2F becoming
+  // %252F, and SharePoint couldn't find the file)
   const enc = u => { try { return encodeURI(decodeURI(u)); } catch (e) { return encodeURI(u); } };
-  const a = (n, text) => { const u = url(n); return u ? `<a class="sp-a" href="${esc(enc(u))}" target="_blank" rel="noopener" title="Open in SharePoint">${text == null ? esc(n) : text}</a>` : (text == null ? esc(n) : text); };
+  const url = n => { const r = N.get(nk(n)); return r ? view(enc(r)) : ""; };
+  const a = (n, text) => { const u = url(n); return u ? `<a class="sp-a" href="${esc(u)}" target="_blank" rel="noopener" title="Open in SharePoint">${text == null ? esc(n) : text}</a>` : (text == null ? esc(n) : text); };
   const linkText = t => esc(t).replace(DOC, m => url(m) ? a(m) : m);
   const css = document.createElement("style");
   css.textContent = `:root{--doc-a:#0b63c5}html[data-theme="dark"]{--doc-a:#79b4ff}
@@ -34,5 +36,5 @@ a.sp-a::after{content:"\\2197";display:inline-block;font-size:.8em;margin-left:2
   // any SharePoint link in the app, however it was written, opens in the viewer (Ref Only's Download all doesn't use links)
   document.addEventListener("click", e => { const a = e.target.closest && e.target.closest('a[href*="sharepoint.com"]'); if (a && !a.hasAttribute("download")) a.href = view(a.href); }, true);
   load();
-  return { load, url: n => { const u = url(n); return u ? enc(u) : ""; }, a, linkText, DOC, view };
+  return { load, url, a, linkText, DOC, view };
 })();

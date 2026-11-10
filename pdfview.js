@@ -277,7 +277,7 @@ window.PdfView = (() => {
       const a = refAt(e.clientX, e.clientY);
       if (!a && TR && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8) && trNear(e.clientX, e.clientY)){ trOpen(); return; }
       // (the pipe itself, as its number: the fly through along that line, from the spot tapped)
-      if (!a && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8) && /-(PID|SLD)-/.test(cur.number || "")){ const hit = lineAt(e.clientX, e.clientY);
+      if (FLY && !a && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8) && /-(PID|SLD)-/.test(cur.number || "")){ const hit = lineAt(e.clientX, e.clientY);
         if (hit){ if (FL.pick) pickEnd(); const r = V.refs[hit.k], b = boxOf(r), bx = { page: V.page, l: b[0] / 1e4, t: b[1] / 1e4, w: b[2] / 1e4, h: b[3] / 1e4 }; V.tap = bx; drawTap();
           trace(hit.k, hit.at, [bx.l, bx.t, bx.w, bx.h]); return; } }
       if (!a && FL.pick && !TR && (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) <= 8)){ const t0 = performance.now();
@@ -295,11 +295,11 @@ window.PdfView = (() => {
       if (TR && r[6] !== "line" && r[6] !== "d") trEnd();   // (an instrument, equipment, a valve picked while flying: out of the fly through)   // (a fluid picked in the legend is let go: the tap works as on the plain drawing)
       if (r[6] === "line" && /-PID-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
         if (TR && TR.ks.has(String(gi)) && TR.n === cur.number){ trOpen(gi); return; }
-        linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
+        linesFor(cur.number).then(D => { if (cur !== me) return; if (FLY && D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
       // (on a single line diagram the same for a motor, heater or feeder: its supply traced, tools/build_sld_paths.py)
       if ((r[6] === "mel" || r[6] === "elec") && /-SLD-/.test(cur.number || "")){ const me = cur, gi = V.refs.indexOf(r);
         if (TR && TR.ks.has(String(gi)) && TR.n === cur.number){ trOpen(gi); return; }
-        linesFor(cur.number).then(D => { if (cur !== me) return; if (D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
+        linesFor(cur.number).then(D => { if (cur !== me) return; if (FLY && D[gi]) trace(gi, null, bx); else cur.onRef(r[5], "tag", r[7], bx || null); }); return; }
       // (a continuation: zoomed in, the next sheet opens zoomed onto the way back and the line flown on; at the whole
       // sheet it opens whole too, for hopping sheet to sheet)
       if (r[6] === "d"){ if (TR || V.zoom > 1.001) trPend = { at: Date.now(), label: TR && TR.label, dir: 1, from: cur.number }; else V.goExt = Date.now(); }
@@ -444,6 +444,10 @@ window.PdfView = (() => {
   // equipment, ribbons) and Go to asset; the zoom (remembered) is an upright slider on the right. Tapping the line or its
   // number again also opens the line's page. A ribbon tapped takes the
   // trace on to the next sheet: the line that ribbon carries on lights up, the slider at the ribbon's end.
+  // FLY: the fly through along a line (trace, the slider and arrow, the milestones) is switched off for now; the code is
+  // all kept, and window.KCGM_FLY = true (index.html) brings it back exactly as it was. Off: a line number or pipe tapped
+  // opens the line's page, as any tag does.
+  const FLY = window.KCGM_FLY === true;
   const LN = {}; let TR = null, trPend = null;
   // ---- the equipment stop (as on the desktop, viz.js): a line's end at a tundish, a box, a pump offers it on the strip;
   // picked, the sheet centres on it at the zoom you have and the strip names it, the line come in on (back) and where
@@ -478,6 +482,7 @@ window.PdfView = (() => {
   // to a line from the equipment: flown here when this sheet has it, else on the sheet that does
   async function lnGo(lab){ const D = await linesFor(cur.number), k = V.refs.findIndex((r, i) => r[0] === V.page && r[6] === "line" && String(r[5]).split("|")[0] === lab && D[i]);
     EQ = null; V.tb.classList.remove("eqm");
+    if (!FLY) return;
     if (k >= 0){ const b = boxOf(V.refs[k]); trace(k, null, [b[0] / 1e4, b[1] / 1e4, b[2] / 1e4, b[3] / 1e4]); return; }
     const R = await Promise.resolve(window.Pid && Pid.refs ? Pid.refs() : {}), to = Object.keys(R).find(x => /-PID-/.test(x) && x !== cur.number && R[x].some(r => r[6] === "line" && String(r[5]).split("|")[0] === lab));
     if (to && cur.onRef){ trPend = { at: Date.now(), label: lab, dir: 1, from: cur.number }; cur.onRef(to, "dwg", null, null); } }
@@ -500,6 +505,7 @@ window.PdfView = (() => {
   const trPt = (x, y) => V.rot ? [1e4 - y, x] : [x, y];
   const trF = () => V.tb.querySelector(".sp-tra").value / 1000;
   function trace(k, end, box, as){
+    if (!FLY) return;
     Promise.resolve(LN[cur.number]).then(D => {
       const P0 = D && D[k]; if (!P0 || P0.length < 2) return; const vp = V.pg.getViewport({ scale: 1 }), A = vp.width / vp.height;
       // (an unnumbered continuation, "r<ribbon>": traced under the number it came with, as if that were printed on its ribbon)
