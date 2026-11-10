@@ -124,12 +124,13 @@ for n, h in hd.items():
     if c:
         if c['url']: h['url'] = c['url']
         h['srev'] = c['rev']
-        why = ('superseded by ' + c['by']) if c['by'] else 'cancelled' if c['can'] else '' if not a else 'up rev' if revkey(rbase(c['rev'])) > revkey(rbase(a)) else ''
+        lg = P.get(n, {}).get('legacy')   # (the older drawing the app holds, renumbered later: behind any 2000 issue)
+        why = ('superseded by ' + c['by']) if c['by'] else 'cancelled' if c['can'] else 'legacy drawing in app' if lg else '' if not a else 'up rev' if revkey(rbase(c['rev'])) > revkey(rbase(a)) else ''
         if not why and not a and c['url']: why = 'rev unknown in app'
         if not why: continue
         u = c['url'] or c.get('alt', ''); f = unquote(u.rsplit('/', 1)[-1]) if u else ''
         if not c['url'] and u: f = f'{f} (rev {c["rev"]} not on SharePoint yet)'
-        old.append({'n': n, 'g': h['g'], 't': appT.get(n, '') or c['title'], 'app': a or '?', 'rev': c['rev'], 'st': c['st'], 'url': u, 'file': f, 'mod': '', 'why': why, 'by': c['by'],
+        old.append({'n': n, 'g': h['g'], 't': appT.get(n, '') or c['title'], 'app': a or (('legacy ' + lg) if lg else '?'), 'rev': c['rev'], 'st': c['st'], 'url': u, 'file': f, 'mod': '', 'why': why, 'by': c['by'],
                     'have': (P.get(n, {}).get('from') or P.get(n, {}).get('src') or [''])[0]})
         continue
     d = DL.get(nkk(n))
@@ -150,6 +151,15 @@ for o in out:
         u = c['url'] or c.get('alt', ''); f = unquote(u.rsplit('/', 1)[-1]) if u else ''
         old.append({'n': o['n'], 'g': o.get('g', 'project'), 't': c['title'], 'app': '—', 'rev': c['rev'], 'st': c['st'], 'url': u, 'file': f, 'mod': '', 'why': 'continuation, not in app', 'by': '', 'have': '',
                     'on': sorted(m for m in o['in'] if '-PID-' in m)[:4]})
+# revs.json: every drawing and document the app holds, its revision here against the register's current one, for the
+# drawing's Details pill and its header (lookup.js, viz.js): {number: [rev in app, legacy drawing, register rev, register
+# status, SharePoint link of the current issue, why it's in Old Revs ("" when current)]}
+OLDW = {o['n']: o.get('why', '') for o in old}
+RV = {}
+for n in hd:
+    c = RC.get(nkk(n)); a = apprev(n); lg = P.get(n, {}).get('legacy', '')
+    RV[n] = [a, lg, c['rev'] if c else '', c['st'] if c else '', (c['url'] or c.get('alt', '')) if c else hd[n].get('url', ''), OLDW.get(n, '')]
+json.dump(RV, open(R + '/revs.json', 'w'), ensure_ascii=False, separators=(',', ':'))
 # (Ref Only too: the register's current issue and its link where it has one)
 for o in out:
     c = RC.get(nkk(o['n']))

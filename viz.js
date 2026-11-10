@@ -95,22 +95,20 @@ window.AssetViz = (() => {
   let HELDV = null;
   // (a redline or greenline markup of an issue is that issue: MS-RLM1_1 is at MS_1)
   const bsr = r => String(r || "").toUpperCase().replace(/[-_](?:RLM|GLM)\d*/g, "");
+  // the drawing's header strip (option A): four cells on the tool row, DRAWING NO. (opening SharePoint's current issue),
+  // REV SHOWN (the revision the app holds), LATEST (the register's current one, ✓ when they agree, ! when the app is behind:
+  // then it is in Sources > Old Revs) and TITLE. From revs.json (tools/build_refonly.py)
+  let RVS = null;
   async function titleBlock(tb, n, d){
-    const held = await (HELDV || (HELDV = fetch("sp-held.json").then(r => r.ok ? r.json() : {}).catch(() => ({})))); if (!tb.isConnected) return;
-    const num = d.number || n, raw = held[num] || (window.SP ? (SP.url(num) || "") : ""), url = raw ? (window.SP ? SP.view(raw) : raw) : "";
-    const m = String(raw).match(/_((?:MS_)?[0-9A-Z]{1,3})(?:_(?:APP|RNC|RWC|IFC|IFR|AFC|IFA|IFI|IFU|AAN|RSP|ASB|AFU|AFT|IFP|IFT|RES|NAR|MWC|ICR|CLS))?\.pdf$/i), sr = m ? m[1] : "", rev = String(d.rev || "");
-    const st = !sr ? `<span class="q">Not in the document register's SharePoint links: check the register for the latest revision.</span>`
-      : !rev ? `<span class="warn">The app has no revision recorded for this copy. SharePoint's latest file is ${esc(sr)}: check it there.</span>`
-      : bsr(sr) === bsr(rev) ? `<span class="ok">✓ Same revision as the latest file in SharePoint (${esc(sr)})</span>`
-      : `<span class="warn">SharePoint's latest file is ${esc(sr)}: this copy is ${esc(rev || "unknown")}. Check SharePoint.</span>`;
-    // (one strip, as a drawing's header reads: number_rev, then the title; the number opens SharePoint's latest file, its
-    // tint and the mark after it say whether that is the revision shown here, the words in its tooltip)
-    const k = !sr ? "q" : bsr(sr) === bsr(rev) ? "ok" : "warn", why = st.replace(/<[^>]+>/g, ""), nr = esc(num + (rev ? "_" + rev : ""));
-    const no = url ? `<a class="${k}" href="${esc(url)}" target="_blank" rel="noopener" title="Open the latest file in SharePoint. ${esc(why)}">${nr}</a>` : `<b class="${k}" title="${esc(why)}">${nr}</b>`;
-    const mk = `<span class="m ${k}" title="${esc(why)}">${k === "ok" ? '<svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.3l2.3 2.3 4.7-5"/></svg>' : k === "warn" ? "!" : "?"}</span>`, v = tb.dataset.v || "c";
-    tb.innerHTML = v === "b" ? `<div class="c n">${no}${mk}</div><div class="c t"><b>${esc(d.title || "")}</b></div>`
-      : `<div class="c n"><i>DRAWING No._REV</i><span>${no}${v === "a" ? mk : ""}</span></div><div class="c t"><i>TITLE</i><b>${esc(d.title || "")}</b></div>`
-        + (v === "c" ? `<div class="c s"><i>SHAREPOINT</i><span class="${k}">${k === "ok" ? "✓ LATEST" : k === "warn" ? "! " + esc(sr) + " IS LATEST" : "? NOT LINKED"}</span></div>` : ""); }
+    const R = await (RVS || (RVS = fetch("revs.json").then(r => r.ok ? r.json() : {}).catch(() => ({})))); if (!tb.isConnected) return;
+    const num = d.number || n, e = R[num] || [d.rev || "", d.legacy || "", "", "", "", ""], [a, lg, r, , u, why] = e;
+    const url = u ? (window.SP ? SP.view(u) : u) : (window.SP ? SP.url(num) : "");
+    const shown = a || (lg ? "Legacy" : "?"), k = !r ? "q" : why ? "warn" : "ok";
+    const tip = !r ? "Not in the project document register: check SharePoint" : why ? `The register's current issue is ${r}; the app shows ${lg ? "the older drawing " + lg : a || "an unrecorded revision"}. Listed in Sources > Old Revs.` : `Rev ${a}: the register's current issue`;
+    const no = url ? `<a class="${k}" href="${esc(url)}" target="_blank" rel="noopener" title="Open the current issue in SharePoint">${esc(num)}</a>` : `<b class="${k}">${esc(num)}</b>`;
+    tb.title = tip;
+    tb.innerHTML = `<div class="c n"><i>DRAWING NO.</i><span>${no}</span></div><div class="c r"><i>REV SHOWN</i><span class="${k}"${lg ? ` title="${esc(lg)}"` : ""}>${esc(shown)}</span></div>`
+      + `<div class="c l"><i>LATEST</i><span class="${k}">${r ? esc(r) + (k === "ok" ? " ✓" : " !") : "?"}</span></div><div class="c t"><i>TITLE</i><b>${esc(d.title || "")}</b></div>`; }
   function drawItem(){
     const g = ++gen, own = window.Lookup && Lookup.drawingsOf ? Lookup.drawingsOf(cur) : [];
     if ((!own.length && !shown) || !window.Pid || !window.PdfView){ el.innerHTML = ""; return; }
@@ -131,8 +129,8 @@ window.AssetViz = (() => {
     // the drawing's header strip, number_rev and title, in that bar after the tools: no page heading, no title block under it)
     if (!document.documentElement.classList.contains("phone")){ const cb = document.createElement("div"); cb.className = "vz-cb";
       const hb = document.createElement("div"), v = document.documentElement.dataset.hb || "c"; hb.className = "vz-hb " + v; hb.dataset.v = v;
-      cb.append(el.querySelector(".vz-tg")); if (v === "c") el.querySelector(".vz-sheet").before(hb); else cb.append(hb);
-      cb.append(el.querySelector(".vz-fltk"), el.querySelector(".vz-flg")); el.querySelector(".vz-sheet").before(cb); titleBlock(hb, n, d); }
+      // (the strip on the tool row, after the tick boxes: no row of its own)
+      cb.append(el.querySelector(".vz-tg"), el.querySelector(".vz-fltk"), hb, el.querySelector(".vz-flg")); el.querySelector(".vz-sheet").before(cb); titleBlock(hb, n, d); }
     const box = el.querySelector(".vz-sheet"), stage = box.querySelector(".vz-stage"), cv = box.querySelector("canvas"), key = cur.key;
     let z = 1, tx = 0, ty = 0, W = 0, H = 0, page = null, sc = 1, rz = 0, rt = null;
     // the drawing's own box on the page (sheet-bbox.json, fractions): the view fits that, not the page's empty margin
@@ -727,7 +725,7 @@ window.AssetViz = (() => {
 .vz-hb a.ok,.vz-hb b.ok,.vz-hb span.ok{color:#15803d}.vz-hb a.warn,.vz-hb b.warn,.vz-hb span.warn{color:#b45309}.vz-hb a.q,.vz-hb b.q,.vz-hb span.q{color:#0b63c5}
 .vz-hb .s span{font-size:12px;white-space:nowrap}
 .vz-hb.c{align-self:flex-start;margin:6px 0 0}
-.vz-cb .vz-hb{flex:0 1 auto}
+.vz-cb .vz-hb{flex:0 1 auto}.vz-cb .vz-hb{margin:0!important;align-self:center}.vz-hb .r span,.vz-hb .l span{font-size:13px;white-space:nowrap}.vz-hb .t b{text-transform:uppercase}
 .vz-tabs{display:flex;flex-wrap:wrap;gap:6px}
 .vz-tab{border:1px solid var(--line);background:var(--card,var(--panel));color:var(--mute);border-radius:8px;padding:5px 10px;font:inherit;font-size:var(--fb,15px);cursor:pointer}
 .vz-tab.on{border-color:var(--gold);color:var(--ink);font-weight:700}

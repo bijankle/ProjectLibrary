@@ -297,9 +297,9 @@ window.SourcesList = (() => {
     // the left side bar serves both tabs: on Ref Only it shows All, the families and the document types (one picked
     // at a time: roG "" | "project" … | "t:SCM"), each with its count; the search box above filters both
     // (why a document is in Old Revs, from the project document register: tools/build_refonly.py)
-    const whyK = o => { const w = o.why || "up rev"; return /^superseded/.test(w) ? "sup" : w === "cancelled" ? "can" : /^continuation/.test(w) ? "cont" : /unknown/.test(w) ? "unk" : "up"; };
-    const WHY = { up: "Needs an up rev", unk: "Rev unknown in the app", cont: "Continuations not in the app", sup: "Superseded by another number", can: "Cancelled" };
-    const whyTxt = o => { const k = whyK(o); return k === "up" ? `Up rev: ${o.app} → ${o.rev}` : k === "unk" ? `Rev unknown in the app; register: ${o.rev}` : k === "cont" ? `Not in the app; continues from ${(o.on || []).join(", ")}` : k === "sup" ? `Superseded by ${o.by || ""}` : "Cancelled in the register"; };
+    const whyK = o => { const w = o.why || "up rev"; return /^superseded/.test(w) ? "sup" : w === "cancelled" ? "can" : /^continuation/.test(w) ? "cont" : /unknown/.test(w) ? "unk" : /^legacy/.test(w) ? "leg" : "up"; };
+    const WHY = { up: "Needs an up rev", leg: "Legacy drawing in the app", unk: "Rev unknown in the app", cont: "Continuations not in the app", sup: "Superseded by another number", can: "Cancelled" };
+    const whyTxt = o => { const k = whyK(o); return k === "up" ? `Up rev: ${o.app} → ${o.rev}` : k === "leg" ? `The app holds the older drawing (${String(o.app).replace(/^legacy /, "")}); register: ${o.rev}` : k === "unk" ? `Rev unknown in the app; register: ${o.rev}` : k === "cont" ? `Not in the app; continues from ${(o.on || []).join(", ")}` : k === "sup" ? `Superseded by ${o.by || ""}` : "Cancelled in the register"; };
     const roType = o => { if (o.iom) return "IOM"; if (o.pct) return "PCT"; const m = /^\d{4}-[A-Z]\d+-([A-Z]{3})-/.exec(o.n); return m ? m[1] : ""; };
     async function setTab(v){ tab = v; el.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === v));
       const R2 = v !== "att";   // (Ref Only and Old Revs share the table, the side bar filters and the buttons; Old Revs has no Excel)

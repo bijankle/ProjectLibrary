@@ -1,0 +1,67 @@
+{
+ "_note": "Revisions of the drawings taken from the original combined P&ID set (which recorded none), read by eye off each sheet's title block in that set (the private repository's history-archive): the KCGM Growth Project box's top revision row. 'legacy': no 2000 issue on the sheet, the app holds the older drawing it was renumbered from (its own number and revision). Applied by tools/apply_app_revs.py. The seven PFDs: their originals in history-archive/drawings, revision box 0.",
+ "2000-F175-PID-PR-40002": "0",
+ "2000-F19-PID-PR-10001": "1",
+ "2000-F19-PID-PR-10006": "1",
+ "2000-F30-PID-PR-10001": "2",
+ "2000-F30-PID-PR-10003": "1",
+ "2000-F30-PID-PR-10005": "1",
+ "2000-F30-PID-PR-10008": {
+  "legacy": "FME-30-PI-438 Rev 5"
+ },
+ "2000-F30-PID-PR-10009": "0",
+ "2000-F30-PID-PR-10010": {
+  "legacy": "FME-30-PI-440 Rev 6"
+ },
+ "2000-F30-PID-PR-10012": "0",
+ "2000-F30-PID-PR-10018": {
+  "legacy": "30\\PI\\1500 Rev 4"
+ },
+ "2000-F30-PID-PR-10019": {
+  "legacy": "30\\PI\\1600 Rev 1"
+ },
+ "2000-F30-PID-PR-10021": "0",
+ "2000-F30-PID-PR-10022": "0",
+ "2000-F34-PID-PR-10001": "1",
+ "2000-F35-PID-PR-10001": "2",
+ "2000-F35-PID-PR-10003": "1",
+ "2000-F35-PID-PR-10004": {
+  "legacy": "FME-35-PI-445 Rev 5"
+ },
+ "2000-F35-PID-PR-10005": {
+  "legacy": "FME-35-PI-446 Rev 5"
+ },
+ "2000-F65-PID-PR-10001": "1",
+ "2000-F65-PID-PR-10002": "0",
+ "2000-F65-PID-PR-10003": "0",
+ "2000-F65-PID-PR-10004": "0",
+ "2000-F65-PID-PR-10005": "0",
+ "2000-F65-PID-PR-10006": "0",
+ "2000-F66-PID-PR-10004": "1",
+ "2000-F66-PID-PR-10005": "1",
+ "2000-F66-PID-PR-10006": "1",
+ "2000-F71-PID-PR-10001": "0",
+ "2000-F71-PID-PR-10002": "0",
+ "2000-F75-PID-PR-10001": "1",
+ "2000-F75-PID-PR-10003": "1",
+ "2000-F75-PID-PR-10007": "1",
+ "2000-F75-PID-PR-10008": "0",
+ "2000-F75-PID-PR-40027": {
+  "legacy": "75\\PI\\5312 Rev D"
+ },
+ "2000-F75-PID-PR-40028": {
+  "legacy": "75\\PI\\5313 Rev D"
+ },
+ "2000-F75-PID-PR-40030": {
+  "legacy": "75-PI-5315-SK-103 Rev A"
+ },
+ "2000-F81-PID-PR-10001": "0",
+ "2000-F81-PID-PR-10002": "1",
+ "2000-F00-PFD-PR-10023": "0",
+ "2000-F00-PFD-PR-10031": "0",
+ "2000-F00-PFD-PR-10032": "0",
+ "2000-F00-PFD-PR-10033": "0",
+ "2000-F00-PFD-PR-10035": "0",
+ "2000-F00-PFD-PR-10039": "0",
+ "2000-F00-PFD-PR-10042": "0"
+}

@@ -461,6 +461,12 @@
         all && { id: "all", label: "On this drawing", n: ln.n, html: all }], "pid-l");
       if (ln) Object.assign(ln, { id: "lines", html: Ls }); else if (pl.lin.length + pl.lout.length) secs.splice(1, 0, { id: "lines", label: "Lines", html: Ls });
     }
+    // a drawing: the isometrics of the lines on it (iso.json), then its own details last (revision held here against the
+    // register's current issue, revs.json; source file, pages, SharePoint), filled in once revs.json is in
+    if (it.t === "pid" && dwg){ const x = L.pidExtra(dwg.number, onSheet);
+      if (x.isos){ const li = secs.findIndex(y => y.id === "lines" || y.id === "r-line"); secs.splice(li >= 0 ? li + 1 : secs.length, 0, { id: "isos", label: "Isometrics", n: x.isos.n, html: x.isos.html }); }
+      secs.push({ id: "dwgd", label: "Details", html: x.det }); requestAnimationFrame(() => L.dwgDetails());
+    }
     h += L.pills(secs, "item-" + (it.t === "pid" ? "pid" : "rec"));
     return h;
   };
@@ -509,6 +515,24 @@
   let DT = null;
   // IOM manuals (iom.json, tools/build_iom.py): every manual of the item's package, and any manual naming its tag in the
   // title; those that name the tag (or the valve code, make or model) first. A row under the drawings, SharePoint links.
+  // a drawing's Isometrics (the lines read on it, their sheets from iso.json) and Details (filled by L.dwgDetails)
+  L.pidExtra = (n, onSheet) => {
+    if (!onSheet){ const cs = CT && CT[n]; onSheet = [...new Set(((cs && cs.k) || []).flatMap(k => byKey.get(norm(k)) || []))]; }
+    const lns = onSheet.filter(x => x.t === "line" && ISO && ISO.l[String(x.key).toUpperCase()]).sort((a, b) => String(a.key).localeCompare(String(b.key)));
+    const one = sh => `<a class="sp-a" href="${esc(ISO.p[sh[3]] + "/" + encodeURIComponent(sh[4]))}" target="_blank" rel="noopener" title="${esc(sh[5])} Rev ${esc(sh[1])} ${esc(sh[2])}: open in SharePoint">Sheet ${esc(sh[0])}</a>`;
+    const isos = lns.length ? { n: lns.reduce((t, x) => t + ISO.l[String(x.key).toUpperCase()].length, 0),
+      html: `<table class="lk-t">${lns.map(x => `<tr><td class="lk-nw"><a class="lk-a" data-k="${esc(norm(x.key))}">${esc(x.key)}</a></td><td><div class="lk-cv">${ISO.l[String(x.key).toUpperCase()].map(one).join(", ")}</div></td></tr>`).join("")}</table>` } : null;
+    return { isos, det: `<div class="lk-dwgd" data-n="${esc(n)}"><div class="lk-ns">Loading…</div></div>` }; };
+  // a drawing's Details pill: what the app holds against the register (revs.json, tools/build_refonly.py)
+  let RVS = null;
+  L.dwgDetails = async () => { const R = await (RVS || (RVS = fetch("revs.json").then(r => r.ok ? r.json() : {}).catch(() => ({}))));
+    document.querySelectorAll(".lk-dwgd[data-n]").forEach(el => { const n = el.dataset.n, d = (window.Pid && Pid.info(n)) || {}, e = R[n] || [d.rev || "", d.legacy || "", "", "", "", ""], [a, lg, r, st, u, why] = e;
+      const ok = r && !why, src = (d.src || d.from || []).join(", "), sp = u ? `<a class="sp-a" href="${esc(u)}" target="_blank" rel="noopener">${esc(decodeURIComponent(u.split("/").pop()))}</a>` : "";
+      const rows = [["Drawing number", esc(n)], ["Title", esc(d.title || "")], ["Revision in the app", a ? esc(a) : lg ? `Older drawing ${esc(lg)} (before the 2000 issue)` : "Not recorded"],
+        ["Register's current issue", r ? esc(r) + (st ? ` <span class="lk-mu">${esc(st)}</span>` : "") : "Not in the register"],
+        ["Up to date", !r ? "Can't tell (not in the register)" : ok ? '<b style="color:#15803d">Yes ✓</b>' : `<b style="color:#b45309">No</b>: ${esc(why === "up rev" ? "a newer issue is out" : why)}. In Sources › Old Revs`],
+        ["On SharePoint", sp], ["Source file", esc(src)], ["Pages", esc(String(d.pages || ""))], ["Added to the app", esc(d.date || "")]].filter(x => x[1]);
+      el.innerHTML = `<table class="lk-t">${rows.map(([l, v]) => `<tr><td class="lk-nw">${l}</td><td><div class="lk-cv">${v}</div></td></tr>`).join("")}</table>`; el.removeAttribute("data-n"); }); };
   // piping isometrics (iso.json, tools/build_isos.py): a line's sheets, each opening the register's current file on
   // SharePoint; shown on the line's page, and on an item that names a line (a valve's or instrument's line number)
   let ISO = null;
@@ -743,15 +767,20 @@
       const types = TYPE_ORDER.flatMap(t => t === "pid" ? DKIND.map(([k]) => "pid:" + k).filter(k => counts[k]) : counts[t] ? [t] : []);
       const PILL = Object.assign({}, PILL0, Object.fromEntries(DKIND.map(([k]) => ["pid:" + k, kindL(k, 2)])));
       // desktop: as the Assets front page, the asset types down the left (a band over each column) and the results on the right
+      // (phone, the search a drawing's number, as when a drawing is opened: its Isometrics and Details pills on the end)
+      const pidN = PHONE() && window.Pid && Pid.has(String(q).trim()) ? Pid.info(String(q).trim()).number : null, PX = pidN ? L.pidExtra(pidN) : null;
+      const pxp = PX ? (PX.isos ? `<button class="lk-pill lk-pex" data-x="isos">Isometrics <i>${PX.isos.n}</i></button>` : "") + `<button class="lk-pill lk-pex" data-x="dwgd">Details</button>` : "";
       if (!PHONE() && types.length){ status("");
         body.innerHTML = `<div class="lk-sr"><div class="lk-fc"><div class="bw-band">Asset type</div><div class="lk-fo"><button class="bw-o lk-pill${only ? "" : " on"}" data-t=""><em>All</em> <span>(${all.length.toLocaleString()})</span></button>${types.map(t => `<button class="bw-o lk-pill${only === t ? " on" : ""}" data-t="${t}"><em>${esc(PILL[t] || typeName(t))}</em> <span>(${counts[t].toLocaleString()})</span></button>`).join("")}</div></div>` +
           `<div class="lk-rc"><div class="bw-band"><span>Results</span><b>${list.length.toLocaleString()}</b></div><div class="lk-vl"></div></div></div>`; }
-      else body.innerHTML = (types.length ? `<div class="lk-pills"><button class="lk-pill${only ? "" : " on"}" data-t="">All <i>${all.length}</i></button>${types.map(t => `<button class="lk-pill${only === t ? " on" : ""}" data-t="${t}">${ICON[t] || ""} ${esc(PILL[t] || typeName(t))} <i>${counts[t]}</i></button>`).join("")}</div>` : "") +
+      else body.innerHTML = (types.length ? `<div class="lk-pills"><button class="lk-pill${only ? "" : " on"}" data-t="">All <i>${all.length}</i></button>${types.map(t => `<button class="lk-pill${only === t ? " on" : ""}" data-t="${t}">${ICON[t] || ""} ${esc(PILL[t] || typeName(t))} <i>${counts[t]}</i></button>`).join("")}${pxp}</div>` : "") +
         (list.length ? `<div class="lk-vl"></div>` : L.resultsHTML([], q));
       // every result, drawn only near the view (L.vlist); the page scrolls
       if (list.length) L.vlist(document.scrollingElement, body.querySelector(".lk-vl"), list.length, i => L.resultsHTML([list[i]], q).replace('data-i="0"', `data-i="${i}"`).replace('class="lk-row1', `class="lk-row1${i % 2 ? " zb" : ""}`),
         i => { ctx = lastList; open(list[i], true, "list"); }, list.map(it => it.key));
-      body.querySelectorAll(".lk-pill").forEach(b => b.onclick = () => { const t = b.dataset.t;
+      body.querySelectorAll(".lk-pex").forEach(b => b.onclick = e => { e.stopPropagation(); body.querySelectorAll(".lk-pill").forEach(x => x.classList.toggle("on", x === b));
+        const vl = body.querySelector(".lk-vl") || body.appendChild(document.createElement("div")); vl.className = "lk-vl lk-pxv"; vl.style.height = ""; vl.innerHTML = b.dataset.x === "isos" ? PX.isos.html : PX.det; if (b.dataset.x === "dwgd") L.dwgDetails(); });
+      body.querySelectorAll(".lk-pill:not(.lk-pex)").forEach(b => b.onclick = () => { const t = b.dataset.t;
         // (a type the page's filters know: they carry on from here, the next filter showing, as with nothing searched)
         if (t && opts.drill){ only = ""; if (opts.drill(t, inp.value)){ status(""); body.innerHTML = ""; return; } }
         only = t; showList(inp.value); });
@@ -786,7 +815,9 @@
       const hk = !PHONE() && body.querySelector("a.lk-key.lk-dwg");
       const head = H => { const n0 = hk.dataset.dwg || hk.dataset.n, u0 = H && H[n0], spu = hk && hk.isConnected && (u0 ? (window.SP && SP.view ? SP.view(u0) : u0) : window.SP && SP.url(n0)); if (!spu) return;
         const n = hk.dataset.dwg || hk.dataset.n, f = decodeURIComponent((u0 || spu).split("?")[0].split("/").pop()).replace(/\.pdf$/i, ""), x = f.slice(n.length + 1), m = x.match(/^(\d+[A-Z]?)(?:_[A-Z]{2,4})?$/i);
-        hk.textContent = n + (x ? (m ? "_Rev" + m[1] : "_" + x) : ""); hk.href = spu; hk.target = "_blank"; hk.rel = "noopener"; hk.title = "Open the latest in SharePoint"; hk.dataset.n = n; hk.removeAttribute("data-dwg"); hk.classList.add("sp-a"); hk.onclick = null; };
+        // (the text is the revision the app holds, as the drawing's own header: the link opens SharePoint's latest)
+        const di = window.Pid && Pid.info(n), latest = x ? (m ? "Rev" + m[1] : x) : "";
+        hk.textContent = di && di.rev ? Pid.label(n) : di && di.legacy ? n + " (legacy " + di.legacy + ")" : n; hk.href = spu; hk.target = "_blank"; hk.rel = "noopener"; hk.title = "Open the latest in SharePoint" + (latest ? " (" + latest + ")" : ""); hk.dataset.n = n; hk.removeAttribute("data-dwg"); hk.classList.add("sp-a"); hk.onclick = null; };
       if (hk){ hk.dataset.n = hk.dataset.dwg; hk.removeAttribute("data-dwg"); hk.onclick = e => { if (!hk.target) e.preventDefault(); };   // (until SharePoint's list is in: a click does nothing rather than open the old full screen view)
         heldP().then(head); }
       body.querySelectorAll("[data-dwg]").forEach(a => a.onclick = e => { e.preventDefault();
@@ -1110,7 +1141,7 @@
 :root.phone .sp-view .sp-pl .sp-fll.on{background:var(--th,#475569);color:var(--on-th,#fff);border-color:var(--th,#475569)}:root.phone .sp-view .sp-pl .sp-lg{position:static;height:34px;box-sizing:border-box;padding:0 14px;border:1px solid #b0b5bd;border-radius:10px;background:#fff;color:#1f2937;box-shadow:0 1px 3px #0002;font:700 13px system-ui,sans-serif}
 :root.phone .sp-view .sp-top .sp-nav+.sp-nav,:root.phone .sp-view .sp-top .sp-fb{border-left:0}
 :root.phone .sp-view .sp-top button,:root.phone .sp-view .sp-ze{min-width:34px;width:auto;height:34px;padding:0 7px;border:1px solid #b0b5bd;border-radius:10px;background:#fff;color:#1f2937;font-size:19px;box-shadow:0 1px 3px #0002}
-:root.phone .sp-view .sp-ze,:root.phone .sp-view .sp-top .sp-fb,:root.phone .sp-view .sp-top .sp-sh{width:34px;min-width:34px;padding:0;display:inline-grid;place-items:center}.sp-sh{display:none!important}:root.phone .sp-view .sp-sh{display:inline-grid!important;border-left:0!important}:root.phone .sp-view .sp-ze svg{width:18px;height:18px}
+:root.phone .sp-view .sp-ze,:root.phone .sp-view .sp-top .sp-fb,:root.phone .sp-view .sp-top .sp-sh{width:34px;min-width:34px;padding:0;display:inline-grid;place-items:center}.sp-sh{display:none!important}:root.phone .sp-view .sp-sh{display:inline-grid!important;border-left:0!important}:root.phone .sp-view .sp-ze svg{width:18px;height:18px}:root.phone .sp-view .sp-ze.sp-zebr{position:absolute!important;right:12px;bottom:14px;z-index:7;width:44px!important;min-width:44px;height:44px!important;border-radius:12px!important;background:#fff!important;border:1px solid #b0b5bd!important;box-shadow:0 2px 8px #0003!important;color:#1f2937!important}:root.phone .sp-view .sp-ze.sp-zebr svg{width:22px;height:22px}
 :root.phone .sp-view .sp-top .sp-nav span{color:#1f2937}
 :root.phone .sp-view .sp-top .sp-lc,:root.phone .sp-view .sp-top .sp-lg{position:static;order:-1;width:34px;min-width:34px;height:34px;box-sizing:border-box;padding:0;justify-content:center;border:1px solid #b0b5bd;border-radius:10px;background:#fff;color:#1f2937;box-shadow:0 1px 3px #0002;font-size:0;gap:0}
 :root.phone .sp-view .sp-top .sp-lg{order:99}:root.phone .sp-view .sp-top .sp-lc span{display:none}:root.phone .sp-view .sp-top .sp-lc svg,:root.phone .sp-view .sp-top .sp-lg svg{width:18px!important;height:18px!important}
