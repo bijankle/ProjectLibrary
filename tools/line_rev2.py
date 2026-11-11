@@ -4,7 +4,7 @@ app's line records were built from the Rev 1 workbook (tools/build_search.py). T
                     "N/A" keeps the Rev 1 value; size, spec, service, operating conditions, length, sub-system stay as Rev 1);
                     lines new in Rev 2 are added (area, service, spec and size from the number); a line renumbered in Rev 2
                     (same area and number, new spec or size) takes the new number and keeps the old one as "Previous number";
-                    lines Rev 2 no longer lists are kept, marked "Line List Rev 2: Not listed"
+                    lines Rev 2 no longer lists are removed (176: mostly the F75 / F23 tailings lines, 151 of them drawn on held sheets, whose tags then link to no line)
   sources/line.xlsx, sources/line/, sources/index.json   the Sources copy becomes the Rev 2 table
   tools/doc_revs.json   the list's revision, date and status
 The PDF's table has no full grid on every page, so the columns are placed from the grid of the first table page and each row
@@ -38,7 +38,11 @@ for p in d:
 print(len(rows), "lines in the PDF")
 # ---- the line records ----
 S = json.load(open(os.path.join(R, "search-data.json"))); T = S["types"]["line"]; F = T["f"]
-for f in ("Internal cleaning", "Pressure testing standard", "Previous number", "Line List Rev 2"):
+if "Line List Rev 2" in F:   # (an earlier run marked the lines it no longer lists: that field goes, the lines go below)
+    j = F.index("Line List Rev 2"); F.pop(j)
+    for rec in S["data"]["line"]:
+        if len(rec) > j: rec.pop(j)
+for f in ("Internal cleaning", "Pressure testing standard", "Previous number"):
     if f not in F: F.append(f)
 fi = {f: i for i, f in enumerate(F)}
 EMPTY = {"", "-", "–", "?", "N/A", "n/a", "NA", "TBA", "TBC"}
@@ -75,17 +79,14 @@ for k, r in rows.items():
         rec[fi[f]] = v; ch = True
     upd += ch and k not in [c for c in changes if changes[c].get("new")]
 gone = [k for k in have if k not in rows]
-for k in gone:
-    rec = have[k]
-    while len(rec) < len(F): rec.append("")
-    rec[fi["Line List Rev 2"]] = "Not listed"
+G = set(gone); recs[:] = [rec for rec in recs if rec[0] not in G]
 for rec in recs:
     while rec and rec[-1] == "": rec.pop()
 T["rev"] = "Rev 2 (12 Oct 2026)"
 json.dump(S, open(os.path.join(R, "search-data.json"), "w"), ensure_ascii=False, separators=(",", ":"))
 json.dump({"new": [k for k in changes if changes[k].get("new")], "gone": gone, "changed": {k: v for k, v in changes.items() if not v.get("new")}},
           open(os.path.join(R, "tools", "line_rev2_changes.json"), "w"), ensure_ascii=False, indent=1)
-print(f"lines: {upd} updated ({ren} renumbered), {new} new, {len(gone)} in the app but not in Rev 2 (kept, marked)")
+print(f"lines: {upd} updated ({ren} renumbered), {new} new, {len(gone)} in the app but not in Rev 2 (removed)")
 # ---- the Sources copy ----
 out = os.path.join(R, "sources"); k = "line"
 if os.path.isdir(os.path.join(out, k)): shutil.rmtree(os.path.join(out, k))
